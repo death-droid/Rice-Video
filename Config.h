@@ -237,7 +237,6 @@ typedef struct {
 	uint32	screenUpdateSetting;
 	BOOL 	bNormalCombiner;
 	BOOL 	bNormalBlender;
-	BOOL 	bFastTexCRC;
 	BOOL 	bAccurateTextureMapping;
 	BOOL 	bInN64Resolution;
 	BOOL 	bDoubleSizeForSmallTxtrBuf;

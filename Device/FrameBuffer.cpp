@@ -585,129 +585,53 @@ uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32
 	dwAsmCRC = 0;
 	dwAsmdwBytesPerLine = ((width<<size)+1)/2;
 
-	if( currentRomOptions.bFastTexCRC && !options.bLoadHiResTextures && (height>=32 || (dwAsmdwBytesPerLine>>2)>=16))
-	{
-		uint32 realWidthInDWORD = dwAsmdwBytesPerLine>>2;
-		uint32 xinc = realWidthInDWORD / FAST_CRC_CHECKING_INC_X;	
-		if( xinc < FAST_CRC_MIN_X_INC )
-		{
-			xinc = min(FAST_CRC_MIN_X_INC, width);
-		}
-		if( xinc > FAST_CRC_MAX_X_INC )
-		{
-			xinc = FAST_CRC_MAX_X_INC;
-		}
+	try{
+		dwAsmdwBytesPerLine = ((width<<size)+1)/2;
 
-		uint32 yinc = height / FAST_CRC_CHECKING_INC_Y;	
-		if( yinc < FAST_CRC_MIN_Y_INC ) 
-		{
-			yinc = min(FAST_CRC_MIN_Y_INC, height);
-		}
-		if( yinc > FAST_CRC_MAX_Y_INC )
-		{
-			yinc = FAST_CRC_MAX_Y_INC;
-		}
+		pAsmStart = (uint8*)(pPhysicalAddress);
+		pAsmStart += (top * pitchInBytes) + (((left<<size)+1)>>1);
 
-		uint32 pitch = pitchInBytes>>2;
-		register uint32 *pStart = (uint32*)(pPhysicalAddress);
-		pStart += (top * pitch) + (((left<<size)+1)>>3);
-
-		/*
-		uint32 x,y;
-		for (y = 0; y < height; y+=yinc)		// Do every nth line?
-		{
-		for (x = 0; x < realWidthInDWORD; x+=xinc)
-		{
-		dwAsmCRC += *(pStart+x);
-		dwAsmCRC ^= x;
-		}
-		pStart += pitch;
-		dwAsmCRC ^= y;
-		}
-		*/
+		dwAsmHeight = height - 1;
+		dwAsmPitch = pitchInBytes;
 
 
-		__asm
+		__asm 
 		{
-			push	esi;
-			mov		esi, DWORD PTR [xinc]; 
-			mov		ebx, DWORD PTR [pStart];
-			mov		eax,0;	// EAX = the CRC
-			mov		edx,0x0;
-loop1:
-			cmp		edx, height;
-			jae		endloop1;
-			mov		ecx, 0x0;
-loop2:
-			add		eax, ecx;
-			cmp		ecx, DWORD PTR [realWidthInDWORD]
-			jae		endloop2;
+			push eax
+			push ebx
+			push ecx
+			push edx
+			push esi
 
-			rol		eax, 4
-			add		eax, DWORD PTR [ebx][ecx*4];
+			mov	ecx, pAsmStart;	// = pStart
+			mov	edx, 0			// The CRC
+			mov	eax, dwAsmHeight	// = y
+l2:				mov	ebx, dwAsmdwBytesPerLine	// = x
+			sub	ebx, 4
+l1:				mov	esi, [ecx+ebx]
+			xor esi, ebx
+			rol edx, 4
+			add edx, esi
+			sub	ebx, 4
+			jge l1
+			xor esi, eax
+			add edx, esi
+			add ecx, dwAsmPitch
+			dec eax
+			jge l2
 
-			add		ecx, esi;
-			jmp		loop2;
-endloop2:
-			xor		eax, edx;
-			add		edx, DWORD PTR [yinc];
-			add		ebx, DWORD PTR [pitch];
-			jmp		loop1;
-endloop1:
-			mov		DWORD PTR [dwAsmCRC], eax;
-			pop		esi;
+			mov	dwAsmCRC, edx
+
+			pop esi
+			pop edx
+			pop ecx
+			pop ebx
+			pop	eax
 		}
 	}
-	else
+	catch(...)
 	{
-		try{
-			dwAsmdwBytesPerLine = ((width<<size)+1)/2;
-
-			pAsmStart = (uint8*)(pPhysicalAddress);
-			pAsmStart += (top * pitchInBytes) + (((left<<size)+1)>>1);
-
-			dwAsmHeight = height - 1;
-			dwAsmPitch = pitchInBytes;
-
-
-			__asm 
-			{
-				push eax
-				push ebx
-				push ecx
-				push edx
-				push esi
-
-				mov	ecx, pAsmStart;	// = pStart
-				mov	edx, 0			// The CRC
-				mov	eax, dwAsmHeight	// = y
-l2:				mov	ebx, dwAsmdwBytesPerLine	// = x
-				sub	ebx, 4
-l1:				mov	esi, [ecx+ebx]
-				xor esi, ebx
-				rol edx, 4
-				add edx, esi
-				sub	ebx, 4
-				jge l1
-				xor esi, eax
-				add edx, esi
-				add ecx, dwAsmPitch
-				dec eax
-				jge l2
-
-				mov	dwAsmCRC, edx
-
-				pop esi
-				pop edx
-				pop ecx
-				pop ebx
-				pop	eax
-			}
-		}
-		catch(...)
-		{
-			TRACE0("Exception in texture CRC calculation");
-		}
+		TRACE0("Exception in texture CRC calculation");
 	}
 	return dwAsmCRC;
 }

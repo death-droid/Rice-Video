@@ -56,7 +56,6 @@
 #define IDC_DISABLE_BLENDING            1047
 #define IDC_UPDATE_AT_CI_CHANGE         1048
 #define IDC_CONT_W_UNKNOWN              1049
-#define IDC_FAST_TEX_CRC                1050
 #define IDC_SMART_UPDATE                1051
 #define IDC_EMU_FRAME_BUFFER            1052
 #define IDC_SMART_SCREEN_UPDATE         1053

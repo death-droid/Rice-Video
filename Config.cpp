@@ -429,9 +429,6 @@ void WriteConfiguration(void)
 	fprintf(f, "FulScreenHeight ");
 	fprintf(f, "%d\n", windowSetting.uFullScreenDisplayHeight);
 
-	fprintf(f, "FastTextureLoading ");
-	fprintf(f, "%d\n", defaultRomOptions.bFastTexCRC);
-
 	fprintf(f, "ForceTextureFilter ");
 	fprintf(f, "%d\n", (uint32)options.forceTextureFilter);
 
@@ -620,7 +617,6 @@ void ReadConfiguration(void)
 		defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
 
 		defaultRomOptions.bNormalBlender = FALSE;
-		defaultRomOptions.bFastTexCRC=FALSE;
 		defaultRomOptions.bNormalCombiner = FALSE;
 		defaultRomOptions.bAccurateTextureMapping = TRUE;
 		defaultRomOptions.bInN64Resolution = FALSE;
@@ -690,7 +686,6 @@ void ReadConfiguration(void)
 		options.bCacheHiResTextures = ReadRegistryDwordVal("CacheHiResTextures");
 		options.bDumpTexturesToFiles = ReadRegistryDwordVal("DumpTexturesToFiles");
 		options.bDumpTexturesToFiles = FALSE;	// Never starting the plugin with this option on
-		defaultRomOptions.bFastTexCRC = ReadRegistryDwordVal("FastTextureLoading");
 		options.DirectXDevice = ReadRegistryDwordVal("DirectXDevice");
 		options.DirectXDepthBufferSetting = ReadRegistryDwordVal("DirectXDepthBufferSetting");
 		options.DirectXAntiAliasingValue = ReadRegistryDwordVal("DirectXAntiAliasingValue");;
@@ -699,7 +694,6 @@ void ReadConfiguration(void)
 		options.FPSColor = ReadRegistryDwordVal("FPSColor");;
 		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");;
 		options.colorQuality = ReadRegistryDwordVal("ColorQuality");
-		defaultRomOptions.bFastTexCRC = ReadRegistryDwordVal("FastTextureLoading");
 		defaultRomOptions.bAccurateTextureMapping = ReadRegistryDwordVal("AccurateTextureMapping");
 		defaultRomOptions.bInN64Resolution = ReadRegistryDwordVal("InN64Resolution");
 		defaultRomOptions.bSaveVRAM = ReadRegistryDwordVal("SaveVRAM");
@@ -752,7 +746,6 @@ void GenerateCurrentRomOptions()
 	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
 	currentRomOptions.bNormalCombiner			=g_curRomInfo.dwNormalCombiner;
 	currentRomOptions.bNormalBlender			=g_curRomInfo.dwNormalBlender;
-	currentRomOptions.bFastTexCRC				=g_curRomInfo.dwFastTextureCRC;
 	currentRomOptions.bAccurateTextureMapping	=g_curRomInfo.dwAccurateTextureMapping;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
@@ -907,8 +900,6 @@ void GenerateCurrentRomOptions()
 	else currentRomOptions.bNormalCombiner--;
 	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
 	else currentRomOptions.bNormalBlender--;
-	if( currentRomOptions.bFastTexCRC == 0 )				currentRomOptions.bFastTexCRC = defaultRomOptions.bFastTexCRC;
-	else currentRomOptions.bFastTexCRC--;
 	if( currentRomOptions.bAccurateTextureMapping == 0 )		currentRomOptions.bAccurateTextureMapping = defaultRomOptions.bAccurateTextureMapping;
 	else currentRomOptions.bAccurateTextureMapping--;
 
@@ -950,7 +941,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->bTxtSizeMethod2		= IniSections[i].bTxtSizeMethod2;
 	pGameSetting->bEnableTxtLOD			= IniSections[i].bEnableTxtLOD;
 
-	pGameSetting->dwFastTextureCRC		= IniSections[i].dwFastTextureCRC;
 	pGameSetting->bEmulateClear			= IniSections[i].bEmulateClear;
 	pGameSetting->bForceScreenClear		= IniSections[i].bForceScreenClear;
 	pGameSetting->dwAccurateTextureMapping	= IniSections[i].dwAccurateTextureMapping;
@@ -982,12 +972,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	if( IniSections[i].bDisableCulling	!=pGameSetting->bDisableCulling )
 	{
 		IniSections[i].bDisableCulling	=pGameSetting->bDisableCulling	 ;
-		bIniIsChanged=true;
-	}
-
-	if( IniSections[i].dwFastTextureCRC !=pGameSetting->dwFastTextureCRC )
-	{
-		IniSections[i].dwFastTextureCRC	=pGameSetting->dwFastTextureCRC		 ;
 		bIniIsChanged=true;
 	}
 
@@ -1256,13 +1240,6 @@ ToolTipMsg ttmsg[] = {
 			"- shade only,       if texture is not used\n\n"
 			"Try to use this option if you have ingame texture color problems, transparency problems, "
 			"or black/white texture problems\n"
-			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
-			"When a game is running, it is the game setting. Three available setting are on/off/as default."
-	},
-	{ 
-		IDC_FAST_TEX_CRC,
-			"Fast texture loading",
-			"Uses a faster CRC algorithm to speed up texture loading and CRC computation.\n"
 			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
 			"When a game is running, it is the game setting. Three available setting are on/off/as default."
 	},
@@ -1843,7 +1820,6 @@ BOOL ReadIniFile()
 				newsection.bForceScreenClear = FALSE;
 				newsection.bDisableBlender = FALSE;
 				newsection.bForceDepthBuffer = FALSE;
-				newsection.dwFastTextureCRC = 0;
 				newsection.dwAccurateTextureMapping = 0;
 				newsection.dwNormalBlender = 0;
 				newsection.dwNormalCombiner = 0;
@@ -1914,9 +1890,6 @@ BOOL ReadIniFile()
 
 				if (lstrcmpi(left(readinfo,22), "AccurateTextureMapping")==0)
 					IniSections[sectionno].dwAccurateTextureMapping = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,14), "FastTextureCRC")==0)
-					IniSections[sectionno].dwFastTextureCRC = strtol(right(readinfo,1),NULL,10);
 
 				if (lstrcmpi(left(readinfo,12), "EmulateClear")==0)
 					IniSections[sectionno].bEmulateClear = strtol(right(readinfo,1),NULL,10);
@@ -2074,9 +2047,6 @@ void OutputSectionDetails(uint32 i, FILE * fh)
 	if (IniSections[i].dwAccurateTextureMapping != 0)
 		fprintf(fh, "AccurateTextureMapping=%d\n", IniSections[i].dwAccurateTextureMapping);
 
-	if (IniSections[i].dwFastTextureCRC != 0)
-		fprintf(fh, "FastTextureCRC=%d\n", IniSections[i].dwFastTextureCRC);
-
 	if (IniSections[i].dwNormalBlender != 0)
 		fprintf(fh, "NormalAlphaBlender=%d\n", IniSections[i].dwNormalBlender);
 
@@ -2205,7 +2175,6 @@ int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
 	newsection.bForceScreenClear = FALSE;
 	newsection.bDisableBlender = FALSE;
 	newsection.bForceDepthBuffer = FALSE;
-	newsection.dwFastTextureCRC = 0;
 	newsection.dwAccurateTextureMapping = 0;
 	newsection.dwNormalBlender = 0;
 	newsection.dwNormalCombiner = 0;
@@ -3091,7 +3060,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, defaultRomOptions.bNormalCombiner ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_SETCHECK, defaultRomOptions.bFastTexCRC ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_SETCHECK, defaultRomOptions.bAccurateTextureMapping ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_IN_N64_RESOLUTION, BM_SETCHECK, defaultRomOptions.bInN64Resolution ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_SAVE_VRAM, BM_SETCHECK, defaultRomOptions.bSaveVRAM ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -3174,7 +3142,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			break;
 		case IDOK:
 			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			defaultRomOptions.bFastTexCRC = (SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bNormalCombiner = (SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bAccurateTextureMapping = (SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
@@ -3217,10 +3184,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		state = g_curRomInfo.dwNormalCombiner ==2 ? BST_CHECKED : (g_curRomInfo.dwNormalCombiner ==1?BST_UNCHECKED:BST_INDETERMINATE);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, state, 0);
-
-		state = g_curRomInfo.dwFastTextureCRC ==2 ? BST_CHECKED : (g_curRomInfo.dwFastTextureCRC ==1?BST_UNCHECKED:BST_INDETERMINATE);
-		SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
-		SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_SETCHECK, state, 0);
 
 		state = g_curRomInfo.dwAccurateTextureMapping ==2 ? BST_CHECKED : (g_curRomInfo.dwAccurateTextureMapping ==1?BST_UNCHECKED:BST_INDETERMINATE);
 		SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
@@ -3336,9 +3299,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			uint32 state;
 			state = SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwNormalBlender = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
-			
-			state = SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_GETCHECK, 0, 0);
-			g_curRomInfo.dwFastTextureCRC = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
 			
 			state = SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwNormalCombiner = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
