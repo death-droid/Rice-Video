@@ -84,7 +84,6 @@ enum {
 	TEXTURE_LQ2X_ENHANCEMENT,
 	TEXTURE_LQ2XS_ENHANCEMENT,
 	TEXTURE_HQ4X_ENHANCEMENT,
-	TEXTURE_KEGA_ENHANCEMENT,
 	TEXTURE_SHARPEN_ENHANCEMENT,
 	TEXTURE_SHARPEN_MORE_ENHANCEMENT,
 	TEXTURE_EXTERNAL,
@@ -142,6 +141,7 @@ enum HACK_FOR_GAMES
 	HACK_FOR_BUST_A_MOVE,
 	HACK_FOR_OGRE_BATTLE,
 	HACK_FOR_TWINE,
+	HACK_FOR_EXTREME_G2,
 	HACK_FOR_ROGUE_SQUADRON,
 	HACK_FOR_MARIO_GOLF,
 	HACK_FOR_MLB,
@@ -162,6 +162,7 @@ typedef struct {
 	BOOL	bEnableHacks;
 	BOOL	bEnableFog;
 	BOOL	bWinFrameMode;
+	BOOL	bMipMaps;
 	BOOL	bForceSoftwareTnL;
 	BOOL	bForceSoftwareClipper;
 	BOOL	bEnableSSE;
@@ -291,9 +292,9 @@ typedef struct IniSection
 
 extern bool bIniIsChanged;
 extern char	szIniFileName[300];
-	void WriteIniFile();
+void WriteIniFile();
 BOOL ReadIniFile();
-	void OutputSectionDetails(uint32 i, FILE * fh);
+void OutputSectionDetails(uint32 i, FILE * fh);
 int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName); 
 
 
@@ -375,6 +376,7 @@ extern GameSetting g_curRomInfo;
 
 void ROM_GetRomNameFromHeader(TCHAR * szName, ROMHeader * pHdr);
 void ROM_ByteSwap_3210(void *v, uint32 dwLen);
+uint32 ReadRegistryDwordValFromFile(char *Field, char FileName[1024]);
 
 #define TV_SYSTEM_NTSC		1
 #define TV_SYSTEM_PAL		0

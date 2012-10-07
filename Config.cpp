@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "stdafx.h"
 #include "_BldNum.h"
 
-#define MAIN_KEY		"Software\\1964Video\\1964Video Plugin"
 #define INI_FILE		"1964Video.ini"
 #define CONFIG_FILE     "1964Video.cfg"
 char *project_name =	"1964Video N64 Video Plugin community version";
@@ -58,6 +57,7 @@ const int resolutions[][2] =
 	{1920, 1440},
 	{2048, 1536},
 };
+
 const int numberOfResolutions = sizeof(resolutions)/sizeof(int)/2;
 
 char *frameBufferWriteBackControlSettings[] =
@@ -152,6 +152,7 @@ const SettingInfo colorQualitySettings[] =
 
 const char*	strDXDeviceDescs[] = { "HAL", "REF" };
 
+
 /*
 *	Constants
 */
@@ -211,10 +212,8 @@ BOOL EnumChildWndTooltip(void);
 
 inline void ShowItem(HWND hDlg, UINT item, BOOL flag)
 {
-#ifndef _XBOX
 	HWND itemwnd = GetDlgItem(hDlg, item);
 	ShowWindow(itemwnd,flag?SW_SHOW:SW_HIDE);
-#endif
 }
 //////////////////////////////////////////////////////////////////////////
 void GenerateFrameBufferOptions(void)
@@ -373,6 +372,9 @@ void WriteConfiguration(void)
 	fprintf(f, "WinFrameMode ");
 	fprintf(f, "%d\n", options.bWinFrameMode);
 
+	fprintf(f, "MipMaps ");
+	fprintf(f, "%d\n", options.bMipMaps);
+
 	fprintf(f, "FullTMEMEmulation ");
 	fprintf(f, "%d\n", options.bFullTMEM);
 
@@ -426,6 +428,9 @@ void WriteConfiguration(void)
 
 	fprintf(f, "FulScreenHeight ");
 	fprintf(f, "%d\n", windowSetting.uFullScreenDisplayHeight);
+
+	fprintf(f, "FastTextureLoading ");
+	fprintf(f, "%d\n", defaultRomOptions.bFastTexCRC);
 
 	fprintf(f, "ForceTextureFilter ");
 	fprintf(f, "%d\n", (uint32)options.forceTextureFilter);
@@ -497,6 +502,28 @@ uint32 ReadRegistryDwordVal(char *Field)
    return 0;
 }
 
+uint32 ReadRegistryDwordValFromFile(char *Field, char FileName[1024])
+{
+	FILE *f = fopen(FileName, "rb");
+	if(!f) return 0;
+	char buf[0x1000];
+	while(fscanf(f, "%s", buf) == 1)
+	{
+		int dword;
+		int n = fscanf(f, "%d", &dword);
+		if (n==1)
+		{
+			if (!strcmp(buf, Field))
+			{
+				fclose(f);
+				return dword;
+			}
+		}
+	}
+   fclose(f);
+   return 0;
+}
+
 
 bool isMMXSupported() 
 { 
@@ -545,15 +572,10 @@ void ReadConfiguration(void)
 	defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_CHANGE;
 	//defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN;
 
-#ifdef _XBOX
-	status.isMMXSupported = 1;
-	status.isSSESupported = 0;
-	status.isVertexShaderSupported = true;
-#else
 	status.isMMXSupported = isMMXSupported();
 	status.isSSESupported = isSSESupported();
 	status.isVertexShaderSupported = false;
-#endif
+
 	defaultRomOptions.N64FrameBufferEmuType = FRM_BUF_NONE;
 	defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
 	defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
@@ -562,17 +584,12 @@ void ReadConfiguration(void)
 	{
 		options.bEnableFog = TRUE;
 		options.bWinFrameMode = FALSE;
+		options.bMipMaps = TRUE;
 		options.bFullTMEM = FALSE;
 		options.bUseFullTMEM = FALSE;
-#ifdef _XBOX
-		options.bForceSoftwareTnL = FALSE;
-		options.bForceSoftwareClipper = FALSE;
-		options.bEnableSSE = FALSE;
-#else
 		options.bForceSoftwareTnL = TRUE;
 		options.bForceSoftwareClipper = TRUE;
 		options.bEnableSSE = TRUE;
-#endif
 		options.bEnableVertexShader = FALSE;
 		options.RenderBufferSetting=1;
 		options.forceTextureFilter = 0;
@@ -603,6 +620,7 @@ void ReadConfiguration(void)
 		defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
 
 		defaultRomOptions.bNormalBlender = FALSE;
+		defaultRomOptions.bFastTexCRC=FALSE;
 		defaultRomOptions.bNormalCombiner = FALSE;
 		defaultRomOptions.bAccurateTextureMapping = TRUE;
 		defaultRomOptions.bInN64Resolution = FALSE;
@@ -649,6 +667,7 @@ void ReadConfiguration(void)
 
 		options.bEnableFog = ReadRegistryDwordVal("EnableFog");
 		options.bWinFrameMode = ReadRegistryDwordVal("WinFrameMode");
+		options.bMipMaps = ReadRegistryDwordVal("MipMaps");
 		options.bFullTMEM = ReadRegistryDwordVal("FullTMEMEmulation");
 		options.bForceSoftwareTnL = ReadRegistryDwordVal("ForceSoftwareTnL");
 		options.bForceSoftwareClipper = ReadRegistryDwordVal("ForceSoftwareClipper");
@@ -671,6 +690,7 @@ void ReadConfiguration(void)
 		options.bCacheHiResTextures = ReadRegistryDwordVal("CacheHiResTextures");
 		options.bDumpTexturesToFiles = ReadRegistryDwordVal("DumpTexturesToFiles");
 		options.bDumpTexturesToFiles = FALSE;	// Never starting the plugin with this option on
+		defaultRomOptions.bFastTexCRC = ReadRegistryDwordVal("FastTextureLoading");
 		options.DirectXDevice = ReadRegistryDwordVal("DirectXDevice");
 		options.DirectXDepthBufferSetting = ReadRegistryDwordVal("DirectXDepthBufferSetting");
 		options.DirectXAntiAliasingValue = ReadRegistryDwordVal("DirectXAntiAliasingValue");;
@@ -679,6 +699,7 @@ void ReadConfiguration(void)
 		options.FPSColor = ReadRegistryDwordVal("FPSColor");;
 		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");;
 		options.colorQuality = ReadRegistryDwordVal("ColorQuality");
+		defaultRomOptions.bFastTexCRC = ReadRegistryDwordVal("FastTextureLoading");
 		defaultRomOptions.bAccurateTextureMapping = ReadRegistryDwordVal("AccurateTextureMapping");
 		defaultRomOptions.bInN64Resolution = ReadRegistryDwordVal("InN64Resolution");
 		defaultRomOptions.bSaveVRAM = ReadRegistryDwordVal("SaveVRAM");
@@ -731,9 +752,11 @@ void GenerateCurrentRomOptions()
 	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
 	currentRomOptions.bNormalCombiner			=g_curRomInfo.dwNormalCombiner;
 	currentRomOptions.bNormalBlender			=g_curRomInfo.dwNormalBlender;
+	currentRomOptions.bFastTexCRC				=g_curRomInfo.dwFastTextureCRC;
 	currentRomOptions.bAccurateTextureMapping	=g_curRomInfo.dwAccurateTextureMapping;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
+
 	if ((strncmp(g_curRomInfo.szGameName, "BANJO TOOIE", 11) == 0))
 	{
 		options.enableHackForGames = HACK_FOR_BANJO_TOOIE;
@@ -848,7 +871,7 @@ void GenerateCurrentRomOptions()
 	}
 	else if ((_strnicmp(g_curRomInfo.szGameName, "Extreme G 2",11) == 0))
 	{
-		options.enableHackForGames = HACK_FOR_SOUTH_PARK_RALLY;
+		options.enableHackForGames = HACK_FOR_EXTREME_G2;
 	}
 	else if ((_strnicmp(g_curRomInfo.szGameName, "MarioGolf64",11) == 0))
 	{
@@ -884,6 +907,8 @@ void GenerateCurrentRomOptions()
 	else currentRomOptions.bNormalCombiner--;
 	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
 	else currentRomOptions.bNormalBlender--;
+	if( currentRomOptions.bFastTexCRC == 0 )				currentRomOptions.bFastTexCRC = defaultRomOptions.bFastTexCRC;
+	else currentRomOptions.bFastTexCRC--;
 	if( currentRomOptions.bAccurateTextureMapping == 0 )		currentRomOptions.bAccurateTextureMapping = defaultRomOptions.bAccurateTextureMapping;
 	else currentRomOptions.bAccurateTextureMapping--;
 
@@ -925,6 +950,7 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->bTxtSizeMethod2		= IniSections[i].bTxtSizeMethod2;
 	pGameSetting->bEnableTxtLOD			= IniSections[i].bEnableTxtLOD;
 
+	pGameSetting->dwFastTextureCRC		= IniSections[i].dwFastTextureCRC;
 	pGameSetting->bEmulateClear			= IniSections[i].bEmulateClear;
 	pGameSetting->bForceScreenClear		= IniSections[i].bForceScreenClear;
 	pGameSetting->dwAccurateTextureMapping	= IniSections[i].dwAccurateTextureMapping;
@@ -958,6 +984,13 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 		IniSections[i].bDisableCulling	=pGameSetting->bDisableCulling	 ;
 		bIniIsChanged=true;
 	}
+
+	if( IniSections[i].dwFastTextureCRC !=pGameSetting->dwFastTextureCRC )
+	{
+		IniSections[i].dwFastTextureCRC	=pGameSetting->dwFastTextureCRC		 ;
+		bIniIsChanged=true;
+	}
+
 	if( IniSections[i].bEmulateClear !=pGameSetting->bEmulateClear )
 	{
 		IniSections[i].bEmulateClear	=pGameSetting->bEmulateClear		 ;
@@ -1101,6 +1134,7 @@ typedef struct {
 
 
 ToolTipMsg ttmsg[] = {
+	
 	{ 
 		IDC_DX_SWAP_EFFECT,
 			"DirectX Frame Buffer Swap Effect",
@@ -1222,6 +1256,13 @@ ToolTipMsg ttmsg[] = {
 			"- shade only,       if texture is not used\n\n"
 			"Try to use this option if you have ingame texture color problems, transparency problems, "
 			"or black/white texture problems\n"
+			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
+			"When a game is running, it is the game setting. Three available setting are on/off/as default."
+	},
+	{ 
+		IDC_FAST_TEX_CRC,
+			"Fast texture loading",
+			"Uses a faster CRC algorithm to speed up texture loading and CRC computation.\n"
 			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
 			"When a game is running, it is the game setting. Three available setting are on/off/as default."
 	},
@@ -1474,6 +1515,11 @@ ToolTipMsg ttmsg[] = {
 			"Enable wireframes (WinFrame)",
 			"If enabled, graphics will be drawn in wireframe mode instead of solid and texture mode."
 	},
+	{
+		IDC_MIPMAPS,
+			"Enables automatic mipmaping."
+			"This will allow textures to look nicer when viewed far away and increase performance in some cases."
+	},
 	{ 
 	   IDC_LOAD_HIRES_TEXTURE,
 	   "Load custom hi-res textures",
@@ -1542,7 +1588,6 @@ int numOfTTMsgs = sizeof(ttmsg)/sizeof(ToolTipMsg);
 
 BOOL CreateDialogTooltip(void) 
 {
-#ifndef _XBOX
 #ifdef ENABLE_CONFIG_DIALOG
     // Ensure that the common control DLL is loaded, and create
     // a tooltip control.
@@ -1587,17 +1632,12 @@ BOOL CreateDialogTooltip(void)
     if (g_hhk == (HHOOK) NULL)
         return FALSE;
 #endif
-#endif
     return TRUE;
 } 
 
 BOOL EnumChildWndTooltip(void)
 {
-#ifdef _XBOX
-    return TRUE;
-#else
 	return (!EnumChildWindows(g_hwndDlg, (WNDENUMPROC) EnumChildProc, 0));
-#endif
 }
 
 // EmumChildProc - registers control windows with a tooltip control by
@@ -1608,7 +1648,6 @@ BOOL EnumChildWndTooltip(void)
 // lParam - application-defined value (not used). 
 extern "C"  BOOL __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam) 
 { 
-#ifndef _XBOX
     TOOLINFO ti; 
 	
     ti.cbSize = sizeof(TOOLINFO); 
@@ -1619,11 +1658,9 @@ extern "C"  BOOL __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam)
     ti.lpszText = LPSTR_TEXTCALLBACK; 
     SendMessage(g_hwndTT, TTM_ADDTOOL, 0, 
        (LPARAM) (LPTOOLINFO) &ti); 
-#endif
     return TRUE; 
 } 
 
-#ifndef _XBOX
 // GetMsgProc - monitors the message stream for mouse messages intended 
 //     for a control window in the dialog box. 
 // Returns a message-dependent value. 
@@ -1702,8 +1739,6 @@ VOID OnWMNotify(LPARAM lParam)
 	} 
 	return;
 }
-#endif
-
 std::ifstream& getline( std::ifstream &is, char *str );
 
 
@@ -1808,6 +1843,7 @@ BOOL ReadIniFile()
 				newsection.bForceScreenClear = FALSE;
 				newsection.bDisableBlender = FALSE;
 				newsection.bForceDepthBuffer = FALSE;
+				newsection.dwFastTextureCRC = 0;
 				newsection.dwAccurateTextureMapping = 0;
 				newsection.dwNormalBlender = 0;
 				newsection.dwNormalCombiner = 0;
@@ -1878,6 +1914,9 @@ BOOL ReadIniFile()
 
 				if (lstrcmpi(left(readinfo,22), "AccurateTextureMapping")==0)
 					IniSections[sectionno].dwAccurateTextureMapping = strtol(right(readinfo,1),NULL,10);
+
+				if (lstrcmpi(left(readinfo,14), "FastTextureCRC")==0)
+					IniSections[sectionno].dwFastTextureCRC = strtol(right(readinfo,1),NULL,10);
 
 				if (lstrcmpi(left(readinfo,12), "EmulateClear")==0)
 					IniSections[sectionno].bEmulateClear = strtol(right(readinfo,1),NULL,10);
@@ -2035,6 +2074,9 @@ void OutputSectionDetails(uint32 i, FILE * fh)
 	if (IniSections[i].dwAccurateTextureMapping != 0)
 		fprintf(fh, "AccurateTextureMapping=%d\n", IniSections[i].dwAccurateTextureMapping);
 
+	if (IniSections[i].dwFastTextureCRC != 0)
+		fprintf(fh, "FastTextureCRC=%d\n", IniSections[i].dwFastTextureCRC);
+
 	if (IniSections[i].dwNormalBlender != 0)
 		fprintf(fh, "NormalAlphaBlender=%d\n", IniSections[i].dwNormalBlender);
 
@@ -2163,6 +2205,7 @@ int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
 	newsection.bForceScreenClear = FALSE;
 	newsection.bDisableBlender = FALSE;
 	newsection.bForceDepthBuffer = FALSE;
+	newsection.dwFastTextureCRC = 0;
 	newsection.dwAccurateTextureMapping = 0;
 	newsection.dwNormalBlender = 0;
 	newsection.dwNormalCombiner = 0;
@@ -2178,6 +2221,38 @@ int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
 
 
 GameSetting g_curRomInfo;
+
+// Swap bytes from 80 37 12 40
+// to              40 12 37 80
+void ROM_ByteSwap_3210(void *v, uint32 dwLen)
+{
+	__asm
+	{
+		mov		esi, v
+			mov		edi, v
+			mov		ecx, dwLen
+
+			add		edi, ecx
+
+top:
+		mov		al, byte ptr [esi + 0]
+		mov		bl, byte ptr [esi + 1]
+		mov		cl, byte ptr [esi + 2]
+		mov		dl, byte ptr [esi + 3]
+
+		mov		byte ptr [esi + 0], dl		//3
+			mov		byte ptr [esi + 1], cl		//2
+			mov		byte ptr [esi + 2], bl		//1
+			mov		byte ptr [esi + 3], al		//0
+
+			add		esi, 4
+			cmp		esi, edi
+			jne		top
+
+	}
+}
+
+
 void ROM_GetRomNameFromHeader(TCHAR * szName, ROMHeader * pHdr)
 {
 	TCHAR * p;
@@ -2278,7 +2353,6 @@ uint32 CountryCodeToTVSystem(uint32 countryCode)
 
 LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
-#ifndef _XBOX
 	int i;
 	int maxres;
 	HWND item;
@@ -2291,6 +2365,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 		SendDlgItemMessage(hDlg, IDC_FOG, BM_SETCHECK, options.bEnableFog ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_SETCHECK, options.bMipMaps ? BST_CHECKED : BST_UNCHECKED, 0);
 
 		if( status.isSSESupported )
 		{
@@ -2472,6 +2547,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bSkipFrame = (SendDlgItemMessage(hDlg, IDC_SKIP_FRAME, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bDisplayTooltip = (SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			options.bEnableSSE = (SendDlgItemMessage(hDlg, IDC_SSE, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -2528,12 +2604,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 	    }
     }
 
-#endif
     return FALSE;
 }
 LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
-#ifndef _XBOX
 	int i;
 	HWND item;
 	uint32 dwPos;
@@ -2813,13 +2887,11 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 
     return FALSE;
-#endif
 	return(TRUE);
 }
 
 LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
-#ifndef _XBOX
 	int i;
 	HWND item;
 	int setting;
@@ -3003,13 +3075,11 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			return(TRUE);
 	    }
     }
-#endif
 
     return FALSE;
 }
 LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
-#ifndef _XBOX
 	int i;
 	HWND item;
 
@@ -3021,6 +3091,7 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, defaultRomOptions.bNormalCombiner ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_SETCHECK, defaultRomOptions.bFastTexCRC ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_SETCHECK, defaultRomOptions.bAccurateTextureMapping ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_IN_N64_RESOLUTION, BM_SETCHECK, defaultRomOptions.bInN64Resolution ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_SAVE_VRAM, BM_SETCHECK, defaultRomOptions.bSaveVRAM ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -3103,6 +3174,7 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			break;
 		case IDOK:
 			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			defaultRomOptions.bFastTexCRC = (SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bNormalCombiner = (SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bAccurateTextureMapping = (SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
@@ -3123,13 +3195,11 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			return(TRUE);
 	    }
     }
-#endif
 
 	return FALSE;
 }
 LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
-#ifndef _XBOX
 	int i;
 	uint32 state;
 
@@ -3147,6 +3217,10 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		state = g_curRomInfo.dwNormalCombiner ==2 ? BST_CHECKED : (g_curRomInfo.dwNormalCombiner ==1?BST_UNCHECKED:BST_INDETERMINATE);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, state, 0);
+
+		state = g_curRomInfo.dwFastTextureCRC ==2 ? BST_CHECKED : (g_curRomInfo.dwFastTextureCRC ==1?BST_UNCHECKED:BST_INDETERMINATE);
+		SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
+		SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_SETCHECK, state, 0);
 
 		state = g_curRomInfo.dwAccurateTextureMapping ==2 ? BST_CHECKED : (g_curRomInfo.dwAccurateTextureMapping ==1?BST_UNCHECKED:BST_INDETERMINATE);
 		SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
@@ -3262,7 +3336,10 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			uint32 state;
 			state = SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwNormalBlender = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
-
+			
+			state = SendDlgItemMessage(hDlg, IDC_FAST_TEX_CRC, BM_GETCHECK, 0, 0);
+			g_curRomInfo.dwFastTextureCRC = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
+			
 			state = SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwNormalCombiner = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
 			
@@ -3330,13 +3407,11 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			return(TRUE);
 	    }
     }
-#endif
 
     return FALSE;
 }
 LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
-#ifndef _XBOX
 	switch(message)
 	{
 	case WM_INITDIALOG:
@@ -3374,7 +3449,6 @@ LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG 
 			return(TRUE);
 	    }
     }
-#endif
 
     return FALSE;
 }
@@ -3382,7 +3456,6 @@ LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG 
 //Test: Creating property pages for all options
 void CreateOptionsDialogs(HWND hParent)
 {
-#ifndef _XBOX
 #ifdef ENABLE_CONFIG_DIALOG
 	PROPSHEETPAGE	psp[6]; //Change this array size if you change the number of pages.
 	PROPSHEETHEADER psh;
@@ -3496,7 +3569,6 @@ void CreateOptionsDialogs(HWND hParent)
 
 	//g_hhk = NULL;
 	//g_hwndDlg = NULL;
-#endif
 #endif
 }
 

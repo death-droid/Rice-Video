@@ -18,10 +18,6 @@
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0400
 #include <stdio.h>
-#ifdef _XBOX
-#include <xtl.h>
-#include <xfont.h>
-#else
 #define WINVER 0x0400
 #include <windows.h>
 #include <windowsx.h>			// Button_* etc
@@ -43,13 +39,6 @@
 
 #include <process.h>
 
-#ifdef DIRECTX8
-#define DIRECTX_VERSION		8
-#else
-#define DIRECTX_VERSION		9
-#endif
-
-#if DIRECTX_VERSION > 8
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <d3d9types.h>
@@ -67,28 +56,12 @@
 #define MYIDirect3DBaseTexture		IDirect3DBaseTexture9
 #define D3DRS_ZBIAS					D3DRS_DEPTHBIAS
 #define SetVertexShaderConstant		SetVertexShaderConstantF
-#else
-#include <d3d8.h>
-#include <d3dx8.h>
-#include <d3d8types.h>
-#include <D3dx8math.h>
-#define MYLPDIRECT3DTEXTURE			LPDIRECT3DTEXTURE8
-#define MYD3DADAPTER_IDENTIFIER		D3DADAPTER_IDENTIFIER8
-#define MYIDirect3DSurface			IDirect3DSurface8
-#define MYLPDIRECT3DBASETEXTURE		LPDIRECT3DBASETEXTURE8
-#define MYLPDIRECT3DSURFACE			LPDIRECT3DSURFACE8
-#define MYD3DVIEWPORT				D3DVIEWPORT8
-#define MYD3DCAPS					D3DCAPS8
-#define MYLPDIRECT3DDEVICE			LPDIRECT3DDEVICE8
-#define MYLPDIRECT3D				LPDIRECT3D8
-#define MYIDirect3DBaseTexture		IDirect3DBaseTexture8
-#endif
-
 #include <vector>
 
 #ifndef SAFE_DELETE
-#define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
+#define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }// Microdev check me.
 #endif
+
 
 #ifndef SAFE_CHECK
 #define SAFE_CHECK(a)	if( (a) == NULL ) {ErrorMsg("Creater out of memory"); throw new std::exception();}
@@ -99,45 +72,42 @@
 #include "Video.h"
 #include "Config.h"
 #include "resource.h"
-#include "Debugger.h"
-#include "RSP_S2DEX.h"
-#include "RSP_Parser.h"
+#include "./Debugger/Debugger.h"
+#include "./Parser/RSP_S2DEX.h"
+#include "./Parser/RSP_Parser.h"
 
-#include "TextureManager.h"
-#include "ConvertImage.h"
-#include "Texture.h"
-#include "DirectXTexture.h"
+#include "./Texture/TextureManager.h"
+#include "./Texture/ConvertImage.h"
+#include "./Texture/Texture.h"
+#include "./Texture/DirectXTexture/DirectXTexture.h"
 
-#include "CombinerDefs.h"
-#include "DecodedMux.h"
-#include "DirectXDecodedMux.h"
+#include "./Combiner/CombinerDefs.h"
+#include "./Combiner/DecodedMux.h"
 
-#include "blender.h"
-#include "DirectXBlender.h"
+#include "./Combiner/blender.h"
+#include "./Combiner/DirectXCombiner/DirectXBlender.h"
 
-#include "combiner.h"
-#include "DirectXCombiner.h"
+#include "./Combiner/combiner.h"
+#include "./Combiner/GeneralCombiner.h"
+#include "./Combiner/DirectXCombiner/DirectXCombiner.h"
 
-#include "RenderTexture.h"
-#include "FrameBuffer.h"
+#include "./Device/RenderTexture.h"
+#include "./Device/FrameBuffer.h"
 
-#include "GraphicsContext.h"
-#include "DXGraphicsContext.h"
-#include "DeviceBuilder.h"
+#include "./Device/GraphicsContext.h"
+#include "./Device/DirectXDevice/DXGraphicsContext.h"
+#include "./Device/DeviceBuilder.h"
 
-#include "RenderBase.h"
-#include "ExtendedRender.h"
-#include "Render.h"
-#include "D3DRender.h"
+#include "./Render/RenderBase.h"
+#include "./Render/ExtendedRender.h"
+#include "./Render/Render.h"
+#include "./Render/DirectX/D3DRender.h"
 
 #include "resource.h"
 
-#include "icolor.h"
-
-#include "CSortedList.h"
-#include "CritSect.h"
-#include "Timing.h"
-
+#include "./Utility/icolor.h"
+#include "./Utility/CritSect.h"
+#include "./Parser/Timing.h"
 
 extern WindowSettingStruct windowSetting;
 
@@ -155,11 +125,5 @@ extern unsigned char *g_pRDRAMu8;
 
 extern GFX_INFO g_GraphicsInfo;
 
-#ifdef _XBOX
-extern XFONT *g_defaultTrueTypeFont;
-#endif
-
-
 extern char *project_name;
-#endif
 

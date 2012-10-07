@@ -211,7 +211,7 @@ typedef struct {
 	D3DCOLOR dcDiffuse;
 } FILLRECTVERTEX, *LPFILLRECTVERTEX;
 
-#include "IColor.h"
+#include "./Utility/IColor.h"
 
 typedef struct
 {

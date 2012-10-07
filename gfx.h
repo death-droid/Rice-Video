@@ -97,13 +97,8 @@ typedef struct
 	uint32 size;				// 1 = uint8, 2 = uint16, 4=uint32
 } FrameBufferModifyEntry;
 
-#ifdef _XBOX
-#define NAME_DEFINE(name) _VIDEO_##name
-#define FUNC_TYPE(type) type
-#else
 #define NAME_DEFINE(name)  CALL name
 #define FUNC_TYPE(type) EXPORT type
-#endif
 /******************************************************************
   Function: CaptureScreen
   Purpose:  This function dumps the current frame to a file

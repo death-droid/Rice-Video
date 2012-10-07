@@ -24,12 +24,27 @@ char generalText[256];
 
 GFX_INFO g_GraphicsInfo;
 
-unsigned int   g_dwRamSize	= 0x400000;
-unsigned int  *g_pRDRAMu32	= NULL;
-signed char   *g_pRDRAMs8	= NULL;
-unsigned char *g_pRDRAMu8	= NULL;
+uint32 g_dwRamSize = 0x400000;
+uint32* g_pRDRAMu32 = NULL;
+signed char *g_pRDRAMs8 = NULL;
+unsigned char *g_pRDRAMu8 = NULL;
 
 CCritSect g_CritialSection;
+
+//#define USING_THREAD
+
+#ifdef USING_THREAD
+HANDLE			videoThread;
+HANDLE			threadMsg[5];
+HANDLE			threadFinished;
+
+#define RSPMSG_CLOSE			0
+#define RSPMSG_SWAPBUFFERS		1
+#define RSPMSG_PROCESSDLIST		2
+#define RSPMSG_CHANGEWINDOW		3
+#define RSPMSG_PROCESSRDPLIST	4
+#endif
+
 
 //=======================================================
 // User Options
@@ -38,12 +53,6 @@ std::vector<RECT> frameWriteByCPURects;
 RECT frameWriteByCPURectArray[20][20];
 bool frameWriteByCPURectFlag[20][20];
 std::vector<uint32> frameWriteRecord;
-
-#ifdef _XBOX
-XFONT *g_defaultTrueTypeFont = NULL;
-extern bool g_bUseSetTextureMem;
-extern DWORD g_maxTextureMemUsage;
-#endif
 
 //---------------------------------------------------------------------------------------
 
@@ -77,33 +86,21 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
 
 void GetPluginDir( char * Directory ) 
 {
-#ifdef _XBOX
-	strcpy(Directory,"D:\\");
-#else
 	char path_buffer[_MAX_PATH], drive[_MAX_DRIVE] ,dir[_MAX_DIR];
 	char fname[_MAX_FNAME],ext[_MAX_EXT];
 	GetModuleFileName(windowSetting.myhInst,path_buffer,sizeof(path_buffer));
 	_splitpath( path_buffer, drive, dir, fname, ext );
 	strcpy(Directory,drive);
 	strcat(Directory,dir);
-#endif
 }
 
 //-------------------------------------------------------------------------------------
 FUNC_TYPE(void) NAME_DEFINE(GetDllInfo) ( PLUGIN_INFO * PluginInfo )
 {
 #ifdef _DEBUG
-#if DIRECTX_VERSION > 8
-	sprintf(PluginInfo->Name, "%s %s Debug-DX9",project_name, FILE_VERSION);
-#else
 	sprintf(PluginInfo->Name, "%s %s Debug",project_name, FILE_VERSION);
-#endif
-#else
-#if DIRECTX_VERSION > 8
-	sprintf(PluginInfo->Name, "%s %s-DX9",project_name, FILE_VERSION);
 #else
 	sprintf(PluginInfo->Name, "%s %s",project_name, FILE_VERSION);
-#endif
 #endif
 	PluginInfo->Version        = 0x0103;
 	PluginInfo->Type           = PLUGIN_TYPE_GFX;
@@ -116,11 +113,7 @@ FUNC_TYPE(void) NAME_DEFINE(GetDllInfo) ( PLUGIN_INFO * PluginInfo )
 FUNC_TYPE(void) NAME_DEFINE(DllAbout) ( HWND hParent )
 {
 	char temp[300];
-#if DIRECTX_VERSION == 8
-	sprintf(temp,"%s %s (%s)\nDirectX 8\nBased on Rice's 6.1.1 beta 10 source code",project_name, FILE_VERSION,BUILD_NUMBER) ;
-#else
-	sprintf(temp,"%s %s (%s)\nDirectX 9\nBased on Rice's 6.1.1 beta 10 source code",project_name, FILE_VERSION,BUILD_NUMBER) ;
-#endif
+	sprintf(temp,"%s %s (%s)\nDirectX 9\nOpenGL 1.1-1.4/\nBased on Rice's 6.1.1 beta 10 source code",project_name, FILE_VERSION,BUILD_NUMBER) ;
 	MsgInfo(temp);
 }
 
@@ -134,14 +127,11 @@ FUNC_TYPE(void) NAME_DEFINE(DllTest) ( HWND hParent )
 
 FUNC_TYPE(void) NAME_DEFINE(DllConfig) ( HWND hParent )
 {
-#ifndef _XBOX
 	CreateOptionsDialogs(hParent);
-#endif
 }
 
 void ChangeWindowStep2()
 {
-#ifndef _XBOX
 	status.bDisableFPS = true;
 	windowSetting.bDisplayFullscreen = 1-windowSetting.bDisplayFullscreen;
 	g_CritialSection.Lock();
@@ -173,7 +163,6 @@ void ChangeWindowStep2()
 	g_CritialSection.Unlock();
 	status.bDisableFPS = false;
 	status.ToToggleFullScreen = FALSE;
-#endif
 }
 
 FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
@@ -184,6 +173,30 @@ FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
 		status.ToToggleFullScreen = TRUE;
 }
 
+void ChangeWinSize( void ) 
+{
+	//ShowWindow(g_GraphicsInfo.hWnd, SW_HIDE);
+	WINDOWPLACEMENT wndpl;
+    RECT rc1, swrect;
+	
+    wndpl.length = sizeof(wndpl);
+	GetWindowPlacement( g_GraphicsInfo.hWnd, &wndpl);
+
+	if ( g_GraphicsInfo.hStatusBar != NULL ) 
+	{
+		GetClientRect( g_GraphicsInfo.hStatusBar, &swrect );
+	    SetRect( &rc1, 0, 0, windowSetting.uDisplayWidth, (windowSetting.uDisplayWidth >> 2) * 3 + swrect.bottom );
+	} 
+	else 
+	{
+	    SetRect( &rc1, 0, 0, windowSetting.uDisplayWidth, (windowSetting.uDisplayWidth >> 2) * 3 );
+	}
+
+    AdjustWindowRectEx( &rc1,GetWindowLong( g_GraphicsInfo.hWnd, GWL_STYLE ), GetMenu( g_GraphicsInfo.hWnd ) != NULL, GetWindowLong( g_GraphicsInfo.hWnd, GWL_EXSTYLE ) ); 
+    MoveWindow( g_GraphicsInfo.hWnd, wndpl.rcNormalPosition.left, wndpl.rcNormalPosition.top, rc1.right - rc1.left, rc1.bottom - rc1.top, TRUE );
+	//ShowWindow(g_GraphicsInfo.hWnd, SW_SHOW);
+	Sleep(100);
+}
 //---------------------------------------------------------------------------------------
 
 FUNC_TYPE(void) NAME_DEFINE(DrawScreen) (void)
@@ -223,34 +236,21 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, uint32 dwTime)
 extern void InitExternalTextures(void);
 bool StartVideo(void)
 {
-#ifndef _XBOX
 	SystemParametersInfo(SPI_GETSCREENSAVEACTIVE, 0, &windowSetting.screenSaverStatus, 0);
 	if( windowSetting.screenSaverStatus )	
 		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, FALSE, 0, 0);		// Disable screen saver
 
 	windowSetting.timer = SetTimer(g_GraphicsInfo.hWnd, 100, 1000, (TIMERPROC)TimerProc);
-#endif
 	windowSetting.dps = windowSetting.fps = -1;
 	windowSetting.lastSecDlistCount = windowSetting.lastSecFrameCount = 0xFFFFFFFF;
 
 	g_CritialSection.Lock();
 
-    memcpy(&g_curRomInfo.romheader, g_GraphicsInfo.HEADER, sizeof(ROMHeader));
-    unsigned char *puc = (unsigned char *) &g_curRomInfo.romheader;
-    unsigned int i;
-    unsigned char temp;
-    for (i = 0; i < sizeof(ROMHeader); i += 4) /* byte-swap the ROM header */
-    {
-        temp     = puc[i];
-        puc[i]   = puc[i+3];
-        puc[i+3] = temp;
-        temp     = puc[i+1];
-        puc[i+1] = puc[i+2];
-        puc[i+2] = temp;
-    }
-
+	memcpy(&g_curRomInfo.romheader, g_GraphicsInfo.HEADER, sizeof(ROMHeader));
+	ROM_ByteSwap_3210( &g_curRomInfo.romheader, sizeof(ROMHeader) );
 	ROM_GetRomNameFromHeader(g_curRomInfo.szGameName, &g_curRomInfo.romheader);
 	Ini_GetRomOptions(&g_curRomInfo);
+
 	char *p = g_curRomInfo.szGameName + (lstrlen(g_curRomInfo.szGameName) -1);		// -1 to skip null
 	while (p >= g_curRomInfo.szGameName)
 	{
@@ -267,13 +267,17 @@ bool StartVideo(void)
 		status.fRatio = 9/11.0f;;
 	
 	InitExternalTextures();
+	
+	ChangeWinSize();
 		
 	try {
 		CDeviceBuilder::GetBuilder()->CreateGraphicsContext();
 		CGraphicsContext::InitWindowInfo();
-
-		bool res = CGraphicsContext::Get()->Initialize(g_GraphicsInfo.hWnd, g_GraphicsInfo.hStatusBar, 640, 480, TRUE);		
-		if(!res )
+		
+		windowSetting.bDisplayFullscreen = FALSE;
+		bool res = CGraphicsContext::Get()->Initialize(g_GraphicsInfo.hWnd, g_GraphicsInfo.hStatusBar, 640, 480, TRUE);
+		
+		if(!res)
 		{
 			g_CritialSection.Unlock();
 			return false;
@@ -281,12 +285,14 @@ bool StartVideo(void)
 
 		CDeviceBuilder::GetBuilder()->CreateRender();
 		CRender::GetRender()->Initialize();
+		
 		DLParser_Init();
+		
 		status.bGameIsRunning = true;
 	}
 	catch(...)
 	{
-		ErrorMsg("Exception caught while starting video renderer");
+		ErrorMsg("Error to start video");
 		throw 0;
 	}
 
@@ -307,7 +313,9 @@ void StopVideo()
 	g_CritialSection.Lock();
 	status.bGameIsRunning = false;
 
+
 	try {
+
 		// Kill all textures?
 		gTextureManager.RecycleAllTextures();
 		gTextureManager.CleanUp();
@@ -329,22 +337,91 @@ void StopVideo()
 	windowSetting.lastSecDlistCount = windowSetting.lastSecFrameCount = 0xFFFFFFFF;
 	status.gDlistCount = status.gFrameCount = 0;
 
-#ifndef _XBOX
 	KillTimer(g_GraphicsInfo.hWnd, windowSetting.timer);
 
 	if( windowSetting.screenSaverStatus )	
 		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, 0, 0);	// Enable screen saver
-#endif
 
 	DEBUGGER_ONLY({delete surfTlut;});
 }
+
+#ifdef USING_THREAD
+void ChangeWindowStep2();
+void UpdateScreenStep2 (void);
+void ProcessDListStep2(void);
+
+//BOOL WINAPI SwitchToThread(VOID);
+uint32 WINAPI VideoThreadProc( LPVOID lpParameter )
+{
+	BOOL res;
+
+	StartVideo();
+	SetEvent( threadFinished );
+
+	while(true)
+	{
+		switch (WaitForMultipleObjects( 5, threadMsg, FALSE, INFINITE ))
+		{
+		case (WAIT_OBJECT_0 + RSPMSG_PROCESSDLIST):
+			ProcessDListStep2();
+			SetEvent( threadFinished );
+			break;
+		case (WAIT_OBJECT_0 + RSPMSG_SWAPBUFFERS):
+			//res = SwitchToThread();
+			//Sleep(1);
+			UpdateScreenStep2();
+			SetEvent( threadFinished );
+			break;
+		case (WAIT_OBJECT_0 + RSPMSG_CLOSE):
+			StopVideo();
+			SetEvent( threadFinished );
+			return 1;
+		case (WAIT_OBJECT_0 + RSPMSG_CHANGEWINDOW):
+			ChangeWindowStep2();
+			SetEvent( threadFinished );
+			break;
+		case (WAIT_OBJECT_0 + RSPMSG_PROCESSRDPLIST):
+			try
+			{
+				RDP_DLParser_Process();
+			}
+			catch (...)
+			{
+				ErrorMsg("Unknown Error in ProcessRDPList");
+				//TriggerDPInterrupt();
+				//TriggerSPInterrupt();
+			}
+			SetEvent( threadFinished );
+			break;
+		}
+	}
+	return 0;
+}
+#endif
+
+
 
 //---------------------------------------------------------------------------------------
 FUNC_TYPE(void) NAME_DEFINE(RomClosed) (void)
 {
 	TRACE0("To stop video");
 	Ini_StoreRomOptions(&g_curRomInfo);
+#ifdef USING_THREAD
+	if(videoThread)
+	{
+		SetEvent( threadMsg[RSPMSG_CLOSE] );
+		WaitForSingleObject( threadFinished, INFINITE );
+		for (int i = 0; i < 5; i++)
+		{
+			if (threadMsg[i])	CloseHandle( threadMsg[i] );
+		}
+		CloseHandle( threadFinished );
+		CloseHandle( videoThread );
+	}
+	videoThread = NULL;
+#else
 	StopVideo();
+#endif
 	TRACE0("Video is stopped");
 }
 
@@ -357,20 +434,20 @@ FUNC_TYPE(int) NAME_DEFINE(RomOpen) (void)
 	}
 	status.bDisableFPS=false;
 
-    __try{
-            uint32 dummy;
-            dummy = g_GraphicsInfo.RDRAM[0x400000];
-            dummy = g_GraphicsInfo.RDRAM[0x500000];
-            dummy = g_GraphicsInfo.RDRAM[0x600000];
-            dummy = g_GraphicsInfo.RDRAM[0x700000];
-            dummy = g_GraphicsInfo.RDRAM[0x7FFFFC];
-            g_dwRamSize = 0x800000;
-    }
-    __except(NULL, EXCEPTION_EXECUTE_HANDLER)
-    {
-            g_dwRamSize = 0x400000;
-    }
-
+	__try{
+		uint32 dummy;
+		dummy = g_GraphicsInfo.RDRAM[0x400000];
+		dummy = g_GraphicsInfo.RDRAM[0x500000];
+		dummy = g_GraphicsInfo.RDRAM[0x600000];
+		dummy = g_GraphicsInfo.RDRAM[0x700000];
+		dummy = g_GraphicsInfo.RDRAM[0x7FFFFC];
+		g_dwRamSize = 0x800000;
+	}
+	__except(NULL, EXCEPTION_EXECUTE_HANDLER)
+	{
+		g_dwRamSize = 0x400000;
+	}
+	
 #ifdef _DEBUG
 	if( debuggerPause )
 	{
@@ -379,11 +456,33 @@ FUNC_TYPE(int) NAME_DEFINE(RomOpen) (void)
 	}
 #endif
 
-	if(!StartVideo())
+
+#ifdef USING_THREAD
+	uint32 threadID;
+	for(int i = 0; i < 5; i++) 
+	{ 
+		threadMsg[i] = CreateEvent( NULL, FALSE, FALSE, NULL );
+		if (threadMsg[i] == NULL)
+		{ 
+			ErrorMsg( "Error creating thread message events");
+			return;
+		} 
+	} 
+	threadFinished = CreateEvent( NULL, FALSE, FALSE, NULL );
+	if (threadFinished == NULL)
+	{ 
+		ErrorMsg( "Error creating video thread finished event");
+		return;
+	} 
+	videoThread = CreateThread( NULL, 4096, VideoThreadProc, NULL, NULL, &threadID );
+
+#else
+
+	if (!StartVideo())
 		return 0;
 
 	return 1;
-
+#endif
 }
 
 
@@ -552,6 +651,7 @@ void UpdateScreenStep2 (void)
 		return;
 	}
 
+
 	if( status.toCaptureScreen )
 	{
 		status.toCaptureScreen = false;
@@ -641,7 +741,15 @@ void UpdateScreenStep2 (void)
 
 FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
 {
-	UpdateScreenStep2();
+#ifdef USING_THREAD
+	if (videoThread)
+	{
+		SetEvent( threadMsg[RSPMSG_SWAPBUFFERS] );
+		WaitForSingleObject( threadFinished, INFINITE );
+	}
+#else
+	 UpdateScreenStep2();
+#endif
 }
 
 //---------------------------------------------------------------------------------------
@@ -689,6 +797,7 @@ FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 #endif
 
 	memset(&status, 0, sizeof(status));
+	windowSetting.bDisplayFullscreen = FALSE;
 	memcpy(&g_GraphicsInfo, &Gfx_Info, sizeof(GFX_INFO));
 	
 	g_pRDRAMu8			= Gfx_Info.RDRAM;
@@ -700,12 +809,7 @@ FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 	status.ToToggleFullScreen = FALSE;
 	status.bDisableFPS=false;
 
-	if(!InitConfiguration())
-	{
-		ErrorMsg("Failed to read configuration data");
-		return FALSE;
-	}
-
+	InitConfiguration();
 	CGraphicsContext::InitWindowInfo();
 	CGraphicsContext::InitDeviceParameters();
 
@@ -715,7 +819,6 @@ FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 
 void __cdecl MsgInfo (char * Message, ...)
 {
-#ifndef _XBOX
 	char Msg[400];
 	va_list ap;
 
@@ -725,12 +828,10 @@ void __cdecl MsgInfo (char * Message, ...)
 
 	sprintf(generalText, "%s %s",project_name, FILE_VERSION);
 	MessageBox(NULL,Msg,generalText,MB_OK|MB_ICONINFORMATION);
-#endif
 }
 
 void __cdecl ErrorMsg (char * Message, ...)
 {
-#ifndef _XBOX
 	char Msg[400];
 	va_list ap;
 	
@@ -743,7 +844,6 @@ void __cdecl ErrorMsg (char * Message, ...)
 		SetWindowText(g_GraphicsInfo.hStatusBar,Msg);
 	else
 		MessageBox(NULL,Msg,generalText,MB_OK|MB_ICONERROR);
-#endif
 }
 
 //---------------------------------------------------------------------------------------
@@ -752,11 +852,7 @@ FUNC_TYPE(void) NAME_DEFINE(CloseDLL) (void)
 { 
 	if( status.bGameIsRunning )
 	{
-#ifdef _XBOX
-		_VIDEO_RomClosed();
-#else
 		RomClosed();
-#endif
 	}
 
 	if (bIniIsChanged)
@@ -795,6 +891,14 @@ void ProcessDListStep2(void)
 
 FUNC_TYPE(uint32) NAME_DEFINE(ProcessDListCountCycles)(void)
 {
+#ifdef USING_THREAD
+	if (videoThread)
+	{
+		SetEvent( threadMsg[RSPMSG_PROCESSDLIST] );
+		WaitForSingleObject( threadFinished, INFINITE );
+	}
+	return 0;
+#else
 	g_CritialSection.Lock();
 	status.SPCycleCount = 100;
 	status.DPCycleCount = 0;
@@ -818,10 +922,18 @@ FUNC_TYPE(uint32) NAME_DEFINE(ProcessDListCountCycles)(void)
 
 	g_CritialSection.Unlock();
 	return (status.DPCycleCount<<16)+status.SPCycleCount;
+#endif
 }	
 
 FUNC_TYPE(void) NAME_DEFINE(ProcessRDPList)(void)
 {
+#ifdef USING_THREAD
+	if (videoThread)
+	{
+		SetEvent( threadMsg[RSPMSG_PROCESSRDPLIST] );
+		WaitForSingleObject( threadFinished, INFINITE );
+	}
+#else
 	try
 	{
 		RDP_DLParser_Process();
@@ -832,11 +944,20 @@ FUNC_TYPE(void) NAME_DEFINE(ProcessRDPList)(void)
 		TriggerDPInterrupt();
 		TriggerSPInterrupt();
 	}
+#endif
 }	
 
 FUNC_TYPE(void) NAME_DEFINE(ProcessDList)(void)
 {
+#ifdef USING_THREAD
+	if (videoThread)
+	{
+		SetEvent( threadMsg[RSPMSG_PROCESSDLIST] );
+		WaitForSingleObject( threadFinished, INFINITE );
+	}
+#else
 	ProcessDListStep2();
+#endif
 }	
 
 //---------------------------------------------------------------------------------------
@@ -909,66 +1030,6 @@ FUNC_TYPE(void) NAME_DEFINE(FBWrite)(uint32 addr, uint32 size)
 	g_pFrameBufferManager->FrameBufferWriteByCPU(addr, size);
 }
 
-void _VIDEO_DisplayTemporaryMessage(const char *Message)
-{
-#ifdef _XBOX
-	g_bTempMessage = TRUE;
-	strncpy(g_szTempMessage, Message, 99);
-	g_dwTempMessageStart = GetTickCount();
-#endif
-}
-
-#ifdef _XBOX
-void _VIDEO_SetMaxTextureMem(DWORD mem)
-{
-	if (mem == 0)
-	{
-		g_bUseSetTextureMem = false;
-	}
-	else
-	{
-		g_bUseSetTextureMem = true;
-		g_maxTextureMemUsage = mem * 1024 * 1024;
-	}
-}
-
-void _VIDEO_DisplayTemporaryMessage2(const char *Message, ...)
-{
-	g_bTempMessage = TRUE;
-	//strncpy(g_szTempMessage, Message, 99);
-	g_dwTempMessageStart = GetTickCount();
-
-
-	char Msg[5000];
-	va_list ap;
-
-	va_start( ap, Message );
-	vsprintf( Msg, Message, ap );
-	va_end( ap );
-	
-	strncpy(g_szTempMessage, Msg, 99);
-}
-
-//void XBOX_Debugger_Log(const char *Message, ...)
-//{
-//	FILE *fp = fopen("D:\\ricelog.log","wt");
-//	if( !fp )
-//	{
-//		g_bTempMessage = TRUE;
-//		g_dwTempMessageStart = GetTickCount();
-//
-//		char Msg[5000];
-//		va_list ap;
-//
-//		va_start( ap, Message );
-//		vsprintf( Msg, Message, ap );
-//		va_end( ap );
-//
-//		fprintf(fp,Msg);
-//		fclose(fp);
-//	}
-//}
-#endif
 /************************************************************************
 Function: FBGetFrameBufferInfo
 Purpose:  This function is called by the emulator core to retrieve frame
@@ -1043,7 +1104,6 @@ FUNC_TYPE(void) NAME_DEFINE(ShowCFB) (void)
 
 FUNC_TYPE(void) NAME_DEFINE(CaptureScreen) ( char * Directory )
 {
-#ifndef _XBOX
 	if( status.bGameIsRunning && status.gDlistCount > 0 )
 	{
 		if( !PathFileExists(Directory) )
@@ -1075,11 +1135,16 @@ FUNC_TYPE(void) NAME_DEFINE(CaptureScreen) ( char * Directory )
 					sprintf(tempname, "%s-%d.png", status.screenCaptureFilename, i);
 					break;
 				}
+				//sprintf(tempname, "%s-%d.png", status.screenCaptureFilename, i);
+				//if( !PathFileExists(tempname) )
+				//{
+				//	sprintf(tempname, "%s-%d", status.screenCaptureFilename, i);
+				//	break;
+				//}
 			}
 		}
 
 		strcpy(status.screenCaptureFilename, tempname);
 		status.toCaptureScreen = true;
 	}
-#endif
 }

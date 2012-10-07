@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
-	Name="RiceVideo"
+	Version="9.00"
+	Name="1964Video"
 	ProjectGUID="{1120AACC-8C31-486A-A9B8-0568DFF718F4}"
 	RootNamespace="RiceVideo"
 	TargetFrameworkVersion="131072"
@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="../obj/1964Video/Release/"
+			IntermediateDirectory="../obj/1964Video/Release/"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -48,26 +48,26 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="4"
-				InlineFunctionExpansion="0"
+				InlineFunctionExpansion="1"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="false"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="&quot;C:\Program Files (x86)\DX8SDK\Include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DIRECTX8;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
 				StructMemberAlignment="5"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile="../obj/RiceVideo/Release/RiceVideo.pch"
-				AssemblerListingLocation="../obj/RiceVideo/Release/"
-				ObjectFile="../obj/RiceVideo/Release/"
-				ProgramDataBaseFileName="../obj/RiceVideo/Release/"
+				PrecompiledHeaderFile="../obj/1964Video/Release/1964Video.pch"
+				AssemblerListingLocation="../obj/1964Video/Release/"
+				ObjectFile="../obj/1964Video/Release/"
+				ProgramDataBaseFileName="../obj/1964Video/Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="0"
-				CallingConvention="2"
+				CallingConvention="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -84,16 +84,16 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386 /FIXED:NO"
-				AdditionalDependencies="odbc32.lib odbccp32.lib d3dx8.lib d3d8.lib dxguid.lib shlwapi.lib winmm.lib comctl32.lib"
-				OutputFile="..\bin\$(ConfigurationName)\plugin\$(ProjectName).dll"
+				AdditionalDependencies="odbc32.lib odbccp32.lib d3dx9.lib d3d9.lib dxguid.lib dxerr.lib shlwapi.lib winmm.lib opengl32.lib comctl32.lib Glu32.lib"
+				OutputFile="..\bin\$(ConfigurationName)\plugin\1964Video.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames="libci; libcmt.lib"
+				AdditionalLibraryDirectories=""
+				IgnoreDefaultLibraryNames="libci.lib;libcmtd.lib"
 				GenerateDebugInformation="false"
-				ProgramDatabaseFile="../obj/RiceVideo/Release/RiceVideo.pdb"
+				ProgramDatabaseFile="../obj/1964Video/Release/1964Video.pdb"
 				GenerateMapFile="true"
-				MapFileName="../obj/RiceVideo/Release/RiceVideo.map"
+				MapFileName="../obj/1964Video/Release/1964Video.map"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary=""
@@ -122,8 +122,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="../obj/1964Video/Debug/"
+			IntermediateDirectory="../obj/1964Video/Debug/"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -162,15 +162,15 @@
 				StructMemberAlignment="5"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile="../obj/RiceVideo/Debug/RiceVideo.pch"
-				AssemblerListingLocation="../obj/RiceVideo/Debug/"
-				ObjectFile="../obj/RiceVideo/Debug/"
-				ProgramDataBaseFileName="../obj/RiceVideo/Debug/"
+				PrecompiledHeaderFile="../obj/1964Video/Debug/1964Video.pch"
+				AssemblerListingLocation="../obj/1964Video/Debug/"
+				ObjectFile="../obj/1964Video/Debug/"
+				ProgramDataBaseFileName="../obj/1964Video/Debug/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CallingConvention="2"
+				CallingConvention="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -186,215 +186,18 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="d3dx8.lib d3d8.lib dxguid.lib shlwapi.lib winmm.lib odbc32.lib odbccp32.lib comctl32.lib"
-				OutputFile="..\bin\$(ConfigurationName)\plugin\$(ProjectName).dll"
+				AdditionalOptions="/MACHINE:I386 "
+				AdditionalDependencies="d3dx9.lib d3d9.lib dxerr.lib dxguid.lib shlwapi.lib winmm.lib odbc32.lib odbccp32.lib opengl32.lib comctl32.lib glu32.lib"
+				OutputFile="..\..\bin\$(ConfigurationName)\plugin\1964Video.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
 				IgnoreDefaultLibraryNames="libci.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="../obj/RiceVideo/Debug/1964-Debug.pdb"
+				ProgramDatabaseFile="../obj/1964Video/Debug/1964-Debug.pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="../obj/RiceVideo/Debug/RiceVideo-Debug.lib"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="DebugDX9|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/.tlb"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;DIRECTX9"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				StructMemberAlignment="5"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile="../obj/RiceVideo/DebugDX9/RiceVideo.pch"
-				AssemblerListingLocation="../obj/RiceVideo/DebugDX9/"
-				ObjectFile="../obj/RiceVideo/DebugDX9/"
-				ProgramDataBaseFileName="../obj/RiceVideo/DebugDX9/"
-				BrowseInformation="1"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
-				CallingConvention="2"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				IgnoreImportLibrary="true"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="d3dx9.lib d3d9.lib dxguid.lib shlwapi.lib winmm.lib odbc32.lib odbccp32.lib comctl32.lib"
-				OutputFile="..\bin\Debug\plugin\RiceVideoDX9.dll"
-				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				IgnoreDefaultLibraryNames="libci.lib"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="../obj/RiceVideo/DebugDX9/1964-Debug.pdb"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				ImportLibrary="../obj/RiceVideo/DebugDX9/RiceVideo-Debug.lib"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="ReleaseDX9|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Release/Video.tlb"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="4"
-				InlineFunctionExpansion="0"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="false"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DIRECTX9"
-				RuntimeLibrary="2"
-				StructMemberAlignment="5"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile="../obj/RiceVideo/ReleaseDX9/RiceVideo.pch"
-				AssemblerListingLocation="../obj/RiceVideo/ReleaseDX9/"
-				ObjectFile="../obj/RiceVideo/ReleaseDX9/"
-				ProgramDataBaseFileName="../obj/RiceVideo/ReleaseDX9/"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="0"
-				CallingConvention="2"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				IgnoreImportLibrary="true"
-				AdditionalOptions="/MACHINE:I386 /FIXED:NO"
-				AdditionalDependencies="odbc32.lib odbccp32.lib d3dx9.lib d3d9.lib dxguid.lib shlwapi.lib winmm.lib comctl32.lib dxerr.lib"
-				OutputFile="..\bin\Release\plugin\RiceVideoDX9.dll"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				IgnoreDefaultLibraryNames="libci; libcmt.lib"
-				GenerateDebugInformation="false"
-				ProgramDatabaseFile="../obj/RiceVideo/ReleaseDX9/RiceVideo.pdb"
-				GenerateMapFile="true"
-				MapFileName="../obj/RiceVideo/ReleaseDX9/RiceVideo.map"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				ImportLibrary=""
+				ImportLibrary="../obj/1964Video/Debug/1964Video-Debug.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -426,6 +229,10 @@
 			Name="Plugin"
 			>
 			<File
+				RelativePath=".\_BldNum.h"
+				>
+			</File>
+			<File
 				RelativePath="Config.cpp"
 				>
 			</File>
@@ -452,22 +259,6 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugDX9|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseDX9|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Video.cpp"
@@ -488,22 +279,6 @@
 						UsePrecompiledHeader="2"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugDX9|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseDX9|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Video.h"
@@ -515,10 +290,6 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath=".\_BldNum.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Lib\BMGDLL.h"
 				>
 			</File>
@@ -527,11 +298,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Lib\BMGLibJPEG.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Lib\BMGLibPNG.h"
 				>
 			</File>
 			<File
 				RelativePath=".\gfx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Lib\jpegrw.h"
 				>
 			</File>
 			<File
@@ -550,16 +329,24 @@
 				RelativePath=".\typedefs.h"
 				>
 			</File>
+			<File
+				RelativePath=".\wglext.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Debugger"
 			>
 			<File
-				RelativePath=".\Debugger.cpp"
+				RelativePath=".\Debugger\Debugger.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Debugger.h"
+				RelativePath=".\Debugger\Debugger.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Debugger\OGLDebug.h"
 				>
 			</File>
 		</Filter>
@@ -583,58 +370,62 @@
 				Name="Combiner"
 				>
 				<File
-					RelativePath=".\blender.cpp"
+					RelativePath=".\Combiner\blender.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\blender.h"
+					RelativePath=".\Combiner\blender.h"
 					>
 				</File>
 				<File
-					RelativePath=".\Combiner.cpp"
+					RelativePath=".\Combiner\Combiner.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\Combiner.h"
+					RelativePath=".\Combiner\Combiner.h"
 					>
 				</File>
 				<File
-					RelativePath=".\CombinerDefs.h"
+					RelativePath=".\Combiner\CombinerDefs.h"
 					>
 				</File>
 				<File
-					RelativePath=".\DecodedMux.cpp"
+					RelativePath=".\Combiner\CombinerTable.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\DecodedMux.h"
+					RelativePath=".\Combiner\DecodedMux.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Combiner\DecodedMux.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Combiner\GeneralCombiner.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Combiner\GeneralCombiner.h"
 					>
 				</File>
 				<Filter
 					Name="DirectXCombiner"
 					>
 					<File
-						RelativePath=".\DirectXBlender.cpp"
+						RelativePath=".\Combiner\DirectXCombiner\DirectXBlender.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\DirectXBlender.h"
+						RelativePath=".\Combiner\DirectXCombiner\DirectXBlender.h"
 						>
 					</File>
 					<File
-						RelativePath=".\DirectXCombiner.cpp"
+						RelativePath=".\Combiner\DirectXCombiner\DirectXCombiner.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\DirectXCombiner.h"
-						>
-					</File>
-					<File
-						RelativePath=".\DirectXDecodedMux.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\DirectXDecodedMux.h"
+						RelativePath=".\Combiner\DirectXCombiner\DirectXCombiner.h"
 						>
 					</File>
 				</Filter>
@@ -643,62 +434,62 @@
 				Name="Render"
 				>
 				<File
-					RelativePath=".\ExtendedRender.h"
+					RelativePath=".\Render\ExtendedRender.h"
 					>
 				</File>
 				<File
-					RelativePath=".\Render.cpp"
+					RelativePath=".\Render\Render.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\Render.h"
+					RelativePath=".\Render\Render.h"
 					>
 				</File>
 				<File
-					RelativePath=".\RenderBase.cpp"
+					RelativePath=".\Render\RenderBase.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\RenderBase.h"
+					RelativePath=".\Render\RenderBase.h"
 					>
 				</File>
 				<File
-					RelativePath=".\RenderExt.cpp"
+					RelativePath=".\Render\RenderExt.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\shaderdx9.vsh"
+					RelativePath=".\Render\shaderdx9.vsh"
 					>
 				</File>
 				<File
-					RelativePath=".\shaderdx9_include.h"
+					RelativePath=".\Render\shaderdx9_include.h"
 					>
 				</File>
 				<File
-					RelativePath=".\VertexClipper.cpp"
+					RelativePath=".\Render\VertexClipper.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\VertexShader.cpp"
+					RelativePath=".\Render\VertexShader.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\VertexShaderConstantDef.h"
+					RelativePath=".\Render\VertexShaderConstantDef.h"
 					>
 				</File>
 				<Filter
 					Name="DirectX"
 					>
 					<File
-						RelativePath=".\D3DRender.cpp"
+						RelativePath=".\Render\DirectX\D3DRender.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\D3DRender.h"
+						RelativePath=".\Render\DirectX\D3DRender.h"
 						>
 					</File>
 					<File
-						RelativePath=".\D3DRenderExt.cpp"
+						RelativePath=".\Render\DirectX\D3DRenderExt.cpp"
 						>
 					</File>
 				</Filter>
@@ -707,7 +498,7 @@
 				Name="Device"
 				>
 				<File
-					RelativePath=".\DeviceBuilder.cpp"
+					RelativePath=".\Device\DeviceBuilder.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -725,164 +516,48 @@
 							UsePrecompiledHeader="2"
 						/>
 					</FileConfiguration>
-					<FileConfiguration
-						Name="DebugDX9|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="ReleaseDX9|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="2"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\DeviceBuilder.h"
+					RelativePath=".\Device\DeviceBuilder.h"
 					>
 				</File>
 				<File
-					RelativePath=".\FrameBuffer.cpp"
+					RelativePath=".\Device\FrameBuffer.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\FrameBuffer.h"
+					RelativePath=".\Device\FrameBuffer.h"
 					>
 				</File>
 				<File
-					RelativePath=".\FrameBufferDX.cpp"
+					RelativePath=".\Device\FrameBufferDX.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\GraphicsContext.cpp"
+					RelativePath=".\Device\GraphicsContext.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\GraphicsContext.h"
+					RelativePath=".\Device\GraphicsContext.h"
 					>
 				</File>
 				<File
-					RelativePath=".\RenderTexture.cpp"
+					RelativePath=".\Device\RenderTexture.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\RenderTexture.h"
+					RelativePath=".\Device\RenderTexture.h"
 					>
 				</File>
 				<Filter
 					Name="DirectXDevice"
 					>
 					<File
-						RelativePath=".\DXGraphicsContext.cpp"
+						RelativePath=".\Device\DirectXDevice\DXGraphicsContext.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\DXGraphicsContext.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="Parser"
-				>
-				<File
-					RelativePath=".\RDP_Texture.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_DKR.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_GBI0.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_GBI1.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_GBI2.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_GBI2_ext.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_GBI_Others.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_GBI_Sprite2D.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_Parser.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_Parser.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_S2DEX.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_S2DEX.h"
-					>
-				</File>
-				<File
-					RelativePath=".\RSP_Turbo3D.h"
-					>
-				</File>
-				<File
-					RelativePath="Timing.h"
-					>
-				</File>
-				<File
-					RelativePath=".\ucode.h"
-					>
-				</File>
-				<File
-					RelativePath=".\UcodeDefs.h"
-					>
-				</File>
-				<Filter
-					Name="Custom"
-					>
-					<File
-						RelativePath=".\RSP_Conker.h"
-						>
-					</File>
-					<File
-						RelativePath=".\RSP_GE.h"
-						>
-					</File>
-					<File
-						RelativePath=".\RSP_LL.h"
-						>
-					</File>
-					<File
-						RelativePath=".\RSP_PD.h"
-						>
-					</File>
-					<File
-						RelativePath=".\RSP_RS.h"
-						>
-					</File>
-					<File
-						RelativePath=".\RSP_SOTE.h"
-						>
-					</File>
-					<File
-						RelativePath=".\RSP_WRUS.h"
+						RelativePath=".\Device\DirectXDevice\DXGraphicsContext.h"
 						>
 					</File>
 				</Filter>
@@ -891,15 +566,19 @@
 				Name="Utility"
 				>
 				<File
-					RelativePath=".\CritSect.h"
+					RelativePath=".\Utility\CritSect.h"
 					>
 				</File>
 				<File
-					RelativePath="CSortedList.h"
+					RelativePath=".\Utility\CSortedList.h"
 					>
 				</File>
 				<File
-					RelativePath=".\IColor.h"
+					RelativePath=".\Utility\IColor.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Utility\Unique.h"
 					>
 				</File>
 			</Filter>
@@ -907,42 +586,42 @@
 				Name="Texture"
 				>
 				<File
-					RelativePath=".\ConvertImage.cpp"
+					RelativePath=".\Texture\ConvertImage.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\ConvertImage.h"
+					RelativePath=".\Texture\ConvertImage.h"
 					>
 				</File>
 				<File
-					RelativePath=".\ConvertImage16.cpp"
+					RelativePath=".\Texture\ConvertImage16.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\Texture.cpp"
+					RelativePath=".\Texture\Texture.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\Texture.h"
+					RelativePath=".\Texture\Texture.h"
 					>
 				</File>
 				<File
-					RelativePath=".\TextureManager.cpp"
+					RelativePath=".\Texture\TextureManager.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\TextureManager.h"
+					RelativePath=".\Texture\TextureManager.h"
 					>
 				</File>
 				<Filter
 					Name="DirectXTexture"
 					>
 					<File
-						RelativePath=".\DirectXTexture.cpp"
+						RelativePath=".\Texture\DirectXTexture\DirectXTexture.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\DirectXTexture.h"
+						RelativePath=".\Texture\DirectXTexture\DirectXTexture.h"
 						>
 					</File>
 				</Filter>
@@ -950,61 +629,161 @@
 					Name="Texture Filters"
 					>
 					<File
-						RelativePath=".\TextureFilters.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters.h"
+						RelativePath=".\Texture\TextureFilters\TextureFilters.h"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_2xsai.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_2xsai.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_2xsai.h"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_2xsai.h"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_hq2x.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_hq2x.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_hq2x.h"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_hq2x.h"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_hq4x.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_hq4x.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_hq4x.h"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_hq4x.h"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_lq2x.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_lq2x.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_lq2x.h"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_lq2x.h"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_sharpen.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_sharpen.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_smooth.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_smooth.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_texture2x.cpp"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_texture2x.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\TextureFilters_texture2x.h"
+						RelativePath=".\Texture\TextureFilters\TextureFilters_texture2x.h"
 						>
 					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Parser"
+				>
+				<File
+					RelativePath=".\Parser\RDP_Texture.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Parser\RSP_Parser.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Parser\RSP_Parser.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Parser\Timing.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Parser\ucode.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Parser\UcodeDefs.h"
+					>
+				</File>
+				<Filter
+					Name="Ucodes"
+					>
+					<File
+						RelativePath=".\Parser\RSP_GBI0.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Parser\RSP_GBI1.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Parser\RSP_GBI2.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Parser\RSP_GBI2_ext.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Parser\RSP_GBI_Others.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Parser\RSP_GBI_Sprite2D.h"
+						>
+					</File>
+					<Filter
+						Name="Custom Ucodes"
+						>
+						<File
+							RelativePath=".\Parser\RSP_Conker.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_DKR.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_GE.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_LL.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_PD.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_RS.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_S2DEX.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_S2DEX.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_SOTE.h"
+							>
+						</File>
+						<File
+							RelativePath=".\Parser\RSP_WRUS.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>
