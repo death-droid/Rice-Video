@@ -203,10 +203,6 @@ protected:
 protected:
 	bool	IsTextureUsedInStage(CombineStage &stage);
 
-#ifdef _DEBUG
-	virtual void DisplaySimpleMuxString(void);
-#endif
-
 };
 
 #endif
