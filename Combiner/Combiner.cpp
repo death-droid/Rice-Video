@@ -61,45 +61,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //};
 
 #ifdef _DEBUG
-char *constStrs[] = {
-	"MUX_0",
-	"MUX_1",
-	"MUX_COMBINED",
-	"MUX_TEXEL0",
-	"MUX_TEXEL1",
-	"MUX_PRIM",
-	"MUX_SHADE",
-	"MUX_ENV",
-	"MUX_COMBALPHA",
-	"MUX_T0_ALPHA",
-	"MUX_T1_ALPHA",
-	"MUX_PRIM_ALPHA",
-	"MUX_SHADE_ALPHA",
-	"MUX_ENV_ALPHA",
-	"MUX_LODFRAC",
-	"MUX_PRIMLODFRAC",
-	"MUX_K5",
-	"MUX_UNK",
-};
-
 char *cycleTypeStrs[] = {
 	"1 Cycle",
 	"2 Cycle",
 	"Copy Mode",
 	"Fill Mode"
 };
-
-char* constStr(uint32 op)
-{
-	if( op<= MUX_UNK )
-	{
-		return constStrs[op];
-	}
-	else
-	{
-		return "Invalid-Const";
-	}
-}
 #endif
 
 void swap(uint8 &a, uint8 &b)

@@ -1152,7 +1152,7 @@ void DLParser_LoadBlock(Gfx *gfx)
 
 	for( int i=0; i<8; i++ )
 	{
-		if( tile.dwTMem == tile.dwTMem )
+		if( tile.dwTMem == tile.dwTMem )//checkme
 			tile.lastTileCmd = CMD_LOADBLOCK;
 	}
 
