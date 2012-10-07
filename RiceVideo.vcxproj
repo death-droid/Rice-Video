@@ -1,0 +1,286 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>1964Video</ProjectName>
+    <ProjectGuid>{1120AACC-8C31-486A-A9B8-0568DFF718F4}</ProjectGuid>
+    <RootNamespace>RiceVideo</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>../obj/1964Video/Release/\</OutDir>
+    <IntDir>../obj/1964Video/Release/\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>../obj/1964Video/Debug/\</OutDir>
+    <IntDir>../obj/1964Video/Debug/\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/Video.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\DX8SDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DIRECTX8;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>16Bytes</StructMemberAlignment>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>../obj/1964Video/Release/1964Video.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>../obj/1964Video/Release/</AssemblerListingLocation>
+      <ObjectFileName>../obj/1964Video/Release/</ObjectFileName>
+      <ProgramDataBaseFileName>../obj/1964Video/Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat />
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 /FIXED:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3dx9.lib;d3d9.lib;dxguid.lib;dxerr.lib;shlwapi.lib;winmm.lib;opengl32.lib;comctl32.lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\bin\$(Configuration)\plugin\1964Video.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>libci.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ProgramDatabaseFile>../obj/1964Video/Release/1964Video.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>../obj/1964Video/Release/1964Video.map</MapFileName>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary />
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug/.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DIRECTX8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <StructMemberAlignment>16Bytes</StructMemberAlignment>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>../obj/1964Video/Debug/1964Video.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>../obj/1964Video/Debug/</AssemblerListingLocation>
+      <ObjectFileName>../obj/1964Video/Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>../obj/1964Video/Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>d3dx9.lib;d3d9.lib;dxerr.lib;dxguid.lib;shlwapi.lib;winmm.lib;odbc32.lib;odbccp32.lib;opengl32.lib;comctl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\bin\$(Configuration)\plugin\1964Video.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>libci.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>../obj/1964Video/Debug/1964-Debug.pdb</ProgramDatabaseFile>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>../obj/1964Video/Debug/1964Video-Debug.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="_BldNum.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Video.h" />
+    <ClInclude Include="Lib\BMGDLL.h" />
+    <ClInclude Include="Lib\BMGImage.h" />
+    <ClInclude Include="Lib\BMGLibJPEG.h" />
+    <ClInclude Include="Lib\BMGLibPNG.h" />
+    <ClInclude Include="gfx.h" />
+    <ClInclude Include="Lib\jpegrw.h" />
+    <ClInclude Include="Lib\pngrw.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Lib\tiffrw.h" />
+    <ClInclude Include="typedefs.h" />
+    <ClInclude Include="wglext.h" />
+    <ClInclude Include="Debugger\Debugger.h" />
+    <ClInclude Include="Debugger\OGLDebug.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Combiner\blender.h" />
+    <ClInclude Include="Combiner\Combiner.h" />
+    <ClInclude Include="Combiner\CombinerDefs.h" />
+    <ClInclude Include="Combiner\DecodedMux.h" />
+    <ClInclude Include="Combiner\GeneralCombiner.h" />
+    <ClInclude Include="Combiner\DirectXCombiner\DirectXBlender.h" />
+    <ClInclude Include="Combiner\DirectXCombiner\DirectXCombiner.h" />
+    <ClInclude Include="Render\ExtendedRender.h" />
+    <ClInclude Include="Render\Render.h" />
+    <ClInclude Include="Render\RenderBase.h" />
+    <ClInclude Include="Render\shaderdx9_include.h" />
+    <ClInclude Include="Render\VertexShaderConstantDef.h" />
+    <ClInclude Include="Render\DirectX\D3DRender.h" />
+    <ClInclude Include="Device\DeviceBuilder.h" />
+    <ClInclude Include="Device\FrameBuffer.h" />
+    <ClInclude Include="Device\GraphicsContext.h" />
+    <ClInclude Include="Device\RenderTexture.h" />
+    <ClInclude Include="Device\DirectXDevice\DXGraphicsContext.h" />
+    <ClInclude Include="Utility\CritSect.h" />
+    <ClInclude Include="Utility\CSortedList.h" />
+    <ClInclude Include="Utility\IColor.h" />
+    <ClInclude Include="Utility\Unique.h" />
+    <ClInclude Include="Texture\ConvertImage.h" />
+    <ClInclude Include="Texture\Texture.h" />
+    <ClInclude Include="Texture\TextureManager.h" />
+    <ClInclude Include="Texture\DirectXTexture\DirectXTexture.h" />
+    <ClInclude Include="Texture\TextureFilters\TextureFilters.h" />
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_2xsai.h" />
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_hq2x.h" />
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_hq4x.h" />
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_lq2x.h" />
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_texture2x.h" />
+    <ClInclude Include="Parser\RDP_Texture.h" />
+    <ClInclude Include="Parser\RSP_Parser.h" />
+    <ClInclude Include="Parser\Timing.h" />
+    <ClInclude Include="Parser\ucode.h" />
+    <ClInclude Include="Parser\UcodeDefs.h" />
+    <ClInclude Include="Parser\RSP_GBI0.h" />
+    <ClInclude Include="Parser\RSP_GBI1.h" />
+    <ClInclude Include="Parser\RSP_GBI2.h" />
+    <ClInclude Include="Parser\RSP_GBI2_ext.h" />
+    <ClInclude Include="Parser\RSP_GBI_Others.h" />
+    <ClInclude Include="Parser\RSP_GBI_Sprite2D.h" />
+    <ClInclude Include="Parser\RSP_Conker.h" />
+    <ClInclude Include="Parser\RSP_DKR.h" />
+    <ClInclude Include="Parser\RSP_GE.h" />
+    <ClInclude Include="Parser\RSP_LL.h" />
+    <ClInclude Include="Parser\RSP_PD.h" />
+    <ClInclude Include="Parser\RSP_RS.h" />
+    <ClInclude Include="Parser\RSP_S2DEX.h" />
+    <ClInclude Include="Parser\RSP_SOTE.h" />
+    <ClInclude Include="Parser\RSP_WRUS.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Video.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Debugger\Debugger.cpp" />
+    <ClCompile Include="Combiner\blender.cpp" />
+    <ClCompile Include="Combiner\Combiner.cpp" />
+    <ClCompile Include="Combiner\CombinerTable.cpp" />
+    <ClCompile Include="Combiner\DecodedMux.cpp" />
+    <ClCompile Include="Combiner\GeneralCombiner.cpp" />
+    <ClCompile Include="Combiner\DirectXCombiner\DirectXBlender.cpp" />
+    <ClCompile Include="Combiner\DirectXCombiner\DirectXCombiner.cpp" />
+    <ClCompile Include="Render\Render.cpp" />
+    <ClCompile Include="Render\RenderBase.cpp" />
+    <ClCompile Include="Render\RenderExt.cpp" />
+    <ClCompile Include="Render\VertexClipper.cpp" />
+    <ClCompile Include="Render\VertexShader.cpp" />
+    <ClCompile Include="Render\DirectX\D3DRender.cpp" />
+    <ClCompile Include="Render\DirectX\D3DRenderExt.cpp" />
+    <ClCompile Include="Device\DeviceBuilder.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Device\FrameBuffer.cpp" />
+    <ClCompile Include="Device\FrameBufferDX.cpp" />
+    <ClCompile Include="Device\GraphicsContext.cpp" />
+    <ClCompile Include="Device\RenderTexture.cpp" />
+    <ClCompile Include="Device\DirectXDevice\DXGraphicsContext.cpp" />
+    <ClCompile Include="Texture\ConvertImage.cpp" />
+    <ClCompile Include="Texture\ConvertImage16.cpp" />
+    <ClCompile Include="Texture\Texture.cpp" />
+    <ClCompile Include="Texture\TextureManager.cpp" />
+    <ClCompile Include="Texture\DirectXTexture\DirectXTexture.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_2xsai.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_hq2x.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_hq4x.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_lq2x.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_sharpen.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_smooth.cpp" />
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_texture2x.cpp" />
+    <ClCompile Include="Parser\RSP_Parser.cpp" />
+    <ClCompile Include="Parser\RSP_S2DEX.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Video.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Render\shaderdx9.vsh" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="BMGLib.lib" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

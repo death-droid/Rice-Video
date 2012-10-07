@@ -1,0 +1,402 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Plugin">
+      <UniqueIdentifier>{0da4222b-4c1b-42f6-850e-03519d6f95dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{47139d83-0a18-4e83-83f4-4098b5b5a627}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Debugger">
+      <UniqueIdentifier>{0bcc9d2e-0619-441c-bc45-b1281a3a3bdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{2a2cfed0-087e-4104-ab73-5eed1ded7a26}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{522d7f7d-59e4-4981-be27-484183ee03e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Combiner">
+      <UniqueIdentifier>{8521a4e0-b0f9-4cd6-9dcb-43596fcc45ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Combiner\DirectXCombiner">
+      <UniqueIdentifier>{ff8efe44-e7ff-42eb-b016-0f1930e3ce8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Render">
+      <UniqueIdentifier>{1fb6529f-4484-496e-931b-208f12dee563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Render\DirectX">
+      <UniqueIdentifier>{c9d4dbff-dae6-4ad1-b176-cc9f1c64f708}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Device">
+      <UniqueIdentifier>{d9da65d5-e622-4dc4-8c9e-c1444a9ccbe8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Device\DirectXDevice">
+      <UniqueIdentifier>{ec6d4633-fd45-4fee-a57b-dfab7f5c170b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Utility">
+      <UniqueIdentifier>{d42a32a1-8e48-4bb7-8baa-bf1301581898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Texture">
+      <UniqueIdentifier>{ea6f7774-37cb-4d68-b9bb-ccd6b7d909be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Texture\DirectXTexture">
+      <UniqueIdentifier>{60f1a280-aa7c-428d-a22c-a4138a7c311a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Texture\Texture Filters">
+      <UniqueIdentifier>{aa964cc8-abac-4ad7-9594-848723a44491}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Parser">
+      <UniqueIdentifier>{c6a3f434-1109-4ea6-a3dc-810b9c237a7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Parser\Ucodes">
+      <UniqueIdentifier>{ac720367-2dff-4b6b-94e7-bfadf2351f85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Parser\Ucodes\Custom Ucodes">
+      <UniqueIdentifier>{52c24813-2f06-4e9f-812e-329a4bccf335}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="_BldNum.h">
+      <Filter>Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Video.h">
+      <Filter>Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\BMGDLL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\BMGImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\BMGLibJPEG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\BMGLibPNG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\jpegrw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\pngrw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\tiffrw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="typedefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wglext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\Debugger.h">
+      <Filter>Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\OGLDebug.h">
+      <Filter>Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Combiner\blender.h">
+      <Filter>Graphics\Combiner</Filter>
+    </ClInclude>
+    <ClInclude Include="Combiner\Combiner.h">
+      <Filter>Graphics\Combiner</Filter>
+    </ClInclude>
+    <ClInclude Include="Combiner\CombinerDefs.h">
+      <Filter>Graphics\Combiner</Filter>
+    </ClInclude>
+    <ClInclude Include="Combiner\DecodedMux.h">
+      <Filter>Graphics\Combiner</Filter>
+    </ClInclude>
+    <ClInclude Include="Combiner\GeneralCombiner.h">
+      <Filter>Graphics\Combiner</Filter>
+    </ClInclude>
+    <ClInclude Include="Combiner\DirectXCombiner\DirectXBlender.h">
+      <Filter>Graphics\Combiner\DirectXCombiner</Filter>
+    </ClInclude>
+    <ClInclude Include="Combiner\DirectXCombiner\DirectXCombiner.h">
+      <Filter>Graphics\Combiner\DirectXCombiner</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\ExtendedRender.h">
+      <Filter>Graphics\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Render.h">
+      <Filter>Graphics\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RenderBase.h">
+      <Filter>Graphics\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\shaderdx9_include.h">
+      <Filter>Graphics\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\VertexShaderConstantDef.h">
+      <Filter>Graphics\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\DirectX\D3DRender.h">
+      <Filter>Graphics\Render\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="Device\DeviceBuilder.h">
+      <Filter>Graphics\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Device\FrameBuffer.h">
+      <Filter>Graphics\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Device\GraphicsContext.h">
+      <Filter>Graphics\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Device\RenderTexture.h">
+      <Filter>Graphics\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="Device\DirectXDevice\DXGraphicsContext.h">
+      <Filter>Graphics\Device\DirectXDevice</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\CritSect.h">
+      <Filter>Graphics\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\CSortedList.h">
+      <Filter>Graphics\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\IColor.h">
+      <Filter>Graphics\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\Unique.h">
+      <Filter>Graphics\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\ConvertImage.h">
+      <Filter>Graphics\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\Texture.h">
+      <Filter>Graphics\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\TextureManager.h">
+      <Filter>Graphics\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\DirectXTexture\DirectXTexture.h">
+      <Filter>Graphics\Texture\DirectXTexture</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\TextureFilters\TextureFilters.h">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_2xsai.h">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_hq2x.h">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_hq4x.h">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_lq2x.h">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture\TextureFilters\TextureFilters_texture2x.h">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RDP_Texture.h">
+      <Filter>Graphics\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_Parser.h">
+      <Filter>Graphics\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\Timing.h">
+      <Filter>Graphics\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\ucode.h">
+      <Filter>Graphics\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\UcodeDefs.h">
+      <Filter>Graphics\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_GBI0.h">
+      <Filter>Graphics\Parser\Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_GBI1.h">
+      <Filter>Graphics\Parser\Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_GBI2.h">
+      <Filter>Graphics\Parser\Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_GBI2_ext.h">
+      <Filter>Graphics\Parser\Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_GBI_Others.h">
+      <Filter>Graphics\Parser\Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_GBI_Sprite2D.h">
+      <Filter>Graphics\Parser\Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_Conker.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_DKR.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_GE.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_LL.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_PD.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_RS.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_S2DEX.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_SOTE.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_WRUS.h">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Config.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Video.cpp">
+      <Filter>Plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\Debugger.cpp">
+      <Filter>Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="Combiner\blender.cpp">
+      <Filter>Graphics\Combiner</Filter>
+    </ClCompile>
+    <ClCompile Include="Combiner\Combiner.cpp">
+      <Filter>Graphics\Combiner</Filter>
+    </ClCompile>
+    <ClCompile Include="Combiner\CombinerTable.cpp">
+      <Filter>Graphics\Combiner</Filter>
+    </ClCompile>
+    <ClCompile Include="Combiner\DecodedMux.cpp">
+      <Filter>Graphics\Combiner</Filter>
+    </ClCompile>
+    <ClCompile Include="Combiner\GeneralCombiner.cpp">
+      <Filter>Graphics\Combiner</Filter>
+    </ClCompile>
+    <ClCompile Include="Combiner\DirectXCombiner\DirectXBlender.cpp">
+      <Filter>Graphics\Combiner\DirectXCombiner</Filter>
+    </ClCompile>
+    <ClCompile Include="Combiner\DirectXCombiner\DirectXCombiner.cpp">
+      <Filter>Graphics\Combiner\DirectXCombiner</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Render.cpp">
+      <Filter>Graphics\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RenderBase.cpp">
+      <Filter>Graphics\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RenderExt.cpp">
+      <Filter>Graphics\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\VertexClipper.cpp">
+      <Filter>Graphics\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\VertexShader.cpp">
+      <Filter>Graphics\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\DirectX\D3DRender.cpp">
+      <Filter>Graphics\Render\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\DirectX\D3DRenderExt.cpp">
+      <Filter>Graphics\Render\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="Device\DeviceBuilder.cpp">
+      <Filter>Graphics\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="Device\FrameBuffer.cpp">
+      <Filter>Graphics\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="Device\FrameBufferDX.cpp">
+      <Filter>Graphics\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="Device\GraphicsContext.cpp">
+      <Filter>Graphics\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="Device\RenderTexture.cpp">
+      <Filter>Graphics\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="Device\DirectXDevice\DXGraphicsContext.cpp">
+      <Filter>Graphics\Device\DirectXDevice</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\ConvertImage.cpp">
+      <Filter>Graphics\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\ConvertImage16.cpp">
+      <Filter>Graphics\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\Texture.cpp">
+      <Filter>Graphics\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureManager.cpp">
+      <Filter>Graphics\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\DirectXTexture\DirectXTexture.cpp">
+      <Filter>Graphics\Texture\DirectXTexture</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_2xsai.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_hq2x.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_hq4x.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_lq2x.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_sharpen.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_smooth.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\TextureFilters\TextureFilters_texture2x.cpp">
+      <Filter>Graphics\Texture\Texture Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser\RSP_Parser.cpp">
+      <Filter>Graphics\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser\RSP_S2DEX.cpp">
+      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Video.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Render\shaderdx9.vsh">
+      <Filter>Graphics\Render</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="BMGLib.lib" />
+  </ItemGroup>
+</Project>
