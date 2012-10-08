@@ -612,7 +612,6 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		ZBufferEnable(FALSE);
 	}
 
-	BOOL accurate = currentRomOptions.bAccurateTextureMapping;
 
 	CTexture *surf = g_textures[gRSP.curTile].m_pCTexture;
 	RenderTexture &tex0 = g_textures[gRSP.curTile];
@@ -631,7 +630,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	}
 	
 	float t0u1;
-	if( accurate && gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY )
+	if(gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY )
 	{
 		t0u1 = t0u0 + (fScaleS * (nX1 - nX0 - 1))*tile0.fShiftScaleS;
 	}
@@ -650,7 +649,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	{
 		m_texRectTex1UV[0].u = t0u0/widthDiv;
 		m_texRectTex1UV[1].u = t0u1/widthDiv;
-		if( accurate && !tile0.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex0.m_dwTileWidth, tile0.dwMaskS, widthDiv, m_texRectTex1UV[0].u, m_texRectTex1UV[1].u) )
+		if(!tile0.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex0.m_dwTileWidth, tile0.dwMaskS, widthDiv, m_texRectTex1UV[0].u, m_texRectTex1UV[1].u) )
 			SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile);
 	}
 
@@ -665,7 +664,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	}
 	
 	float t0v1;
-	if ( accurate && gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY)
+	if (gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY)
 	{
 		t0v1 = t0v0 + (fScaleT * (nY1 - nY0-1))*tile0.fShiftScaleT;
 	}
@@ -676,7 +675,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 
 	m_texRectTex1UV[0].v = t0v0/heightDiv;
 	m_texRectTex1UV[1].v = t0v1/heightDiv;
-	if( accurate && !tile0.bMirrorT && RemapTextureCoordinate(t0v0, t0v1, tex0.m_dwTileHeight, tile0.dwMaskT, heightDiv, m_texRectTex1UV[0].v, m_texRectTex1UV[1].v) )
+	if(!tile0.bMirrorT && RemapTextureCoordinate(t0v0, t0v1, tex0.m_dwTileHeight, tile0.dwMaskT, heightDiv, m_texRectTex1UV[0].v, m_texRectTex1UV[1].v) )
 		SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile);
 	
 	D3DCOLOR speColor = PostProcessSpecularColor();
@@ -727,7 +726,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		float t0v0 = fT0 * tile1.fShiftScaleT -tile1.fhilite_tl;
 		float t0u1;
 		float t0v1;
-		if ( accurate && gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY)
+		if (gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY)
 		{
 			t0u1 = t0u0 + (fScaleS * (nX1 - nX0 - 1))*tile1.fShiftScaleS;
 			t0v1 = t0v0 + (fScaleT * (nY1 - nY0 - 1))*tile1.fShiftScaleT;
@@ -747,14 +746,14 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		{
 			m_texRectTex2UV[0].u = t0u0/widthDiv;
 			m_texRectTex2UV[1].u = t0u1/widthDiv;
-			if( accurate && !tile1.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex1.m_dwTileWidth, tile1.dwMaskS, widthDiv, m_texRectTex2UV[0].u, m_texRectTex2UV[1].u) )
+			if(!tile1.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex1.m_dwTileWidth, tile1.dwMaskS, widthDiv, m_texRectTex2UV[0].u, m_texRectTex2UV[1].u) )
 				SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, (gRSP.curTile+1)&7);
 		}
 
 		m_texRectTex2UV[0].v = t0v0/heightDiv;
 		m_texRectTex2UV[1].v = t0v1/heightDiv;
 
-		if( accurate && !tile1.bMirrorT && RemapTextureCoordinate(t0v0, t0v1, tex1.m_dwTileHeight, tile1.dwMaskT, heightDiv, m_texRectTex2UV[0].v, m_texRectTex2UV[1].v) )
+		if(!tile1.bMirrorT && RemapTextureCoordinate(t0v0, t0v1, tex1.m_dwTileHeight, tile1.dwMaskT, heightDiv, m_texRectTex2UV[0].v, m_texRectTex2UV[1].v) )
 			SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, (gRSP.curTile+1)&7);
 
 		SetVertexTextureUVCoord(g_texRectTVtx[0], m_texRectTex1UV[0].u, m_texRectTex1UV[0].v, m_texRectTex2UV[0].u, m_texRectTex2UV[0].v);

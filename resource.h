@@ -66,7 +66,6 @@
 #define IDC_LOG_SETTING                 1058
 #define IDC_FRAME_BUFFER_SETTING        1059
 #define IDC_UPDATE_SCREEN               1060
-#define IDC_ACCURATE_TEXTURE_MAPPING    1061
 #define IDC_DROP_TEXTURE                1062
 #define IDC_SMART                       1063
 #define IDC_DROP_COMBINER               1064

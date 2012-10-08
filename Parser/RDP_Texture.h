@@ -1091,7 +1091,7 @@ void DLParser_LoadTLut(Gfx *gfx)
 	}
 
 	LOG_TEXTURE(
-	{	
+	{
 		DebuggerAppendMsg("LoadTLut Tile: %d Start: 0x%X+0x%X, Count: 0x%X\nFmt is %s, TMEM=0x%X\n", 
 		tileno, g_TI.dwAddr, dwRDRAMOffset, dwCount,textluttype[dwTLutFmt], dwTMEMOffset);
 		DebuggerAppendMsg("    :ULS: 0x%X, ULT:0x%X, LRS: 0x%X, LRT:0x%X\n", 
@@ -1152,7 +1152,7 @@ void DLParser_LoadBlock(Gfx *gfx)
 
 	for( int i=0; i<8; i++ )
 	{
-		if( tile.dwTMem == tile.dwTMem )//checkme
+		if( tile.dwTMem == tile.dwTMem )//checkme this is always true
 			tile.lastTileCmd = CMD_LOADBLOCK;
 	}
 
@@ -1193,7 +1193,7 @@ void DLParser_LoadBlock(Gfx *gfx)
 	g_TxtLoadBy = CMD_LOADBLOCK;
 
 
-	if( options.bUseFullTMEM )
+	if( options.bUseFullTMEM ) //force us to do this
 	{
 		uint32 bytes = (lrs + 1) << tile.dwSize >> 1;
 		uint32 address = g_TI.dwAddr + ult * g_TI.bpl + (uls << g_TI.dwSize >> 1);

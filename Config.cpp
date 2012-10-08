@@ -20,9 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "stdafx.h"
 #include "_BldNum.h"
 
-#define INI_FILE		"1964Video.ini"
-#define CONFIG_FILE     "1964Video.cfg"
-char *project_name =	"1964Video N64 Video Plugin community version";
+#define INI_FILE		"RiceVideo.ini"
+#define CONFIG_FILE     "RiceVideo.cfg"
+char *project_name =	"RiceVideo";
 
 // Disable the config dialog box to allow Vtune call graph feature to work
 #define ENABLE_CONFIG_DIALOG
@@ -456,9 +456,6 @@ void WriteConfiguration(void)
 	fprintf(f, "FullScreenFrequency ");
 	fprintf(f, "%d\n", (uint32)windowSetting.uFullScreenRefreshRate);
 
-	fprintf(f, "AccurateTextureMapping ");
-	fprintf(f, "%d\n", (uint32)defaultRomOptions.bAccurateTextureMapping);
-
 	fprintf(f, "InN64Resolution ");
 	fprintf(f, "%d\n", (uint32)defaultRomOptions.bInN64Resolution);
 
@@ -618,7 +615,6 @@ void ReadConfiguration(void)
 
 		defaultRomOptions.bNormalBlender = FALSE;
 		defaultRomOptions.bNormalCombiner = FALSE;
-		defaultRomOptions.bAccurateTextureMapping = TRUE;
 		defaultRomOptions.bInN64Resolution = FALSE;
 		defaultRomOptions.bSaveVRAM = FALSE;
 		defaultRomOptions.bOverlapAutoWriteBack = FALSE;
@@ -694,7 +690,6 @@ void ReadConfiguration(void)
 		options.FPSColor = ReadRegistryDwordVal("FPSColor");;
 		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");;
 		options.colorQuality = ReadRegistryDwordVal("ColorQuality");
-		defaultRomOptions.bAccurateTextureMapping = ReadRegistryDwordVal("AccurateTextureMapping");
 		defaultRomOptions.bInN64Resolution = ReadRegistryDwordVal("InN64Resolution");
 		defaultRomOptions.bSaveVRAM = ReadRegistryDwordVal("SaveVRAM");
 		defaultRomOptions.bOverlapAutoWriteBack = ReadRegistryDwordVal("OverlapAutoWriteBack");
@@ -746,7 +741,6 @@ void GenerateCurrentRomOptions()
 	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
 	currentRomOptions.bNormalCombiner			=g_curRomInfo.dwNormalCombiner;
 	currentRomOptions.bNormalBlender			=g_curRomInfo.dwNormalBlender;
-	currentRomOptions.bAccurateTextureMapping	=g_curRomInfo.dwAccurateTextureMapping;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
 
@@ -900,8 +894,6 @@ void GenerateCurrentRomOptions()
 	else currentRomOptions.bNormalCombiner--;
 	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
 	else currentRomOptions.bNormalBlender--;
-	if( currentRomOptions.bAccurateTextureMapping == 0 )		currentRomOptions.bAccurateTextureMapping = defaultRomOptions.bAccurateTextureMapping;
-	else currentRomOptions.bAccurateTextureMapping--;
 
 	options.bUseFullTMEM = ((options.bFullTMEM && (g_curRomInfo.dwFullTMEM == 0)) || g_curRomInfo.dwFullTMEM == 2);
 
@@ -1240,13 +1232,6 @@ ToolTipMsg ttmsg[] = {
 			"- shade only,       if texture is not used\n\n"
 			"Try to use this option if you have ingame texture color problems, transparency problems, "
 			"or black/white texture problems\n"
-			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
-			"When a game is running, it is the game setting. Three available setting are on/off/as default."
-	},
-	{ 
-		IDC_ACCURATE_TEXTURE_MAPPING,
-			"Accurate Texture Mapping",
-			"This option helps to reduce thin black lines in some games\n"
 			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
 			"When a game is running, it is the game setting. Three available setting are on/off/as default."
 	},
@@ -3060,7 +3045,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, defaultRomOptions.bNormalCombiner ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_SETCHECK, defaultRomOptions.bAccurateTextureMapping ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_IN_N64_RESOLUTION, BM_SETCHECK, defaultRomOptions.bInN64Resolution ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_SAVE_VRAM, BM_SETCHECK, defaultRomOptions.bSaveVRAM ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_AUTO_WRITE_BACK, BM_SETCHECK, defaultRomOptions.bOverlapAutoWriteBack ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -3143,7 +3127,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		case IDOK:
 			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bNormalCombiner = (SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			defaultRomOptions.bAccurateTextureMapping = (SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
@@ -3184,10 +3167,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		state = g_curRomInfo.dwNormalCombiner ==2 ? BST_CHECKED : (g_curRomInfo.dwNormalCombiner ==1?BST_UNCHECKED:BST_INDETERMINATE);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, state, 0);
-
-		state = g_curRomInfo.dwAccurateTextureMapping ==2 ? BST_CHECKED : (g_curRomInfo.dwAccurateTextureMapping ==1?BST_UNCHECKED:BST_INDETERMINATE);
-		SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
-		SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_SETCHECK, state, 0);
 
 		state = g_curRomInfo.dwFullTMEM ==2 ? BST_CHECKED : (g_curRomInfo.dwFullTMEM ==1?BST_UNCHECKED:BST_INDETERMINATE);
 		SendDlgItemMessage(hDlg, IDC_TMEM, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
@@ -3302,9 +3281,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			
 			state = SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwNormalCombiner = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
-			
-			state = SendDlgItemMessage(hDlg, IDC_ACCURATE_TEXTURE_MAPPING, BM_GETCHECK, 0, 0);
-			g_curRomInfo.dwAccurateTextureMapping = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
 
 			state = SendDlgItemMessage(hDlg, IDC_TMEM, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwFullTMEM = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
