@@ -924,7 +924,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->bPrimaryDepthHack		= IniSections[i].bPrimaryDepthHack;
 	pGameSetting->bTexture1Hack			= IniSections[i].bTexture1Hack;
 	pGameSetting->bFastLoadTile			= IniSections[i].bFastLoadTile;
-	pGameSetting->bUseSmallerTexture	= IniSections[i].bUseSmallerTexture;
 
 	pGameSetting->VIWidth				= IniSections[i].VIWidth;
 	pGameSetting->VIHeight				= IniSections[i].VIHeight;
@@ -1053,11 +1052,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	if( IniSections[i].bFastLoadTile	!= pGameSetting->bFastLoadTile )
 	{
 		IniSections[i].bFastLoadTile	=pGameSetting->bFastLoadTile;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bUseSmallerTexture	!= pGameSetting->bUseSmallerTexture )
-	{
-		IniSections[i].bUseSmallerTexture	=pGameSetting->bUseSmallerTexture;
 		bIniIsChanged=true;
 	}
 	if( IniSections[i].VIWidth	!= pGameSetting->VIWidth )
@@ -1386,7 +1380,7 @@ ToolTipMsg ttmsg[] = {
 			"a hack for a few games."
 	},
 	{ 
-		IDC_FASTER_LOADING_TILE,
+		IDC_FASTER_LOADING_TILE, //Make this a forced feature?
 			"Faster Texture Tile Loading Algorithm",
 			"This is an advanced option. It may increase texture loading if textures are loaded "
 			"by LoadTile ucodes."
@@ -1479,7 +1473,7 @@ ToolTipMsg ttmsg[] = {
 	},
 	{
 		IDC_MIPMAPS,
-			"Enables automatic mipmaping."
+			"Enables automatic mipmaping.",
 			"This will allow textures to look nicer when viewed far away and increase performance in some cases."
 	},
 	{ 
@@ -1505,11 +1499,6 @@ ToolTipMsg ttmsg[] = {
 	   IDC_TMEM,
 	   "Enable TMEM emulation",
 	   "Enables partial emulation of the TMEM memory area."
-	},
-	{
-	   IDC_SMALLER_TEXTURE,
-	   "Uses smaller textures",
-	   "This option possibly can make the game run faster, via the use of smaller textures"
 	},
 	{
 	   IDC_TXT_SIZE_METHOD_2,
@@ -1790,7 +1779,6 @@ BOOL ReadIniFile()
 				newsection.bZHack = FALSE;
 				newsection.bTextureScaleHack = FALSE;
 				newsection.bFastLoadTile = FALSE;
-				newsection.bUseSmallerTexture = FALSE;
 				newsection.bPrimaryDepthHack = FALSE;
 				newsection.bTexture1Hack = FALSE;
 				newsection.bDisableObjBG = FALSE;
@@ -1836,9 +1824,6 @@ BOOL ReadIniFile()
 
 				if (lstrcmpi(left(readinfo,12), "FastLoadTile")==0)
 					IniSections[sectionno].bFastLoadTile=true;
-
-				if (lstrcmpi(left(readinfo,17), "UseSmallerTexture")==0)
-					IniSections[sectionno].bUseSmallerTexture=true;
 
 				if (lstrcmpi(left(readinfo,14), "IncTexRectEdge")==0)
 					IniSections[sectionno].bIncTexRectEdge=true;
@@ -2055,9 +2040,6 @@ void OutputSectionDetails(uint32 i, FILE * fh)
 	if (IniSections[i].bFastLoadTile)
 		fprintf(fh, "FastLoadTile\n");
 
-	if (IniSections[i].bUseSmallerTexture)
-		fprintf(fh, "UseSmallerTexture\n");
-
 	if (IniSections[i].bIncTexRectEdge)
 		fprintf(fh, "IncTexRectEdge\n");
 
@@ -2145,7 +2127,6 @@ int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
 	newsection.bZHack = FALSE;
 	newsection.bTextureScaleHack = FALSE;
 	newsection.bFastLoadTile = FALSE;
-	newsection.bUseSmallerTexture = FALSE;
 	newsection.bPrimaryDepthHack = FALSE;
 	newsection.bTexture1Hack = FALSE;
 	newsection.bDisableObjBG = FALSE;
@@ -3222,7 +3203,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		SendDlgItemMessage(hDlg, IDC_Z_HACK, BM_SETCHECK,	g_curRomInfo.bZHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_SCALE_HACK, BM_SETCHECK,		g_curRomInfo.bTextureScaleHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_FASTER_LOADING_TILE, BM_SETCHECK,		g_curRomInfo.bFastLoadTile?BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_SMALLER_TEXTURE, BM_SETCHECK,			g_curRomInfo.bUseSmallerTexture?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_SETCHECK,		g_curRomInfo.bPrimaryDepthHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_SETCHECK,			g_curRomInfo.bTexture1Hack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_SETCHECK,			g_curRomInfo.bDisableCulling?BST_CHECKED:BST_UNCHECKED, 0);
@@ -3302,7 +3282,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			g_curRomInfo.bZHack	= (SendDlgItemMessage(hDlg, IDC_Z_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bTextureScaleHack	= (SendDlgItemMessage(hDlg, IDC_TEXTURE_SCALE_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bFastLoadTile		= (SendDlgItemMessage(hDlg, IDC_FASTER_LOADING_TILE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			g_curRomInfo.bUseSmallerTexture	= (SendDlgItemMessage(hDlg, IDC_SMALLER_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bPrimaryDepthHack	= (SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bTexture1Hack		= (SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bDisableCulling	= (SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_GETCHECK, 0, 0) == BST_CHECKED);

@@ -274,7 +274,6 @@ typedef struct IniSection
 	BOOL 	bZHack;
 	BOOL 	bTextureScaleHack;
 	BOOL 	bFastLoadTile;
-	BOOL 	bUseSmallerTexture;
 	BOOL 	bPrimaryDepthHack;
 	BOOL 	bTexture1Hack;
 	BOOL	bDisableCulling;
@@ -347,7 +346,6 @@ typedef struct
 	BOOL	bZHack;
 	BOOL	bTextureScaleHack;
 	BOOL	bFastLoadTile;
-	BOOL 	bUseSmallerTexture;
 	BOOL	bPrimaryDepthHack;
 	BOOL	bTexture1Hack;
 	BOOL 	bDisableCulling;

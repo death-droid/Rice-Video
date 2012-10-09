@@ -632,90 +632,24 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 	}
 
 
-	// Limit the texture size
-	if( g_curRomInfo.bUseSmallerTexture )
+	//if( clampwidth > linewidth )	clampwidth = linewidth;
+	if( clampwidth > 512 && clampheight > 512 )
 	{
-		if( tile.dwMaskS && tile.bClampS )
-		{
-			if( !tile.bMirrorS )
-			{
-				if( clampwidth/maskwidth >= 2 )
-				{
-					clampwidth = maskwidth;
-					tile.bForceWrapS = true;
-				}
-				else if( clampwidth && maskwidth/clampwidth >= 2 )
-				{
-					maskwidth = clampwidth;
-					tile.bForceClampS = true;
-				}
-			}
-			else
-			{
-				if( clampwidth/maskwidth == 2 )
-				{
-					clampwidth = maskwidth*2;
-					tile.bForceWrapS = false;
-				}
-				else if( clampwidth/maskwidth > 2 )
-				{
-					clampwidth = maskwidth*2;
-					tile.bForceWrapS = true;
-				}
-			}
-		}
-
-		if( tile.dwMaskT && tile.bClampT )
-		{
-			if( !tile.bMirrorT )
-			{
-				if( clampheight/maskheight >= 2 )
-				{
-					clampheight = maskheight;
-					tile.bForceWrapT = true;
-				}
-				else if( clampheight && maskheight/clampheight >= 2 )
-				{
-					maskwidth = clampwidth;
-					tile.bForceClampT = true;
-				}
-			}
-			else
-			{
-				if( clampheight/maskheight == 2 )
-				{
-					clampheight = maskheight*2;
-					tile.bForceWrapT = false;
-				}
-				else if( clampheight/maskheight >= 2 )
-				{
-					clampheight = maskheight*2;
-					tile.bForceWrapT = true;
-				}
-			}
-		}
+		if( clampwidth > maskwidth && maskwidth && clampheight > 256 )	clampwidth = maskwidth;
+		if( clampheight > maskheight && maskheight && clampheight > 256 )	clampheight = maskheight;
 	}
-	else
-	{
-		//if( clampwidth > linewidth )	clampwidth = linewidth;
-		if( clampwidth > 512 && clampheight > 512 )
-		{
-			if( clampwidth > maskwidth && maskwidth && clampheight > 256 )	clampwidth = maskwidth;
-			if( clampheight > maskheight && maskheight && clampheight > 256 )	clampheight = maskheight;
-		}
 
-		if( tile.dwMaskS > 8 && tile.dwMaskT > 8 )	
-		{
+	if( tile.dwMaskS > 8 && tile.dwMaskT > 8 )	
+	{
+		maskwidth = loadwidth;
+		maskheight = loadheight;
+	}
+	else 
+	{
+		if( tile.dwMaskS > 10 )
 			maskwidth = loadwidth;
+		if( tile.dwMaskT > 10 )
 			maskheight = loadheight;
-		}
-		else 
-		{
-			if( tile.dwMaskS > 10 )
-				maskwidth = loadwidth;
-			if( tile.dwMaskT > 10 )
-				maskheight = loadheight;
-		}
 	}
 
 	gti.Pitch = tile.dwPitch;

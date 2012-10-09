@@ -172,8 +172,6 @@ BEGIN
     CONTROL         "Alternative texture size calculation",IDC_TXT_SIZE_METHOD_2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,156,150,10
     CONTROL         "Enable Texture LOD",IDC_ENABLE_LOD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,168,150,10
-    CONTROL         "Try to Use Smaller Texture (faster)",IDC_SMALLER_TEXTURE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,138,132,150,10
     CONTROL         "Near Plane Z Hack",IDC_Z_HACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,216,116,10
 END
 
