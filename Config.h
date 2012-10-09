@@ -255,8 +255,6 @@ typedef struct IniSection
 	// Options with changeable default values
 	uint32	dwNormalCombiner;
 	uint32	dwNormalBlender;
-	uint32	dwFastTextureCRC;
-	uint32	dwAccurateTextureMapping;
 	uint32	dwFrameBufferOption;
 	uint32	dwRenderToTextureOption;
 	uint32	dwScreenUpdateSetting;
@@ -327,8 +325,6 @@ typedef struct
 	// With changeable default values
 	uint32	dwNormalCombiner;
 	uint32	dwNormalBlender;
-	uint32	dwAccurateTextureMapping;
-	uint32	dwFastTextureCRC;
 	uint32	dwFrameBufferOption;
 	uint32	dwRenderToTextureOption;
 	uint32	dwScreenUpdateSetting;
@@ -341,7 +337,6 @@ typedef struct
 
 	// Less useful options
 	BOOL	bDisableObjBG;
-	BOOL	bDisableTextureCRC;
 	BOOL	bIncTexRectEdge;
 	BOOL	bZHack;
 	BOOL	bTextureScaleHack;

@@ -44,8 +44,8 @@
     <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>../obj/1964Video/Release/\</OutDir>
-    <IntDir>../obj/1964Video/Release/\</IntDir>
+    <OutDir>.\bin\</OutDir>
+    <IntDir>.\bin\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>

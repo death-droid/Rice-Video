@@ -916,7 +916,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 
 	//lstrcpyn(pGameSetting->szGameName, IniSections[i].name, 50);
 
-	pGameSetting->bDisableTextureCRC	= IniSections[i].bDisableTextureCRC;
 	pGameSetting->bDisableCulling		= IniSections[i].bDisableCulling;
 	pGameSetting->bIncTexRectEdge		= IniSections[i].bIncTexRectEdge;
 	pGameSetting->bZHack				= IniSections[i].bZHack;
@@ -934,7 +933,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 
 	pGameSetting->bEmulateClear			= IniSections[i].bEmulateClear;
 	pGameSetting->bForceScreenClear		= IniSections[i].bForceScreenClear;
-	pGameSetting->dwAccurateTextureMapping	= IniSections[i].dwAccurateTextureMapping;
 	pGameSetting->dwNormalBlender		= IniSections[i].dwNormalBlender;
 	pGameSetting->bDisableBlender		= IniSections[i].bDisableBlender;
 	pGameSetting->dwNormalCombiner		= IniSections[i].dwNormalCombiner;
@@ -953,12 +951,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 		pGameSetting->romheader.dwCRC2,
 		pGameSetting->romheader.nCountryID,
 		pGameSetting->szGameName);
-
-	if( IniSections[i].bDisableTextureCRC	!=pGameSetting->bDisableTextureCRC )
-	{
-		IniSections[i].bDisableTextureCRC	=pGameSetting->bDisableTextureCRC	 ;
-		bIniIsChanged=true;
-	}
 
 	if( IniSections[i].bDisableCulling	!=pGameSetting->bDisableCulling )
 	{
@@ -987,11 +979,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	if( IniSections[i].bForceScreenClear	!=pGameSetting->bForceScreenClear )
 	{
 		IniSections[i].bForceScreenClear	=pGameSetting->bForceScreenClear		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].dwAccurateTextureMapping	!=pGameSetting->dwAccurateTextureMapping )
-	{
-		IniSections[i].dwAccurateTextureMapping	=pGameSetting->dwAccurateTextureMapping		 ;
 		bIniIsChanged=true;
 	}
 	if( IniSections[i].dwNormalCombiner	!=pGameSetting->dwNormalCombiner )
@@ -1401,12 +1388,6 @@ ToolTipMsg ttmsg[] = {
 			"This is an advanced option. If enabled, it will disable the CullDL ucode."
 	},
 	{ 
-		IDC_DISABLE_TEXTURE_CACHING,
-			"Disable Texture Caching",
-			"This is an advanced option. If enabled, it will disable texture caching. Textures "
-			"will be always reloaded, which will make the game run slower."
-	},
-	{ 
 		IDC_SHOW_FPS,
 			"Display OnScreen FPS",
 			"If enabled, current FPS (frame per second) will be displayed at the right-bottom corner of the screen "
@@ -1773,7 +1754,6 @@ BOOL ReadIniFile()
 				readinfo[strlen(readinfo)-1]='\0';
 				strcpy(newsection.crccheck, readinfo+1);
 
-				newsection.bDisableTextureCRC = FALSE;
 				newsection.bDisableCulling = FALSE;
 				newsection.bIncTexRectEdge = FALSE;
 				newsection.bZHack = FALSE;
@@ -1793,7 +1773,6 @@ BOOL ReadIniFile()
 				newsection.bForceScreenClear = FALSE;
 				newsection.bDisableBlender = FALSE;
 				newsection.bForceDepthBuffer = FALSE;
-				newsection.dwAccurateTextureMapping = 0;
 				newsection.dwNormalBlender = 0;
 				newsection.dwNormalCombiner = 0;
 				newsection.dwFrameBufferOption = 0;
@@ -1809,9 +1788,6 @@ BOOL ReadIniFile()
 
 				if (lstrcmpi(left(readinfo,4), "Name")==0)
 					strcpy(IniSections[sectionno].name,right(readinfo,strlen(readinfo)-5));
-
-				if (lstrcmpi(left(readinfo,17), "DisableTextureCRC")==0)
-					IniSections[sectionno].bDisableTextureCRC=true;
 
 				if (lstrcmpi(left(readinfo,14), "DisableCulling")==0)
 					IniSections[sectionno].bDisableCulling=true;
@@ -1857,9 +1833,6 @@ BOOL ReadIniFile()
 
 				if (lstrcmpi(left(readinfo,16), "ForceScreenClear")==0)
 					IniSections[sectionno].bForceScreenClear = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,22), "AccurateTextureMapping")==0)
-					IniSections[sectionno].dwAccurateTextureMapping = strtol(right(readinfo,1),NULL,10);
 
 				if (lstrcmpi(left(readinfo,12), "EmulateClear")==0)
 					IniSections[sectionno].bEmulateClear = strtol(right(readinfo,1),NULL,10);
@@ -2014,9 +1987,6 @@ void OutputSectionDetails(uint32 i, FILE * fh)
 	//fprintf(fh, "UCode=%d\n", IniSections[i].ucode);
 
 	// Tri-state variables
-	if (IniSections[i].dwAccurateTextureMapping != 0)
-		fprintf(fh, "AccurateTextureMapping=%d\n", IniSections[i].dwAccurateTextureMapping);
-
 	if (IniSections[i].dwNormalBlender != 0)
 		fprintf(fh, "NormalAlphaBlender=%d\n", IniSections[i].dwNormalBlender);
 
@@ -2025,8 +1995,6 @@ void OutputSectionDetails(uint32 i, FILE * fh)
 
 
 	// Normal bi-state variables
-	if (IniSections[i].bDisableTextureCRC)
-		fprintf(fh, "DisableTextureCRC\n");
 
 	if (IniSections[i].bDisableCulling)
 		fprintf(fh, "DisableCulling\n");
@@ -2121,7 +2089,6 @@ int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
 	strcpy(newsection.crccheck, szCRC);
 
 	lstrcpyn(newsection.name, szName, 50);
-	newsection.bDisableTextureCRC = FALSE;
 	newsection.bDisableCulling = FALSE;
 	newsection.bIncTexRectEdge = FALSE;
 	newsection.bZHack = FALSE;
@@ -2141,7 +2108,6 @@ int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
 	newsection.bForceScreenClear = FALSE;
 	newsection.bDisableBlender = FALSE;
 	newsection.bForceDepthBuffer = FALSE;
-	newsection.dwAccurateTextureMapping = 0;
 	newsection.dwNormalBlender = 0;
 	newsection.dwNormalCombiner = 0;
 	newsection.dwFrameBufferOption = 0;
@@ -3206,7 +3172,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_SETCHECK,		g_curRomInfo.bPrimaryDepthHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_SETCHECK,			g_curRomInfo.bTexture1Hack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_SETCHECK,			g_curRomInfo.bDisableCulling?BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_DISABLE_TEXTURE_CACHING, BM_SETCHECK,	g_curRomInfo.bDisableTextureCRC?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TXT_SIZE_METHOD_2, BM_SETCHECK,	g_curRomInfo.bTxtSizeMethod2?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_ENABLE_LOD, BM_SETCHECK,	g_curRomInfo.bEnableTxtLOD?BST_CHECKED:BST_UNCHECKED, 0);
 
@@ -3285,7 +3250,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			g_curRomInfo.bPrimaryDepthHack	= (SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bTexture1Hack		= (SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bDisableCulling	= (SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			g_curRomInfo.bDisableTextureCRC	= (SendDlgItemMessage(hDlg, IDC_DISABLE_TEXTURE_CACHING, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bTxtSizeMethod2	= (SendDlgItemMessage(hDlg, IDC_TXT_SIZE_METHOD_2, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bEnableTxtLOD		= (SendDlgItemMessage(hDlg, IDC_ENABLE_LOD, BM_GETCHECK, 0, 0) == BST_CHECKED);
 

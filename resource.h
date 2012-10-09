@@ -119,7 +119,6 @@
 #define IDC_DISABLE_BG                  1117
 #define IDC_WINFRAME_MODE               1118
 #define IDC_DISABLE_CULLING             1119
-#define IDC_DISABLE_TEXTURE_CACHING     1120
 #define IDC_TXTR_BUF_DOUBLE_SIZE        1121
 #define IDC_RENDER_TO_TEXTURE_SETTING   1124
 #define IDC_TEXTURE_QUALITY             1125

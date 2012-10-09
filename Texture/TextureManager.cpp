@@ -554,12 +554,9 @@ TxtrCacheEntry *g_lastTextureEntry=NULL;
 bool lastEntryModified = false;
 
 
-TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, bool doCRCCheck, bool AutoExtendTexture)
+TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, bool AutoExtendTexture)
 {
 	TxtrCacheEntry *pEntry;
-
-	if( g_curRomInfo.bDisableTextureCRC )
-		doCRCCheck = false;
 
 	gRDP.texturesAreReloaded = true;
 
@@ -618,17 +615,14 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	}
 	else
 	{
-		if ( doCRCCheck )
-		{
-			if( loadFromTextureBuffer )
-				dwAsmCRC = gRenderTextureInfos[txtBufIdxToLoadFrom].crcInRDRAM;
-			else
-				CalculateRDRAMCRC(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
-		}
+		if( loadFromTextureBuffer )
+			dwAsmCRC = gRenderTextureInfos[txtBufIdxToLoadFrom].crcInRDRAM;
+		else
+			CalculateRDRAMCRC(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
 	}
 
 	int maxCI = 0;
-	if ( doCRCCheck && (pgti->Format == TXT_FMT_CI || (pgti->Format == TXT_FMT_RGBA && pgti->Size <= TXT_SIZE_8b )))
+	if (pgti->Format == TXT_FMT_CI || (pgti->Format == TXT_FMT_RGBA && pgti->Size <= TXT_SIZE_8b ))
 	{
 		//maxCI = pgti->Size == TXT_SIZE_8b ? 255 : 15;
 		extern BYTE CalculateMaxCI(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes );
@@ -675,7 +669,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	// for further instances this texture has just been replaced instead of adding the additional texture to the same index
 	// in the cachelist. This was causing the slowdowns. Thus we have to iterate through the bucket of the cache list and see
 	// which of the textures that have been placed to it is the one we are looking for
-	if(pEntry && doCRCCheck && pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC != dwPalCRC &&
+	if(pEntry && pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC != dwPalCRC &&
 			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed )){
 		bool bChecksumDoMatch=false;
 		// iterate through all textures located in the same bucket
@@ -697,7 +691,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	} 
 
 
-	if (pEntry && doCRCCheck )
+	if (pEntry)
 	{
 		if(pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC == dwPalCRC &&
 			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ) )

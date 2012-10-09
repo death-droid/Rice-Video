@@ -119,7 +119,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 
 	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
 	gti.tileNo = -1;
-	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false, true, false);
+	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false, false);
 	if( pEntry ) SetCurrentTexture( 0, pEntry->pTexture, pEntry->ti.WidthToCreate, pEntry->ti.HeightToCreate, pEntry);
 }
 
@@ -844,7 +844,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 	gti.WidthToLoad = gti.WidthToCreate;
 	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
 	gti.tileNo = -1;
-	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false,true,false);
+	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false,false);
 	// check if a hires has been enabled and not yet loaded
 	if( options.bLoadHiResTextures && (pEntry->pEnhancedTexture == NULL || pEntry->dwEnhancementFlag < TEXTURE_EXTERNAL ) )
 	{

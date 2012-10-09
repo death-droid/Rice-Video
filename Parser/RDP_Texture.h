@@ -808,7 +808,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	}
 
 	// Loading the textures by using texture cache manager
-	return gTextureManager.GetTexture(&gti, true, true, true);	// Load the texture by using texture cache
+	return gTextureManager.GetTexture(&gti, true, true);	// Load the texture by using texture cache
 }
 
 // CODE MODIFICATION
