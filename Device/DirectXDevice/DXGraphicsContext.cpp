@@ -836,6 +836,7 @@ HRESULT CDXGraphicsContext::DoToggleFullscreen()
 	Lock();
 	m_pd3dDevice->Reset( &m_d3dpp );
 	CRender::GetRender()->CleanUp();
+	CleanUp();
     m_pD3D = Direct3DCreate9( D3D_SDK_VERSION );
     if( m_pD3D == NULL )
 	{
@@ -845,6 +846,8 @@ HRESULT CDXGraphicsContext::DoToggleFullscreen()
 	}
 	InitializeD3D();
 	Unlock();
+
+	CRender::g_pRender->SetViewport(0, 0, windowSetting.uViWidth, windowSetting.uViHeight, 0x3FF);
 
     // When moving from fullscreen to windowed mode, it is important to
     // adjust the window size after resetting the device rather than
