@@ -73,7 +73,8 @@ CDirectXPixelShaderCombiner::CDirectXPixelShaderCombiner(CRender *pRender)
 	TRACE0("Create the pixel shader combiner");
 }
 
-CDirectXPixelShaderCombiner::~CDirectXPixelShaderCombiner()
+//Todo, fix me so i dont have to be a seperate function
+void CDirectXPixelShaderCombiner::CleanUp(void)
 {
 	gD3DDevWrapper.SetPixelShader(NULL);
 	int n = m_pixelShaderList.size();
@@ -89,6 +90,11 @@ CDirectXPixelShaderCombiner::~CDirectXPixelShaderCombiner()
 		m_pixelShaderList[i].pVS->Release();
 	}
 	m_pixelShaderList.clear();
+}
+
+CDirectXPixelShaderCombiner::~CDirectXPixelShaderCombiner()
+{
+	CleanUp();
 }
 
 int CDirectXPixelShaderCombiner::FindCompiledShader(void)

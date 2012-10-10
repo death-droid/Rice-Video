@@ -196,8 +196,6 @@ typedef struct {
 	uint32	DirectXMaxAnisotropy;
 	int		DirectXDevice;
 
-	uint32	colorQuality;
-
 	HACK_FOR_GAMES	enableHackForGames;
 } GlobalOptions;
 

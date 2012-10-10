@@ -31,21 +31,6 @@ unsigned char *g_pRDRAMu8 = NULL;
 
 CCritSect g_CritialSection;
 
-//#define USING_THREAD
-
-#ifdef USING_THREAD
-HANDLE			videoThread;
-HANDLE			threadMsg[5];
-HANDLE			threadFinished;
-
-#define RSPMSG_CLOSE			0
-#define RSPMSG_SWAPBUFFERS		1
-#define RSPMSG_PROCESSDLIST		2
-#define RSPMSG_CHANGEWINDOW		3
-#define RSPMSG_PROCESSRDPLIST	4
-#endif
-
-
 //=======================================================
 // User Options
 RECT frameWriteByCPURect;
@@ -119,18 +104,12 @@ FUNC_TYPE(void) NAME_DEFINE(DllAbout) ( HWND hParent )
 
 
 //---------------------------------------------------------------------------------------
-
-FUNC_TYPE(void) NAME_DEFINE(DllTest) ( HWND hParent )
-{
-	MsgInfo("We need to have a test function, don't we?");
-}
-
 FUNC_TYPE(void) NAME_DEFINE(DllConfig) ( HWND hParent )
 {
 	CreateOptionsDialogs(hParent);
 }
 
-void ChangeWindowStep2()
+void ChangeWindowStep2()//backtome
 {
 	status.bDisableFPS = true;
 	windowSetting.bDisplayFullscreen = 1-windowSetting.bDisplayFullscreen;
@@ -345,83 +324,14 @@ void StopVideo()
 	DEBUGGER_ONLY({delete surfTlut;});
 }
 
-#ifdef USING_THREAD
-void ChangeWindowStep2();
-void UpdateScreenStep2 (void);
-void ProcessDListStep2(void);
-
-//BOOL WINAPI SwitchToThread(VOID);
-uint32 WINAPI VideoThreadProc( LPVOID lpParameter )
-{
-	BOOL res;
-
-	StartVideo();
-	SetEvent( threadFinished );
-
-	while(true)
-	{
-		switch (WaitForMultipleObjects( 5, threadMsg, FALSE, INFINITE ))
-		{
-		case (WAIT_OBJECT_0 + RSPMSG_PROCESSDLIST):
-			ProcessDListStep2();
-			SetEvent( threadFinished );
-			break;
-		case (WAIT_OBJECT_0 + RSPMSG_SWAPBUFFERS):
-			//res = SwitchToThread();
-			//Sleep(1);
-			UpdateScreenStep2();
-			SetEvent( threadFinished );
-			break;
-		case (WAIT_OBJECT_0 + RSPMSG_CLOSE):
-			StopVideo();
-			SetEvent( threadFinished );
-			return 1;
-		case (WAIT_OBJECT_0 + RSPMSG_CHANGEWINDOW):
-			ChangeWindowStep2();
-			SetEvent( threadFinished );
-			break;
-		case (WAIT_OBJECT_0 + RSPMSG_PROCESSRDPLIST):
-			try
-			{
-				RDP_DLParser_Process();
-			}
-			catch (...)
-			{
-				ErrorMsg("Unknown Error in ProcessRDPList");
-				//TriggerDPInterrupt();
-				//TriggerSPInterrupt();
-			}
-			SetEvent( threadFinished );
-			break;
-		}
-	}
-	return 0;
-}
-#endif
-
-
-
 //---------------------------------------------------------------------------------------
 FUNC_TYPE(void) NAME_DEFINE(RomClosed) (void)
 {
 	TRACE0("To stop video");
 	Ini_StoreRomOptions(&g_curRomInfo);
-#ifdef USING_THREAD
-	if(videoThread)
-	{
-		SetEvent( threadMsg[RSPMSG_CLOSE] );
-		WaitForSingleObject( threadFinished, INFINITE );
-		for (int i = 0; i < 5; i++)
-		{
-			if (threadMsg[i])	CloseHandle( threadMsg[i] );
-		}
-		CloseHandle( threadFinished );
-		CloseHandle( videoThread );
-	}
-	videoThread = NULL;
-#else
+
 	StopVideo();
-#endif
+
 	TRACE0("Video is stopped");
 }
 
@@ -455,34 +365,10 @@ FUNC_TYPE(int) NAME_DEFINE(RomOpen) (void)
 		Sleep(100);
 	}
 #endif
-
-
-#ifdef USING_THREAD
-	uint32 threadID;
-	for(int i = 0; i < 5; i++) 
-	{ 
-		threadMsg[i] = CreateEvent( NULL, FALSE, FALSE, NULL );
-		if (threadMsg[i] == NULL)
-		{ 
-			ErrorMsg( "Error creating thread message events");
-			return;
-		} 
-	} 
-	threadFinished = CreateEvent( NULL, FALSE, FALSE, NULL );
-	if (threadFinished == NULL)
-	{ 
-		ErrorMsg( "Error creating video thread finished event");
-		return;
-	} 
-	videoThread = CreateThread( NULL, 4096, VideoThreadProc, NULL, NULL, &threadID );
-
-#else
-
 	if (!StartVideo())
 		return 0;
 
 	return 1;
-#endif
 }
 
 
@@ -621,7 +507,7 @@ void SetVIScales()
 }
 
 //---------------------------------------------------------------------------------------
-void UpdateScreenStep2 (void)
+FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
 {
 	status.bVIOriginIsUpdated = false;
 
@@ -739,19 +625,6 @@ void UpdateScreenStep2 (void)
 	g_CritialSection.Unlock();
 }
 
-FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
-{
-#ifdef USING_THREAD
-	if (videoThread)
-	{
-		SetEvent( threadMsg[RSPMSG_SWAPBUFFERS] );
-		WaitForSingleObject( threadFinished, INFINITE );
-	}
-#else
-	 UpdateScreenStep2();
-#endif
-}
-
 //---------------------------------------------------------------------------------------
 
 FUNC_TYPE(void) NAME_DEFINE(ViStatusChanged) (void)
@@ -770,7 +643,9 @@ FUNC_TYPE(void) NAME_DEFINE(ViWidthChanged) (void)
 	CRender::g_pRender->UpdateClipRectangle();
 	g_CritialSection.Unlock();
 }
+
 EXPORT BOOL CALL GetFullScreenStatus(void);
+
 __declspec(dllexport) void CALL SetOnScreenText (char *msg)
 {
 	status.CPUCoreMsgIsSet = true;
@@ -866,7 +741,44 @@ FUNC_TYPE(void) NAME_DEFINE(CloseDLL) (void)
 #endif
 }
 
-void ProcessDListStep2(void)
+FUNC_TYPE(uint32) NAME_DEFINE(ProcessDListCountCycles)(void)
+{
+	g_CritialSection.Lock();
+	status.SPCycleCount = 100;
+	status.DPCycleCount = 0;
+	try
+	{
+		DLParser_Process((OSTask *)(g_GraphicsInfo.DMEM + 0x0FC0));
+	}
+	catch (...)
+	{
+		TRACE0("Unknown Error in ProcessDListCountCycles");
+		TriggerDPInterrupt();
+		TriggerSPInterrupt();
+	}
+	status.SPCycleCount *= 6;
+	status.DPCycleCount *= 5;
+	status.DPCycleCount += status.SPCycleCount;
+
+	g_CritialSection.Unlock();
+	return (status.DPCycleCount<<16)+status.SPCycleCount;
+}	
+
+FUNC_TYPE(void) NAME_DEFINE(ProcessRDPList)(void)
+{
+	try
+	{
+		RDP_DLParser_Process();
+	}
+	catch (...)
+	{
+		TRACE0("Unknown Error in ProcessRDPList");
+		TriggerDPInterrupt();
+		TriggerSPInterrupt();
+	}
+}	
+
+FUNC_TYPE(void) NAME_DEFINE(ProcessDList)(void)
 {
 	g_CritialSection.Lock();
 	if( status.toShowCFB )
@@ -887,77 +799,6 @@ void ProcessDListStep2(void)
 	}
 
 	g_CritialSection.Unlock();
-}	
-
-FUNC_TYPE(uint32) NAME_DEFINE(ProcessDListCountCycles)(void)
-{
-#ifdef USING_THREAD
-	if (videoThread)
-	{
-		SetEvent( threadMsg[RSPMSG_PROCESSDLIST] );
-		WaitForSingleObject( threadFinished, INFINITE );
-	}
-	return 0;
-#else
-	g_CritialSection.Lock();
-	status.SPCycleCount = 100;
-	status.DPCycleCount = 0;
-	try
-	{
-		DLParser_Process((OSTask *)(g_GraphicsInfo.DMEM + 0x0FC0));
-	}
-	catch (...)
-	{
-		TRACE0("Unknown Error in ProcessDListCountCycles");
-		TriggerDPInterrupt();
-		TriggerSPInterrupt();
-	}
-	status.SPCycleCount *= 6;
-	//status.DPCycleCount += status.SPCycleCount;
-	//status.DPCycleCount *=4;
-	//status.DPCycleCount = min(200,status.DPCycleCount);
-	//status.DPCycleCount *= 15;
-	status.DPCycleCount *= 5;
-	status.DPCycleCount += status.SPCycleCount;
-
-	g_CritialSection.Unlock();
-	return (status.DPCycleCount<<16)+status.SPCycleCount;
-#endif
-}	
-
-FUNC_TYPE(void) NAME_DEFINE(ProcessRDPList)(void)
-{
-#ifdef USING_THREAD
-	if (videoThread)
-	{
-		SetEvent( threadMsg[RSPMSG_PROCESSRDPLIST] );
-		WaitForSingleObject( threadFinished, INFINITE );
-	}
-#else
-	try
-	{
-		RDP_DLParser_Process();
-	}
-	catch (...)
-	{
-		TRACE0("Unknown Error in ProcessRDPList");
-		TriggerDPInterrupt();
-		TriggerSPInterrupt();
-	}
-#endif
-}	
-
-FUNC_TYPE(void) NAME_DEFINE(ProcessDList)(void)
-{
-#ifdef USING_THREAD
-	if (videoThread)
-	{
-		SetEvent( threadMsg[RSPMSG_PROCESSDLIST] );
-		WaitForSingleObject( threadFinished, INFINITE );
-	}
-#else
-	ProcessDListStep2();
-#endif
 }	
 
 //---------------------------------------------------------------------------------------
@@ -1135,12 +976,6 @@ FUNC_TYPE(void) NAME_DEFINE(CaptureScreen) ( char * Directory )
 					sprintf(tempname, "%s-%d.png", status.screenCaptureFilename, i);
 					break;
 				}
-				//sprintf(tempname, "%s-%d.png", status.screenCaptureFilename, i);
-				//if( !PathFileExists(tempname) )
-				//{
-				//	sprintf(tempname, "%s-%d", status.screenCaptureFilename, i);
-				//	break;
-				//}
 			}
 		}
 

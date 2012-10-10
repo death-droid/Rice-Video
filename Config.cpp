@@ -144,12 +144,6 @@ const SettingInfo TextureEnhancementControlSettings[] =
 	"Less 2xSaI smooth", TEXTURE_ENHANCEMENT_WITH_SMOOTH_FILTER_4,
 };
 
-const SettingInfo colorQualitySettings[] =
-{
-	"16-bit",	TEXTURE_FMT_A4R4G4B4,
-	"32-bit (def)",	TEXTURE_FMT_A8R8G8B8,
-};
-
 const char*	strDXDeviceDescs[] = { "HAL", "REF" };
 
 
@@ -359,9 +353,6 @@ void WriteConfiguration(void)
 
 	fprintf(f, "FPSColor ");
 	fprintf(f, "%d\n", options.FPSColor);
-
-	fprintf(f, "ColorQuality ");
-	fprintf(f, "%d\n", options.colorQuality);
 
 	fprintf(f, "NormalAlphaBlender ");
 	fprintf(f, "%d\n", defaultRomOptions.bNormalBlender);
@@ -595,7 +586,6 @@ void ReadConfiguration(void)
 		options.bCacheHiResTextures = FALSE;
 		options.bDumpTexturesToFiles = FALSE;
 		options.DirectXDepthBufferSetting = 0;
-		options.colorQuality = TEXTURE_FMT_A8R8G8B8;
 		options.textureEnhancement = 0;
 		options.textureEnhancementControl = 0;
 		options.bSkipFrame = FALSE;
@@ -689,7 +679,6 @@ void ReadConfiguration(void)
 		options.DirectXMaxFSAA = ReadRegistryDwordVal("DirectXMaxFSAA");;
 		options.FPSColor = ReadRegistryDwordVal("FPSColor");;
 		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");;
-		options.colorQuality = ReadRegistryDwordVal("ColorQuality");
 		defaultRomOptions.bInN64Resolution = ReadRegistryDwordVal("InN64Resolution");
 		defaultRomOptions.bSaveVRAM = ReadRegistryDwordVal("SaveVRAM");
 		defaultRomOptions.bOverlapAutoWriteBack = ReadRegistryDwordVal("OverlapAutoWriteBack");
@@ -1109,12 +1098,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_SLIDER_ANISO,
 			"DirectX Anisotropy Filtering Setting",
 			"Use this to set the amount of anisotropic filtering."
-	},
-	{ 
-		IDC_COLOR_QUALITY,
-			"Full Screen Mode Color Quality",
-			"16 bits:  should be faster.\n"
-			"32 bits:  gives better color qualify.\n"
 	},
 	{ 
 		IDC_DEPTH_BUFFER,
@@ -2326,14 +2309,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			}
 		}
 
-		SendDlgItemMessage(hDlg, IDC_COLOR_QUALITY, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(colorQualitySettings)/sizeof(SettingInfo); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_COLOR_QUALITY, CB_INSERTSTRING, i, (LPARAM) colorQualitySettings[i].description );
-			if( colorQualitySettings[i].setting == options.colorQuality )
-				SendDlgItemMessage(hDlg, IDC_COLOR_QUALITY, CB_SETCURSEL, i, 0);
-		}
-
 		SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_INSERTSTRING, 0, (LPARAM) "Default Hz");
 		for( i=0; i<40; i++ )
@@ -2356,8 +2331,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		if( status.bGameIsRunning )
 		{
 			item = GetDlgItem(hDlg, IDC_RESOLUTION_WINDOW_MODE);
-			EnableWindow(item, FALSE);
-			item = GetDlgItem(hDlg, IDC_COLOR_QUALITY);
 			EnableWindow(item, FALSE);
 		}
 
@@ -2476,9 +2449,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			{
 				windowSetting.uFullScreenRefreshRate = CGraphicsContext::m_FullScreenRefreshRates[i-1];
 			}
-
-			i = SendDlgItemMessage(hDlg, IDC_COLOR_QUALITY, CB_GETCURSEL, 0, 0);
-			options.colorQuality = colorQualitySettings[i].setting;
 
 			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_GETCURSEL, 0, 0);
 			windowSetting.uWindowDisplayWidth = CGraphicsContext::m_FullScreenResolutions[i][0];

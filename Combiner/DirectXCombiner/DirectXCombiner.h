@@ -181,6 +181,7 @@ protected:
 	CDirectXPixelShaderCombiner(CRender *pRender);
 	~CDirectXPixelShaderCombiner();
 
+	void CleanUp(void);
 	void DisableCombiner(void);
 	void InitCombinerCycleCopy(void);
 	void InitCombinerCycleFill(void);

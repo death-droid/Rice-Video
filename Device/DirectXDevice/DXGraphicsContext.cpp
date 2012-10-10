@@ -24,46 +24,6 @@ CD3DDevWrapper    gD3DDevWrapper;
 MYD3DCAPS g_D3DDeviceCaps;
 LPDIRECT3DVERTEXSHADER9 gVertexShader = NULL;
 
-int FormatToSize(D3DFORMAT fmt)
-{
-	switch(fmt)
-	{
-	case D3DFMT_R8G8B8:
-	case D3DFMT_A8R8G8B8:
-	case D3DFMT_X8R8G8B8:
-	case D3DFMT_A2B10G10R10:
-	case D3DFMT_G16R16:
-	case D3DFMT_INDEX32:
-	case D3DFMT_D32:
-	case D3DFMT_D24S8:
-	case D3DFMT_D24X8:
-	case D3DFMT_D24X4S4:
-	case TEXTURE_FMT_A8R8G8B8:
-		return 32;
-	default:
-		/*
-		case D3DFMT_R5G6B5:
-		case D3DFMT_X1R5G5B5:
-		case D3DFMT_A1R5G5B5:
-		case D3DFMT_A4R4G4B4:
-		case D3DFMT_A8:
-		case D3DFMT_R3G3B2:
-		case D3DFMT_A8R3G3B2:
-		case D3DFMT_X4R4G4B4:
-		case D3DFMT_A8P8:
-		case D3DFMT_P8:
-		case D3DFMT_L8:
-		case D3DFMT_A8L8:
-		case D3DFMT_A4L4:
-		case D3DFMT_INDEX16:
-		case D3DFMT_D16_LOCKABLE:
-		case D3DFMT_D15S1:
-		case D3DFMT_D16:
-		*/
-		return 16;
-	}
-}
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -863,11 +823,6 @@ HRESULT CDXGraphicsContext::DoToggleFullscreen()
 	
     // Need device change if going windowed and the current device
     // can only be fullscreen
-
-   if( !m_bWindowed && !pDeviceInfo->bCanDoWindowed )
-	{
-		return ForceWindowed();
-	}
 	
     m_bReady = false;
 	
@@ -877,10 +832,10 @@ HRESULT CDXGraphicsContext::DoToggleFullscreen()
 	
     // Prepare window for windowed/fullscreen change
     AdjustWindowForChange();
-	
+
 	Lock();
+	m_pd3dDevice->Reset( &m_d3dpp );
 	CRender::GetRender()->CleanUp();
-	CleanUp();
     m_pD3D = Direct3DCreate9( D3D_SDK_VERSION );
     if( m_pD3D == NULL )
 	{
@@ -891,7 +846,6 @@ HRESULT CDXGraphicsContext::DoToggleFullscreen()
 	InitializeD3D();
 	Unlock();
 
-	
     // When moving from fullscreen to windowed mode, it is important to
     // adjust the window size after resetting the device rather than
     // beforehand to ensure that you get the window size you want.  For
@@ -902,6 +856,7 @@ HRESULT CDXGraphicsContext::DoToggleFullscreen()
     // desktop.
     if( m_bWindowed )
     {
+		SetWindowLong(m_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
         SetWindowPos( m_hWnd, HWND_NOTOPMOST,
 			m_rcWindowBounds.left, m_rcWindowBounds.top,
 			( m_rcWindowBounds.right - m_rcWindowBounds.left ),
@@ -909,7 +864,6 @@ HRESULT CDXGraphicsContext::DoToggleFullscreen()
 			SWP_SHOWWINDOW );
     }
     m_bReady = true;
-	
     return S_OK;
 }
 
@@ -1013,7 +967,7 @@ HRESULT CDXGraphicsContext::AdjustWindowForChange()
     else
     {
         // Set fullscreen-mode style
-        SetWindowLong( m_hWnd, GWL_STYLE, WS_POPUP|WS_SYSMENU|WS_VISIBLE );
+        SetWindowLong( m_hWnd, GWL_STYLE, WS_POPUP|WS_VISIBLE|WS_EX_TOPMOST );
     }
     return S_OK;
 }
@@ -1334,10 +1288,7 @@ int	CDXGraphicsContext::FindCurrentDisplayModeIndex()
 
 	for( m=0; m<device.dwNumModes; m++ )
 	{
-		if( device.modes[m].Width==windowSetting.uFullScreenDisplayWidth && device.modes[m].Height==windowSetting.uFullScreenDisplayHeight 
-			//&& device.modes[m].Format == dMode.Format 
-			&& FormatToSize(device.modes[m].Format) == FormatToSize((D3DFORMAT)options.colorQuality) 
-			)
+		if( device.modes[m].Width==windowSetting.uFullScreenDisplayWidth && device.modes[m].Height==windowSetting.uFullScreenDisplayHeight )
 		{
 			return m;
 		}
