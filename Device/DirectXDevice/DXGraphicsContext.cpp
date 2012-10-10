@@ -555,14 +555,12 @@ HRESULT CDXGraphicsContext::InitializeD3D()
     m_d3dpp.AutoDepthStencilFormat = pModeInfo->DepthStencilFormat;
 	m_d3dpp.AutoDepthStencilFormat = (D3DFORMAT)(DirectXDepthBufferSetting[options.DirectXDepthBufferSetting].number);
 	m_d3dpp.hDeviceWindow          = m_hWnd;
-	m_d3dpp.Flags				   = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
-
 	m_d3dpp.MultiSampleType        = pDeviceInfo->MultiSampleType;
+
 	m_FSAAIsEnabled = false;
 	if( pDeviceInfo->MultiSampleType != D3DMULTISAMPLE_NONE && m_maxFSAA > 0 )
 	{
-		if( SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, 
-			//D3DDEVTYPE_HAL , pAdapterInfo->d3ddmDesktop.Format, 
+		if( SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT,  
 			D3DDEVTYPE_HAL , pModeInfo->Format, 
 			m_bWindowed, pDeviceInfo->MultiSampleType, NULL ) ) )
 		{
@@ -619,11 +617,11 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 			windowSetting.uFullScreenRefreshRate = pModeInfo->RefreshRate;
 		}
     }
+
 	m_desktopFormat = pAdapterInfo->d3ddmDesktop.Format;
 	m_d3dpp.BackBufferWidth		= windowSetting.uDisplayWidth;
 	m_d3dpp.BackBufferHeight	= windowSetting.uDisplayHeight;
 
-	
     // Create the device
 	hr = m_pD3D->CreateDevice( m_dwAdapter, pDeviceInfo->DeviceType,m_hWnd, pModeInfo->dwBehavior, &m_d3dpp,	&m_pd3dDevice );
 	if( !SUCCEEDED(hr) && m_d3dpp.MultiSampleType == D3DMULTISAMPLE_NONE )
@@ -635,7 +633,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 		hr = m_pD3D->CreateDevice( m_dwAdapter, pDeviceInfo->DeviceType,m_hWnd, pModeInfo->dwBehavior, &m_d3dpp,	&m_pd3dDevice );
 	}
 
-    if( SUCCEEDED(hr) && m_pd3dDevice )
+	if( SUCCEEDED(hr) && m_pd3dDevice )
     {
 		g_pD3DDev = m_pd3dDevice;
 		gD3DDevWrapper.SetD3DDev(m_pd3dDevice);
