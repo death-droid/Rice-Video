@@ -201,8 +201,6 @@
     <ClInclude Include="Texture\TextureFilters\TextureFilters_2xsai.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters_hq2x.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters_hq4x.h" />
-    <ClInclude Include="Texture\TextureFilters\TextureFilters_lq2x.h" />
-    <ClInclude Include="Texture\TextureFilters\TextureFilters_texture2x.h" />
     <ClInclude Include="Parser\RDP_Texture.h" />
     <ClInclude Include="Parser\RSP_Parser.h" />
     <ClInclude Include="Parser\Timing.h" />
@@ -267,10 +265,6 @@
     <ClCompile Include="Texture\TextureFilters\TextureFilters_2xsai.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters_hq2x.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters_hq4x.cpp" />
-    <ClCompile Include="Texture\TextureFilters\TextureFilters_lq2x.cpp" />
-    <ClCompile Include="Texture\TextureFilters\TextureFilters_sharpen.cpp" />
-    <ClCompile Include="Texture\TextureFilters\TextureFilters_smooth.cpp" />
-    <ClCompile Include="Texture\TextureFilters\TextureFilters_texture2x.cpp" />
     <ClCompile Include="Parser\RSP_Parser.cpp" />
     <ClCompile Include="Parser\RSP_S2DEX.cpp" />
   </ItemGroup>

@@ -124,24 +124,10 @@ const SettingInfo ForceTextureFilterSettings[] =
 const SettingInfo TextureEnhancementSettings[] =
 {
 	"N64 original texture (No enhancement)",	TEXTURE_NO_ENHANCEMENT,
-	"2x (Double the texture size)",	TEXTURE_2X_ENHANCEMENT,
 	"2xSaI", TEXTURE_2XSAI_ENHANCEMENT,
 	"HQ2x", TEXTURE_HQ2X_ENHANCEMENT,
 	"HQ2xS", TEXTURE_HQ2XS_ENHANCEMENT,
-	"LQ2x", TEXTURE_LQ2X_ENHANCEMENT,
-	"LQ2xS", TEXTURE_LQ2XS_ENHANCEMENT,
 	"HQ4x", TEXTURE_HQ4X_ENHANCEMENT,
-	"Sharpen", TEXTURE_SHARPEN_ENHANCEMENT,
-	"Sharpen More", TEXTURE_SHARPEN_MORE_ENHANCEMENT,
-};
-
-const SettingInfo TextureEnhancementControlSettings[] =
-{
-	"Normal",	TEXTURE_ENHANCEMENT_NORMAL,
-	"Smooth",	TEXTURE_ENHANCEMENT_WITH_SMOOTH_FILTER_1,
-	"Less smooth", TEXTURE_ENHANCEMENT_WITH_SMOOTH_FILTER_2,
-	"2xSaI smooth", TEXTURE_ENHANCEMENT_WITH_SMOOTH_FILTER_3,
-	"Less 2xSaI smooth", TEXTURE_ENHANCEMENT_WITH_SMOOTH_FILTER_4,
 };
 
 const char*	strDXDeviceDescs[] = { "HAL", "REF" };
@@ -372,9 +358,6 @@ void WriteConfiguration(void)
 	fprintf(f, "ForceSoftwareTnL ");
 	fprintf(f, "%d\n", options.bForceSoftwareTnL);
 
-	fprintf(f, "ForceSoftwareClipper ");
-	fprintf(f, "%d\n", options.bForceSoftwareClipper);
-
 	fprintf(f, "EnableSSE ");
 	fprintf(f, "%d\n", options.bEnableSSE);
 
@@ -428,9 +411,6 @@ void WriteConfiguration(void)
 
 	fprintf(f, "TexRectOnly ");
 	fprintf(f, "%d\n", (uint32)options.bTexRectOnly);
-
-	fprintf(f, "SmallTextureOnly ");
-	fprintf(f, "%d\n", (uint32)options.bSmallTextureOnly);
 
 	fprintf(f, "LoadHiResTextures ");
 	fprintf(f, "%d\n", (uint32)options.bLoadHiResTextures);
@@ -573,14 +553,12 @@ void ReadConfiguration(void)
 		options.bFullTMEM = FALSE;
 		options.bUseFullTMEM = FALSE;
 		options.bForceSoftwareTnL = TRUE;
-		options.bForceSoftwareClipper = TRUE;
 		options.bEnableSSE = TRUE;
 		options.bEnableVertexShader = FALSE;
 		options.RenderBufferSetting=1;
 		options.forceTextureFilter = 0;
 		options.textureQuality = TXT_QUALITY_DEFAULT;
 		options.bTexRectOnly = FALSE;
-		options.bSmallTextureOnly = FALSE;
 		options.bLoadHiResTextures = FALSE;
 		// set caching by default to "off"
 		options.bCacheHiResTextures = FALSE;
@@ -652,7 +630,6 @@ void ReadConfiguration(void)
 		options.bMipMaps = ReadRegistryDwordVal("MipMaps");
 		options.bFullTMEM = ReadRegistryDwordVal("FullTMEMEmulation");
 		options.bForceSoftwareTnL = ReadRegistryDwordVal("ForceSoftwareTnL");
-		options.bForceSoftwareClipper = ReadRegistryDwordVal("ForceSoftwareClipper");
 		options.bEnableSSE = ReadRegistryDwordVal("EnableSSE");
 		options.bEnableVertexShader = ReadRegistryDwordVal("EnableVertexShader");
 		options.bEnableVertexShader = FALSE;
@@ -666,7 +643,6 @@ void ReadConfiguration(void)
 		options.forceTextureFilter = ReadRegistryDwordVal("ForceTextureFilter");
 		options.textureQuality = ReadRegistryDwordVal("TextureQuality");
 		options.bTexRectOnly = ReadRegistryDwordVal("TexRectOnly");
-		options.bSmallTextureOnly = ReadRegistryDwordVal("SmallTextureOnly");
 		options.bLoadHiResTextures = ReadRegistryDwordVal("LoadHiResTextures");
 		// load key value for hires caching from registry
 		options.bCacheHiResTextures = ReadRegistryDwordVal("CacheHiResTextures");
@@ -1126,27 +1102,10 @@ ToolTipMsg ttmsg[] = {
 			"- Sharpen more, do more sharpening"
 	},
 	{ 
-		IDC_TEXTURE_ENHANCEMENT_CONTROL,
-			"Teture enhancement control",
-			"Controls the texture enhancement filters.\n\n"
-			"- Normal                without control\n"
-			"- small texture only,   to enhance the texture for small textures only\n"
-			"- Smooth                to apply a smooth filter after enhancement\n"
-			"- Less smooth           to apply a (less) smooth filter\n"
-			"- 2xSai smooth          to apply smooth filter for 2xSai artifacts effects\n"
-			"- sxSai less smooth     again, this is for 2xSai, but with less smooth"
-	},
-	{ 
 		IDC_FORCE_TEXTURE_FILTER,
 			"Force texture filter",
 			"Force Nearest filter, or force bilinear filtering\n"
 	},
-	{ 
-		IDC_SMALL_TXT_ONLY,
-			"For small textures only",
-			"If enabled, texture enhancement will be done only for textures width+height <=128\n"
-	},
-
 	{ 
 		IDC_TEXRECT_ONLY,
 			"For TxtRect ucode only",
@@ -1296,18 +1255,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_TOOLTIP,
 			"Display tooltips",
 			"Enable/Disable tooltip display in the configuration dialog box\n\n"
-	},
-	{ 
-		IDC_SOFTWARE_CLIPPER,
-			"Software Vertex Clipper",
-			"Enable/Disable Software Vertex Clipper.\n\n"
-			"Games graphics are rendered as triangles. Each triangle is determined by 3 vertexes. A triangle could "
-			"be completely or partially out of screen as its vertexes go out of screen in X, Y and Z directions. The "
-			"process of clipping is to chop the triangle along the boundary by converting the triangle to 1 or "
-			"more in-bound triangles.\n\n"
-			"The software clipper is needed for most new video cards, but not for most older video cards\n"
-			"If your video card works without it, then don't turn it on since it is CPU intensive, games"
-			" will become slower if you have a slower CPU.\n"
 	},
 	{ 
 		IDC_FORCE_DEPTH_COMPARE,
@@ -1683,7 +1630,6 @@ char * right(char *src, int nchars)
 		strncpy(dst, src + srclen - nchars, nchars);
 		dst[nchars]=0;
 	}
-	
 	
 	return dst;
 }
@@ -2505,8 +2451,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_SETCURSEL, options.DirectXDevice, 0);
 
 		SendDlgItemMessage(hDlg, IDC_SOFTWARE_TNL, BM_SETCHECK, options.bForceSoftwareTnL ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_SOFTWARE_CLIPPER, BM_SETCHECK, options.bForceSoftwareClipper ? BST_CHECKED : BST_UNCHECKED, 0);\
-
 
 		SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_RESETCONTENT, 0, 0);
 		for( i=0; i<sizeof(OnScreenDisplaySettings)/sizeof(SettingInfo); i++ )
@@ -2519,8 +2463,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		SendDlgItemMessage(hDlg, IDC_DX_SWAP_EFFECT, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_RESETCONTENT, 0, 0);
 		item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
-		EnableWindow(item, TRUE);
-		item = GetDlgItem(hDlg, IDC_SOFTWARE_CLIPPER );
 		EnableWindow(item, TRUE);
 
 		SendDlgItemMessage(hDlg, IDC_DX_SWAP_EFFECT, CB_RESETCONTENT, 0, 0);
@@ -2719,7 +2661,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		{
         case IDOK:
 			options.bForceSoftwareTnL = (SendDlgItemMessage(hDlg, IDC_SOFTWARE_TNL, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bForceSoftwareClipper = (SendDlgItemMessage(hDlg, IDC_SOFTWARE_CLIPPER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			i = SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_GETCURSEL, 0, 0);
 			options.bDisplayOnscreenFPS = OnScreenDisplaySettings[i].setting;
@@ -2764,8 +2705,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	int i;
-	HWND item;
-	int setting;
 
 	switch(message)
 	{
@@ -2779,14 +2718,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_INSERTSTRING, i, (LPARAM) TextureEnhancementSettings[i].description);
 			if( TextureEnhancementSettings[i].setting == options.textureEnhancement)
 				SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_SETCURSEL, i, 0);
-		}
-
-		SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT_CONTROL, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(TextureEnhancementControlSettings)/sizeof(SettingInfo); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT_CONTROL, CB_INSERTSTRING, i, (LPARAM) TextureEnhancementControlSettings[i].description);
-			if( TextureEnhancementControlSettings[i].setting == options.textureEnhancementControl)
-				SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT_CONTROL, CB_SETCURSEL, i, 0);
 		}
 
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_QUALITY, CB_RESETCONTENT, 0, 0);
@@ -2803,13 +2734,8 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		}
 		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_SETCURSEL, options.forceTextureFilter, 0);
 
-		item = GetDlgItem(hDlg, IDC_TEXTURE_ENHANCEMENT_CONTROL );
-		if( options.textureEnhancement == TEXTURE_NO_ENHANCEMENT || options.textureEnhancement >= TEXTURE_SHARPEN_ENHANCEMENT )
-			EnableWindow(item, FALSE);
-
 		SendDlgItemMessage(hDlg, IDC_FULL_TMEM, BM_SETCHECK, options.bFullTMEM ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXRECT_ONLY, BM_SETCHECK, options.bTexRectOnly ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_SMALL_TXT_ONLY, BM_SETCHECK, options.bSmallTextureOnly ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_SETCHECK, options.bLoadHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 		// fetch the value the user has set for caching from dialog
 		SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_SETCHECK, options.bCacheHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -2849,30 +2775,9 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
-		case IDC_TEXTURE_ENHANCEMENT:
-			if( HIWORD(wParam) == CBN_SELCHANGE )
-			{
-				setting = SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_GETCURSEL, 0, 0);
-				item = GetDlgItem(hDlg, IDC_TEXTURE_ENHANCEMENT_CONTROL );
-				if( TextureEnhancementSettings[setting].setting == TEXTURE_NO_ENHANCEMENT || 
-					TextureEnhancementSettings[setting].setting >= TEXTURE_SHARPEN_ENHANCEMENT )
-				{
-					EnableWindow(item, FALSE);
-				}
-				else
-				{
-					EnableWindow(item, TRUE);
-				}
-				break;
-			}
-			return(TRUE);
-			break;
-
         case IDOK:
 			i = SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_GETCURSEL, 0, 0);
 			options.textureEnhancement = TextureEnhancementSettings[i].setting;
-			i = SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT_CONTROL, CB_GETCURSEL, 0, 0);
-			options.textureEnhancementControl = TextureEnhancementControlSettings[i].setting;
 			i = SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0);
 			options.forceTextureFilter = ForceTextureFilterSettings[i].setting;
 			i = SendDlgItemMessage(hDlg, IDC_TEXTURE_QUALITY, CB_GETCURSEL, 0, 0);
@@ -2880,8 +2785,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 	
 			options.bFullTMEM = (SendDlgItemMessage(hDlg, IDC_FULL_TMEM, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bTexRectOnly = (SendDlgItemMessage(hDlg, IDC_TEXRECT_ONLY, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bSmallTextureOnly = (SendDlgItemMessage(hDlg, IDC_SMALL_TXT_ONLY, BM_GETCHECK, 0, 0) == BST_CHECKED);
-
 			{
 				BOOL bLoadHiResTextures = options.bLoadHiResTextures;
 				BOOL bCacheHiResTextures = options.bCacheHiResTextures;

@@ -61,24 +61,10 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	uint32 nHeight = srcInfo.dwCreatedHeight;
 	bool bPixelSize4 = (pEntry->pTexture->GetPixelSize() == 4);
 
-	//Sharpen option is enabled, sharpen the texture
-	if( options.textureEnhancement == TEXTURE_SHARPEN_ENHANCEMENT || options.textureEnhancement == TEXTURE_SHARPEN_MORE_ENHANCEMENT )
-	{
-		SharpenFilter((uint32*)srcInfo.lpSurface, nWidth, nHeight, nWidth, options.textureEnhancement, bPixelSize4);
-		//Set the enhcanement flag for the texture
-		pEntry->dwEnhancementFlag = options.textureEnhancement;
-		//End the draw update
-		pEntry->pTexture->EndUpdate(&srcInfo);
-		//Delete any allocated memory for the enhanced texture
-		SAFE_DELETE(pEntry->pEnhancedTexture);
-		return;
-	}
-
 	pEntry->dwEnhancementFlag = options.textureEnhancement;
 
 	// Don't enhance for large textures
-	if( nWidth + nHeight > 1024/2 || 
-	  ( options.bSmallTextureOnly && nWidth + nHeight > 256))
+	if( nWidth + nHeight > 1024/2 )
 	{
 		//End the draw update
 		pEntry->pTexture->EndUpdate(&srcInfo);
@@ -118,33 +104,11 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 				case TEXTURE_HQ2XS_ENHANCEMENT:
 					hq2xS((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight, bPixelSize4);
 					break;
-				case TEXTURE_LQ2X_ENHANCEMENT:
-					lq2x((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight, bPixelSize4);
-					break;
-				case TEXTURE_LQ2XS_ENHANCEMENT:
-					lq2xS((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight, bPixelSize4);
-					break;
-				case TEXTURE_2X_ENHANCEMENT:
-					Texture2x((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight, bPixelSize4);
-					break;
 				case TEXTURE_HQ4X_ENHANCEMENT:
 					hq4x((uint8*)(srcInfo.lpSurface), (uint8*)(destInfo.lpSurface), realwidth, realheight, nWidth, destInfo.lPitch, bPixelSize4);
 					break;
 				default:
-					Texture2x((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight, bPixelSize4);
 					break;
-			}
-
-			if( options.textureEnhancementControl >= TEXTURE_ENHANCEMENT_WITH_SMOOTH_FILTER_1 )
-			{
-				if( options.textureEnhancement != TEXTURE_HQ4X_ENHANCEMENT )
-				{
-					SmoothFilter((uint32*)destInfo.lpSurface, realwidth<<1, realheight<<1, nWidth<<1, options.textureEnhancementControl, bPixelSize4);
-				}
-				else
-				{
-					SmoothFilter((uint32*)destInfo.lpSurface, realwidth<<2, realheight<<2, nWidth<<2, options.textureEnhancementControl, bPixelSize4);
-				}
 			}
 
 			pSurfaceHandler->EndUpdate(&destInfo);	

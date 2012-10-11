@@ -229,8 +229,8 @@ void ApplyZBias(uint32 bias) //FIXME
 	float f1 = bias > 0 ? -0.002f : 0.0f;
 	float f2 = bias > 0 ? 1.0f : 0.0f;
 	// Change by the bias
-	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,*(DWORD*)(&f1));
-	gD3DDevWrapper.SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, *(DWORD*)(&f2));
+//	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,*(DWORD*)(&f1));
+	//gD3DDevWrapper.SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, *(DWORD*)(&f2));
 }
 
 void D3DRender::SetZBias(int bias)
@@ -289,16 +289,9 @@ bool D3DRender::RenderFlushTris()
 	else
 	{
 		gD3DDevWrapper.SetFVF(RICE_FVF_TLITVERTEX);
-		if( options.bForceSoftwareClipper )
-		{
-			ClipVertexes();
-			if( g_clippedVtxCount > 0 )
-			g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_clippedVtxCount/3, g_clippedVtxBuffer, sizeof(TLITVERTEX));
-		}
-		else
-		{
-			g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, gRSP.numVertices/3, g_vtxBuffer, sizeof(TLITVERTEX));
-		}
+		ClipVertexes();
+		if( g_clippedVtxCount > 0 )
+		g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_clippedVtxCount/3, g_clippedVtxBuffer, sizeof(TLITVERTEX));
 	}
 
 	return true;

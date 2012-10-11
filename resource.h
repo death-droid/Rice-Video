@@ -72,7 +72,6 @@
 #define IDC_FOG                         1066
 #define IDC_DISABLE_COMBINER            1068
 #define IDC_SSE                         1069
-#define IDC_SOFTWARE_CLIPPER            1070
 #define IDC_SETTING_LABEL1              1071
 #define IDC_SETTING_LABEL2              1072
 #define IDC_SETTING_LABEL3              1073
@@ -80,7 +79,6 @@
 #define IDC_SETTING_LABEL4              1075
 #define IDC_TEXTURE_ENHANCEMENT         1076
 #define IDC_FORCE_TEXTURE_FILTER        1077
-#define IDC_TEXTURE_ENHANCEMENT_CONTROL 1078
 #define IDC_FORCE_BUFFER_CLEAR          1079
 #define IDC_OPTION_GROUP                1080
 #define IDC_OPTION_GROUP2               1081
@@ -135,7 +133,6 @@
 #define IDC_LABEL8                      1136
 #define IDC_USE_CI_WIDTH_AND_RATIO      1137
 #define IDC_TEXRECT_ONLY                1138
-#define IDC_SMALL_TXT_ONLY              1139
 #define IDC_HIDE_ADVANCED_OPTIONS       1140
 #define IDC_LOAD_HIRES_TEXTURE          1141
 #define IDC_CHECK2                      1141

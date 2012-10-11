@@ -357,7 +357,6 @@ FUNC_TYPE(int) NAME_DEFINE(RomOpen) (void)
 	{
 		g_dwRamSize = 0x400000;
 	}
-	
 #ifdef _DEBUG
 	if( debuggerPause )
 	{
