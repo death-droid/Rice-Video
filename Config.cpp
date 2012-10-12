@@ -84,16 +84,6 @@ char	szIniFileName[300];
 char	szIniSettingsFileName[300];
 
 //=======================================================
-
-const SettingInfo TextureQualitySettings[] =
-{
-	"Default",			FORCE_DEFAULT_FILTER,
-	"32-bit Texture",	FORCE_POINT_FILTER,
-	"16-bit Texture",	FORCE_LINEAR_FILTER,
-};
-
-
-
 const SettingInfo ForceTextureFilterSettings[] =
 {
 	"N64 Default Texture Filter",	FORCE_DEFAULT_FILTER,
@@ -367,9 +357,6 @@ void WriteConfiguration(void)
 	fprintf(f, "ForceTextureFilter ");
 	fprintf(f, "%d\n", (uint32)options.forceTextureFilter);
 
-	fprintf(f, "TextureQuality ");
-	fprintf(f, "%d\n", (uint32)options.textureQuality);
-
 	fprintf(f, "TexRectOnly ");
 	fprintf(f, "%d\n", (uint32)options.bTexRectOnly);
 
@@ -387,9 +374,6 @@ void WriteConfiguration(void)
 
 	fprintf(f, "FullScreenFrequency ");
 	fprintf(f, "%d\n", (uint32)windowSetting.uFullScreenRefreshRate);
-
-	fprintf(f, "InN64Resolution ");
-	fprintf(f, "%d\n", (uint32)defaultRomOptions.bInN64Resolution);
 
 	fprintf(f, "SaveVRAM ");
 	fprintf(f, "%d\n", (uint32)defaultRomOptions.bSaveVRAM);
@@ -513,7 +497,6 @@ void ReadConfiguration(void)
 		options.bEnableSSE = TRUE;
 		options.bEnableVertexShader = FALSE;
 		options.forceTextureFilter = 0;
-		options.textureQuality = TXT_QUALITY_DEFAULT;
 		options.bTexRectOnly = FALSE;
 		options.bLoadHiResTextures = FALSE;
 		// set caching by default to "off"
@@ -539,7 +522,6 @@ void ReadConfiguration(void)
 
 		defaultRomOptions.bNormalBlender = FALSE;
 		defaultRomOptions.bNormalCombiner = FALSE;
-		defaultRomOptions.bInN64Resolution = FALSE;
 		defaultRomOptions.bSaveVRAM = FALSE;
 		defaultRomOptions.bOverlapAutoWriteBack = FALSE;
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
@@ -596,7 +578,6 @@ void ReadConfiguration(void)
 		options.textureEnhancement = ReadRegistryDwordVal("TextureEnhancement");
 		options.textureEnhancementControl = ReadRegistryDwordVal("TextureEnhancementControl");
 		options.forceTextureFilter = ReadRegistryDwordVal("ForceTextureFilter");
-		options.textureQuality = ReadRegistryDwordVal("TextureQuality");
 		options.bTexRectOnly = ReadRegistryDwordVal("TexRectOnly");
 		options.bLoadHiResTextures = ReadRegistryDwordVal("LoadHiResTextures");
 		// load key value for hires caching from registry
@@ -610,7 +591,6 @@ void ReadConfiguration(void)
 		options.DirectXMaxFSAA = ReadRegistryDwordVal("DirectXMaxFSAA");
 		options.FPSColor = ReadRegistryDwordVal("FPSColor");
 		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");
-		defaultRomOptions.bInN64Resolution = ReadRegistryDwordVal("InN64Resolution");
 		defaultRomOptions.bSaveVRAM = ReadRegistryDwordVal("SaveVRAM");
 		defaultRomOptions.bOverlapAutoWriteBack = ReadRegistryDwordVal("OverlapAutoWriteBack");
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = ReadRegistryDwordVal("DoubleSizeForSmallTxtrBuf");
@@ -1287,14 +1267,6 @@ ToolTipMsg ttmsg[] = {
 			"Sorry for an non-perfect implementation."
 	},
 	{ 
-		IDC_IN_N64_RESOLUTION,
-			"Frame buffer emulation in N64 native resolution",
-			"Back buffer resolution on PC is usually much higher than the N64 native resolution. Back buffer texture "
-			"can be saved and used in PC resolution to give the best speed and quality, but this needs large amounts "
-			"of video card memory. \n\n"
-			"If your video card has 32MB or less memory, you'd better to enable this option."
-	},
-	{ 
 		IDC_SAVE_VRAM,
 			"Try to save video RAM for lower end video cards",
 			"If enabled, will automatically check if render-to-texture or saved back buffer texture has "
@@ -1306,13 +1278,6 @@ ToolTipMsg ttmsg[] = {
 			"Automatically write overlapped texture back to RDRAM",
 			"If enabled, such render-to-textures or saved back buffer textures will be written back "
 			"to RDRAM if they are to be covered partially by new textures.\n"
-	},
-	{ 
-		IDC_TEXTURE_QUALITY,
-			"Texture Quality",
-			"Default - Use the same quality as color buffer quality\n"
-			"32-bit Texture - Always use 32 bit textures\n"
-			"16-bit Texture - Always use 16 bit textures\n"
 	},
 	{ 
 		IDC_TXTR_BUF_DOUBLE_SIZE,
@@ -2570,13 +2535,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 				SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_SETCURSEL, i, 0);
 		}
 
-		SendDlgItemMessage(hDlg, IDC_TEXTURE_QUALITY, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(TextureQualitySettings)/sizeof(SettingInfo); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_TEXTURE_QUALITY, CB_INSERTSTRING, i, (LPARAM) TextureQualitySettings[i].description);
-		}
-		SendDlgItemMessage(hDlg, IDC_TEXTURE_QUALITY, CB_SETCURSEL, options.textureQuality, 0);
-
 		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_RESETCONTENT, 0, 0);
 		for( i=0; i<sizeof(ForceTextureFilterSettings)/sizeof(SettingInfo); i++ )
 		{
@@ -2630,9 +2588,7 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			options.textureEnhancement = TextureEnhancementSettings[i].setting;
 			i = SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0);
 			options.forceTextureFilter = ForceTextureFilterSettings[i].setting;
-			i = SendDlgItemMessage(hDlg, IDC_TEXTURE_QUALITY, CB_GETCURSEL, 0, 0);
-			options.textureQuality = TextureQualitySettings[i].setting;
-	
+
 			options.bFullTMEM = (SendDlgItemMessage(hDlg, IDC_FULL_TMEM, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bTexRectOnly = (SendDlgItemMessage(hDlg, IDC_TEXRECT_ONLY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			{
@@ -2715,7 +2671,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, defaultRomOptions.bNormalCombiner ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_IN_N64_RESOLUTION, BM_SETCHECK, defaultRomOptions.bInN64Resolution ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_SAVE_VRAM, BM_SETCHECK, defaultRomOptions.bSaveVRAM ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_AUTO_WRITE_BACK, BM_SETCHECK, defaultRomOptions.bOverlapAutoWriteBack ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_SETCHECK, defaultRomOptions.bDoubleSizeForSmallTxtrBuf ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -2740,13 +2695,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_INSERTSTRING, i, (LPARAM) renderToTextureSettings[i]);
 		}
 		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_SETCURSEL, defaultRomOptions.N64RenderToTextureEmuType, 0);
-
-		if( defaultRomOptions.bInN64Resolution )
-		{
-			item = GetDlgItem(hDlg,IDC_TXTR_BUF_DOUBLE_SIZE);
-			EnableWindow(item,FALSE);
-		}
-
         return(TRUE);
     
     //Propertysheet handling
@@ -2781,26 +2729,12 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
-        case IDC_IN_N64_RESOLUTION:
-			defaultRomOptions.bInN64Resolution = (SendDlgItemMessage(hDlg, IDC_IN_N64_RESOLUTION, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			if( defaultRomOptions.bInN64Resolution )
-			{
-				item = GetDlgItem(hDlg,IDC_TXTR_BUF_DOUBLE_SIZE);
-				EnableWindow(item,FALSE);
-			}
-			else
-			{
-				item = GetDlgItem(hDlg,IDC_TXTR_BUF_DOUBLE_SIZE);
-				EnableWindow(item,TRUE);
-			}
-			break;
 		case IDOK:
 			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bNormalCombiner = (SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.bInN64Resolution = (SendDlgItemMessage(hDlg, IDC_IN_N64_RESOLUTION, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bSaveVRAM = (SendDlgItemMessage(hDlg, IDC_SAVE_VRAM, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bOverlapAutoWriteBack = (SendDlgItemMessage(hDlg, IDC_AUTO_WRITE_BACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bDoubleSizeForSmallTxtrBuf = (SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_GETCHECK, 0, 0) == BST_CHECKED);

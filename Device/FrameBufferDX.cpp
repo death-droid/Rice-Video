@@ -42,39 +42,18 @@ void DXFrameBufferManager::CopyBackBufferToRenderTexture(int idx, RecentCIInfo &
 
 		if( pBackBufferToSave )
 		{
-			if( defaultRomOptions.bInN64Resolution )
+			if( pDstRect == NULL )
 			{
-				// Need to scale down from PC resolution to N64 resolution
-				if( pDstRect == NULL )
-				{
-					RECT srcrect = {0,0,windowSetting.uDisplayWidth -1,windowSetting.uDisplayHeight-1};
-					RECT dstrect = {0,0,ciInfo.dwWidth-1,ciInfo.dwHeight-1};
-					res = D3DXLoadSurfaceFromSurface(pSavedBuffer,NULL,&dstrect,pBackBufferToSave,NULL,&srcrect,D3DX_FILTER_LINEAR,0xFF000000);
-				}
-				else
-				{
-					float scaleX = windowSetting.uDisplayWidth/(float)ciInfo.dwWidth;
-					float scaleY = windowSetting.uDisplayHeight/(float)ciInfo.dwHeight;
-					RECT srcr2 = { uint32(pDstRect->left*scaleX), uint32(pDstRect->top*scaleY),
-						uint32(pDstRect->right*scaleX), uint32(pDstRect->bottom*scaleY) };
-					res = D3DXLoadSurfaceFromSurface(pSavedBuffer,NULL,pDstRect,pBackBufferToSave,NULL,&srcr2,D3DX_FILTER_LINEAR,0xFF000000);
-				}
+				res = g_pD3DDev->UpdateSurface(pBackBufferToSave,NULL,pSavedBuffer,NULL);
 			}
 			else
 			{
-				if( pDstRect == NULL )
-				{
-					res = g_pD3DDev->UpdateSurface(pBackBufferToSave,NULL,pSavedBuffer,NULL);
-				}
-				else
-				{
-					float scaleX = windowSetting.uDisplayWidth/(float)ciInfo.dwWidth;
-					float scaleY = windowSetting.uDisplayHeight/(float)ciInfo.dwHeight;
-					RECT srcr = { uint32(pDstRect->left*scaleX), uint32(pDstRect->top*scaleY),
-						uint32(pDstRect->right*scaleX), uint32(pDstRect->bottom*scaleY) };
-					POINT srcp = {uint32(pDstRect->left*scaleX), uint32(pDstRect->top*scaleY)};
-					res = g_pD3DDev->UpdateSurface(pBackBufferToSave,&srcr,pSavedBuffer,&srcp);
-				}
+				float scaleX = windowSetting.uDisplayWidth/(float)ciInfo.dwWidth;
+				float scaleY = windowSetting.uDisplayHeight/(float)ciInfo.dwHeight;
+				RECT srcr = { uint32(pDstRect->left*scaleX), uint32(pDstRect->top*scaleY),
+					uint32(pDstRect->right*scaleX), uint32(pDstRect->bottom*scaleY) };
+				POINT srcp = {uint32(pDstRect->left*scaleX), uint32(pDstRect->top*scaleY)};
+				res = g_pD3DDev->UpdateSurface(pBackBufferToSave,&srcr,pSavedBuffer,&srcp);
 			}
 
 			if( res != S_OK )

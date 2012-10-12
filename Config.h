@@ -55,12 +55,6 @@ enum {
 };
 
 enum {
-	TXT_QUALITY_DEFAULT,
-	TXT_QUALITY_32BIT,
-	TXT_QUALITY_16BIT,
-};
-
-enum {
 	FORCE_DEFAULT_FILTER,
 	FORCE_POINT_FILTER,
 	FORCE_LINEAR_FILTER,
@@ -165,7 +159,6 @@ typedef struct {
 	uint32	forceTextureFilter;
 	uint32	textureEnhancement;
 	uint32	textureEnhancementControl;
-	uint32	textureQuality;
 	BOOL	bTexRectOnly;
 	BOOL	bDumpTexturesToFiles;
 	BOOL	bLoadHiResTextures;
@@ -218,7 +211,6 @@ typedef struct {
 	uint32	screenUpdateSetting;
 	BOOL 	bNormalCombiner;
 	BOOL 	bNormalBlender;
-	BOOL 	bInN64Resolution;
 	BOOL 	bDoubleSizeForSmallTxtrBuf;
 	BOOL 	bSaveVRAM;
 	BOOL 	bOverlapAutoWriteBack;

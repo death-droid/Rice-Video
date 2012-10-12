@@ -117,10 +117,7 @@ LPRICETEXTURE CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, Te
 			pf = D3DFMT_A4R4G4B4;
 			break;
 		default:
-			if( options.textureQuality == TXT_QUALITY_32BIT )
-				pf = D3DFMT_A8R8G8B8;
-			else
-				pf = D3DFMT_A4R4G4B4;
+			pf = D3DFMT_A4R4G4B4;
 			break;
 		}
 		break;
@@ -134,10 +131,7 @@ LPRICETEXTURE CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, Te
 			pf = D3DFMT_A8R8G8B8;
 			break;
 		default:
-			if( options.textureQuality == TXT_QUALITY_16BIT )
-				pf = D3DFMT_A4R4G4B4;
-			else
-				pf = D3DFMT_A8R8G8B8;
+			pf = D3DFMT_A8R8G8B8;
 			break;
 		}
 		break;
