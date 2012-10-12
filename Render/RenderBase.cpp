@@ -1141,9 +1141,6 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 	UpdateCombinedMatrix();
 
-#if _MSC_VER > 1200
-
-
 	// This function is called upon SPvertex
 	// - do vertex matrix transform
 	// - do vertex lighting
@@ -1245,7 +1242,6 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 	VTX_DUMP(TRACE2("Setting Vertexes: %d - %d\n", dwV0, dwV0+dwNum-1));
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_VERTEX_CMD,{TRACE0("Paused at Vertex Cmd");});
-#endif
 }
 
 void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)

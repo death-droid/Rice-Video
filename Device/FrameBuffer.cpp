@@ -101,7 +101,7 @@ uint16 ConvertRGBATo555(uint8 r, uint8 g, uint8 b, uint8 a)
 
 uint16 ConvertRGBATo555(uint32 color32)
 {
-	return uint16((((color32>>19)&0x1F)<<RGBA5551_RedShift) | (((color32>>11)&0x1F)<<RGBA5551_GreenShift) | (((color32>>3)&0x1F)<<RGBA5551_BlueShift) | ((color32>>31)));;
+	return uint16((((color32>>19)&0x1F)<<RGBA5551_RedShift) | (((color32>>11)&0x1F)<<RGBA5551_GreenShift) | (((color32>>3)&0x1F)<<RGBA5551_BlueShift) | ((color32>>31)));
 }
 
 void FrameBufferManager::UpdateRecentCIAddr(SetImgInfo &ciinfo)

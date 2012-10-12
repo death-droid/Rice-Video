@@ -243,7 +243,7 @@ bool StartVideo(void)
 	if( status.dwTvSystem == TV_SYSTEM_NTSC )
 		status.fRatio = 0.75f;
 	else
-		status.fRatio = 9/11.0f;;
+		status.fRatio = 9/11.0f;
 	
 	InitExternalTextures();
 	

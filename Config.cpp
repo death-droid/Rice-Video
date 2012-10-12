@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define INI_FILE		"RiceVideo.ini"
 #define CONFIG_FILE     "RiceVideo.cfg"
-char *project_name =	"RiceVideo";
+char *project_name =	"RiceVideo 0.1";
 
 // Disable the config dialog box to allow Vtune call graph feature to work
 #define ENABLE_CONFIG_DIALOG
@@ -40,25 +40,6 @@ char *frameBufferSettings[] =
 	"With Emulator Read Only",
 	"With Emulator Write Only",
 };
-
-const int resolutions[][2] =
-{
-	{320, 240},
-	{400, 300},
-	{480, 360},
-	{512, 384},
-	{640, 480},
-	{800, 600},
-	{1024, 768},
-	{1152, 864},
-	{1280, 960},
-	{1400, 1050},
-	{1600, 1200},
-	{1920, 1440},
-	{2048, 1536},
-};
-
-const int numberOfResolutions = sizeof(resolutions)/sizeof(int)/2;
 
 char *frameBufferWriteBackControlSettings[] =
 {
@@ -508,11 +489,10 @@ bool isMMXSupported()
 
 bool isSSESupported() 
 {
-#if _MSC_VER > 1200
 	int SSESupport;
-
 	// And finally, check the CPUID for Streaming SIMD Extensions support.
-	_asm{
+	__asm
+	{
 		mov		eax, 1			// Put a "1" in eax to tell CPUID to get the feature bits
 		cpuid					// Perform CPUID (puts processor feature info into EDX)
 		and		edx, 02000000h	// Test bit 25, for Streaming SIMD Extensions existence.
@@ -523,9 +503,6 @@ bool isSSESupported()
 		return true; 
 	else 
 		return false; 
-#else
-	return false;
-#endif
 } 
 
 void ReadConfiguration(void)
@@ -650,11 +627,11 @@ void ReadConfiguration(void)
 		options.bDumpTexturesToFiles = FALSE;	// Never starting the plugin with this option on
 		options.DirectXDevice = ReadRegistryDwordVal("DirectXDevice");
 		options.DirectXDepthBufferSetting = ReadRegistryDwordVal("DirectXDepthBufferSetting");
-		options.DirectXAntiAliasingValue = ReadRegistryDwordVal("DirectXAntiAliasingValue");;
-		options.DirectXAnisotropyValue = ReadRegistryDwordVal("DirectXAnisotropyValue");;
-		options.DirectXMaxFSAA = ReadRegistryDwordVal("DirectXMaxFSAA");;
-		options.FPSColor = ReadRegistryDwordVal("FPSColor");;
-		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");;
+		options.DirectXAntiAliasingValue = ReadRegistryDwordVal("DirectXAntiAliasingValue");
+		options.DirectXAnisotropyValue = ReadRegistryDwordVal("DirectXAnisotropyValue");
+		options.DirectXMaxFSAA = ReadRegistryDwordVal("DirectXMaxFSAA");
+		options.FPSColor = ReadRegistryDwordVal("FPSColor");
+		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");
 		defaultRomOptions.bInN64Resolution = ReadRegistryDwordVal("InN64Resolution");
 		defaultRomOptions.bSaveVRAM = ReadRegistryDwordVal("SaveVRAM");
 		defaultRomOptions.bOverlapAutoWriteBack = ReadRegistryDwordVal("OverlapAutoWriteBack");
@@ -687,11 +664,11 @@ BOOL InitConfiguration(void)
 	strcpy(szIniFileName, INI_FILE);
 
 	if (!ReadIniFile())
-		{
-			ErrorMsg("Unable to read ini file from disk");
-			WriteIniFile();
-			return FALSE;
-		}
+	{
+		ErrorMsg("Unable to read ini file from disk");
+		WriteIniFile();
+		return FALSE;
+	}
 
 	ReadConfiguration();
 	return TRUE;
@@ -929,7 +906,7 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 		bIniIsChanged=true;
 	}
 
-	if( IniSections[i].dwNormalBlender		!=pGameSetting->dwNormalBlender )
+	if( IniSections[i].dwNormalBlender	!=pGameSetting->dwNormalBlender )
 	{
 		IniSections[i].dwNormalBlender		=pGameSetting->dwNormalBlender		 ;
 		bIniIsChanged=true;
@@ -1056,8 +1033,7 @@ typedef struct {
 
 
 ToolTipMsg ttmsg[] = {
-	
-	{ 
+	{ //backtome
 		IDC_DX_SWAP_EFFECT,
 			"DirectX Frame Buffer Swap Effect",
 			"Double buffer flip is faster for full screen\n\n"
@@ -1330,7 +1306,7 @@ ToolTipMsg ttmsg[] = {
 			"Data must be entered exactly in 8 hex numbers, or the entered value won't be accepted."
 	},
 	{ 
-		IDC_FULL_TMEM,
+		IDC_FULL_TMEM, //Rewrite texture loading to allow renaming of non tmem textures
 			"TMEM (N64 Texture Memory) Full Emulation",
 			"If this option is on, texture data will be loaded into the 4KB TMEM, textures are then created from data in the TMEM.\n"
 			"If this option is off, textures are then loaded directly from N64 RDRAM.\n\n"
@@ -1460,32 +1436,6 @@ BOOL CreateDialogTooltip(void)
 	
     if (g_hwndTT == NULL)
         return FALSE;
-	
-    // Enumerate the child windows to register them with the tooltip
-    // control.
-    //if (!EnumChildWndTooltip())
-    //    return FALSE;
-	
-/*
-	TOOLINFO ti; 
-
-	HWND boxhwnd = GetDlgItem(g_hwndDlg,IDC_OPTION_GROUP);
-	GetWindowRect(boxhwnd, &ti.rect);
-    ScreenToClient(g_hwndDlg, (LPPOINT)&ti.rect);
-
-    ti.cbSize = sizeof(TOOLINFO); 
-    ti.uFlags = 0; 
-    ti.hwnd = g_hwndDlg; 
-    ti.uId = IDC_OPTION_GROUP; 
-    ti.hinst = 0; 
-    ti.lpszText = LPSTR_TEXTCALLBACK; 
-    SendMessage(g_hwndTT, TTM_ADDTOOL, 0, 
-       (LPARAM) (LPTOOLINFO) &ti); 
-    ti.hwnd = boxhwnd; 
-    SendMessage(g_hwndTT, TTM_ADDTOOL, 0, 
-       (LPARAM) (LPTOOLINFO) &ti); 
-	   */
-
     // Install a hook procedure to monitor the message stream for mouse
     // messages intended for the controls in the dialog box.
     g_hhk = SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc,
@@ -2104,67 +2054,22 @@ uint32 CountryCodeToTVSystem(uint32 countryCode)
 	uint32 system;
 	switch(countryCode)
 	{
-		/* Demo */
 	case 0:
-		system = TV_SYSTEM_NTSC;
-		break;
-
 	case '7':
-		system = TV_SYSTEM_NTSC;
-		break;
-
 	case 0x41:
-		system = TV_SYSTEM_NTSC;
-		break;
-
-		/* Germany */
-	case 0x44:
-		system = TV_SYSTEM_PAL;
-		break;
-
-		/* USA */
 	case 0x45:
-		system = TV_SYSTEM_NTSC;
-		break;
-
-		/* France */
-	case 0x46:
-		system = TV_SYSTEM_PAL;
-		break;
-
-		/* Italy */
-	case 'I':
-		system = TV_SYSTEM_PAL;
-		break;
-
-		/* Japan */
 	case 0x4A:
 		system = TV_SYSTEM_NTSC;
 		break;
 
-		/* Europe - PAL */
+	case 0x44:
+	case 0x46:
+	case 'I':
 	case 0x50:
-		system = TV_SYSTEM_PAL;
-		break;
-
-	case 'S':	/* Spain */
-		system = TV_SYSTEM_PAL;
-		break;
-
-		/* Australia */
+	case 'S':
 	case 0x55:
-		system = TV_SYSTEM_PAL;
-		break;
-
 	case 0x58:
-		system = TV_SYSTEM_PAL;
-		break;
-
-		/* Australia */
 	case 0x59:
-		system = TV_SYSTEM_PAL;
-		break;
-
 	case 0x20:
 	case 0x21:
 	case 0x38:
@@ -2576,18 +2481,12 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					ShowItem(hDlg, IDC_SHOW_FPS, FALSE);
 					ShowItem(hDlg, IDC_FPS_COLOR, FALSE);
 					ShowItem(hDlg, IDC_DX_SWAP_EFFECT, FALSE);
-					ShowItem(hDlg, IDC_SLIDER_FSAA, FALSE);
-					ShowItem(hDlg, IDC_SLIDER_ANISO, FALSE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, FALSE);
 					ShowItem(hDlg, IDC_SETTING_LABEL3, FALSE);
 					ShowItem(hDlg, IDC_LABEL5, FALSE);
 					ShowItem(hDlg, IDC_LABEL6, FALSE);
 					ShowItem(hDlg, IDC_LABEL7, FALSE);
 					ShowItem(hDlg, IDC_LABEL8, FALSE);
-					ShowItem(hDlg, IDC_ANTI_ALIASING_TEXT, FALSE);
-					ShowItem(hDlg, IDC_ANISOTROPIC_TEXT, FALSE);
-					ShowItem(hDlg, IDC_ANTI_ALIASING_MAX_TEXT, FALSE);
-					ShowItem(hDlg, IDC_ANISOTROPIC_MAX_TEXT, FALSE);
 				}
 				else
 				{
@@ -2595,18 +2494,12 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					ShowItem(hDlg, IDC_SHOW_FPS, TRUE);
 					ShowItem(hDlg, IDC_FPS_COLOR, TRUE);
 					ShowItem(hDlg, IDC_DX_SWAP_EFFECT, TRUE);
-					ShowItem(hDlg, IDC_SLIDER_FSAA, TRUE);
-					ShowItem(hDlg, IDC_SLIDER_ANISO, TRUE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, TRUE);
 					ShowItem(hDlg, IDC_SETTING_LABEL3, TRUE);
 					ShowItem(hDlg, IDC_LABEL5, TRUE);
 					ShowItem(hDlg, IDC_LABEL6, TRUE);
 					ShowItem(hDlg, IDC_LABEL7, TRUE);
 					ShowItem(hDlg, IDC_LABEL8, TRUE);
-					ShowItem(hDlg, IDC_ANTI_ALIASING_TEXT, TRUE);
-					ShowItem(hDlg, IDC_ANISOTROPIC_TEXT, TRUE);
-					ShowItem(hDlg, IDC_ANTI_ALIASING_MAX_TEXT, TRUE);
-					ShowItem(hDlg, IDC_ANISOTROPIC_MAX_TEXT, TRUE);
 				}
 
 				if(status.bGameIsRunning)

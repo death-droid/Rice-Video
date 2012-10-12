@@ -51,7 +51,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 
 		gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
 
-		gti.WidthToCreate	= windowSetting.uViWidth;;
+		gti.WidthToCreate	= windowSetting.uViWidth;
 		gti.HeightToCreate	= windowSetting.uViHeight;
 
 		if( gti.WidthToCreate == 0 || gti.HeightToCreate == 0 )

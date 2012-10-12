@@ -1168,7 +1168,7 @@ void CTextureManager::MirrorT32(uint32 *array, uint32 height, uint32 mask, uint3
 	{
 		uint32 srcy = (y&maskval2)<=maskval1 ? y&maskval1 : maskval2-(y&maskval2);
 		uint32* linesrc = array+arrayWidth*srcy;
-		uint32* linedst = array+arrayWidth*y;;
+		uint32* linedst = array+arrayWidth*y;
 		for( uint32 x=0; x<arrayWidth; x++ )
 		{
 			linedst[x] = linesrc[x];
@@ -1185,7 +1185,7 @@ void CTextureManager::MirrorT16(uint16 *array, uint32 height, uint32 mask, uint3
 	{
 		uint32 srcy = (y&maskval2)<=maskval1 ? y&maskval1 : maskval2-(y&maskval2);
 		uint16* linesrc = array+arrayWidth*srcy;
-		uint16* linedst = array+arrayWidth*y;;
+		uint16* linedst = array+arrayWidth*y;
 		for( uint32 x=0; x<arrayWidth; x++ )
 		{
 			linedst[x] = linesrc[x];
@@ -1227,7 +1227,7 @@ void CTextureManager::WrapT32(uint32 *array, uint32 height, uint32 mask, uint32 
 	for( uint32 y = height; y<toheight; y++ )
 	{
 		uint32* linesrc = array+arrayWidth*(y>maskval?y&maskval:y-height);
-		uint32* linedst = array+arrayWidth*y;;
+		uint32* linedst = array+arrayWidth*y;
 		for( uint32 x=0; x<arrayWidth; x++ )
 		{
 			linedst[x] = linesrc[x];
@@ -1241,7 +1241,7 @@ void CTextureManager::WrapT16(uint16 *array, uint32 height, uint32 mask, uint32 
 	for( uint32 y = height; y<toheight; y++ )
 	{
 		uint16* linesrc = array+arrayWidth*(y>maskval?y&maskval:y-height);
-		uint16* linedst = array+arrayWidth*y;;
+		uint16* linedst = array+arrayWidth*y;
 		for( uint32 x=0; x<arrayWidth; x++ )
 		{
 			linedst[x] = linesrc[x];

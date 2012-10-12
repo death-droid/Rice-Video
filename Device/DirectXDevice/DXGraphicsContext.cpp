@@ -627,8 +627,8 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	if( !SUCCEEDED(hr) && m_d3dpp.MultiSampleType == D3DMULTISAMPLE_NONE )
 	{
 		// Try again without FSAA
-		TRACE0("Can not initialize DX8, try again without FSAA");
-		SetWindowText(g_GraphicsInfo.hStatusBar,"Can not initialize DX8, try again without FSAA");
+		TRACE0("Can not initialize DX9, try again without FSAA");
+		SetWindowText(g_GraphicsInfo.hStatusBar,"Can not initialize DX9, try again without FSAA");
 		m_d3dpp.MultiSampleType        = D3DMULTISAMPLE_NONE;
 		hr = m_pD3D->CreateDevice( m_dwAdapter, pDeviceInfo->DeviceType,m_hWnd, pModeInfo->dwBehavior, &m_d3dpp,	&m_pd3dDevice );
 	}

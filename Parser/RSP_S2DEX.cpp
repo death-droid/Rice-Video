@@ -313,7 +313,7 @@ void RSP_S2DEX_SPObjLoadTxtr(Gfx *gfx)
 		}
 
 		uint32 addr = (gObjTlutAddr);//&0xFFFFFFFC);
-		//if( addr & 3 ) addr = (addr&0xFFFFFFF0)+8;;
+		//if( addr & 3 ) addr = (addr&0xFFFFFFF0)+8;
 		uint16 *srcPal = (uint16*)(g_pRDRAMu8 + (addr& (g_dwRamSize-1)) );
 
 		for( int i=offset; i<offset+size; i++ )

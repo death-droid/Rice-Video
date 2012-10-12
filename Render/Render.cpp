@@ -304,7 +304,7 @@ void CRender::RenderReset()
 	gRSP.numVertices = 0;
 	gRSP.maxVertexID = 0;
 	gRSP.curTile = 0;
-	gRSP.fTexScaleX = 1/32.0f;;
+	gRSP.fTexScaleX = 1/32.0f;
 	gRSP.fTexScaleY = 1/32.0f;
 }
 
@@ -1064,7 +1064,7 @@ void CRender::SetTextureScale(int dwTile,  float fScaleX, float fScaleY)
 
 		if( fScaleX == 0 || fScaleY == 0 )
 		{
-			gRSP.fTexScaleX = 1/32.0f;;
+			gRSP.fTexScaleX = 1/32.0f;
 			gRSP.fTexScaleY = 1/32.0f;
 		}
 	}	

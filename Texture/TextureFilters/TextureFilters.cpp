@@ -1484,7 +1484,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 					}
 					else
 					{
-						*pdst++ = 0xFF;;
+						*pdst++ = 0xFF;
 					}
 				}
 			}
@@ -1580,7 +1580,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 							}
 							else
 							{
-								*pdst++ = 0xFF;;
+								*pdst++ = 0xFF;
 							}
 						}
 					}

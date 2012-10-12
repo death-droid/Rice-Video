@@ -861,7 +861,7 @@ void PrepareTextures()
 
 						if( pEntry->pEnhancedTexture == NULL )
 						{
-							MirrorTexture(tilenos[i], pEntry);;
+							MirrorTexture(tilenos[i], pEntry);
 						}
 
 						if( options.bLoadHiResTextures && (pEntry->pEnhancedTexture == NULL || pEntry->dwEnhancementFlag < TEXTURE_EXTERNAL ) )
@@ -966,7 +966,7 @@ void PrepareTextures()
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-extern uint32 g_TxtLoadBy;;
+extern uint32 g_TxtLoadBy;
 
 void DLParser_LoadTLut(Gfx *gfx)
 {

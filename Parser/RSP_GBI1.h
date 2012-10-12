@@ -171,7 +171,7 @@ void RSP_GBI1_BranchZ(Gfx *gfx)
 		uint32 dwDL = *(uint32 *)(g_pRDRAMu8 + dwPC-12);
 		uint32 dwAddr = RSPSegmentAddr(dwDL);
 
-		dwAddr = RSPSegmentAddr(dwDL);;
+		dwAddr = RSPSegmentAddr(dwDL);
 
 		LOG_UCODE("BranchZ to DisplayList 0x%08x", dwAddr);
 		gDlistStack[gDlistStackPointer].pc = dwAddr;
