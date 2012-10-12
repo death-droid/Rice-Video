@@ -88,7 +88,6 @@
 #define IDC_FULLSCREEN_FREQUENCY        1085
 #define IDC_SOFTWARE_TNL                1086
 #define IDC_EDIT_WIDTH                  1087
-#define IDC_DX_SWAP_EFFECT              1090
 #define IDC_SLIDER_FSAA                 1092
 #define IDC_SLIDER_ANISO                1093
 #define IDC_ANTI_ALIASING_TEXT          1094

@@ -402,26 +402,14 @@ bool FrameBufferManager::IsDIaRenderTexture()
 
 // Return -1 if the addr is not in recent frame buffer addr
 // Return 1 if the addr is in the frame buffer which is currently being displayed
-// Return 2 if the addr is in the 3rd frame buffer if we are using triple buffer
 // this function will not return 0 which means the addr is within the current rendering frame buffer
-//     this should not happen
-extern BufferSettingInfo DirectXRenderBufferSettings[];
+//     this should not happen 
 int FrameBufferManager::IsAddrInRecentFrameBuffers(uint32 addr)
 {
-	if( addr >= g_uRecentCIInfoPtrs[1]->dwAddr && addr < g_uRecentCIInfoPtrs[1]->dwAddr+g_uRecentCIInfoPtrs[1]->dwMemSize )
+	if( (addr >= g_uRecentCIInfoPtrs[1]->dwAddr && addr < g_uRecentCIInfoPtrs[1]->dwAddr+g_uRecentCIInfoPtrs[1]->dwMemSize) ||
+		(addr >= g_uRecentCIInfoPtrs[0]->dwAddr && addr < g_uRecentCIInfoPtrs[0]->dwAddr+g_uRecentCIInfoPtrs[0]->dwMemSize && status.bHandleN64RenderTexture))
 		return 1;
-	else if( DirectXRenderBufferSettings[options.RenderBufferSetting].number > 1 &&
-		addr >= g_uRecentCIInfoPtrs[2]->dwAddr && addr < g_uRecentCIInfoPtrs[2]->dwAddr+g_uRecentCIInfoPtrs[1]->dwMemSize )
-	{
-		return 2;
-	}
-	else if( addr >= g_uRecentCIInfoPtrs[0]->dwAddr && addr < g_uRecentCIInfoPtrs[0]->dwAddr+g_uRecentCIInfoPtrs[0]->dwMemSize && status.bHandleN64RenderTexture )
-	{
-		return 1;
-	}
-	{
-		return -1;
-	}
+	return -1;
 }
 
 int FrameBufferManager::CheckAddrInBackBuffers(uint32 addr, uint32 memsize, bool copyToRDRAM)

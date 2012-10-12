@@ -117,22 +117,6 @@ const char*	strDXDeviceDescs[] = { "HAL", "REF" };
 /*
 *	Constants
 */
-/*
-D3DFMT_D16_LOCKABLE         = 70,
-D3DFMT_D32                  = 71,
-D3DFMT_D15S1                = 73,
-D3DFMT_D24S8                = 75,
-D3DFMT_D16                  = 80,
-D3DFMT_D24X8                = 77,
-D3DFMT_D24X4S4              = 79,
-*/
-
-BufferSettingInfo DirectXRenderBufferSettings[] =
-{
-	"Copy",			1,		D3DSWAPEFFECT_COPY,
-	"Flip (def)",	1,		D3DSWAPEFFECT_FLIP,
-};
-
 BufferSettingInfo DirectXDepthBufferSetting[] =
 {
 	"16-bit (def)",				D3DFMT_D16,				D3DFMT_D16,
@@ -151,7 +135,6 @@ const SettingInfo OnScreenDisplaySettings[] =
 	"Display Debug Information With Core Msgs",	ONSCREEN_DISPLAY_DEBUG_INFORMATION_WITH_CORE_MSG,
 };
 
-int numberOfDirectXRenderBufferSettings = sizeof(DirectXRenderBufferSettings)/sizeof(BufferSettingInfo);
 int numberOfDirectXDepthBufferSettings = sizeof(DirectXDepthBufferSetting)/sizeof(BufferSettingInfo);
 
 void WriteConfiguration(void);
@@ -357,9 +340,6 @@ void WriteConfiguration(void)
 	fprintf(f, "DisplayOnscreenFPS ");
 	fprintf(f, "%d\n", options.bDisplayOnscreenFPS);
 
-	fprintf(f, "FrameBufferType ");
-	fprintf(f, "%d\n", options.RenderBufferSetting);
-
 	fprintf(f, "DirectXDepthBufferSetting ");
 	fprintf(f, "%d\n", (uint32)options.DirectXDepthBufferSetting);
 
@@ -532,7 +512,6 @@ void ReadConfiguration(void)
 		options.bForceSoftwareTnL = TRUE;
 		options.bEnableSSE = TRUE;
 		options.bEnableVertexShader = FALSE;
-		options.RenderBufferSetting=1;
 		options.forceTextureFilter = 0;
 		options.textureQuality = TXT_QUALITY_DEFAULT;
 		options.bTexRectOnly = FALSE;
@@ -614,7 +593,6 @@ void ReadConfiguration(void)
 		options.bDisplayTooltip = ReadRegistryDwordVal("DisplayTooltip");
 		options.bHideAdvancedOptions = ReadRegistryDwordVal("HideAdvancedOptions");
 		options.bDisplayOnscreenFPS = ReadRegistryDwordVal("DisplayOnscreenFPS");
-		options.RenderBufferSetting = ReadRegistryDwordVal("FrameBufferType");
 		options.textureEnhancement = ReadRegistryDwordVal("TextureEnhancement");
 		options.textureEnhancementControl = ReadRegistryDwordVal("TextureEnhancementControl");
 		options.forceTextureFilter = ReadRegistryDwordVal("ForceTextureFilter");
@@ -1033,11 +1011,6 @@ typedef struct {
 
 
 ToolTipMsg ttmsg[] = {
-	{ //backtome
-		IDC_DX_SWAP_EFFECT,
-			"DirectX Frame Buffer Swap Effect",
-			"Double buffer flip is faster for full screen\n\n"
-	},
 	{ 
 		IDC_SLIDER_FSAA,
 			"DirectX Full Screen Mode Anti-Aliasing Setting",
@@ -2365,20 +2338,9 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_SETCURSEL, i, 0);
 		}
 
-		SendDlgItemMessage(hDlg, IDC_DX_SWAP_EFFECT, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_RESETCONTENT, 0, 0);
 		item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
 		EnableWindow(item, TRUE);
-
-		SendDlgItemMessage(hDlg, IDC_DX_SWAP_EFFECT, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<numberOfDirectXRenderBufferSettings; i++ )
-		{ 
-			SendDlgItemMessage(hDlg, IDC_DX_SWAP_EFFECT, CB_INSERTSTRING, i, (LPARAM) DirectXRenderBufferSettings[i].description);
-			if( options.RenderBufferSetting == i )
-			{
-				SendDlgItemMessage(hDlg, IDC_DX_SWAP_EFFECT, CB_SETCURSEL, i, 0);
-			}
-		}
 
 		for( i=0; i<numberOfDirectXDepthBufferSettings; i++ )
 		{
@@ -2388,8 +2350,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 		if( status.bGameIsRunning )
 		{
-			item = GetDlgItem(hDlg, IDC_DX_SWAP_EFFECT);
-			EnableWindow(item, FALSE);
 			item = GetDlgItem(hDlg, IDC_DEPTH_BUFFER );
 			EnableWindow(item, FALSE);
 			item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
@@ -2480,7 +2440,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					ShowItem(hDlg, IDC_DEPTH_BUFFER, FALSE);
 					ShowItem(hDlg, IDC_SHOW_FPS, FALSE);
 					ShowItem(hDlg, IDC_FPS_COLOR, FALSE);
-					ShowItem(hDlg, IDC_DX_SWAP_EFFECT, FALSE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, FALSE);
 					ShowItem(hDlg, IDC_SETTING_LABEL3, FALSE);
 					ShowItem(hDlg, IDC_LABEL5, FALSE);
@@ -2493,7 +2452,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					ShowItem(hDlg, IDC_DEPTH_BUFFER, TRUE);
 					ShowItem(hDlg, IDC_SHOW_FPS, TRUE);
 					ShowItem(hDlg, IDC_FPS_COLOR, TRUE);
-					ShowItem(hDlg, IDC_DX_SWAP_EFFECT, TRUE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, TRUE);
 					ShowItem(hDlg, IDC_SETTING_LABEL3, TRUE);
 					ShowItem(hDlg, IDC_LABEL5, TRUE);
@@ -2558,7 +2516,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			i = SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_GETCURSEL, 0, 0);
 			options.bDisplayOnscreenFPS = OnScreenDisplaySettings[i].setting;
 
-			options.RenderBufferSetting = SendDlgItemMessage(hDlg, IDC_DX_SWAP_EFFECT, CB_GETCURSEL, 0, 0);
 			options.DirectXDevice = SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_GETCURSEL, 0, 0);
 
 			options.DirectXDepthBufferSetting = SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_GETCURSEL, 0, 0);

@@ -338,13 +338,10 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 	// Clear/Update a few times to ensure that all of the buffers are cleared
 	if ( m_pd3dDevice )
 	{
-		for (int i=0; i<DirectXRenderBufferSettings[options.RenderBufferSetting].number+1; i++ )
-		{
-			Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
-			m_pd3dDevice->BeginScene();
-			m_pd3dDevice->EndScene();
-			UpdateFrame();
-		}
+		Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
+		m_pd3dDevice->BeginScene();
+		m_pd3dDevice->EndScene();
+		UpdateFrame();
 	}
 
 	MYD3DVIEWPORT vp = {
@@ -550,7 +547,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
     ZeroMemory( &m_d3dpp, sizeof(m_d3dpp) );
 
     m_d3dpp.Windowed               = pDeviceInfo->bWindowed;
-    m_d3dpp.BackBufferCount        = DirectXRenderBufferSettings[options.RenderBufferSetting].number;
+    m_d3dpp.BackBufferCount        = 1;
 	m_d3dpp.EnableAutoDepthStencil = TRUE; /*m_bUseDepthBuffer;*/
     m_d3dpp.AutoDepthStencilFormat = pModeInfo->DepthStencilFormat;
 	m_d3dpp.AutoDepthStencilFormat = (D3DFORMAT)(DirectXDepthBufferSetting[options.DirectXDepthBufferSetting].number);
@@ -582,7 +579,8 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	if( currentRomOptions.N64FrameBufferEmuType != FRM_BUF_NONE && m_FSAAIsEnabled )
 	{
 		m_FSAAIsEnabled = false;
-		m_d3dpp.MultiSampleType        = D3DMULTISAMPLE_NONE;
+		m_d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
+		m_d3dpp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
 		TRACE0("FSAA is turned off in order to use BackBuffer emulation");
 		SetWindowText(g_GraphicsInfo.hStatusBar, "FSAA is turned off in order to use BackBuffer emulation");
 	}
@@ -602,7 +600,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
     else
     {
 		if( !m_FSAAIsEnabled )
-			m_d3dpp.SwapEffect		= (D3DSWAPEFFECT)DirectXRenderBufferSettings[options.RenderBufferSetting].setting;
+			m_d3dpp.SwapEffect		= D3DSWAPEFFECT_FLIP;
 		else
 			m_d3dpp.SwapEffect		= D3DSWAPEFFECT_DISCARD;	// Anti-Aliasing mode
 		windowSetting.uDisplayWidth = windowSetting.uFullScreenDisplayWidth;
