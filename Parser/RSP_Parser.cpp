@@ -965,10 +965,10 @@ void RSP_GFX_InitGeometryMode()
 {
 	bool bCullFront		= (gRDP.geometryMode & G_CULL_FRONT) ? true : false;
 	bool bCullBack		= (gRDP.geometryMode & G_CULL_BACK) ? true : false;
+
 	if( bCullFront && bCullBack ) // should never cull front
-	{
 		bCullFront = false;
-	}
+
 	CRender::g_pRender->SetCullMode(bCullFront, bCullBack);
 	
 	BOOL bShade			= (gRDP.geometryMode & G_SHADE) ? TRUE : FALSE;
@@ -1095,13 +1095,9 @@ void DLParser_RDPSetOtherMode(Gfx *gfx)
 	uint16 blender = gRDP.otherMode.blender;
 	RDP_BlenderSetting &bl = *(RDP_BlenderSetting*)(&(blender));
 	if( bl.c1_m1a==3 || bl.c1_m2a == 3 || bl.c2_m1a == 3 || bl.c2_m2a == 3 )
-	{
 		gRDP.bFogEnableInBlender = true;
-	}
 	else
-	{
 		gRDP.bFogEnableInBlender = false;
-	}
 }
 
 

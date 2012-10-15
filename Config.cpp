@@ -89,7 +89,6 @@ const SettingInfo ForceTextureFilterSettings[] =
 	"N64 Default Texture Filter",	FORCE_DEFAULT_FILTER,
 	"Force Nearest Filter (faster, low quality)",	FORCE_POINT_FILTER,
 	"Force Linear Filter (slower, better quality)",	FORCE_LINEAR_FILTER,
-	
 };
 
 const SettingInfo TextureEnhancementSettings[] =
