@@ -291,7 +291,7 @@ bool D3DRender::RenderFlushTris()
 		gD3DDevWrapper.SetFVF(RICE_FVF_TLITVERTEX);
 		ClipVertexes();
 		if( g_clippedVtxCount > 0 )
-		g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_clippedVtxCount/3, g_clippedVtxBuffer, sizeof(TLITVERTEX));
+			g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_clippedVtxCount/3, g_clippedVtxBuffer, sizeof(TLITVERTEX));
 	}
 
 	return true;

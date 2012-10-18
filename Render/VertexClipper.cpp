@@ -504,9 +504,9 @@ bool Clip1TriangleForNegW(TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3, int &d
 		ClipFor1LineZ(pts[lno%2], pts[(lno+1)%2], true);	// Clip for near plane
 		if( pts[(lno+1)%2].size() < 3 )
 			return false;
-		ClipFor1LineZ(pts[(lno+1)%2], pts[lno%2], false);	// clip for far plane
-		if( pts[lno%2].size() < 3 )
-			return false;
+	//	ClipFor1LineZ(pts[(lno+1)%2], pts[lno%2], false);	// clip for far plane
+	//	if( pts[lno%2].size() < 3 )
+	//		return false;
 
 		size = ps.size();
 	}
