@@ -226,11 +226,11 @@ bool D3DRender::RenderFillRect(uint32 dwColor, float depth)
 void ApplyZBias(uint32 bias) //FIXME
 {
 	//We should be calculating the actual offsets
-	float f1 = bias > 0 ? -0.002f : 0.0f;
-	float f2 = bias > 0 ? 1.0f : 0.0f;
+	float f1 = bias > 0 ? -0.00075f : 0.0f;
+	float f2 = bias > 0 ? 0.0f : 0.0f;
 	// Change by the bias
-//	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,*(DWORD*)(&f1));
-	//gD3DDevWrapper.SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, *(DWORD*)(&f2));
+	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,*(DWORD*)(&f1));
+	gD3DDevWrapper.SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, *(DWORD*)(&f2));
 }
 
 void D3DRender::SetZBias(int bias)

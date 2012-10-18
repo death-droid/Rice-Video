@@ -224,7 +224,6 @@ LPD3DXSPRITE D3DRender::InitSpriteDraw(void)
 			d3dSprite->Release();
 		return NULL;
 	}
-	return NULL;
 }
 
 
