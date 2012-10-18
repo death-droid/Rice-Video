@@ -38,6 +38,9 @@ void RSP_Vtx_Conker(Gfx *gfx)
 
 void RSP_Tri4_Conker(Gfx *gfx)
 {
+	uint32 w0 = gfx->words.cmd0;
+	uint32 w1 = gfx->words.cmd1;
+
 	status.primitiveType = PRIM_TRI2;
 
 	// While the next command pair is Tri2, add vertices
@@ -46,40 +49,40 @@ void RSP_Tri4_Conker(Gfx *gfx)
 	bool bTrisAdded = FALSE;
 
 	do {
-		LOG_UCODE("    Conker Tri4: 0x%08x 0x%08x", gfx->words.cmd0, gfx->words.cmd1);
+		LOG_UCODE("    Conker Tri4: 0x%08x 0x%08x", w0, w1);
 		uint32 idx[12];
-		idx[0] = (gfx->words.cmd1    )&0x1F;
-		idx[1] = (gfx->words.cmd1>> 5)&0x1F;
-		idx[2] = (gfx->words.cmd1>>10)&0x1F;
+		idx[0] = (w1      )&0x1F;
+		idx[1] = (w1 >>  5)&0x1F;
+		idx[2] = (w1 >> 10)&0x1F;
 
 		bTrisAdded |= AddTri(idx[0], idx[1], idx[2]);
 
-		idx[3] = (gfx->words.cmd1>>15)&0x1F;
-		idx[4] = (gfx->words.cmd1>>20)&0x1F;
-		idx[5] = (gfx->words.cmd1>>25)&0x1F;
+		idx[3] = (w1 >> 15)&0x1F;
+		idx[4] = (w1 >> 20)&0x1F;
+		idx[5] = (w1 >> 25)&0x1F;
 
 		bTrisAdded |= AddTri(idx[3], idx[4], idx[5]);
 
-		idx[6] = (gfx->words.cmd0    )&0x1F;
-		idx[7] = (gfx->words.cmd0>> 5)&0x1F;
-		idx[8] = (gfx->words.cmd0>>10)&0x1F;
+		idx[6] = (w0    )&0x1F;
+		idx[7] = (w0 >> 5)&0x1F;
+		idx[8] = (w0 >> 10)&0x1F;
 
 		bTrisAdded |= AddTri(idx[6], idx[7], idx[8]);
 
-		idx[ 9] = ((((gfx->words.cmd0 >> 15)&0x7)<<2)|(gfx->words.cmd1>>30));
-		idx[10] = (gfx->words.cmd0>>18)&0x1F;
-		idx[11] = (gfx->words.cmd0>>23)&0x1F;
+		idx[ 9] = ((((w0 >> 15)&0x7)<<2)|(w1>>30));
+		idx[10] = (w0>>18)&0x1F;
+		idx[11] = (w0>>23)&0x1F;
 
 		bTrisAdded |= AddTri(idx[9], idx[10], idx[11]);
 
-		gfx->words.cmd0 = *(uint32 *)(g_pRDRAMu8 + dwPC+0);
-		gfx->words.cmd1 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+		w0 = *(uint32 *)(g_pRDRAMu8 + dwPC+0);
+		w1 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
 		dwPC += 8;
 
 #ifdef _DEBUG
-	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && (gfx->words.cmd0>>28) == 1 );
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && (w0>>28) == 1 );
 #else
-	} while ((gfx->words.cmd0>>28) == 1);
+	} while ((w0>>28) == 1);
 #endif
 
 	gDlistStack[gDlistStackPointer].pc = dwPC-8;
