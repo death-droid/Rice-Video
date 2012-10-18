@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //*****************************************************************************
 void RSP_GBI2_Vtx(Gfx *gfx)
 {
-	uint32 addr = RSPSegmentAddr((gfx->vtx2.addr));
+	uint32 addr = RSPSegmentAddr(gfx->vtx2.addr);
 	int vend	= gfx->vtx2.vend/2;
 	int n		= gfx->vtx2.n;
 	int v0		= vend - n;
@@ -659,7 +659,7 @@ void RSP_GBI2_Mtx(Gfx *gfx)
 	SP_Timing(RSP_GBI0_Mtx);
 	dwConkerVtxZAddr = 0;	// For Conker BFD
 
-	uint32 addr = RSPSegmentAddr((gfx->mtx2.addr));
+	uint32 addr = RSPSegmentAddr(gfx->mtx2.addr);
 
 	if( gfx->mtx2.param == 0 && gfx->mtx2.len == 0 )
 	{

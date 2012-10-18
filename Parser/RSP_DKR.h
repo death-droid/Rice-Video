@@ -235,12 +235,12 @@ void RSP_MoveWord_DKR(Gfx *gfx)
 	switch ((gfx->words.cmd0) & 0xFF)
 	{
 	case RSP_MOVE_WORD_NUMLIGHT:
-		gDKRBillBoard = (gfx->words.cmd1)&0x1 ? true : false;
+		gDKRBillBoard = (gfx->words.cmd1) & 0x1;
 		LOG_UCODE("    gDKRBillBoard = %d", gDKRBillBoard);
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_MATRIX_CMD, {DebuggerAppendMsg("DKR Moveword, select gRSP.DKRBillBoard %s, cmd0=%08X, cmd1=%08X", gDKRBillBoard?"true":"false", (gfx->words.cmd0), (gfx->words.cmd1));});
 		break;
 	case RSP_MOVE_WORD_LIGHTCOL:
-		gDKRCMatrixIndex = ((gfx->words.cmd1)>>6)&0x7;
+		gDKRCMatrixIndex = (gfx->words.cmd1 >> 6) & 0x7;
 		LOG_UCODE("    gDKRCMatrixIndex = %d", gDKRCMatrixIndex);
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_MATRIX_CMD, {DebuggerAppendMsg("DKR Moveword, select matrix %d, cmd0=%08X, cmd1=%08X", gDKRCMatrixIndex, (gfx->words.cmd0), (gfx->words.cmd1));});
 		break;
@@ -269,6 +269,8 @@ void RSP_DMA_Tri_DKR(Gfx *gfx)
 {
 	u32 dwAddr = RSPSegmentAddr(gfx->words.cmd1);
 	u32 dwNum = (((gfx->words.cmd0) &  0xFFF0) >>4 );
+
+	//Unlike normal tri ucodes, this has the tri's stored in rdram
 	TriDKR *tri = (TriDKR*)&g_pRDRAMu32[ dwAddr >> 2];
 
 	if( dwAddr+16*dwNum >= g_dwRamSize )
