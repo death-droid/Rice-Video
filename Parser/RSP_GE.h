@@ -32,12 +32,12 @@ void DLParser_RDPHalf1_GoldenEye(Gfx *gfx)
 		//PD_LoadMatrix_0xb4(dwPC + 8*16 - 8);
 
 		uint32 dw1 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*0+4);
-		uint32 dw2 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*1+4);
+		//uint32 dw2 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*1+4); //Lets disable unused variables, saves a tiny bit of calculations
 		uint32 dw3 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*2+4);
-		uint32 dw4 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*3+4);
-		uint32 dw5 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*4+4);
-		uint32 dw6 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*5+4);
-		uint32 dw7 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*6+4);
+		//uint32 dw4 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*3+4);
+		//uint32 dw5 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*4+4);
+		//uint32 dw6 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*5+4);
+		//uint32 dw7 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*6+4);
 		uint32 dw8 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*7+4);
 		uint32 dw9 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*8+4);
 
