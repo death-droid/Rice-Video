@@ -136,55 +136,50 @@ void RSP_GBI0_DL(MicroCodeCommand command)
 
 void RSP_GBI0_Tri4(MicroCodeCommand command)
 {
-	uint32 w0 = command.inst.cmd0;
-	uint32 w1 = command.inst.cmd1;
-
 	status.primitiveType = PRIM_TRI2;
 
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 
-	BOOL bTrisAdded = FALSE;
+	bool bTrisAdded = false;
 
 	do {
-		uint32 dwFlag = (w0>>16)&0xFF;
-		LOG_UCODE("    PD Tri4: 0x%08x 0x%08x Flag: 0x%02x", command.inst.cmd0, command.inst.cmd1, dwFlag);
+		//Tri #1
+		u32 v0 = command.tri4.v0;
+		u32 v1 = command.tri4.v1;
+		u32 v2 = command.tri4.v2;
 
-		BOOL bVisible;
-		for( int i=0; i<4; i++)
-		{
-			uint32 v0 = (w1>>(4+(i<<3))) & 0xF;
-			uint32 v1 = (w1>>(  (i<<3))) & 0xF;
-			uint32 v2 = (w0>>(  (i<<2))) & 0xF;
-			bVisible = IsTriangleVisible(v0, v2, v1);
-			LOG_UCODE("       (%d, %d, %d) %s", v0, v1, v2, bVisible ? "": "(clipped)");
-			if (bVisible)
-			{
-				DEBUG_DUMP_VERTEXES("Tri4_PerfectDark 1/2", v0, v1, v2);
-				if (!bTrisAdded && CRender::g_pRender->IsTextureEnabled())
-				{
-					PrepareTextures();
-					InitVertexTextureConstants();
-				}
+		bTrisAdded |= AddTri(v0, v1, v2);
 
-				if( !bTrisAdded )
-				{
-					CRender::g_pRender->SetCombinerAndBlender();
-				}
+		//Tri #2
+		u32 v3 = command.tri4.v3;
+		u32 v4 = command.tri4.v4;
+		u32 v5 = command.tri4.v5;
 
-				bTrisAdded = true;
-				PrepareTriangle(v0, v2, v1);
-			}
-		}
-		
-		w0			= *(uint32 *)(g_pRDRAMu8 + dwPC+0);
-		w1			= *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+		bTrisAdded |= AddTri(v3, v4, v5, true);
+
+		//Tri #3
+		u32 v6 = command.tri4.v6;
+		u32 v7 = command.tri4.v7;
+		u32 v8 = command.tri4.v8;
+
+		bTrisAdded |= AddTri(v6, v7, v8, true);
+
+		//Tri #4
+		u32 v9  = command.tri4.v9;
+		u32 v10 = command.tri4.v10;
+		u32 v11 = command.tri4.v11;
+
+		bTrisAdded |= AddTri(v9, v10, v11, true);
+
+		command.inst.cmd0 = *(u32 *)(g_pRDRAMu8 + dwPC+0);
+		command.inst.cmd1 = *(u32 *)(g_pRDRAMu8 + dwPC+4);
 		dwPC += 8;
 
 #ifdef _DEBUG
-	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && (w0>>24) == (uint8)RSP_TRI2);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && (command.inst.cmd0>>24) == (uint8)RSP_TRI2);
 #else
-	} while (((w0)>>24) == (uint8)RSP_TRI2);
+	} while (((command.inst.cmd0)>>24) == (uint8)RSP_TRI2);
 #endif
 
 
