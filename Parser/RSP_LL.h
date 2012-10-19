@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //*****************************************************************************
 //
 //*****************************************************************************
-void DLParser_RSP_Last_Legion_0x80(Gfx *gfx)
+void DLParser_RSP_Last_Legion_0x80(MicroCodeCommand command)
 {
 	gDlistStack[gDlistStackPointer].pc += 16;
 	LOG_UCODE("DLParser_RSP_Last_Legion_0x80");
@@ -36,14 +36,14 @@ void DLParser_RSP_Last_Legion_0x80(Gfx *gfx)
 //*****************************************************************************
 //
 //*****************************************************************************
-void DLParser_RSP_Last_Legion_0x00(Gfx *gfx)
+void DLParser_RSP_Last_Legion_0x00(MicroCodeCommand command)
 {
 	LOG_UCODE("DLParser_RSP_Last_Legion_0x00");
 	gDlistStack[gDlistStackPointer].pc += 16;
 
-	if( (gfx->words.cmd0) == 0 && (gfx->words.cmd1) )
+	if( (command.inst.cmd0) == 0 && (command.inst.cmd1) )
 	{
-		uint32 newaddr = RSPSegmentAddr((gfx->words.cmd1));
+		uint32 newaddr = RSPSegmentAddr((command.inst.cmd1));
 		if( newaddr >= g_dwRamSize )
 		{
 			RDP_GFX_PopDL();
@@ -70,13 +70,13 @@ void DLParser_RSP_Last_Legion_0x00(Gfx *gfx)
 			gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
 		}
 	}
-	else if( (gfx->words.cmd1) == 0 )
+	else if( (command.inst.cmd1) == 0 )
 	{
 		RDP_GFX_PopDL();
 	}
 	else
 	{
-		RSP_RDP_Nothing(gfx);
+		RSP_RDP_Nothing(command);
 		RDP_GFX_PopDL();
 	}
 }
@@ -84,7 +84,7 @@ void DLParser_RSP_Last_Legion_0x00(Gfx *gfx)
 //*****************************************************************************
 //
 //*****************************************************************************
-void DLParser_TexRect_Last_Legion(Gfx *gfx)
+void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 {
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
@@ -101,11 +101,11 @@ void DLParser_TexRect_Last_Legion(Gfx *gfx)
 
 	LOG_UCODE("0x%08x: %08x %08x", dwPC, *(uint32 *)(g_pRDRAMu8 + dwPC+0), *(uint32 *)(g_pRDRAMu8 + dwPC+4));
 
-	uint32 dwXH		= (((gfx->words.cmd0)>>12)&0x0FFF)/4;
-	uint32 dwYH		= (((gfx->words.cmd0)    )&0x0FFF)/4;
-	uint32 tileno	= ((gfx->words.cmd1)>>24)&0x07;
-	uint32 dwXL		= (((gfx->words.cmd1)>>12)&0x0FFF)/4;
-	uint32 dwYL		= (((gfx->words.cmd1)    )&0x0FFF)/4;
+	uint32 dwXH		= (((command.inst.cmd0)>>12)&0x0FFF)/4;
+	uint32 dwYH		= (((command.inst.cmd0)    )&0x0FFF)/4;
+	uint32 tileno	= ((command.inst.cmd1)>>24)&0x07;
+	uint32 dwXL		= (((command.inst.cmd1)>>12)&0x0FFF)/4;
+	uint32 dwYL		= (((command.inst.cmd1)    )&0x0FFF)/4;
 
 
 	if( (int)dwXL >= gRDP.scissor.right || (int)dwYL >= gRDP.scissor.bottom || (int)dwXH < gRDP.scissor.left || (int)dwYH < gRDP.scissor.top )

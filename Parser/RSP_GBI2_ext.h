@@ -18,34 +18,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Some new GBI2 extension ucodes
-void RSP_GBI2_DL_Count(Gfx *gfx)
+void RSP_GBI2_DL_Count(MicroCodeCommand command)
 {
 	SP_Timing(DP_Minimal);
 	DP_Timing(DP_Minimal);
 
 	// This cmd is likely to execute number of ucode at the given address
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	{
 		gDlistStackPointer++;
 		gDlistStack[gDlistStackPointer].pc = dwAddr;
-		gDlistStack[gDlistStackPointer].countdown = ((gfx->words.cmd0)&0xFFFF);
+		gDlistStack[gDlistStackPointer].countdown = ((command.inst.cmd0)&0xFFFF);
 	}
 }
 
 
-void RSP_GBI2_0x8(Gfx *gfx)
+void RSP_GBI2_0x8(MicroCodeCommand command)
 {
 	
 	
 
-	if( ((gfx->words.cmd0)&0x00FFFFFF) == 0x2F && ((gfx->words.cmd1)&0xFF000000) == 0x80000000 )
+	if( ((command.inst.cmd0)&0x00FFFFFF) == 0x2F && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
 	{
 		// V-Rally 64
-		RSP_S2DEX_SPObjLoadTxRectR(gfx);
+		RSP_S2DEX_SPObjLoadTxRectR(command);
 	}
 	else
 	{
-		RSP_RDP_Nothing(gfx);
+		RSP_RDP_Nothing(command);
 	}
 }
 

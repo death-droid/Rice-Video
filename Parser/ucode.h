@@ -22,15 +22,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _UCODE_H_
 #define _UCODE_H_
 
-//typedef void (*RDPInstruction)(Gfx *gfx);
-typedef void (*RDPInstruction)(Gfx*);
+//typedef void (*RDPInstruction)(MicroCodeCommand command);
+typedef void (*RDPInstruction)(MicroCodeCommand);
 extern RDPInstruction	*currentUcodeMap;
 
 typedef RDPInstruction UcodeMap[256] ;
 
 
 //#define UcodeFunc(name)	void name(uint32, uint32)
-#define UcodeFunc(name)	void name(Gfx*)
+#define UcodeFunc(name)	void name(MicroCodeCommand)
 
 UcodeFunc(RSP_RDP_Nothing);
 

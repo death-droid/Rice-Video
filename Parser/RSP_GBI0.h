@@ -17,17 +17,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-void RSP_GBI0_Mtx(Gfx *gfx)
+void RSP_GBI0_Mtx(MicroCodeCommand command)
 {	
 	SP_Timing(RSP_GBI0_Mtx);
 
-	uint32 addr = RSPSegmentAddr((gfx->mtx1.addr));
+	uint32 addr = RSPSegmentAddr((command.mtx1.addr));
 
 	LOG_UCODE("    Command: %s %s %s Length %d Address 0x%08x",
-		gfx->mtx1.projection == 1 ? "Projection" : "ModelView",
-		gfx->mtx1.load == 1 ? "Load" : "Mul",	
-		gfx->mtx1.push == 1 ? "Push" : "NoPush",
-		gfx->mtx1.len, addr);
+		command.mtx1.projection == 1 ? "Projection" : "ModelView",
+		command.mtx1.load == 1 ? "Load" : "Mul",	
+		command.mtx1.push == 1 ? "Push" : "NoPush",
+		command.mtx1.len, addr);
 
 	if (addr + 64 > g_dwRamSize)
 	{
@@ -37,25 +37,25 @@ void RSP_GBI0_Mtx(Gfx *gfx)
 
 	LoadMatrix(addr);
 	
-	if (gfx->mtx1.projection)
+	if (command.mtx1.projection)
 	{
-		CRender::g_pRender->SetProjection(matToLoad, gfx->mtx1.push, gfx->mtx1.load);
+		CRender::g_pRender->SetProjection(matToLoad, command.mtx1.push, command.mtx1.load);
 	}
 	else
 	{
-		CRender::g_pRender->SetWorldView(matToLoad, gfx->mtx1.push, gfx->mtx1.load);
+		CRender::g_pRender->SetWorldView(matToLoad, command.mtx1.push, command.mtx1.load);
 	}
 
 #ifdef _DEBUG
-	char *loadstr = gfx->mtx1.load?"Load":"Mul";
-	char *pushstr = gfx->mtx1.push?"Push":"Nopush";
+	char *loadstr = command.mtx1.load?"Load":"Mul";
+	char *pushstr = command.mtx1.push?"Push":"Nopush";
 	int projlevel = CRender::g_pRender->GetProjectMatrixLevel();
 	int worldlevel = CRender::g_pRender->GetWorldViewMatrixLevel();
 	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
 	{
 		pauseAtNext = false;
 		debuggerPause = true;
-		if (gfx->mtx1.projection)
+		if (command.mtx1.projection)
 		{
 			TRACE3("Pause after %s and %s Matrix: Projection, level=%d\n", loadstr, pushstr, projlevel );
 		}
@@ -68,7 +68,7 @@ void RSP_GBI0_Mtx(Gfx *gfx)
 	{
 		if( pauseAtNext && logMatrix ) 
 		{
-			if (gfx->mtx1.projection)
+			if (command.mtx1.projection)
 			{
 				TRACE3("Matrix: %s and %s Projection level=%d\n", loadstr, pushstr, projlevel);
 			}
@@ -81,15 +81,15 @@ void RSP_GBI0_Mtx(Gfx *gfx)
 #endif
 }
 
-void RSP_GBI0_Vtx(Gfx *gfx)
+void RSP_GBI0_Vtx(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI0_Vtx);
 
-	uint32 addr = RSPSegmentAddr((gfx->vtx0.addr));
-	int v0 = gfx->vtx0.v0;
-	int n = gfx->vtx0.n + 1;
+	uint32 addr = RSPSegmentAddr((command.vtx0.addr));
+	int v0 = command.vtx0.v0;
+	int n = command.vtx0.n + 1;
 
-	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", addr, v0, n, gfx->vtx0.len);
+	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", addr, v0, n, command.vtx0.len);
 
 	if ((v0 + n) > 80)
 	{
@@ -110,13 +110,13 @@ void RSP_GBI0_Vtx(Gfx *gfx)
 	}
 }
 
-void RSP_GBI0_DL(Gfx *gfx)
+void RSP_GBI0_DL(MicroCodeCommand command)
 {	
 	SP_Timing(RSP_GBI0_DL);
 
-	uint32 addr = RSPSegmentAddr((gfx->dlist.addr)) & (g_dwRamSize-1);
+	uint32 addr = RSPSegmentAddr((command.dlist.addr)) & (g_dwRamSize-1);
 
-	LOG_UCODE("    Address=0x%08x Push: 0x%02x", addr, gfx->dlist.param);
+	LOG_UCODE("    Address=0x%08x Push: 0x%02x", addr, command.dlist.param);
 	if( addr > g_dwRamSize )
 	{
 		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", addr, gDlistStack[gDlistStackPointer].pc );
@@ -124,7 +124,7 @@ void RSP_GBI0_DL(Gfx *gfx)
 		DebuggerPauseCountN( NEXT_DLIST );
 	}
 
-	if( gfx->dlist.param == RSP_DLIST_PUSH )
+	if( command.dlist.param == RSP_DLIST_PUSH )
 		gDlistStackPointer++;
 
 	gDlistStack[gDlistStackPointer].pc = addr;
@@ -134,10 +134,10 @@ void RSP_GBI0_DL(Gfx *gfx)
 		LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 }
 
-void RSP_GBI0_Tri4(Gfx *gfx)
+void RSP_GBI0_Tri4(MicroCodeCommand command)
 {
-	uint32 w0 = gfx->words.cmd0;
-	uint32 w1 = gfx->words.cmd1;
+	uint32 w0 = command.inst.cmd0;
+	uint32 w1 = command.inst.cmd1;
 
 	status.primitiveType = PRIM_TRI2;
 
@@ -148,7 +148,7 @@ void RSP_GBI0_Tri4(Gfx *gfx)
 
 	do {
 		uint32 dwFlag = (w0>>16)&0xFF;
-		LOG_UCODE("    PD Tri4: 0x%08x 0x%08x Flag: 0x%02x", gfx->words.cmd0, gfx->words.cmd1, dwFlag);
+		LOG_UCODE("    PD Tri4: 0x%08x 0x%08x Flag: 0x%02x", command.inst.cmd0, command.inst.cmd1, dwFlag);
 
 		BOOL bVisible;
 		for( int i=0; i<4; i++)

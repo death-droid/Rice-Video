@@ -19,10 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef RSP_GE_H__
 #define RSP_GE_H__
 
-void DLParser_RDPHalf1_GoldenEye(Gfx *gfx)		
+void DLParser_RDPHalf1_GoldenEye(MicroCodeCommand command)		
 {
 	SP_Timing(RSP_GBI1_RDPHalf_1);
-	if( ((gfx->words.cmd1)>>24) == 0xce )
+	if( ((command.inst.cmd1)>>24) == 0xce )
 	{
 		PrepareTextures();
 		CRender::g_pRender->SetCombinerAndBlender();
@@ -67,7 +67,7 @@ void DLParser_RDPHalf1_GoldenEye(Gfx *gfx)
 		if( logUcodes)
 		{
 			dwPC -= 8;
-			LOG_UCODE("GoldenEye Sky at PC=%08X: 0x%08x 0x%08x", dwPC, (gfx->words.cmd0), (gfx->words.cmd1));
+			LOG_UCODE("GoldenEye Sky at PC=%08X: 0x%08x 0x%08x", dwPC, (command.inst.cmd0), (command.inst.cmd1));
 			uint32 *ptr = (uint32 *)(g_pRDRAMu8 + dwPC);
 			for( int i=0; i<21; i++, dwPC+=16,ptr+=4 )
 			{

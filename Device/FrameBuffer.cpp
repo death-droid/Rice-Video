@@ -32,7 +32,7 @@ extern TMEMLoadMapInfo g_tmemLoadAddrMap[0x200];	// Totally 4KB TMEM;
 
 /* Overview of framebuffer implementation
 1) Check if backbuffer has changed, via different detection techniques
-2) If changed, we copy the GFX card's backbuffer to main RAM
+2) If changed, we copy the MicroCodeCommandcard's backbuffer to main RAM
 3) This is slow due to the reading process, not the writing
 */
 

@@ -50,7 +50,7 @@ struct GGBI1_Matrix
 	u32	push:1;
 	u32	:5;
 	u32	cmd:8;
-	u32    addr;
+	u32 addr;
 };
 
 struct GGBI1_PopMatrix
@@ -132,7 +132,8 @@ struct GGBI1_ModifyVtx
 	u32 value;
 };
 
-struct GBI_Texture{
+struct GBI_Texture
+{
 	u32	enable_gbi0:1;
 	u32	enable_gbi2:1;
 	u32	:6;
@@ -378,9 +379,9 @@ struct TriDKR
     signed short	t2, s2;
 };
 
-union Gfx
+union MicroCodeCommand
 {
-	Instruction		words;
+	Instruction		inst;
 	GGBI0_Vtx		vtx0;
 	GGBI1_Vtx		vtx1;
 	GGBI2_Vtx		vtx2;

@@ -35,21 +35,21 @@ Matrix gD3DObjOffset(1.0,0,0,0,  0,1.0,0,0, 0,0,0,1.0, 0,0,0,1.0);
 uint32 g_TxtLoadBy = CMD_LOAD_OBJ_TXTR;
 
 // YoshiStory uses this - 0x02
-void RSP_S2DEX_BG_COPY(Gfx *gfx)
+void RSP_S2DEX_BG_COPY(MicroCodeCommand command)
 {
 	SP_Timing(DP_Minimal16);
 	DP_Timing(DP_Minimal16);
 
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uObjBg *sbgPtr = (uObjBg*)(g_pRDRAMu8+dwAddr);
 	CRender::g_pRender->LoadObjBGCopy(*sbgPtr);
 	CRender::g_pRender->DrawObjBGCopy(*sbgPtr);
 }
 
 // YoshiStory uses this - 0x03
-void RSP_S2DEX_OBJ_RECTANGLE(Gfx *gfx)
+void RSP_S2DEX_OBJ_RECTANGLE(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uObjSprite *ptr = (uObjSprite*)(g_pRDRAMu8+dwAddr);
 
 	uObjTxSprite objtx;
@@ -84,9 +84,9 @@ void RSP_S2DEX_OBJ_RECTANGLE(Gfx *gfx)
 }
 
 // YoshiStory uses this - 0x04
-void RSP_S2DEX_OBJ_SPRITE(Gfx *gfx)
+void RSP_S2DEX_OBJ_SPRITE(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uObjSprite *info = (uObjSprite*)(g_pRDRAMu8+dwAddr);
 
 	uint32 dwTile	= gRSP.curTile;
@@ -105,7 +105,7 @@ void RSP_S2DEX_OBJ_SPRITE(Gfx *gfx)
 	static BOOL bWarned = FALSE;
 	//if (!bWarned)
 	{
-		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_OBJ_SPRITE (0x%08x 0x%08x)", (gfx->words.cmd0), (gfx->words.cmd1));
+		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_OBJ_SPRITE (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 		bWarned = TRUE;
 	}
 	*/
@@ -122,42 +122,42 @@ void RSP_S2DEX_OBJ_SPRITE(Gfx *gfx)
 }
 
 // YoshiStory uses this - 0xb0
-void RSP_S2DEX_SELECT_DL(Gfx *gfx)
+void RSP_S2DEX_SELECT_DL(MicroCodeCommand command)
 {
 	static BOOL bWarned = FALSE;
 	//if (!bWarned)
 	{
-		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_SELECT_DL (0x%08x 0x%08x)", (gfx->words.cmd0), (gfx->words.cmd1));
+		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_SELECT_DL (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 		bWarned = TRUE;
 	}
 
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_OBJ_TXT_CMD, {DebuggerAppendMsg("Paused at RSP_S2DEX_SELECT_DL");});
 }
 
-void RSP_S2DEX_OBJ_RENDERMODE(Gfx *gfx)
+void RSP_S2DEX_OBJ_RENDERMODE(MicroCodeCommand command)
 {
 	/*
 	static BOOL bWarned = FALSE;
 	//if (!bWarned)
 	{
-	RSP_RDP_NOIMPL("RDP: RSP_S2DEX_OBJ_RENDERMODE (0x%08x 0x%08x)", (gfx->words.cmd0), (gfx->words.cmd1));
+	RSP_RDP_NOIMPL("RDP: RSP_S2DEX_OBJ_RENDERMODE (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 	bWarned = TRUE;
 	}
 	*/
 }
 
 // YoshiStory uses this - 0xb1
-void RSP_GBI1_Tri2(Gfx *gfx);
-void RSP_S2DEX_OBJ_RENDERMODE_2(Gfx *gfx)
+void RSP_GBI1_Tri2(MicroCodeCommand command);
+void RSP_S2DEX_OBJ_RENDERMODE_2(MicroCodeCommand command)
 {
-	if( ((gfx->words.cmd0)&0xFFFFFF) != 0 || ((gfx->words.cmd1)&0xFFFFFF00) != 0 )
+	if( ((command.inst.cmd0)&0xFFFFFF) != 0 || ((command.inst.cmd1)&0xFFFFFF00) != 0 )
 	{
 		// This is a TRI2 cmd
-		RSP_GBI1_Tri2(gfx);
+		RSP_GBI1_Tri2(command);
 		return;
 	}
 
-	RSP_S2DEX_OBJ_RENDERMODE(gfx);
+	RSP_S2DEX_OBJ_RENDERMODE(command);
 }
 
 #ifdef _DEBUG
@@ -295,9 +295,9 @@ void ObjMtxTranslate(float &x, float &y)
 	y = y1;
 }
 
-void RSP_S2DEX_SPObjLoadTxtr(Gfx *gfx)
+void RSP_S2DEX_SPObjLoadTxtr(MicroCodeCommand command)
 {
-	gObjTxtr = (uObjTxtr*)(g_pRDRAMu8+(RSPSegmentAddr((gfx->words.cmd1))&(g_dwRamSize-1)));
+	gObjTxtr = (uObjTxtr*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	if( gObjTxtr->block.type == S2DEX_OBJLT_TLUT )
 	{
 		gObjTlut = (uObjTxtrTLUT*)gObjTxtr;
@@ -339,9 +339,9 @@ void RSP_S2DEX_SPObjLoadTxtr(Gfx *gfx)
 }
 
 // YoshiStory uses this - 0xc2
-void RSP_S2DEX_SPObjLoadTxSprite(Gfx *gfx)
+void RSP_S2DEX_SPObjLoadTxSprite(MicroCodeCommand command)
 {
-	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((gfx->words.cmd1))&(g_dwRamSize-1)));
+	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	gObjTxtr = (uObjTxtr*)ptr;
 	
 	//Now draw the sprite
@@ -359,9 +359,9 @@ void RSP_S2DEX_SPObjLoadTxSprite(Gfx *gfx)
 
 
 // YoshiStory uses this - 0xc3
-void RSP_S2DEX_SPObjLoadTxRect(Gfx *gfx)
+void RSP_S2DEX_SPObjLoadTxRect(MicroCodeCommand command)
 {
-	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((gfx->words.cmd1))&(g_dwRamSize-1)));
+	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	gObjTxtr = (uObjTxtr*)ptr;
 	
 	//Now draw the sprite
@@ -378,9 +378,9 @@ void RSP_S2DEX_SPObjLoadTxRect(Gfx *gfx)
 }
 
 // YoshiStory uses this - 0xc4
-void RSP_S2DEX_SPObjLoadTxRectR(Gfx *gfx)
+void RSP_S2DEX_SPObjLoadTxRectR(MicroCodeCommand command)
 {
-	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((gfx->words.cmd1))&(g_dwRamSize-1)));
+	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	gObjTxtr = (uObjTxtr*)ptr;
 	
 	//Now draw the sprite
@@ -396,9 +396,9 @@ void RSP_S2DEX_SPObjLoadTxRectR(Gfx *gfx)
 	);
 }
 
-void DLParser_TexRect(Gfx *gfx);
+void DLParser_TexRect(MicroCodeCommand command);
 // YoshiStory uses this - 0xe4
-void RSP_S2DEX_RDPHALF_0(Gfx *gfx)
+void RSP_S2DEX_RDPHALF_0(MicroCodeCommand command)
 {
 	//RDP: RSP_S2DEX_RDPHALF_0 (0xe449c0a8 0x003b40a4)
 	//0x001d3c88: e449c0a8 003b40a4 RDP_TEXRECT 
@@ -413,26 +413,26 @@ void RSP_S2DEX_RDPHALF_0(Gfx *gfx)
 		// Pokemom Puzzle League
 		if( (dwNextUcode>>24) == 0xB4 )
 		{
-			DLParser_TexRect(gfx);
+			DLParser_TexRect(command);
 		}
 		else
 		{
-			RSP_RDP_NOIMPL("RDP: RSP_S2DEX_RDPHALF_0 (0x%08x 0x%08x)", (gfx->words.cmd0), (gfx->words.cmd1));
+			RSP_RDP_NOIMPL("RDP: RSP_S2DEX_RDPHALF_0 (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 		}
 	}
 	else
 	{
-		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_RDPHALF_0 (0x%08x 0x%08x)", (gfx->words.cmd0), (gfx->words.cmd1));
+		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_RDPHALF_0 (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 		DEBUGGER_PAUSE_COUNT_N(NEXT_OBJ_TXT_CMD);
 	}
 }
 
 // YoshiStory uses this - 0x05
-void RSP_S2DEX_OBJ_MOVEMEM(Gfx *gfx)
+void RSP_S2DEX_OBJ_MOVEMEM(MicroCodeCommand command)
 {
-	uint32 dwCommand = ((gfx->words.cmd0)>>16)&0xFF;
-	uint32 dwLength  = ((gfx->words.cmd0))    &0xFFFF;
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 dwCommand = ((command.inst.cmd0)>>16)&0xFF;
+	uint32 dwLength  = ((command.inst.cmd0))    &0xFFFF;
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 
 	if( dwAddr >= g_dwRamSize )
 	{
@@ -492,49 +492,49 @@ void RSP_S2DEX_OBJ_MOVEMEM(Gfx *gfx)
 }
 
 // YoshiStory uses this - 0x01
-extern void RSP_GBI0_Mtx(Gfx *gfx);
+extern void RSP_GBI0_Mtx(MicroCodeCommand command);
 
-void RSP_S2DEX_BG_1CYC(Gfx *gfx)
+void RSP_S2DEX_BG_1CYC(MicroCodeCommand command)
 {
 	SP_Timing(DP_Minimal16);
 	DP_Timing(DP_Minimal16);
 
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uObjScaleBg *sbgPtr = (uObjScaleBg *)(dwAddr+g_pRDRAMu8);
 	CRender::g_pRender->LoadObjBG1CYC(*sbgPtr);
 	CRender::g_pRender->DrawObjBG1CYC(*sbgPtr);
 
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((eventToPause == NEXT_OBJ_TXT_CMD||eventToPause == NEXT_FLUSH_TRI||eventToPause == NEXT_OBJ_BG),
 		{
-			DebuggerAppendMsg("S2DEX BG 1CYC: %08X-%08X\n", (gfx->words.cmd0), (gfx->words.cmd1) );		
+			DebuggerAppendMsg("S2DEX BG 1CYC: %08X-%08X\n", (command.inst.cmd0), (command.inst.cmd1) );		
 			TRACE0("Paused at RSP_S2DEX_BG_1CYC");
 		}
 	);
 }
 
-void RSP_S2DEX_BG_1CYC_2(Gfx *gfx)
+void RSP_S2DEX_BG_1CYC_2(MicroCodeCommand command)
 {
-	if( ((gfx->words.cmd0)&0x00FFFFFF) != 0 )
+	if( ((command.inst.cmd0)&0x00FFFFFF) != 0 )
 	{
-		RSP_GBI0_Mtx(gfx);
+		RSP_GBI0_Mtx(command);
 		return;
 	}
 
-	RSP_S2DEX_BG_1CYC(gfx);
+	RSP_S2DEX_BG_1CYC(command);
 }
 
 
 // YoshiStory uses this - 0xb2
-void RSP_S2DEX_OBJ_RECTANGLE_R(Gfx *gfx)
+void RSP_S2DEX_OBJ_RECTANGLE_R(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uObjSprite *ptr = (uObjSprite*)(g_pRDRAMu8+dwAddr);
 
 	uObjTxSprite objtx;
 	memcpy(&objtx.sprite,ptr,sizeof(uObjSprite));
 
 
-	//uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((gfx->words.cmd1))&(g_dwRamSize-1)));
+	//uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	//gObjTxtr = (uObjTxtr*)ptr;
 	
 	//Now draw the sprite

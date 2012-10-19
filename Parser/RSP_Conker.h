@@ -22,11 +22,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 uint32 dwConkerVtxZAddr=0;
 
 extern void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
-void RSP_Vtx_Conker(Gfx *gfx)
+void RSP_Vtx_Conker(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
-	uint32 dwVEnd   = ((gfx->words.cmd0		 )&0xFFF)/2;
-	uint32 dwN      = ((gfx->words.cmd0 >> 12)&0xFFF);
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwVEnd   = ((command.inst.cmd0		 )&0xFFF)/2;
+	uint32 dwN      = ((command.inst.cmd0 >> 12)&0xFFF);
 	uint32 dwV0		= dwVEnd - dwN;
 
 	LOG_UCODE("    Vtx: Address 0x%08x, vEnd: %d, v0: %d, Num: %d", dwAddr, dwVEnd, dwV0, dwN);
@@ -36,10 +36,10 @@ void RSP_Vtx_Conker(Gfx *gfx)
 	DisplayVertexInfo(dwAddr, dwV0, dwN);
 }
 
-void RSP_Tri4_Conker(Gfx *gfx)
+void RSP_Tri4_Conker(MicroCodeCommand command)
 {
-	uint32 w0 = gfx->words.cmd0;
-	uint32 w1 = gfx->words.cmd1;
+	uint32 w0 = command.inst.cmd0;
+	uint32 w1 = command.inst.cmd1;
 
 	status.primitiveType = PRIM_TRI2;
 
@@ -114,10 +114,10 @@ void RDP_GFX_Force_Vertex_Z_Conker(uint32 dwAddr)
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_VERTEX_CMD,{TRACE0("Paused at RDP_GFX_Force_Matrix_Conker Cmd");});
 }
 
-void RSP_MoveMem_Conker(Gfx *gfx)
+void RSP_MoveMem_Conker(MicroCodeCommand command)
 {
-	uint32 dwType = gfx->words.cmd0 & 0xFE;
-	uint32 dwAddr = RSPSegmentAddr(gfx->words.cmd1);
+	uint32 dwType = command.inst.cmd0 & 0xFE;
+	uint32 dwAddr = RSPSegmentAddr(command.inst.cmd1);
 
 	switch (dwType)
 	{
@@ -130,7 +130,7 @@ void RSP_MoveMem_Conker(Gfx *gfx)
 	case RSP_GBI2_MV_MEM__LIGHT:
 		{
 			LOG_UCODE("    MoveMem Light Conker");
-			uint32 dwOffset2 = ((gfx->words.cmd0) >> 5) & 0x3FFF;
+			uint32 dwOffset2 = ((command.inst.cmd0) >> 5) & 0x3FFF;
 			if( dwOffset2 >= 0x30 )
 			{
 				uint32 dwLight = (dwOffset2 - 0x30)/0x30;
@@ -144,49 +144,49 @@ void RSP_MoveMem_Conker(Gfx *gfx)
 			}
 			DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_SET_LIGHT, 
 			{
-				DebuggerAppendMsg("RSP_MoveMemLight: %d, Addr=%08X, cmd0=%08X", dwLight, dwAddr, (gfx->words.cmd0));
+				DebuggerAppendMsg("RSP_MoveMemLight: %d, Addr=%08X, cmd0=%08X", dwLight, dwAddr, (command.inst.cmd0));
 				TRACE0("Pause after MoveMemLight");
 			});
 		}
 		break;
 	default:
-		RSP_GBI2_MoveMem(gfx);
+		RSP_GBI2_MoveMem(command);
 		break;
 	}
 }
 
-void RSP_Quad_Conker (Gfx *gfx)
+void RSP_Quad_Conker (MicroCodeCommand command)
 {
-	if ((gfx->words.cmd0 & 0x00FFFFFF) == 0x2F)
+	if ((command.inst.cmd0 & 0x00FFFFFF) == 0x2F)
 	{
-		uint32 command = gfx->words.cmd0>>24;
-		if (command == 0x6)
+		uint32 p_command = command.inst.cmd0>>24;
+		if (p_command == 0x6)
 		{
-			RSP_S2DEX_SPObjLoadTxSprite(gfx);
+			RSP_S2DEX_SPObjLoadTxSprite(command);
 			return;
 		}
-		if (command == 0x7)
+		if (p_command == 0x7)
 		{
-			RSP_S2DEX_SPObjLoadTxSprite(gfx);
+			RSP_S2DEX_SPObjLoadTxSprite(command);
 			return;
 		}
 	}
-	uint32 v0 = ((gfx->words.cmd0 >> 17) & 0x7F);
-	uint32 v1 = ((gfx->words.cmd0 >> 9) & 0x7F);
-	uint32 v2 = ((gfx->words.cmd0 >> 1) & 0x7F);
+	uint32 v0 = ((command.inst.cmd0 >> 17) & 0x7F);
+	uint32 v1 = ((command.inst.cmd0 >> 9) & 0x7F);
+	uint32 v2 = ((command.inst.cmd0 >> 1) & 0x7F);
 	PrepareTriangle(v0,v1,v2);
 }
 
-void RSP_MoveWord_Conker(Gfx *gfx)
+void RSP_MoveWord_Conker(MicroCodeCommand command)
 {
-	uint32 dwType   = ((gfx->words.cmd0) >> 16) & 0xFF;
+	uint32 dwType   = ((command.inst.cmd0) >> 16) & 0xFF;
 	if( dwType != RSP_MOVE_WORD_NUMLIGHT )
 	{
-		RSP_GBI2_MoveWord(gfx);
+		RSP_GBI2_MoveWord(command);
 	}
 	else
 	{
-		uint32 dwNumLights = ((gfx->words.cmd1)/48);
+		uint32 dwNumLights = ((command.inst.cmd1)/48);
 		LOG_UCODE("Conker RSP_MOVE_WORD_NUMLIGHT: %d", dwNumLights);
 		gRSP.ambientLightIndex = dwNumLights+1;
 		SetNumLights(dwNumLights);

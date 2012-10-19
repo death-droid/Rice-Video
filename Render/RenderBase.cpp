@@ -1389,8 +1389,12 @@ bool PrepareTriangle(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 
 	return true;
 }
-bool AddTri(u32 v0, u32 v1, u32 v2)
+
+bool AddTri(u32 v0, u32 v1, u32 v2, bool bTri4)
 {
+	if(bTri4 && v0 == v1)
+		return false; // Cull empty tris
+
 	if (IsTriangleVisible(v0, v1, v2))
 	{
 		if (CRender::g_pRender->IsTextureEnabled())

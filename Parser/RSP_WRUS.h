@@ -19,12 +19,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef RSP_WRUS_H__
 #define RSP_WRUS_H__
 
-void RSP_Vtx_WRUS(Gfx *gfx)
+void RSP_Vtx_WRUS(MicroCodeCommand command)
 {
-	u32 dwAddr	 = RSPSegmentAddr(gfx->words.cmd1);
-	u32 dwV0	 = ((gfx->words.cmd0 >>16 ) & 0xff) / 5;
-	u32 dwN		 =  (gfx->words.cmd0 >>9  ) & 0x7f;
-	u32 dwLength =  (gfx->words.cmd0      ) & 0x1ff;
+	u32 dwAddr	 = RSPSegmentAddr(command.inst.cmd1);
+	u32 dwV0	 = ((command.inst.cmd0 >>16 ) & 0xff) / 5;
+	u32 dwN		 =  (command.inst.cmd0 >>9  ) & 0x7f;
+	u32 dwLength =  (command.inst.cmd0      ) & 0x1ff;
 
 	LOG_UCODE("    Address [0x%08x], v0: [%d], Num: [%d], Length: [0x%04x]", dwAddr, dwV0, dwN, dwLength);
 

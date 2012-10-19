@@ -22,14 +22,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 uint32 dwPDCIAddr = 0;
 
 void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
-void RSP_Vtx_PD(Gfx *gfx)
+void RSP_Vtx_PD(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI0_Vtx);
 
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
-	uint32 dwV0 =  ((gfx->words.cmd0)>>16)&0x0F;
-	uint32 dwN  = (((gfx->words.cmd0)>>20)&0x0F)+1;
-	uint32 dwLength = ((gfx->words.cmd0))&0xFFFF;
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwV0 =  ((command.inst.cmd0)>>16)&0x0F;
+	uint32 dwN  = (((command.inst.cmd0)>>20)&0x0F)+1;
+	uint32 dwLength = ((command.inst.cmd0))&0xFFFF;
 
 	LOG_UCODE("    Address [0x%08x], Len[%d], v0: [%d], Num: [%d]", dwAddr, dwLength, dwV0, dwN);
 
@@ -37,16 +37,16 @@ void RSP_Vtx_PD(Gfx *gfx)
 	status.dwNumVertices += dwN;
 }
 
-void RSP_Set_Vtx_CI_PD(Gfx *gfx)
+void RSP_Set_Vtx_CI_PD(MicroCodeCommand command)
 {
 	// Color index buf address
-	dwPDCIAddr = RSPSegmentAddr((gfx->words.cmd1));
+	dwPDCIAddr = RSPSegmentAddr((command.inst.cmd1));
 }
 
-void RSP_Tri4_PD(Gfx *gfx)
+void RSP_Tri4_PD(MicroCodeCommand command)
 {
-	uint32 w0 = gfx->words.cmd0;
-	uint32 w1 = gfx->words.cmd1;
+	uint32 w0 = command.inst.cmd0;
+	uint32 w1 = command.inst.cmd1;
 
 	status.primitiveType = PRIM_TRI2;
 

@@ -19,12 +19,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef RSP_SOTE_H__
 #define RSP_SOTE_H__
 
-void RSP_Vtx_ShadowOfEmpire(Gfx *gfx)
+void RSP_Vtx_ShadowOfEmpire(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((gfx->words.cmd1));
-	uint32 dwLength = ((gfx->words.cmd0))&0xFFFF;
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwLength = ((command.inst.cmd0))&0xFFFF;
 
-	uint32 dwN= (((gfx->words.cmd0) >> 4) & 0xFFF) / 33 + 1;
+	uint32 dwN= (((command.inst.cmd0) >> 4) & 0xFFF) / 33 + 1;
 	uint32 dwV0 = 0;
 
 	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", dwAddr, dwV0, dwN, dwLength);
@@ -46,7 +46,7 @@ void RSP_Vtx_ShadowOfEmpire(Gfx *gfx)
 }
 
 
-void RSP_Quad3d_ShadowOfEmpire(Gfx *gfx)
+void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 {
 	status.primitiveType = PRIM_TRI2;
 	bool bTrisAdded = false;
@@ -54,56 +54,27 @@ void RSP_Quad3d_ShadowOfEmpire(Gfx *gfx)
 
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
 
 	do {
-		uint32 dwV0 = ((gfx->words.cmd1 >> 24) & 0xFF) / 5;
-		uint32 dwV1 = ((gfx->words.cmd1 >> 16) & 0xFF) / 5;
-		uint32 dwV2 = ((gfx->words.cmd1 >>  8) & 0xFF) / 5;
+		uint32 dwV0 = ((command.inst.cmd1 >> 24) & 0xFF) / 5;
+		uint32 dwV1 = ((command.inst.cmd1 >> 16) & 0xFF) / 5;
+		uint32 dwV2 = ((command.inst.cmd1 >>  8) & 0xFF) / 5;
 
-		uint32 dwV3 = ((gfx->words.cmd1 >> 24) & 0xFF) / 5;
-		uint32 dwV4 = ((gfx->words.cmd1 >>  8) & 0xFF) / 5;
-		uint32 dwV5 = ((gfx->words.cmd1      ) & 0xFF) / 5;
+		uint32 dwV3 = ((command.inst.cmd1 >> 24) & 0xFF) / 5;
+		uint32 dwV4 = ((command.inst.cmd1 >>  8) & 0xFF) / 5;
+		uint32 dwV5 = ((command.inst.cmd1      ) & 0xFF) / 5;
 
-		// Do first tri
-		if (IsTriangleVisible(dwV0, dwV1, dwV2))
-		{
-			DEBUG_DUMP_VERTEXES("Tri2 1/2", dwV0, dwV1, dwV2);
-			if (!bTrisAdded)
-			{
-				if( bTexturesAreEnabled )
-			{
-				PrepareTextures();
-				InitVertexTextureConstants();
-			}
-				CRender::g_pRender->SetCombinerAndBlender();
-				bTrisAdded = true;
-			}
-			PrepareTriangle(dwV0, dwV1, dwV2);
-		}
-
-		// Do second tri
-		if (IsTriangleVisible(dwV3, dwV4, dwV5))
-		{
-			DEBUG_DUMP_VERTEXES("Tri2 2/2", dwV3, dwV4, dwV5);
-			if (!bTrisAdded)
-			{
-				if( bTexturesAreEnabled )
-			{
-				PrepareTextures();
-				InitVertexTextureConstants();
-			}
-				CRender::g_pRender->SetCombinerAndBlender();
-				bTrisAdded = true;
-			}
-			PrepareTriangle(dwV3, dwV4, dwV5);
-		}
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
+		bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
 		
-		gfx++;
+		command.inst.cmd0 = *pCmdBase++;
+		command.inst.cmd1 = *pCmdBase++;
 		dwPC += 8;
 #ifdef _DEBUG
-	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && gfx->words.cmd == (uint8)RSP_TRI2);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_TRI2);
 #else
-	} while( gfx->words.cmd == (uint8)RSP_TRI2);
+	} while( command.inst.cmd == (uint8)RSP_TRI2);
 #endif
 
 
@@ -118,7 +89,7 @@ void RSP_Quad3d_ShadowOfEmpire(Gfx *gfx)
 	DEBUG_TRIANGLE(TRACE0("Pause at GBI1 TRI1"));
 }
 
-void RSP_Tri1_ShadowOfEmpire(Gfx *gfx)
+void RSP_Tri1_ShadowOfEmpire(MicroCodeCommand command)
 {
 	status.primitiveType = PRIM_TRI1;
 	bool bTrisAdded = false;
@@ -130,35 +101,20 @@ void RSP_Tri1_ShadowOfEmpire(Gfx *gfx)
 	
 	do
 	{
-		uint32 dwV0 = ((gfx->words.cmd1 >> 16) & 0xFF) / 5;
-		uint32 dwV1 = ((gfx->words.cmd1 >> 8) & 0xFF) / 5;
-		uint32 dwV2 = (gfx->words.cmd1 & 0xFF) / 5;
+		uint32 dwV0 = ((command.inst.cmd1 >> 16) & 0xFF) / 5;
+		uint32 dwV1 = ((command.inst.cmd1 >> 8) & 0xFF) / 5;
+		uint32 dwV2 = (command.inst.cmd1 & 0xFF) / 5;
 
-		if (IsTriangleVisible(dwV0, dwV1, dwV2))
-		{
-			DEBUG_DUMP_VERTEXES("Tri1", dwV0, dwV1, dwV2);
-			LOG_UCODE("    Tri1: 0x%08x 0x%08x %d,%d,%d", gfx->words.cmd0, gfx->words.cmd1, dwV0, dwV1, dwV2);
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-			if (!bTrisAdded)
-			{
-				if( bTexturesAreEnabled )
-				{
-					PrepareTextures();
-					InitVertexTextureConstants();
-				}
-				CRender::g_pRender->SetCombinerAndBlender();
-				bTrisAdded = true;
-			}
-			PrepareTriangle(dwV0, dwV1, dwV2);
-		}
-
-		gfx++;
+		command.inst.cmd0 = *pCmdBase++;
+		command.inst.cmd1 = *pCmdBase++;
 		dwPC += 8;
 
 #ifdef _DEBUG
-	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && gfx->words.cmd == (uint8)RSP_TRI1);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_TRI1);
 #else
-	} while (gfx->words.cmd == (uint8)RSP_TRI1);
+	} while (command.inst.cmd == (uint8)RSP_TRI1);
 #endif
 
 	gDlistStack[gDlistStackPointer].pc = dwPC-8;

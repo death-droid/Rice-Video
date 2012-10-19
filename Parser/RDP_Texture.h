@@ -968,22 +968,22 @@ void PrepareTextures()
 /************************************************************************/
 extern uint32 g_TxtLoadBy;
 
-void DLParser_LoadTLut(Gfx *gfx)
+void DLParser_LoadTLut(MicroCodeCommand command)
 {
 	gRDP.textureIsChanged = true;
 
-	uint32 tileno	= gfx->loadtile.tile;
-	uint32 uls		= gfx->loadtile.sl/4;
-	uint32 ult		= gfx->loadtile.tl/4;
-	uint32 lrs		= gfx->loadtile.sh/4;
-	uint32 lrt		= gfx->loadtile.th/4;
+	uint32 tileno	= command.loadtile.tile;
+	uint32 uls		= command.loadtile.sl/4;
+	uint32 ult		= command.loadtile.tl/4;
+	uint32 lrs		= command.loadtile.sh/4;
+	uint32 lrt		= command.loadtile.th/4;
 
 	uint32 dwTLutFmt = (gRDP.otherModeH >> RSP_SETOTHERMODE_SHIFT_TEXTLUT)&0x3;
 
 	uint32 dwCount;
 
 	uint32 dwTMEMOffset = gRDP.tiles[tileno].dwTMem - 256;				// starting location in the palettes
-	dwCount = ((uint16)((gfx->words.cmd1) >> 14) & 0x03FF) + 1;		// number to copy
+	dwCount = ((uint16)((command.inst.cmd1) >> 14) & 0x03FF) + 1;		// number to copy
 	uint32 dwRDRAMOffset = 0;
 
 
@@ -999,7 +999,7 @@ void DLParser_LoadTLut(Gfx *gfx)
 	tile.lastTileCmd = CMD_LOADTLUT;
 
 #ifdef _DEBUG
-	if( (((gfx->words.cmd0)>>12)&0x3) != 0 || (((gfx->words.cmd0))&0x3) != 0 || (((gfx->words.cmd1)>>12)&0x3) != 0 || (((gfx->words.cmd1))&0x3) != 0 )
+	if( (((command.inst.cmd0)>>12)&0x3) != 0 || (((command.inst.cmd0))&0x3) != 0 || (((command.inst.cmd1)>>12)&0x3) != 0 || (((command.inst.cmd1))&0x3) != 0 )
 	{
 		//TRACE0("Load tlut, sl,tl,sh,th are not integers");
 	}
@@ -1056,15 +1056,15 @@ void DLParser_LoadTLut(Gfx *gfx)
 }
 
 
-void DLParser_LoadBlock(Gfx *gfx)
+void DLParser_LoadBlock(MicroCodeCommand command)
 {
 	gRDP.textureIsChanged = true;
 
-	uint32 tileno	= gfx->loadtile.tile;
-	uint32 uls		= gfx->loadtile.sl;
-	uint32 ult		= gfx->loadtile.tl;
-	uint32 lrs		= gfx->loadtile.sh;
-	uint32 dxt		= gfx->loadtile.th;					// 1.11 fixed point
+	uint32 tileno	= command.loadtile.tile;
+	uint32 uls		= command.loadtile.sl;
+	uint32 ult		= command.loadtile.tl;
+	uint32 lrs		= command.loadtile.sh;
+	uint32 dxt		= command.loadtile.th;					// 1.11 fixed point
 
 	Tile &tile = gRDP.tiles[tileno];
 	tile.bForceWrapS = tile.bForceWrapT = tile.bForceClampS = tile.bForceClampT = false;
@@ -1170,7 +1170,7 @@ void DLParser_LoadBlock(Gfx *gfx)
 	LOG_TEXTURE(
 	{
 		DebuggerAppendMsg("LoadBlock:%d (%d,%d,%d) DXT:0x%04x(%X)\n",
-			tileno, uls, ult, (((gfx->words.cmd1)>>12)&0x0FFF), dxt, ((gfx->words.cmd1)&0x0FFF));
+			tileno, uls, ult, (((command.inst.cmd1)>>12)&0x0FFF), dxt, ((command.inst.cmd1)&0x0FFF));
 	});
 
 	DEBUGGER_PAUSE_COUNT_N(NEXT_TEXTURE_CMD);
@@ -1182,15 +1182,15 @@ void swap(int &a, int &b)
 	a = b;
 	b = temp;
 }
-void DLParser_LoadTile(Gfx *gfx)
+void DLParser_LoadTile(MicroCodeCommand command)
 {
 	gRDP.textureIsChanged = true;
 
-	uint32 tileno	= gfx->loadtile.tile;
-	uint32 uls		= gfx->loadtile.sl/4;
-	uint32 ult		= gfx->loadtile.tl/4;
-	uint32 lrs		= gfx->loadtile.sh/4;
-	uint32 lrt		= gfx->loadtile.th/4;
+	uint32 tileno	= command.loadtile.tile;
+	uint32 uls		= command.loadtile.sl/4;
+	uint32 ult		= command.loadtile.tl/4;
+	uint32 lrs		= command.loadtile.sh/4;
+	uint32 lrt		= command.loadtile.th/4;
 
 	Tile &tile = gRDP.tiles[tileno];
 	tile.bForceWrapS = tile.bForceWrapT = tile.bForceClampS = tile.bForceClampT = false;
@@ -1348,30 +1348,30 @@ void DLParser_LoadTile(Gfx *gfx)
 
 static char *pszOnOff[2]     = {"Off", "On"};
 uint32 lastSetTile;
-void DLParser_SetTile(Gfx *gfx)
+void DLParser_SetTile(MicroCodeCommand command)
 {
 	gRDP.textureIsChanged = true;
 
-	uint32 tileno		= gfx->settile.tile;
+	uint32 tileno		= command.settile.tile;
 	Tile &tile = gRDP.tiles[tileno];
 	tile.bForceWrapS = tile.bForceWrapT = tile.bForceClampS = tile.bForceClampT = false;
 
 	lastSetTile = tileno;
 
-	tile.dwFormat	= gfx->settile.fmt;
-	tile.dwSize		= gfx->settile.siz;
-	tile.dwLine		= gfx->settile.line;
-	tile.dwTMem		= gfx->settile.tmem;
+	tile.dwFormat	= command.settile.fmt;
+	tile.dwSize		= command.settile.siz;
+	tile.dwLine		= command.settile.line;
+	tile.dwTMem		= command.settile.tmem;
 
-	tile.dwPalette	= gfx->settile.palette;
-	tile.bClampT	= gfx->settile.ct;
-	tile.bMirrorT	= gfx->settile.mt;
-	tile.dwMaskT	= gfx->settile.maskt;
-	tile.dwShiftT	= gfx->settile.shiftt;
-	tile.bClampS	= gfx->settile.cs;
-	tile.bMirrorS	= gfx->settile.ms;
-	tile.dwMaskS	= gfx->settile.masks;
-	tile.dwShiftS	= gfx->settile.shifts;
+	tile.dwPalette	= command.settile.palette;
+	tile.bClampT	= command.settile.ct;
+	tile.bMirrorT	= command.settile.mt;
+	tile.dwMaskT	= command.settile.maskt;
+	tile.dwShiftT	= command.settile.shiftt;
+	tile.bClampS	= command.settile.cs;
+	tile.bMirrorS	= command.settile.ms;
+	tile.dwMaskS	= command.settile.masks;
+	tile.dwShiftS	= command.settile.shifts;
 
 
 	tile.fShiftScaleS = 1.0f;
@@ -1439,15 +1439,15 @@ void DLParser_SetTile(Gfx *gfx)
 		tile.dwMaskT, tile.dwShiftT);
 }
 
-void DLParser_SetTileSize(Gfx *gfx)
+void DLParser_SetTileSize(MicroCodeCommand command)
 {
 	gRDP.textureIsChanged = true;
 
-	uint32 tileno	= gfx->loadtile.tile;
-	int sl		= gfx->loadtile.sl;
-	int tl		= gfx->loadtile.tl;
-	int sh		= gfx->loadtile.sh;
-	int th		= gfx->loadtile.th;
+	uint32 tileno	= command.loadtile.tile;
+	int sl		= command.loadtile.sl;
+	int tl		= command.loadtile.tl;
+	int sh		= command.loadtile.sh;
+	int th		= command.loadtile.th;
 
 	Tile &tile = gRDP.tiles[tileno];
 	tile.bForceWrapS = tile.bForceWrapT = tile.bForceClampS = tile.bForceClampT = false;
@@ -1528,14 +1528,14 @@ void DLParser_SetTileSize(Gfx *gfx)
 
 extern char *pszImgFormat[8];// = {"RGBA", "YUV", "CI", "IA", "I", "?1", "?2", "?3"};
 extern char *pszImgSize[4];// = {"4", "8", "16", "32"};
-void DLParser_SetTImg(Gfx *gfx)
+void DLParser_SetTImg(MicroCodeCommand command)
 {
 	gRDP.textureIsChanged = true;
 
-	g_TI.dwFormat 	= gfx->img.fmt;
-	g_TI.dwSize   	= gfx->img.siz;
-	g_TI.dwWidth  	= gfx->img.width + 1;
-	g_TI.dwAddr   	= RSPSegmentAddr((gfx->img.addr));
+	g_TI.dwFormat 	= command.img.fmt;
+	g_TI.dwSize   	= command.img.siz;
+	g_TI.dwWidth  	= command.img.width + 1;
+	g_TI.dwAddr   	= RSPSegmentAddr((command.img.addr));
 	g_TI.bpl		= g_TI.dwWidth << g_TI.dwSize >> 1;
 
 #ifdef _DEBUG
@@ -1554,9 +1554,12 @@ void DLParser_SetTImg(Gfx *gfx)
 #endif
 }
 
-void DLParser_TexRect(Gfx *gfx)
+void DLParser_TexRect(MicroCodeCommand command)
 {
-	Gtexrect *gtextrect = (Gtexrect *)gfx;
+	MicroCodeCommand command2;
+	MicroCodeCommand command3;
+
+	Gtexrect *gtextrect;
 
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
@@ -1606,11 +1609,11 @@ void DLParser_TexRect(Gfx *gfx)
 	LOG_UCODE("0x%08x: %08x %08x", dwPC, *(uint32 *)(g_pRDRAMu8 + dwPC+0), *(uint32 *)(g_pRDRAMu8 + dwPC+4));
 	LOG_UCODE("0x%08x: %08x %08x", dwPC+8, *(uint32 *)(g_pRDRAMu8 + dwPC+8), *(uint32 *)(g_pRDRAMu8 + dwPC+8+4));
 
-	uint32 dwXH		= (((gfx->words.cmd0)>>12)&0x0FFF)/4;
-	uint32 dwYH		= (((gfx->words.cmd0)    )&0x0FFF)/4;
-	uint32 tileno	= ((gfx->words.cmd1)>>24)&0x07;
-	uint32 dwXL		= (((gfx->words.cmd1)>>12)&0x0FFF)/4;
-	uint32 dwYL		= (((gfx->words.cmd1)    )&0x0FFF)/4;
+	uint32 dwXH		= (((command.inst.cmd0)>>12)&0x0FFF)/4;
+	uint32 dwYH		= (((command.inst.cmd0)    )&0x0FFF)/4;
+	uint32 tileno	= ((command.inst.cmd1)>>24)&0x07;
+	uint32 dwXL		= (((command.inst.cmd1)>>12)&0x0FFF)/4;
+	uint32 dwYL		= (((command.inst.cmd1)    )&0x0FFF)/4;
 	uint16 uS		= (uint16)(  dwCmd2>>16)&0xFFFF;
 	uint16 uT		= (uint16)(  dwCmd2    )&0xFFFF;
 	uint16  uDSDX 	= (uint16)((  dwCmd3>>16)&0xFFFF);
@@ -1723,7 +1726,7 @@ void DLParser_TexRect(Gfx *gfx)
 }
 
 
-void DLParser_TexRectFlip(Gfx *gfx)
+void DLParser_TexRectFlip(MicroCodeCommand command)
 { 
 	status.bCIBufferIsRendered = true;
 	status.primitiveType = PRIM_TEXTRECTFLIP;
@@ -1737,11 +1740,11 @@ void DLParser_TexRectFlip(Gfx *gfx)
 	// Increment PC so that it points to the right place
 	gDlistStack[gDlistStackPointer].pc += 16;
 
-	uint32 dwXH		= (((gfx->words.cmd0)>>12)&0x0FFF)/4;
-	uint32 dwYH		= (((gfx->words.cmd0)    )&0x0FFF)/4;
-	uint32 tileno	= ((gfx->words.cmd1)>>24)&0x07;
-	uint32 dwXL		= (((gfx->words.cmd1)>>12)&0x0FFF)/4;
-	uint32 dwYL		= (((gfx->words.cmd1)    )&0x0FFF)/4;
+	uint32 dwXH		= (((command.inst.cmd0)>>12)&0x0FFF)/4;
+	uint32 dwYH		= (((command.inst.cmd0)    )&0x0FFF)/4;
+	uint32 tileno	= ((command.inst.cmd1)>>24)&0x07;
+	uint32 dwXL		= (((command.inst.cmd1)>>12)&0x0FFF)/4;
+	uint32 dwYL		= (((command.inst.cmd1)    )&0x0FFF)/4;
 	uint32 dwS		= (  dwCmd2>>16)&0xFFFF;
 	uint32 dwT		= (  dwCmd2    )&0xFFFF;
 	LONG  nDSDX 	= (LONG)(short)((  dwCmd3>>16)&0xFFFF);

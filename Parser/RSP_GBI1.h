@@ -17,13 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-void RSP_GBI1_Vtx(Gfx *gfx)
+void RSP_GBI1_Vtx(MicroCodeCommand command)
 {
-	uint32 addr = RSPSegmentAddr((gfx->vtx1.addr));
-	uint32 v0  = gfx->vtx1.v0;
-	uint32 n   = gfx->vtx1.n;
+	uint32 addr = RSPSegmentAddr((command.vtx1.addr));
+	uint32 v0  = command.vtx1.v0;
+	uint32 n   = command.vtx1.n;
 
-	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", addr, v0, n, gfx->vtx1.len);
+	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", addr, v0, n, command.vtx1.len);
 
 	if (addr > g_dwRamSize)
 	{
@@ -34,7 +34,7 @@ void RSP_GBI1_Vtx(Gfx *gfx)
 	if ((v0 + n) > 80)
 	{
 		TRACE5("Warning, invalid vertex positions, N=%d, v0=%d, Addr=0x%08X, Cmd=%08X-%08X",
-			n, v0, addr, gfx->words.cmd0, gfx->words.cmd1);
+			n, v0, addr, command.inst.cmd0, command.inst.cmd1);
 		return;
 	}
 
@@ -43,19 +43,19 @@ void RSP_GBI1_Vtx(Gfx *gfx)
 	DisplayVertexInfo(addr, v0, n);
 }
 
-void RSP_GBI1_ModifyVtx(Gfx *gfx)
+void RSP_GBI1_ModifyVtx(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_ModifyVtx);
 
-	if( gRSP.ucode == 5 && ((gfx->words.cmd0)&0x00FFFFFF) == 0 && ((gfx->words.cmd1)&0xFF000000) == 0x80000000 )
+	if( gRSP.ucode == 5 && ((command.inst.cmd0)&0x00FFFFFF) == 0 && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
 	{
-		DLParser_Bomberman2TextRect(gfx);
+		DLParser_Bomberman2TextRect(command);
 	}
 	else
 	{
-		uint32 dwWhere = ((gfx->words.cmd0) >> 16) & 0xFF;
-		uint32 dwVert   = (((gfx->words.cmd0)      ) & 0xFFFF) / 2;
-		uint32 dwValue  = (gfx->words.cmd1);
+		uint32 dwWhere = ((command.inst.cmd0) >> 16) & 0xFF;
+		uint32 dwVert   = (((command.inst.cmd0)      ) & 0xFFFF) / 2;
+		uint32 dwValue  = (command.inst.cmd1);
 
 		if( dwVert > 80 )
 		{
@@ -79,7 +79,7 @@ void RSP_GBI1_ModifyVtx(Gfx *gfx)
 	}
 }
 
-void RSP_GBI1_Tri2(Gfx *gfx)
+void RSP_GBI1_Tri2(MicroCodeCommand command)
 {
 	status.primitiveType = PRIM_TRI2;
 	bool bTrisAdded = false;
@@ -87,57 +87,29 @@ void RSP_GBI1_Tri2(Gfx *gfx)
 
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
 
 	do {
 		// Vertex indices are multiplied by 10 for Mario64, by 2 for MarioKart
-		uint32 dwV0 = gfx->gbi1tri2.v0/gRSP.vertexMult;
-		uint32 dwV1 = gfx->gbi1tri2.v1/gRSP.vertexMult;
-		uint32 dwV2 = gfx->gbi1tri2.v2/gRSP.vertexMult;
+		uint32 dwV0 = command.gbi1tri2.v0/gRSP.vertexMult;
+		uint32 dwV1 = command.gbi1tri2.v1/gRSP.vertexMult;
+		uint32 dwV2 = command.gbi1tri2.v2/gRSP.vertexMult;
 
-		uint32 dwV3 = gfx->gbi1tri2.v3/gRSP.vertexMult;
-		uint32 dwV4 = gfx->gbi1tri2.v4/gRSP.vertexMult;
-		uint32 dwV5 = gfx->gbi1tri2.v5/gRSP.vertexMult;
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-		// Do first tri
-		if (IsTriangleVisible(dwV0, dwV1, dwV2))
-		{
-			DEBUG_DUMP_VERTEXES("Tri2 1/2", dwV0, dwV1, dwV2);
-			if (!bTrisAdded)
-			{
-				if( bTexturesAreEnabled )
-			{
-				PrepareTextures();
-				InitVertexTextureConstants();
-			}
-				CRender::g_pRender->SetCombinerAndBlender();
-				bTrisAdded = true;
-			}
-			PrepareTriangle(dwV0, dwV1, dwV2);
-		}
+		uint32 dwV3 = command.gbi1tri2.v3/gRSP.vertexMult;
+		uint32 dwV4 = command.gbi1tri2.v4/gRSP.vertexMult;
+		uint32 dwV5 = command.gbi1tri2.v5/gRSP.vertexMult;
 
-		// Do second tri
-		if (IsTriangleVisible(dwV3, dwV4, dwV5))
-		{
-			DEBUG_DUMP_VERTEXES("Tri2 2/2", dwV3, dwV4, dwV5);
-			if (!bTrisAdded)
-			{
-				if( bTexturesAreEnabled )
-			{
-				PrepareTextures();
-				InitVertexTextureConstants();
-			}
-				CRender::g_pRender->SetCombinerAndBlender();
-				bTrisAdded = true;
-			}
-			PrepareTriangle(dwV3, dwV4, dwV5);
-		}
-		
-		gfx++;
+		bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
+
+		command.inst.cmd0 = *pCmdBase++;
+		command.inst.cmd1 = *pCmdBase++;
 		dwPC += 8;
 #ifdef _DEBUG
-	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && gfx->words.cmd == (uint8)RSP_TRI2);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_TRI2);
 #else
-	} while( gfx->words.cmd == (uint8)RSP_TRI2);
+	} while( command.inst.cmd == (uint8)RSP_TRI2);
 #endif
 
 
@@ -154,17 +126,17 @@ void RSP_GBI1_Tri2(Gfx *gfx)
 
 extern D3DXVECTOR4 g_vtxNonTransformed[MAX_VERTS];
 
-void RSP_GBI1_BranchZ(Gfx *gfx)
+void RSP_GBI1_BranchZ(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_BranchZ);
 
-	uint32 vtx = ((gfx->words.cmd0)&0xFFF)>1;
+	uint32 vtx = ((command.inst.cmd0)&0xFFF)>1;
 	float vtxdepth = g_vecProjected[vtx].z/g_vecProjected[vtx].w;
 
 #ifdef _DEBUG
-	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)gfx->words.cmd1 || g_curRomInfo.bForceDepthBuffer )
+	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)command.inst.cmd1 || g_curRomInfo.bForceDepthBuffer )
 #else
-	if( vtxdepth <= (s32)(gfx->words.cmd1) || g_curRomInfo.bForceDepthBuffer )
+	if( vtxdepth <= (s32)(command.inst.cmd1) || g_curRomInfo.bForceDepthBuffer )
 #endif
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
@@ -191,14 +163,14 @@ void DumpUcodeInfo(UcodeInfo &info)
 }
 #endif
 
-void RSP_GBI1_LoadUCode(Gfx *gfx)
+void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_LoadUCode);
 
 	//TRACE0("Load ucode");
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 dwUcStart = RSPSegmentAddr((gfx->words.cmd1));
-	uint32 dwSize = ((gfx->words.cmd0)&0xFFFF)+1;
+	uint32 dwUcStart = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwSize = ((command.inst.cmd0)&0xFFFF)+1;
 	uint32 dwUcDStart = RSPSegmentAddr(*(uint32 *)(g_pRDRAMu8 + dwPC-12));
 
 	uint32 ucode = DLParser_CheckUcode(dwUcStart, dwUcDStart, dwSize, 8);
@@ -376,7 +348,7 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 }
 
 // S2DEX uses this - 0xc1
-void RSP_S2DEX_SPObjLoadTxtr_Ucode1(Gfx *gfx)
+void RSP_S2DEX_SPObjLoadTxtr_Ucode1(MicroCodeCommand command)
 {
 	SP_Timing(RSP_S2DEX_SPObjLoadTxtr_Ucode1);
 
@@ -391,34 +363,34 @@ void RSP_S2DEX_SPObjLoadTxtr_Ucode1(Gfx *gfx)
 	LoadedUcodeMap[S2DEX_OBJ_LDTX_RECT] = &RSP_S2DEX_SPObjLoadTxRect;
 	LoadedUcodeMap[S2DEX_OBJ_LDTX_RECT_R] = &RSP_S2DEX_SPObjLoadTxRectR;
 
-	RSP_S2DEX_SPObjLoadTxtr(gfx);
+	RSP_S2DEX_SPObjLoadTxtr(command);
 }
 
-void RSP_GBI1_SpNoop(Gfx *gfx)
+void RSP_GBI1_SpNoop(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_SpNoop);
 
-	if( (gfx+1)->words.cmd == 0x00 && gRSP.ucode >= 17 )
+/*	if( (command+1)->inst.cmd == 0x00 && gRSP.ucode >= 17 )
 	{
-		RSP_RDP_NOIMPL("Double SPNOOP, Skip remain ucodes, PC=%08X, Cmd1=%08X", gDlistStack[gDlistStackPointer].pc, gfx->words.cmd1);
+		RSP_RDP_NOIMPL("Double SPNOOP, Skip remain ucodes, PC=%08X, Cmd1=%08X", gDlistStack[gDlistStackPointer].pc, command.inst.cmd1);
 		RDP_GFX_PopDL();
 		//if( gRSP.ucode < 17 ) TriggerDPInterrupt();
-	}
+	}*/
 }
 
-void RSP_GBI1_Reserved(Gfx *gfx)
+void RSP_GBI1_Reserved(MicroCodeCommand command)
 {		
 	SP_Timing(RSP_GBI1_Reserved);
-	RSP_RDP_NOIMPL("RDP: Reserved (0x%08x 0x%08x)", (gfx->words.cmd0), (gfx->words.cmd1));
+	RSP_RDP_NOIMPL("RDP: Reserved (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 }
 
-void RSP_GBI1_MoveMem(Gfx *gfx)
+void RSP_GBI1_MoveMem(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_MoveMem);
 
-	uint32 type    = ((gfx->words.cmd0)>>16)&0xFF;
-	uint32 dwLength  = ((gfx->words.cmd0))&0xFFFF;
-	uint32 addr = RSPSegmentAddr((gfx->words.cmd1));
+	uint32 type    = ((command.inst.cmd0)>>16)&0xFF;
+	uint32 dwLength  = ((command.inst.cmd0))&0xFFFF;
+	uint32 addr = RSPSegmentAddr((command.inst.cmd1));
 
 	switch (type) 
 	{
@@ -463,46 +435,47 @@ void RSP_GBI1_MoveMem(Gfx *gfx)
 		case RSP_GBI1_MV_MEM_MATRIX_4:
 			break;
 		default:
-			RSP_RDP_NOIMPL("MoveMem: Unknown Move Type, cmd=%08X, %08X", gfx->words.cmd0, gfx->words.cmd1);
+			RSP_RDP_NOIMPL("MoveMem: Unknown Move Type, cmd=%08X, %08X", command.inst.cmd0, command.inst.cmd1);
 			break;
 	}
 }
 
-void RSP_GBI1_RDPHalf_Cont(Gfx *gfx)	
+void RSP_GBI1_RDPHalf_Cont(MicroCodeCommand command)	
 {
 	SP_Timing(RSP_GBI1_RDPHalf_Cont);
 
 	LOG_UCODE("RDPHalf_Cont: (Ignored)"); 
 }
-void RSP_GBI1_RDPHalf_2(Gfx *gfx)		
+void RSP_GBI1_RDPHalf_2(MicroCodeCommand command)		
 { 
 	SP_Timing(RSP_GBI1_RDPHalf_2);
 
 	LOG_UCODE("RDPHalf_2: (Ignored)"); 
 }
 
-void RSP_GBI1_RDPHalf_1(Gfx *gfx)		
+void RSP_GBI1_RDPHalf_1(MicroCodeCommand command)		
 {
 	SP_Timing(RSP_GBI1_RDPHalf_1);
 
 	LOG_UCODE("RDPHalf_1: (Ignored)"); 
 }
 
-void RSP_GBI1_Line3D(Gfx *gfx)
+void RSP_GBI1_Line3D(MicroCodeCommand command)
 {
 	status.primitiveType = PRIM_LINE3D;
 
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
 
-	BOOL bTrisAdded = FALSE;
+	bool bTrisAdded = FALSE;
 
-	if( gfx->gbi1line3d.v3 == 0 )
+	if( command.gbi1line3d.v3 == 0 )
 	{
 		// Flying Dragon
-		uint32 dwV0		= gfx->gbi1line3d.v0/gRSP.vertexMult;
-		uint32 dwV1		= gfx->gbi1line3d.v1/gRSP.vertexMult;
-		uint32 dwWidth  = gfx->gbi1line3d.v2;
-		uint32 dwFlag	= gfx->gbi1line3d.v3/gRSP.vertexMult;	
+		uint32 dwV0		= command.gbi1line3d.v0/gRSP.vertexMult;
+		uint32 dwV1		= command.gbi1line3d.v1/gRSP.vertexMult;
+		uint32 dwWidth  = command.gbi1line3d.v2;
+		uint32 dwFlag	= command.gbi1line3d.v3/gRSP.vertexMult;	
 		
 		CRender::g_pRender->SetCombinerAndBlender();
 
@@ -515,57 +488,23 @@ void RSP_GBI1_Line3D(Gfx *gfx)
 	else
 	{
 		do {
-			uint32 dwV3  = gfx->gbi1line3d.v3/gRSP.vertexMult;		
-			uint32 dwV0  = gfx->gbi1line3d.v0/gRSP.vertexMult;
-			uint32 dwV1  = gfx->gbi1line3d.v1/gRSP.vertexMult;
-			uint32 dwV2  = gfx->gbi1line3d.v2/gRSP.vertexMult;
+			uint32 dwV3  = command.gbi1line3d.v3/gRSP.vertexMult;		
+			uint32 dwV0  = command.gbi1line3d.v0/gRSP.vertexMult;
+			uint32 dwV1  = command.gbi1line3d.v1/gRSP.vertexMult;
+			uint32 dwV2  = command.gbi1line3d.v2/gRSP.vertexMult;
 
 			LOG_UCODE("    Line3D: V0: %d, V1: %d, V2: %d, V3: %d", dwV0, dwV1, dwV2, dwV3);
 
-			// Do first tri
-			if (IsTriangleVisible(dwV0, dwV1, dwV2))
-			{
-				DEBUG_DUMP_VERTEXES("Line3D 1/2", dwV0, dwV1, dwV2);
-				if (!bTrisAdded && CRender::g_pRender->IsTextureEnabled())
-				{
-					PrepareTextures();
-					InitVertexTextureConstants();
-				}
+			bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
+			bTrisAdded |= AddTri(dwV2, dwV3, dwV0);
 
-				if( !bTrisAdded )
-				{
-					CRender::g_pRender->SetCombinerAndBlender();
-				}
-
-				bTrisAdded = true;
-				PrepareTriangle(dwV0, dwV1, dwV2);
-			}
-
-			// Do second tri
-			if (IsTriangleVisible(dwV2, dwV3, dwV0))
-			{
-				DEBUG_DUMP_VERTEXES("Line3D 2/2", dwV0, dwV1, dwV2);
-				if (!bTrisAdded && CRender::g_pRender->IsTextureEnabled())
-				{
-					PrepareTextures();
-					InitVertexTextureConstants();
-				}
-
-				if( !bTrisAdded )
-				{
-					CRender::g_pRender->SetCombinerAndBlender();
-				}
-
-				bTrisAdded = true;
-				PrepareTriangle(dwV2, dwV3, dwV0);
-			}
-
-			gfx++;
+			command.inst.cmd0 = *pCmdBase++;
+			command.inst.cmd1 = *pCmdBase++;
 			dwPC += 8;
 #ifdef _DEBUG
-		} while (gfx->words.cmd == (uint8)RSP_LINE3D && !(pauseAtNext && eventToPause==NEXT_FLUSH_TRI));
+		} while (command.inst.cmd == (uint8)RSP_LINE3D && !(pauseAtNext && eventToPause==NEXT_FLUSH_TRI));
 #else
-		} while (gfx->words.cmd == (uint8)RSP_LINE3D);
+		} while (command.inst.cmd == (uint8)RSP_LINE3D);
 #endif
 
 		gDlistStack[gDlistStackPointer].pc = dwPC-8;
@@ -578,10 +517,10 @@ void RSP_GBI1_Line3D(Gfx *gfx)
 }
 
 
-void RSP_GBI1_ClearGeometryMode(Gfx *gfx)
+void RSP_GBI1_ClearGeometryMode(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_ClearGeometryMode);
-	uint32 dwMask = ((gfx->words.cmd1));
+	uint32 dwMask = ((command.inst.cmd1));
 
 #ifdef _DEBUG
 	LOG_UCODE("    Mask=0x%08x", dwMask);
@@ -602,10 +541,10 @@ void RSP_GBI1_ClearGeometryMode(Gfx *gfx)
 	RSP_GFX_InitGeometryMode();
 }
 
-void RSP_GBI1_SetGeometryMode(Gfx *gfx)
+void RSP_GBI1_SetGeometryMode(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_SetGeometryMode);
-	uint32 dwMask = ((gfx->words.cmd1));
+	uint32 dwMask = ((command.inst.cmd1));
 
 #ifdef _DEBUG
 	LOG_UCODE("    Mask=0x%08x", dwMask);
@@ -625,7 +564,7 @@ void RSP_GBI1_SetGeometryMode(Gfx *gfx)
 	RSP_GFX_InitGeometryMode();
 }
 
-void RSP_GBI1_EndDL(Gfx *gfx)
+void RSP_GBI1_EndDL(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_EndDL);
 	RDP_GFX_PopDL();
@@ -635,84 +574,84 @@ static const char * sc_szBlClr[4] = { "In", "Mem", "Bl", "Fog" };
 static const char * sc_szBlA1[4] = { "AIn", "AFog", "AShade", "0" };
 static const char * sc_szBlA2[4] = { "1-A", "AMem", "1", "?" };
 
-void RSP_GBI1_SetOtherModeL(Gfx *gfx)
+void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_SetOtherModeL);
 
-	uint32 dwShift = ((gfx->words.cmd0)>>8)&0xFF;
-	uint32 dwLength= ((gfx->words.cmd0)   )&0xFF;
-	uint32 dwData  = (gfx->words.cmd1);
+	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
+	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
+	uint32 dwData  = (command.inst.cmd1);
 
 	uint32 dwMask = ((1<<dwLength)-1)<<dwShift;
 
 	uint32 modeL = gRDP.otherModeL;
 	modeL = (modeL&(~dwMask)) | dwData;
 
-	Gfx tempgfx;
-	tempgfx.words.cmd0 = gRDP.otherModeH;
-	tempgfx.words.cmd1 = modeL;
-	DLParser_RDPSetOtherMode(&tempgfx);
+	MicroCodeCommand tempgfx;
+	tempgfx.inst.cmd0 = gRDP.otherModeH;
+	tempgfx.inst.cmd1 = modeL;
+	DLParser_RDPSetOtherMode(tempgfx);
 }
 
 
-void RSP_GBI1_SetOtherModeH(Gfx *gfx)
+void RSP_GBI1_SetOtherModeH(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_SetOtherModeH);
 
-	uint32 dwShift = ((gfx->words.cmd0)>>8)&0xFF;
-	uint32 dwLength= ((gfx->words.cmd0)   )&0xFF;
-	uint32 dwData  = (gfx->words.cmd1);
+	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
+	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
+	uint32 dwData  = (command.inst.cmd1);
 
 	uint32 dwMask = ((1<<dwLength)-1)<<dwShift;
 	uint32 dwModeH = gRDP.otherModeH;
 
 	dwModeH = (dwModeH&(~dwMask)) | dwData;
-	Gfx tempgfx;
-	tempgfx.words.cmd0 = dwModeH;
-	tempgfx.words.cmd1 = gRDP.otherModeL;
-	DLParser_RDPSetOtherMode(&tempgfx );
+	MicroCodeCommand tempgfx;
+	tempgfx.inst.cmd0 = dwModeH;
+	tempgfx.inst.cmd1 = gRDP.otherModeL;
+	DLParser_RDPSetOtherMode(tempgfx );
 }
 
 
-void RSP_GBI1_Texture(Gfx *gfx)
+void RSP_GBI1_Texture(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_Texture);
 
-	bool bEnable = gfx->texture.enable_gbi0;
+	bool bEnable = command.texture.enable_gbi0;
 
 	CRender::g_pRender->SetTextureEnable( bEnable );
 
 	//Since the texture isnt enabled, lets stop it from calculating texture scales
 	if(!bEnable) return;
 
-	float fTextureScaleS = (float)(gfx->texture.scaleS) / (65536.0f * 32.0f);
-	float fTextureScaleT = (float)(gfx->texture.scaleT) / (65536.0f * 32.0f);
+	float fTextureScaleS = (float)(command.texture.scaleS) / (65536.0f * 32.0f);
+	float fTextureScaleT = (float)(command.texture.scaleT) / (65536.0f * 32.0f);
 
-	if( (((gfx->words.cmd1)>>16)&0xFFFF) == 0xFFFF )
+	if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF )
 	{
 		fTextureScaleS = 1/32.0f;
 	}
-	else if( (((gfx->words.cmd1)>>16)&0xFFFF) == 0x8000 )
+	else if( (((command.inst.cmd1)>>16)&0xFFFF) == 0x8000 )
 	{
 		fTextureScaleS = 1/64.0f;
 	}
 #ifdef _DEBUG
-	else if( ((gfx->words.cmd1>>16)&0xFFFF) != 0 )
+	else if( ((command.inst.cmd1>>16)&0xFFFF) != 0 )
 	{
 		//DebuggerAppendMsg("Warning, texture scale = %08X is not integer", (word1>>16)&0xFFFF);
 	}
 #endif
 
-	if( (((gfx->words.cmd1)    )&0xFFFF) == 0xFFFF )
+	if( (((command.inst.cmd1)    )&0xFFFF) == 0xFFFF )
 	{
 		fTextureScaleT = 1/32.0f;
 	}
-	else if( (((gfx->words.cmd1)    )&0xFFFF) == 0x8000 )
+	else if( (((command.inst.cmd1)    )&0xFFFF) == 0x8000 )
 	{
 		fTextureScaleT = 1/64.0f;
 	}
 #ifdef _DEBUG
-	else if( (gfx->words.cmd1&0xFFFF) != 0 )
+	else if( (command.inst.cmd1&0xFFFF) != 0 )
 	{
 		//DebuggerAppendMsg("Warning, texture scale = %08X is not integer", (word1)&0xFFFF);
 	}
@@ -724,34 +663,34 @@ void RSP_GBI1_Texture(Gfx *gfx)
 		if( fTextureScaleT == 0 )	fTextureScaleT = 1.0f/32.0f;
 	}
 
-	CRender::g_pRender->SetTextureScale(gfx->texture.tile, fTextureScaleS, fTextureScaleT);
+	CRender::g_pRender->SetTextureScale(command.texture.tile, fTextureScaleS, fTextureScaleT);
 
 	// What happens if these are 0? Interpret as 1.0f?
 
 	LOG_TEXTURE(
 	{
-		DebuggerAppendMsg("SetTexture: Level: %d Tile: %d %s\n", gfx->texture.level, gfx->texture.tile, gfx->texture.enable_gbi0 ? "enabled":"disabled");
+		DebuggerAppendMsg("SetTexture: Level: %d Tile: %d %s\n", command.texture.level, command.texture.tile, command.texture.enable_gbi0 ? "enabled":"disabled");
 		DebuggerAppendMsg("            ScaleS: %f, ScaleT: %f\n", fTextureScaleS*32.0f, fTextureScaleT*32.0f);
 	});
 
 	DEBUGGER_PAUSE_COUNT_N(NEXT_SET_TEXTURE);
-	LOG_UCODE("    Level: %d Tile: %d %s", gfx->texture.level, gfx->texture.tile, gfx->texture.enable_gbi0 ? "enabled":"disabled");
+	LOG_UCODE("    Level: %d Tile: %d %s", command.texture.level, command.texture.tile, command.texture.enable_gbi0 ? "enabled":"disabled");
 	LOG_UCODE("    ScaleS: %f, ScaleT: %f", fTextureScaleS*32.0f, fTextureScaleT*32.0f);
 }
 
 extern void RSP_RDP_InsertMatrix(uint32 word0, uint32 word1);
-void RSP_GBI1_MoveWord(Gfx *gfx)
+void RSP_GBI1_MoveWord(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_MoveWord);
 
-	switch (gfx->mw1.type)
+	switch (command.mw1.type)
 	{
 	case RSP_MOVE_WORD_MATRIX:
-		RSP_RDP_InsertMatrix(gfx);
+		RSP_RDP_InsertMatrix(command);
 		break;
 	case RSP_MOVE_WORD_NUMLIGHT:
 		{
-			uint32 dwNumLights = (((gfx->mw1.value)-0x80000000)/32)-1;
+			uint32 dwNumLights = (((command.mw1.value)-0x80000000)/32)-1;
 			LOG_UCODE("    RSP_MOVE_WORD_NUMLIGHT: Val:%d", dwNumLights);
 
 			gRSP.ambientLightIndex = dwNumLights;
@@ -760,24 +699,24 @@ void RSP_GBI1_MoveWord(Gfx *gfx)
 		break;
 	case RSP_MOVE_WORD_CLIP:
 		{
-			switch (gfx->mw1.offset)
+			switch (command.mw1.offset)
 			{
 			case RSP_MV_WORD_OFFSET_CLIP_RNX:
 			case RSP_MV_WORD_OFFSET_CLIP_RNY:
 			case RSP_MV_WORD_OFFSET_CLIP_RPX:
 			case RSP_MV_WORD_OFFSET_CLIP_RPY:
-				CRender::g_pRender->SetClipRatio(gfx->mw1.offset, gfx->mw1.value);
+				CRender::g_pRender->SetClipRatio(command.mw1.offset, command.mw1.value);
 				break;
 			default:
-				LOG_UCODE("    RSP_MOVE_WORD_CLIP  ?   : 0x%08x", gfx->words.cmd1);
+				LOG_UCODE("    RSP_MOVE_WORD_CLIP  ?   : 0x%08x", command.inst.cmd1);
 				break;
 			}
 		}
 		break;
 	case RSP_MOVE_WORD_SEGMENT:
 		{
-			uint32 dwSegment = (gfx->mw1.offset >> 2) & 0xF;
-			uint32 dwBase = (gfx->mw1.value)&0x00FFFFFF;
+			uint32 dwSegment = (command.mw1.offset >> 2) & 0xF;
+			uint32 dwBase = (command.mw1.value)&0x00FFFFFF;
 			LOG_UCODE("    RSP_MOVE_WORD_SEGMENT Seg[%d] = 0x%08x", dwSegment, dwBase);
 			if( dwBase > g_dwRamSize )
 			{
@@ -795,8 +734,8 @@ void RSP_GBI1_MoveWord(Gfx *gfx)
 		break;
 	case RSP_MOVE_WORD_FOG:
 		{
-			uint16 wMult = (uint16)(((gfx->mw1.value) >> 16) & 0xFFFF);
-			uint16 wOff  = (uint16)(((gfx->mw1.value)      ) & 0xFFFF);
+			uint16 wMult = (uint16)(((command.mw1.value) >> 16) & 0xFFFF);
+			uint16 wOff  = (uint16)(((command.mw1.value)      ) & 0xFFFF);
 
 			float fMult = (float)(short)wMult;
 			float fOff = (float)(short)wOff;
@@ -817,27 +756,27 @@ void RSP_GBI1_MoveWord(Gfx *gfx)
 			}
 
 			LOG_UCODE("    RSP_MOVE_WORD_FOG/Mul=%d: Off=%d", wMult, wOff);
-			FOG_DUMP(TRACE3("Set Fog: Min=%f, Max=%f, Data=%08X", fMin, fMax, gfx->mw1.value));
+			FOG_DUMP(TRACE3("Set Fog: Min=%f, Max=%f, Data=%08X", fMin, fMax, command.mw1.value));
 			SetFogMinMax(fMin, fMax, fMult, fOff);
 		}
 		break;
 	case RSP_MOVE_WORD_LIGHTCOL:
 		{
-			uint32 dwLight = gfx->mw1.offset / 0x20;
-			uint32 dwField = (gfx->mw1.offset & 0x7);
+			uint32 dwLight = command.mw1.offset / 0x20;
+			uint32 dwField = (command.mw1.offset & 0x7);
 
-			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", gfx->mw1.offset, gfx->words.cmd1);
+			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw1.offset, command.inst.cmd1);
 
 			switch (dwField)
 			{
 			case 0:
 				if (dwLight == gRSP.ambientLightIndex)
 				{
-					SetAmbientLight( ((gfx->mw1.value)>>8) );
+					SetAmbientLight( ((command.mw1.value)>>8) );
 				}
 				else
 				{
-					SetLightCol(dwLight, gfx->mw1.value);
+					SetLightCol(dwLight, command.mw1.value);
 				}
 				break;
 
@@ -852,9 +791,9 @@ void RSP_GBI1_MoveWord(Gfx *gfx)
 		break;
 	case RSP_MOVE_WORD_POINTS:
 		{
-			uint32 vtx = gfx->mw1.offset/40;
-			uint32 where = gfx->mw1.offset - vtx*40;
-			ModifyVertexInfo(where, vtx, gfx->mw1.value);
+			uint32 vtx = command.mw1.offset/40;
+			uint32 where = command.mw1.offset - vtx*40;
+			ModifyVertexInfo(where, vtx, command.mw1.value);
 		}
 		break;
 	case RSP_MOVE_WORD_PERSPNORM:
@@ -862,22 +801,22 @@ void RSP_GBI1_MoveWord(Gfx *gfx)
 		//if( word1 != 0x1A ) DebuggerAppendMsg("PerspNorm: 0x%04x", (short)word1);	
 		break;
 	default:
-		RSP_RDP_NOIMPL("Unknown MoveWord, %08X, %08X", gfx->words.cmd0, gfx->words.cmd1);
+		RSP_RDP_NOIMPL("Unknown MoveWord, %08X, %08X", command.inst.cmd0, command.inst.cmd1);
 		break;
 	}
 
 }
 
-void RSP_GBI1_PopMtx(Gfx *gfx)
+void RSP_GBI1_PopMtx(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_PopMtx);
 
-	LOG_UCODE("    Command: (%s)",	gfx->popmtx.projection ? "Projection" : "ModelView");
+	LOG_UCODE("    Command: (%s)",	command.popmtx.projection ? "Projection" : "ModelView");
 
 	// Do any of the other bits do anything?
 	// So far only Extreme-G seems to Push/Pop projection matrices
 
-	if (gfx->popmtx.projection)
+	if (command.popmtx.projection)
 	{
 		CRender::g_pRender->PopProjection();
 	}
@@ -890,13 +829,13 @@ void RSP_GBI1_PopMtx(Gfx *gfx)
 	{
 		pauseAtNext = false;
 		debuggerPause = true;
-		DebuggerAppendMsg("Pause after Pop Matrix: %s\n", gfx->popmtx.projection ? "Proj":"World");
+		DebuggerAppendMsg("Pause after Pop Matrix: %s\n", command.popmtx.projection ? "Proj":"World");
 	}
 	else
 	{
 		if( pauseAtNext && logMatrix ) 
 		{
-			DebuggerAppendMsg("Pause after Pop Matrix: %s\n", gfx->popmtx.projection ? "Proj":"World");
+			DebuggerAppendMsg("Pause after Pop Matrix: %s\n", command.popmtx.projection ? "Proj":"World");
 		}
 	}
 #endif
@@ -904,7 +843,7 @@ void RSP_GBI1_PopMtx(Gfx *gfx)
 
 
 
-void RSP_GBI1_CullDL(Gfx *gfx)
+void RSP_GBI1_CullDL(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_CullDL);
 
@@ -920,8 +859,8 @@ void RSP_GBI1_CullDL(Gfx *gfx)
 	}
 
 	uint32 i;
-	uint32 dwVFirst = ((gfx->words.cmd0) & 0xFFF) / gRSP.vertexMult;
-	uint32 dwVLast  = (((gfx->words.cmd1)) & 0xFFF) / gRSP.vertexMult;
+	uint32 dwVFirst = ((command.inst.cmd0) & 0xFFF) / gRSP.vertexMult;
+	uint32 dwVLast  = (((command.inst.cmd1)) & 0xFFF) / gRSP.vertexMult;
 
 	LOG_UCODE("    Culling using verts %d to %d", dwVFirst, dwVLast);
 
@@ -950,7 +889,7 @@ void RSP_GBI1_CullDL(Gfx *gfx)
 
 
 
-void RSP_GBI1_Tri1(Gfx *gfx)
+void RSP_GBI1_Tri1(MicroCodeCommand command)
 {
 	status.primitiveType = PRIM_TRI1;
 	bool bTrisAdded = false;
@@ -962,35 +901,22 @@ void RSP_GBI1_Tri1(Gfx *gfx)
 	
 	do
 	{
-		uint32 dwV0 = gfx->gbi1tri1.v0/gRSP.vertexMult;
-		uint32 dwV1 = gfx->gbi1tri1.v1/gRSP.vertexMult;
-		uint32 dwV2 = gfx->gbi1tri1.v2/gRSP.vertexMult;
+		// Vertex indices are multiplied by 10 for Mario64, by 2 for MarioKart
+		uint32 dwV0 = command.gbi1tri1.v0/gRSP.vertexMult;
+		uint32 dwV1 = command.gbi1tri1.v1/gRSP.vertexMult;
+		uint32 dwV2 = command.gbi1tri1.v2/gRSP.vertexMult;
 
-		if (IsTriangleVisible(dwV0, dwV1, dwV2))
-		{
-			DEBUG_DUMP_VERTEXES("Tri1", dwV0, dwV1, dwV2);
-			LOG_UCODE("    Tri1: 0x%08x 0x%08x %d,%d,%d", gfx->words.cmd0, gfx->words.cmd1, dwV0, dwV1, dwV2);
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-			if (!bTrisAdded)
-			{
-				if( bTexturesAreEnabled )
-				{
-					PrepareTextures();
-					InitVertexTextureConstants();
-				}
-				CRender::g_pRender->SetCombinerAndBlender();
-				bTrisAdded = true;
-			}
-			PrepareTriangle(dwV0, dwV1, dwV2);
-		}
+		command.inst.cmd0= *pCmdBase++;
+		command.inst.cmd1= *pCmdBase++;
 
-		gfx++;
 		dwPC += 8;
 
 #ifdef _DEBUG
-	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && gfx->words.cmd == (uint8)RSP_TRI1);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_TRI1);
 #else
-	} while (gfx->words.cmd == (uint8)RSP_TRI1);
+	} while (command.inst.cmd == (uint8)RSP_TRI1);
 #endif
 
 	gDlistStack[gDlistStackPointer].pc = dwPC-8;

@@ -2660,8 +2660,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	int i;
-	HWND item;
-
 	switch(message)
 	{
 	case WM_INITDIALOG:
