@@ -170,7 +170,7 @@ PixelShaderEntry;
 
 class D3DRender;
 
-class CDirectXPixelShaderCombiner : public CColorCombiner, public CGeneralCombiner
+class CDirectXPixelShaderCombiner : public CColorCombiner
 {
 public:
 	bool Initialize(void);
@@ -200,10 +200,6 @@ protected:
 
 #define PIXELSHADERTEXTBUFSIZE	16000
 	char m_textBuf[PIXELSHADERTEXTBUFSIZE];
-
-protected:
-	bool	IsTextureUsedInStage(CombineStage &stage);
-
 };
 
 #endif

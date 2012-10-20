@@ -31,7 +31,6 @@
 #include "BMGImage.h"
 #include "tiffrw.h"
 #include "pngrw.h"
-#include "jpegrw.h"
 
 #if defined(__cplusplus)
 extern "C" {

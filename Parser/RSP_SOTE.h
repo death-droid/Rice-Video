@@ -21,10 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void RSP_Vtx_ShadowOfEmpire(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwAddr = RSPSegmentAddr(command.inst.cmd1);
 	uint32 dwLength = ((command.inst.cmd0))&0xFFFF;
 
-	uint32 dwN= (((command.inst.cmd0) >> 4) & 0xFFF) / 33 + 1;
+	uint32 dwN= ((command.inst.cmd0 >> 4) & 0xFFF) / 33 + 1;
 	uint32 dwV0 = 0;
 
 	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", dwAddr, dwV0, dwN, dwLength);

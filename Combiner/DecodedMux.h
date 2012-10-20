@@ -90,10 +90,6 @@ public:
 	bool m_bTexel0IsUsed;
 	bool m_bTexel1IsUsed;
 
-	int  m_maxConstants;
-	int  m_maxTextures;		// 1 or 2
-
-
 	void Decode(uint32 dwMux0, uint32 dwMux1);
 	virtual void Hack(void);
 	bool isUsed(uint8 fac, uint8 mask=MUX_MASK);
@@ -101,34 +97,13 @@ public:
 	bool isUsedInColorChannel(uint8 fac, uint8 mask=MUX_MASK);
 	bool isUsedInCycle(uint8 fac, int cycle, CombineChannel channel, uint8 mask=MUX_MASK);
 	bool isUsedInCycle(uint8 fac, int cycle, uint8 mask=MUX_MASK);
-	uint32 GetCycle(int cycle, CombineChannel channel);
-	uint32 GetCycle(int cycle);
-	CombinerFormatType GetCombinerFormatType(uint32 cycle);
-	void Display(bool simplified=true, FILE *fp=NULL);
-	static char* FormatStr(uint8 val, char *buf);
 	void CheckCombineInCycle1(void);
-	virtual void Simplify(void);
+	void Simplify(void);
 	virtual void Reformat(bool do_complement = true);
 	
-	virtual void MergeShadeWithConstants(void);
-	virtual void MergeShadeWithConstantsInChannel(CombineChannel channel);
-	virtual void MergeConstants(void);
-	virtual void UseShadeForConstant(void);
-	virtual void UseTextureForConstant(void);
-
 	void ConvertComplements();
-	int HowManyConstFactors();
-	int HowManyTextures();
 	void MergeConstFactors();
-	virtual void SplitComplexStages();	// Only used if the combiner supports more than 1 stages
-	void ConvertLODFracTo0();
 	void ReplaceVal(uint8 val1, uint8 val2, int cycle= -1, uint8 mask = MUX_MASK);
-	void Replace1Val(uint8 &val1, const uint8 val2, uint8 mask = MUX_MASK)
-	{
-		val1 &= (~mask);
-		val1 |= val2;
-	}
-	int CountTexels(void);
 	int Count(uint8 val, int cycle= -1, uint8 mask = MUX_MASK);
 
 #ifdef _DEBUG
@@ -139,45 +114,7 @@ public:
 	void DisplayMuxString(const char *prompt) {}
 	void DisplaySimpliedMuxString(const char *prompt){}
 	void DisplayConstantsWithShade(uint32 flag,CombineChannel channel){}
-	void LogMuxString(const char *prompt, FILE *fp);
-	void LogSimpliedMuxString(const char *prompt, FILE *fp);
-	void LogConstantsWithShade(uint32 flag,CombineChannel channel, FILE *fp);
 #endif
-
-	virtual DecodedMux& operator=(const DecodedMux& mux)
-	{
-		m_dWords[0] = mux.m_dWords[0];
-		m_dWords[1] = mux.m_dWords[1];
-		m_dWords[2] = mux.m_dWords[2];
-		m_dWords[3] = mux.m_dWords[3];
-		m_u64Mux = mux.m_u64Mux;
-		splitType[0] = mux.splitType[0];
-		splitType[1] = mux.splitType[1];
-		splitType[2] = mux.splitType[2];
-		splitType[3] = mux.splitType[3];
-		mType = mux.mType;
-
-		m_dwShadeColorChannelFlag = mux.m_dwShadeColorChannelFlag;
-		m_dwShadeAlphaChannelFlag = mux.m_dwShadeAlphaChannelFlag;
-
-		m_bShadeIsUsed[0] = mux.m_bShadeIsUsed[0];
-		m_bShadeIsUsed[1] = mux.m_bShadeIsUsed[1];
-		m_bTexel0IsUsed = mux.m_bTexel0IsUsed;
-		m_bTexel1IsUsed = mux.m_bTexel1IsUsed;
-
-		m_maxConstants = mux.m_maxConstants;
-		m_maxTextures = mux.m_maxTextures;
-		m_ColorTextureFlag[0] = mux.m_ColorTextureFlag[0];
-		m_ColorTextureFlag[1] = mux.m_ColorTextureFlag[1];
-
-		return *this;
-	}
-
-	static inline bool IsConstFactor(uint8 val)
-	{
-		uint8 v = val&MUX_MASK;
-		return( v == MUX_0 || v == MUX_1 || v == MUX_PRIM || v == MUX_ENV || v == MUX_LODFRAC || v == MUX_PRIMLODFRAC );
-	}
 
 	DecodedMux()
 	{
@@ -187,20 +124,10 @@ public:
 		{
 			splitType[i] = CM_FMT_TYPE_NOT_CHECKED;
 		}
-		m_maxConstants = 1;
-		m_maxTextures = 2;
 	}
 	
 	virtual ~DecodedMux() {}
 } ;
-
-class DecodedMuxForPixelShader : public DecodedMux
-{
-public:
-	virtual void Simplify(void);
-	void SplitComplexStages() {};
-};
-
 
 #endif
 

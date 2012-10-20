@@ -1535,7 +1535,7 @@ void DLParser_SetTImg(MicroCodeCommand command)
 	g_TI.dwFormat 	= command.img.fmt;
 	g_TI.dwSize   	= command.img.siz;
 	g_TI.dwWidth  	= command.img.width + 1;
-	g_TI.dwAddr   	= RSPSegmentAddr((command.img.addr));
+	g_TI.dwAddr   	= RSPSegmentAddr(command.img.addr);
 	g_TI.bpl		= g_TI.dwWidth << g_TI.dwSize >> 1;
 
 #ifdef _DEBUG

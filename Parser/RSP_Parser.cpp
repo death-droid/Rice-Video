@@ -259,6 +259,7 @@ uint32	g_dwRDPPalCrc[16];
 #include "RSP_GBI_Others.h"
 #include "RSP_GBI_Sprite2D.h"
 #include "RDP_Texture.h"
+
 //Custom ucodes
 #include "RSP_WRUS.h" //Wave Race 64
 #include "RSP_LL.h" //Last Legion
@@ -1497,7 +1498,7 @@ void DLParser_SetCImg(MicroCodeCommand command)
 	uint32 dwFmt		= command.img.fmt;
 	uint32 dwSiz		= command.img.siz;
 	uint32 dwWidth		= command.img.width + 1;
-	uint32 dwNewAddr	= RSPSegmentAddr((command.img.addr)) & 0x00FFFFFF ;
+	uint32 dwNewAddr	= RSPSegmentAddr(command.img.addr) & 0x00FFFFFF ;
 	uint32 dwBpl		= dwWidth << dwSiz >> 1;
 
 	TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", dwNewAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth););
@@ -1601,7 +1602,7 @@ void DLParser_SetZImg(MicroCodeCommand command)
 	uint32 dwFmt   = command.img.fmt;
 	uint32 dwSiz   = command.img.siz;
 	uint32 dwWidth = command.img.width + 1;
-	uint32 dwAddr = RSPSegmentAddr((command.img.addr));
+	uint32 dwAddr = RSPSegmentAddr(command.img.addr);
 
 	if( dwAddr != g_ZI_saves[0].CI_Info.dwAddr )
 	{

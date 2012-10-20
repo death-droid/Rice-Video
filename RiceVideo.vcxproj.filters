@@ -83,9 +83,6 @@
     <ClInclude Include="gfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Lib\jpegrw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Lib\pngrw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -96,9 +93,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="typedefs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wglext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Debugger\Debugger.h">
@@ -120,9 +114,6 @@
       <Filter>Graphics\Combiner</Filter>
     </ClInclude>
     <ClInclude Include="Combiner\DecodedMux.h">
-      <Filter>Graphics\Combiner</Filter>
-    </ClInclude>
-    <ClInclude Include="Combiner\GeneralCombiner.h">
       <Filter>Graphics\Combiner</Filter>
     </ClInclude>
     <ClInclude Include="Combiner\DirectXCombiner\DirectXBlender.h">
@@ -284,9 +275,6 @@
       <Filter>Graphics\Combiner</Filter>
     </ClCompile>
     <ClCompile Include="Combiner\DecodedMux.cpp">
-      <Filter>Graphics\Combiner</Filter>
-    </ClCompile>
-    <ClCompile Include="Combiner\GeneralCombiner.cpp">
       <Filter>Graphics\Combiner</Filter>
     </ClCompile>
     <ClCompile Include="Combiner\DirectXCombiner\DirectXBlender.cpp">

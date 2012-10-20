@@ -88,7 +88,6 @@
 #include "./Combiner/DirectXCombiner/DirectXBlender.h"
 
 #include "./Combiner/combiner.h"
-#include "./Combiner/GeneralCombiner.h"
 #include "./Combiner/DirectXCombiner/DirectXCombiner.h"
 
 #include "./Device/RenderTexture.h"

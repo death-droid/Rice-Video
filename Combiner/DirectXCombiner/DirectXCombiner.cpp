@@ -67,8 +67,7 @@ extern MYD3DCAPS g_D3DDeviceCaps;
 CDirectXPixelShaderCombiner::CDirectXPixelShaderCombiner(CRender *pRender)
 	:CColorCombiner(pRender), m_pD3DRender((D3DRender*)pRender)
 {
-	m_pDecodedMux = new DecodedMuxForPixelShader;
-	m_ppGeneralDecodedMux = &m_pDecodedMux;
+	m_pDecodedMux = new DecodedMux;
 
 	TRACE0("Create the pixel shader combiner");
 }
@@ -576,17 +575,6 @@ void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32
 
 	m_pD3DRender->SetAddressUAllStages( 0, TEXTURE_UV_FLAG_CLAMP );
 	m_pD3DRender->SetAddressVAllStages( 0, TEXTURE_UV_FLAG_CLAMP );
-}
-
-bool CDirectXPixelShaderCombiner::IsTextureUsedInStage(CombineStage &stage)
-{
-	if( (stage.colorOp.Arg1&D3DTA_SELECTMASK)==D3DTA_TEXTURE || (stage.colorOp.Arg2&D3DTA_SELECTMASK)==D3DTA_TEXTURE || (stage.colorOp.Arg0 &D3DTA_SELECTMASK)==D3DTA_TEXTURE ||
-		(stage.alphaOp.Arg1&D3DTA_SELECTMASK)==D3DTA_TEXTURE || (stage.alphaOp.Arg2&D3DTA_SELECTMASK)==D3DTA_TEXTURE || (stage.alphaOp.Arg0 &D3DTA_SELECTMASK)==D3DTA_TEXTURE )
-	{
-		return true;
-	}
-	else
-		return false;
 }
 
 #ifdef _DEBUG

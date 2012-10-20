@@ -20,9 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #if !defined(AFX_CRITSECT_H__E073C8E6_58B7_4DBE_88A3_D52539BC6C60__INCLUDED_)
 #define AFX_CRITSECT_H__E073C8E6_58B7_4DBE_88A3_D52539BC6C60__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 class CCritSect
 {
