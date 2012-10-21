@@ -71,33 +71,7 @@ protected:
 	CSortedList<uint64, DecodedMux> m_DecodedMuxList;
 };
 
-uint32 GetTexelNumber(N64CombinerType &m);
 int CountTexel1Cycle(N64CombinerType &m);
-bool IsTxtrUsed(N64CombinerType &m);
-
-void swap(uint8 &a, uint8 &b);
-
-
-inline bool isEqual(uint8 val1, uint8 val2)
-{
-	if( (val1&MUX_MASK) == (val2&MUX_MASK) )
-		return true;
-	else
-		return false;
-}
-
-inline bool isTexel(uint8 val)
-{
-	if( (val&MUX_MASK) == MUX_TEXEL0 || (val&MUX_MASK) == MUX_TEXEL1 )
-		return true;
-	else
-		return false;
-}
-
-
-extern const char * sc_colcombtypes32[];
-extern const char *sc_colcombtypes16[];
-extern const char *sc_colcombtypes8[];
 
 D3DCOLOR CalculateConstFactor(uint32 colorOp, uint32 alphaOp, uint32 curCol=0);
 

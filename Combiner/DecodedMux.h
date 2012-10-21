@@ -99,7 +99,6 @@ public:
 	bool isUsedInCycle(uint8 fac, int cycle, uint8 mask=MUX_MASK);
 	void CheckCombineInCycle1(void);
 	void Simplify(void);
-	virtual void Reformat(bool do_complement = true);
 	
 	void ConvertComplements();
 	void MergeConstFactors();

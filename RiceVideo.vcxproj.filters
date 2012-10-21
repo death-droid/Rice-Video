@@ -271,9 +271,6 @@
     <ClCompile Include="Combiner\Combiner.cpp">
       <Filter>Graphics\Combiner</Filter>
     </ClCompile>
-    <ClCompile Include="Combiner\CombinerTable.cpp">
-      <Filter>Graphics\Combiner</Filter>
-    </ClCompile>
     <ClCompile Include="Combiner\DecodedMux.cpp">
       <Filter>Graphics\Combiner</Filter>
     </ClCompile>

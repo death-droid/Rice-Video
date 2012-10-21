@@ -43,20 +43,8 @@ UVFlagMap DirectXUVFlagMaps[] =
 //*****************************************************************************
 D3DRender::D3DRender()
 {
-	m_dwrsZEnable=D3DZB_FALSE;
-	m_dwrsZWriteEnable=FALSE;
-
 	m_Mux = 0;
 	memset(&m_curCombineInfo, 0, sizeof( m_curCombineInfo) );
-
-	m_dwrsZEnable = 0xEEEE;
-	m_dwrsZWriteEnable = 0xEEEE;
-	m_dwrsSrcBlend = 0xEEEE;
-	m_dwrsDestBlend = 0xEEEE;
-	m_dwrsAlphaBlendEnable = 0xEEEE;
-	m_dwrsAlphaTestEnable = 0xEEEE;
-	m_dwrsAlphaRef = 0xEEEE;
-	m_dwrsZBias = 0xEEEE;
 }
 
 D3DRender::~D3DRender()
@@ -122,29 +110,14 @@ bool D3DRender::InitDeviceObjects()
 
 	gD3DDevWrapper.SetRenderState( D3DRS_FOGTABLEMODE, D3DFOG_NONE );
 
-	// Dafault is ZBuffer disabled
-	gD3DDevWrapper.SetRenderState(D3DRS_ZENABLE, m_dwrsZEnable );
-
     gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE );
     gD3DDevWrapper.SetRenderState(D3DRS_ALPHAREF,0x04 );
     gD3DDevWrapper.SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL );
-
-	m_dwrsZEnable=D3DZB_FALSE;
-	m_dwrsZWriteEnable=FALSE;
 
 	m_Mux = 0;
 	memset(&m_curCombineInfo, 0, sizeof( m_curCombineInfo) );
 
 	gD3DDevWrapper.Initalize();
-
-	m_dwrsZEnable = 0xEEEE;
-	m_dwrsZWriteEnable = 0xEEEE;
-	m_dwrsSrcBlend = 0xEEEE;
-	m_dwrsDestBlend = 0xEEEE;
-	m_dwrsAlphaBlendEnable = 0xEEEE;
-	m_dwrsAlphaTestEnable = 0xEEEE;
-	m_dwrsAlphaRef = 0xEEEE;
-	m_dwrsZBias = 0xEEEE;
 
 	for(int i = 0; i < 8; i++) 
 	{ 
@@ -483,7 +456,6 @@ void D3DRender::SetAlphaRef(uint32 dwAlpha)
 void D3DRender::ForceAlphaRef(uint32 dwAlpha)
 {
 	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHAREF,dwAlpha);
-	m_dwrsAlphaRef = dwAlpha;
 	gD3DDevWrapper.SetRenderState( D3DRS_ALPHAREF, dwAlpha );	
 }
 

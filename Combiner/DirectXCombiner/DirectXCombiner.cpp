@@ -68,7 +68,6 @@ CDirectXPixelShaderCombiner::CDirectXPixelShaderCombiner(CRender *pRender)
 	:CColorCombiner(pRender), m_pD3DRender((D3DRender*)pRender)
 {
 	m_pDecodedMux = new DecodedMux;
-
 	TRACE0("Create the pixel shader combiner");
 }
 

@@ -22,44 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //static BOOL g_bHiliteRGBAHack = FALSE;
 
-//const char * sc_colcombtypes32[32] =
-//{
-//	"Combined    ", "Texel0      ",
-//	"Texel1      ", "Primitive   ", 
-//	"Shade       ", "Environment ",
-//	"1           ", "CombAlp     ",
-//	"Texel0_Alpha", "Texel1_Alpha",
-//	"Prim_Alpha  ", "Shade_Alpha ",
-//	"Env_Alpha   ", "LOD_Fraction",
-//	"PrimLODFrac ", "K5          ",
-//	"?           ", "?           ",
-//	"?           ", "?           ",
-//	"?           ", "?           ",
-//	"?           ", "?           ",
-//	"?           ", "?           ",
-//	"?           ", "?           ",
-//	"?           ", "?           ",
-//	"?           ",	"0           "
-//};
-//const char *sc_colcombtypes16[16] =
-//{
-//	"Combined    ", "Texel0      ",
-//	"Texel1      ", "Prim        ", 
-//	"Shade       ", "Environment ",
-//	"1           ", "CombAlp     ",
-//	"Texel0_Alpha", "Texel1_Alpha",
-//	"Prim_Alp    ", "Shade_Alpha ",
-//	"Env_Alpha   ", "LOD_Fraction",
-//	"PrimLOD_Frac", "0           "
-//};
-//const char *sc_colcombtypes8[8] =
-//{
-//	"Combined    ", "Texel0      ",
-//	"Texel1      ", "Primitive   ", 
-//	"Shade       ", "Environment ",
-//	"1           ", "0           ",
-//};
-
 #ifdef _DEBUG
 char *cycleTypeStrs[] = {
 	"1 Cycle",
@@ -68,16 +30,6 @@ char *cycleTypeStrs[] = {
 	"Fill Mode"
 };
 #endif
-
-void swap(uint8 &a, uint8 &b)
-{
-	uint8 c=a;
-	a=b;
-	b=c;
-}
-
-
-//========================================================================
 
 //========================================================================
 
@@ -277,18 +229,6 @@ D3DCOLOR CColorCombiner::GetConstFactor(uint32 colorFlag, uint32	alphaFlag, uint
 }
 
 //*****************************************************************************
-//
-//*****************************************************************************
-//*****************************************************************************
-//
-//*****************************************************************************
-
-//*****************************************************************************
-//
-//*****************************************************************************
-bool	gUsingPrimColour = false;
-bool	gUsingEnvColour = false;
-
 int CountTexel1Cycle(N64CombinerType &m)
 {
 	int hasTexel[2];
@@ -309,25 +249,6 @@ int CountTexel1Cycle(N64CombinerType &m)
 
 	return hasTexel[0]+hasTexel[1];
 }
-
-uint32 GetTexelNumber(N64CombinerType &m)
-{
-	if( (m.a&MUX_MASK) == MUX_TEXEL1 || (m.b&MUX_MASK) == MUX_TEXEL1 || (m.c&MUX_MASK) == MUX_TEXEL1  || (m.d&MUX_MASK) == MUX_TEXEL1 )
-		return TEX_1;
-	else
-		return TEX_0;
-}
-
-bool IsTxtrUsed(N64CombinerType &m)
-{
-	if( (m.a&MUX_MASK) == MUX_TEXEL1 || (m.b&MUX_MASK) == MUX_TEXEL1 || (m.c&MUX_MASK) == MUX_TEXEL1  || (m.d&MUX_MASK) == MUX_TEXEL1 )
-		return true;
-	if( (m.a&MUX_MASK) == MUX_TEXEL0 || (m.b&MUX_MASK) == MUX_TEXEL0 || (m.c&MUX_MASK) == MUX_TEXEL0  || (m.d&MUX_MASK) == MUX_TEXEL0 )
-		return true;
-	else
-		return false;
-}
-
 //========================================================================
 
 void CColorCombiner::InitCombinerMode(void)

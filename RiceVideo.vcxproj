@@ -232,7 +232,6 @@
     <ClCompile Include="Debugger\Debugger.cpp" />
     <ClCompile Include="Combiner\blender.cpp" />
     <ClCompile Include="Combiner\Combiner.cpp" />
-    <ClCompile Include="Combiner\CombinerTable.cpp" />
     <ClCompile Include="Combiner\DecodedMux.cpp" />
     <ClCompile Include="Combiner\DirectXCombiner\DirectXBlender.cpp" />
     <ClCompile Include="Combiner\DirectXCombiner\DirectXCombiner.cpp" />

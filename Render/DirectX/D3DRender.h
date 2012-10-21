@@ -108,15 +108,6 @@ public:
 
 
 protected:
-	uint32 m_dwrsZEnable;
-	uint32 m_dwrsZWriteEnable;
-	uint32 m_dwrsSrcBlend;
-	uint32 m_dwrsDestBlend;
-	uint32 m_dwrsAlphaBlendEnable;
-	uint32 m_dwrsAlphaTestEnable;
-	uint32 m_dwrsAlphaRef;
-	uint32 m_dwrsZBias;
-	
 	SetCombineInfo m_curCombineInfo;
 
 protected:
