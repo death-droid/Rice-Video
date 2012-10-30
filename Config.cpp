@@ -97,7 +97,6 @@ const SettingInfo TextureEnhancementSettings[] =
 	"2xSaI", TEXTURE_2XSAI_ENHANCEMENT,
 	"HQ2x", TEXTURE_HQ2X_ENHANCEMENT,
 	"HQ2xS", TEXTURE_HQ2XS_ENHANCEMENT,
-	"HQ4x", TEXTURE_HQ4X_ENHANCEMENT,
 };
 
 const char*	strDXDeviceDescs[] = { "HAL", "REF" };
@@ -3095,7 +3094,6 @@ void CreateOptionsDialogs(HWND hParent)
 	}
 
 	hPropSheetHwnd = (HWND) PropertySheet(&psh);	// Start the Property Sheet
-	uint32 error = GetLastError();
 
 	//if (g_hhk) 
 	//	UnhookWindowsHookEx (g_hhk);

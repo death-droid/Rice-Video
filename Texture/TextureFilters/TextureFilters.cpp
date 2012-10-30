@@ -59,8 +59,6 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	uint32 realheight = srcInfo.dwHeight;
 	uint32 nWidth = srcInfo.dwCreatedWidth;
 	uint32 nHeight = srcInfo.dwCreatedHeight;
-	bool bPixelSize4 = (pEntry->pTexture->GetPixelSize() == 4);
-
 	pEntry->dwEnhancementFlag = options.textureEnhancement;
 
 	// Don't enhance for large textures
@@ -76,16 +74,8 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	}
 
 	CTexture* pSurfaceHandler = NULL;
-	if( options.textureEnhancement == TEXTURE_HQ4X_ENHANCEMENT )
-	{
-		//Create the surface for the texture
-		pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(nWidth*4, nHeight*4);
-	}
-	else
-	{
-		//Create the surface for the texture
-		pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(nWidth*2, nHeight*2);
-	}
+	//Create the surface for the texture
+	pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(nWidth*2, nHeight*2);
 
 	DrawInfo destInfo;
 	if(pSurfaceHandler)
@@ -96,16 +86,13 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 			switch(options.textureEnhancement)
 			{
 				case TEXTURE_2XSAI_ENHANCEMENT:
-					Super2xSaI((uint32*)(srcInfo.lpSurface),(uint32*)(destInfo.lpSurface), nWidth, realheight, nWidth, bPixelSize4);
+					Super2xSaI((uint32*)(srcInfo.lpSurface),(uint32*)(destInfo.lpSurface), nWidth, realheight, nWidth);
 					break;
 				case TEXTURE_HQ2X_ENHANCEMENT:
-					hq2x((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight, bPixelSize4);
+					hq2x((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight);
 					break;
 				case TEXTURE_HQ2XS_ENHANCEMENT:
-					hq2xS((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight, bPixelSize4);
-					break;
-				case TEXTURE_HQ4X_ENHANCEMENT:
-					hq4x((uint8*)(srcInfo.lpSurface), (uint8*)(destInfo.lpSurface), realwidth, realheight, nWidth, destInfo.lPitch, bPixelSize4);
+					hq2xS((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight);
 					break;
 				default:
 					break;

@@ -229,9 +229,6 @@ public:
 
 
 protected:
-	BOOL			m_savedZBufferFlag;
-	uint32			m_savedMinFilter;
-	uint32			m_savedMagFilter;
 
 	// FillRect
 	virtual bool	RenderFillRect(uint32 dwColor, float depth)=0;
@@ -260,8 +257,6 @@ protected:
 											float &u0, float &u1);
 
 };
-
-#define ffloor(a) (((int(a))<=(a))?(float)(int(a)):((float)(int(a))-1))
 
 bool SaveRGBBufferToFile(char *filename, unsigned char *buf, int width, int height, int pitch = -1);
 bool SaveRGBABufferToPNGFile(char *filename, unsigned char *buf, int width, int height, int pitch = -1);

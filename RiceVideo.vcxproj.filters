@@ -188,9 +188,6 @@
     <ClInclude Include="Texture\TextureFilters\TextureFilters_hq2x.h">
       <Filter>Graphics\Texture\Texture Filters</Filter>
     </ClInclude>
-    <ClInclude Include="Texture\TextureFilters\TextureFilters_hq4x.h">
-      <Filter>Graphics\Texture\Texture Filters</Filter>
-    </ClInclude>
     <ClInclude Include="Parser\RDP_Texture.h">
       <Filter>Graphics\Parser</Filter>
     </ClInclude>
@@ -341,9 +338,6 @@
       <Filter>Graphics\Texture\Texture Filters</Filter>
     </ClCompile>
     <ClCompile Include="Texture\TextureFilters\TextureFilters_hq2x.cpp">
-      <Filter>Graphics\Texture\Texture Filters</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture\TextureFilters\TextureFilters_hq4x.cpp">
       <Filter>Graphics\Texture\Texture Filters</Filter>
     </ClCompile>
     <ClCompile Include="Parser\RSP_Parser.cpp">

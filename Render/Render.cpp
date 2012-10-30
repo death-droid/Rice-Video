@@ -343,16 +343,14 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 	bool res=true;
 
 	/*
-	//CHECKME
-	// I don't know why this does not work for OpenGL
+	//CHECKME if statement was previously disabled
+	*/
 	if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL && nX0 == 0 && nY0 == 0 && ((nX1==windowSetting.uViWidth && nY1==windowSetting.uViHeight)||(nX1==windowSetting.uViWidth-1 && nY1==windowSetting.uViHeight-1)) )
 	{
 		CGraphicsContext::g_pGraphicsContext->Clear(CLEAR_COLOR_BUFFER,dwColor);
 	}
 	else
-	*/
 	{
-		BOOL m_savedZBufferFlag = gRSP.bZBufferEnabled;	// Save ZBuffer state
 		ZBufferEnable( FALSE );
 
 		m_fillRectVtx[0].x = ViewPortTranslatei_x(nX0);
@@ -363,14 +361,9 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 		SetCombinerAndBlender();
 
 		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-		{
 			ZBufferEnable(FALSE);
-		}
 		else
-		{
-			//dwColor = PostProcessDiffuseColor(0);
 			dwColor = PostProcessDiffuseColor(gRDP.primitiveColor);
-		}
 
 		float depth = (gRDP.otherMode.depth_source == 1 ? gRDP.fPrimitiveDepth : 0 );
 
@@ -380,9 +373,7 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 		TurnFogOnOff(gRSP.bFogEnabled);
 
 		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-		{
 			ZBufferEnable(gRSP.bZBufferEnabled);
-		}
 	}
 
 	if( options.bWinFrameMode )	SetFillMode(RICE_FILLMODE_WINFRAME );
@@ -835,8 +826,6 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 
 	PrepareTextures();
 
-	// Save ZBuffer state
-	m_savedZBufferFlag = gRSP.bZBufferEnabled;
 	if( gRDP.otherMode.depth_source == 0 )	ZBufferEnable( FALSE );
 
 	float widthDiv = g_textures[gRSP.curTile].m_fTexWidth;
@@ -896,7 +885,7 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 	TurnFogOnOff(gRSP.bFogEnabled);
 
 	// Restore state
-	ZBufferEnable( m_savedZBufferFlag );
+	ZBufferEnable( gRSP.bZBufferEnabled );
 
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((eventToPause == NEXT_FLUSH_TRI || eventToPause == NEXT_TEXTRECT), {
 		DebuggerAppendMsg("TexRectFlip: tile=%d, X0=%d, Y0=%d, X1=%d, Y1=%d,\nfS0=%f, fT0=%f, nfS1=%f, fT1=%f\n",

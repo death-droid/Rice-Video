@@ -137,7 +137,7 @@ public:
 		int dwRange;
 		int dwIndex;
 
-		while (true)
+		for ( ; ; )
 		{
 			dwRange = dwMax - dwMin;
 			dwIndex = dwMin + (dwRange/2);

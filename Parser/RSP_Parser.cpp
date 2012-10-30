@@ -758,7 +758,6 @@ extern bool bHalfTxtScale;
 void DLParser_Process(OSTask * pTask)
 {
 	static int skipframe=0;
-	BOOL menuWaiting = FALSE;
 
 	dlistMtxCount = 0;
 	bHalfTxtScale = false;
