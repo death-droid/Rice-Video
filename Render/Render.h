@@ -51,8 +51,8 @@ public:
 	BOOL	m_bZCompare;
 	uint32	m_dwZBias;
 
-	TextureFilter	m_dwMinFilter;
-	TextureFilter	m_dwMagFilter;
+	int	m_dwMinFilter;
+	int	m_dwMagFilter;
 
 	uint32	m_dwAlpha;
 

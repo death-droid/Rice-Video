@@ -443,18 +443,6 @@ typedef struct
 	uint32			realFlag;
 } UVFlagMap;
 
-
-typedef enum {
-	FILTER_POINT,
-	FILTER_LINEAR,
-} TextureFilter;
-
-typedef struct 
-{
-	TextureFilter	N64filter;
-	uint32					realFilter;
-} TextureFilterMap;
-
 typedef struct {
 	char	*description;
 	int		number;

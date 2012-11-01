@@ -58,8 +58,8 @@ CRender::CRender() :
 
 	m_bBlendModeValid(FALSE),
 	
-	m_dwMinFilter(FILTER_POINT),
-	m_dwMagFilter(FILTER_POINT)
+	m_dwMinFilter(D3DTEXF_POINT),
+	m_dwMagFilter(D3DTEXF_POINT)
 {
 	int i;
 	InitRenderBase();
@@ -765,8 +765,8 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	TurnFogOnOff(false);
 	if( TileUFlags[gRSP.curTile]==TEXTURE_UV_FLAG_CLAMP && TileVFlags[gRSP.curTile]==TEXTURE_UV_FLAG_CLAMP && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
 	{
-		TextureFilter dwFilter = m_dwMagFilter;
-		m_dwMagFilter = m_dwMinFilter = FILTER_LINEAR;
+		int dwFilter = m_dwMagFilter;
+		m_dwMagFilter = m_dwMinFilter = D3DTEXF_LINEAR;
 		ApplyTextureFilter();
 		ApplyRDPScissor();
 		res = RenderTexRect();
@@ -775,8 +775,8 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	}
 	else if( fScaleS >= 1 && fScaleT >= 1 && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
 	{
-		TextureFilter dwFilter = m_dwMagFilter;
-		m_dwMagFilter = m_dwMinFilter = FILTER_POINT;
+		int dwFilter = m_dwMagFilter;
+		m_dwMagFilter = m_dwMinFilter = D3DTEXF_POINT;
 		ApplyTextureFilter();
 		ApplyRDPScissor();
 		res = RenderTexRect();
@@ -788,6 +788,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		ApplyRDPScissor();
 		res = RenderTexRect();
 	}
+
 	TurnFogOnOff(gRSP.bFogEnabled);
 
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY || !gRDP.otherMode.z_cmp  )
@@ -1962,31 +1963,27 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 
 void CRender::SetTextureFilter(uint32 dwFilter)
 {
-	if( options.forceTextureFilter == FORCE_DEFAULT_FILTER )
+	switch( options.forceTextureFilter )
 	{
-		switch(dwFilter)
-		{
-			case RDP_TFILTER_AVERAGE:	//?
-			case RDP_TFILTER_BILERP:
-				m_dwMinFilter = m_dwMagFilter = FILTER_LINEAR;
-				break;
-			default:
-				m_dwMinFilter = m_dwMagFilter = FILTER_POINT;
-				break;
-		}
-	}
-	else
-	{
-		switch( options.forceTextureFilter )
-		{
+		case FORCE_DEFAULT_FILTER:
+			switch(dwFilter)
+			{
+				case RDP_TFILTER_AVERAGE:	//?
+				case RDP_TFILTER_BILERP:
+					m_dwMinFilter = m_dwMagFilter = D3DTEXF_LINEAR;
+					break;
+				default:
+					m_dwMinFilter = m_dwMagFilter = D3DTEXF_POINT;
+					break;
+			}
+			break;
 		case FORCE_POINT_FILTER:
-			m_dwMinFilter = m_dwMagFilter = FILTER_POINT;
+			m_dwMinFilter = m_dwMagFilter = D3DTEXF_POINT;
 			break;
 		case FORCE_LINEAR_FILTER:
 		case FORCE_BILINEAR_FILTER:
-			m_dwMinFilter = m_dwMagFilter = FILTER_LINEAR;
+			m_dwMinFilter = m_dwMagFilter = D3DTEXF_LINEAR;
 			break;
-		}
 	}
 
 	ApplyTextureFilter();

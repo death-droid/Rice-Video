@@ -403,29 +403,20 @@ void D3DRender::SetZUpdate(BOOL bZUpdate)
 	gD3DDevWrapper.SetRenderState(D3DRS_ZWRITEENABLE, bZUpdate );
 }
 
-TextureFilterMap DXTexFilterMap[2]=
-{
-	{FILTER_POINT, D3DTEXF_POINT},
-	{FILTER_LINEAR, D3DTEXF_LINEAR},
-	//{FILTER_LINEAR, D3DTEXF_ANISOTROPIC},
-	//{FILTER_LINEAR, D3DTEXF_FLATCUBIC},
-	//{FILTER_LINEAR, D3DTEXF_GAUSSIANCUBIC},
-};
-
 void D3DRender::ApplyTextureFilter()
 {
 
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
-		D3DSetMinFilter( 0, DXTexFilterMap[m_dwMinFilter].realFilter );
-		D3DSetMagFilter( 0, DXTexFilterMap[m_dwMagFilter].realFilter );
+		D3DSetMinFilter( 0, m_dwMinFilter );
+		D3DSetMagFilter( 0, m_dwMagFilter );
 	}
 	else
 	{
 		for( int i=0; i<m_curCombineInfo.nStages; i++ )
 		{
-			D3DSetMinFilter( i, DXTexFilterMap[m_dwMinFilter].realFilter );
-			D3DSetMagFilter( i, DXTexFilterMap[m_dwMagFilter].realFilter );
+			D3DSetMinFilter( i, m_dwMinFilter );
+			D3DSetMagFilter( i, m_dwMagFilter );
 		}
 	}
 }
