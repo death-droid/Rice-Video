@@ -531,8 +531,6 @@ HRESULT CDXGraphicsContext::Create3D( BOOL bWindowed )
 
 HRESULT CDXGraphicsContext::InitializeD3D()
 {
-    HRESULT hr;
-	
     D3DAdapterInfo* pAdapterInfo = &m_Adapters[m_dwAdapter];
 	D3DDeviceInfo*  pDeviceInfo  = &pAdapterInfo->devices[options.DirectXDevice];
     D3DModeInfo*    pModeInfo    = &pDeviceInfo->modes[FindCurrentDisplayModeIndex()];
@@ -620,18 +618,38 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	m_d3dpp.BackBufferWidth		= windowSetting.uDisplayWidth;
 	m_d3dpp.BackBufferHeight	= windowSetting.uDisplayHeight;
 
+	// pDeviceInfo->DeviceType,m_hWnd, pModeInfo->dwBehavior
+	//
     // Create the device
-	hr = m_pD3D->CreateDevice( m_dwAdapter, pDeviceInfo->DeviceType,m_hWnd, pModeInfo->dwBehavior, &m_d3dpp,	&m_pd3dDevice );
-	if( !SUCCEEDED(hr) && m_d3dpp.MultiSampleType == D3DMULTISAMPLE_NONE )
+	if(!SUCCEEDED(m_pD3D->CreateDevice(
+		m_dwAdapter, 
+		D3DDEVTYPE_HAL, 
+		m_hWnd, 
+		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE, 
+		&m_d3dpp,	&m_pd3dDevice )))
+	{
+		if(!SUCCEEDED(m_pD3D->CreateDevice(
+				m_dwAdapter, 
+				D3DDEVTYPE_HAL, 
+				m_hWnd, 
+				D3DCREATE_SOFTWARE_VERTEXPROCESSING, 
+				&m_d3dpp,	&m_pd3dDevice )))
+		{
+			MsgInfo("Failed to initialize Direct3D");
+			return E_FAIL;
+		}
+	}
+
+	/*if( !SUCCEEDED(hr) && m_d3dpp.MultiSampleType != D3DMULTISAMPLE_NONE )
 	{
 		// Try again without FSAA
 		TRACE0("Can not initialize DX9, try again without FSAA");
 		SetWindowText(g_GraphicsInfo.hStatusBar,"Can not initialize DX9, try again without FSAA");
 		m_d3dpp.MultiSampleType        = D3DMULTISAMPLE_NONE;
 		hr = m_pD3D->CreateDevice( m_dwAdapter, pDeviceInfo->DeviceType,m_hWnd, pModeInfo->dwBehavior, &m_d3dpp,	&m_pd3dDevice );
-	}
+	}*/
 
-	if( SUCCEEDED(hr) && m_pd3dDevice )
+	if(m_pd3dDevice )
     {
 		g_pD3DDev = m_pd3dDevice;
 		gD3DDevWrapper.SetD3DDev(m_pd3dDevice);
@@ -714,8 +732,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
         pBackBuffer->Release();
 		
         // Initialize the app's device-dependent objects
-        hr = InitDeviceObjects();
-        if( IsResultGood(hr,true) )
+        if( IsResultGood(InitDeviceObjects(),true) )
         {
 			if ( CRender::IsAvailable() )
 			{
@@ -760,7 +777,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 
     // If that failed, fall back to the reference rasterizer (removed)
 	
-    return hr;
+    return E_FAIL;
 }
 
 
@@ -1120,69 +1137,8 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
                         }
                     }
                 }
-				
-                // Confirm the device/format for HW vertex processing
-                if( pDevice->d3dCaps.DevCaps&D3DDEVCAPS_HWTRANSFORMANDLIGHT )
-                {
-					bFormatConfirmed[f] = FALSE;
-
-					if( options.bForceSoftwareTnL )
-					{
-						dwBehavior[f] = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-
-						if( SUCCEEDED( ConfirmDevice( &pDevice->d3dCaps, dwBehavior[f], formats[f] ) ) )
-						{
-							bFormatConfirmed[f] = TRUE;
-						}
-						
-						if ( FALSE == bFormatConfirmed[f] )
-						{
-							dwBehavior[f] = D3DCREATE_MIXED_VERTEXPROCESSING;
-
-							if( SUCCEEDED( ConfirmDevice( &pDevice->d3dCaps, dwBehavior[f], formats[f] ) ) )
-								bFormatConfirmed[f] = TRUE;
-						}
-					}
-
-					if ( FALSE == bFormatConfirmed[f] )
-					{
-						if( pDevice->d3dCaps.DevCaps&D3DDEVCAPS_PUREDEVICE )
-						{
-							dwBehavior[f] = D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE;
-
-							if( SUCCEEDED( ConfirmDevice( &pDevice->d3dCaps, dwBehavior[f], formats[f] ) ) )
-								bFormatConfirmed[f] = TRUE;
-						}
-					}
-
-					if ( FALSE == bFormatConfirmed[f] )
-					{
-						dwBehavior[f] = D3DCREATE_HARDWARE_VERTEXPROCESSING;
-
-						if( SUCCEEDED( ConfirmDevice( &pDevice->d3dCaps, dwBehavior[f], formats[f] ) ) )
-							bFormatConfirmed[f] = TRUE;
-					}
-
-					if ( FALSE == bFormatConfirmed[f] )
-					{
-						dwBehavior[f] = D3DCREATE_MIXED_VERTEXPROCESSING;
-
-						if( SUCCEEDED( ConfirmDevice( &pDevice->d3dCaps, dwBehavior[f], formats[f] ) ) )
-							bFormatConfirmed[f] = TRUE;
-					}
-                }
-				
-                // Confirm the device/format for SW vertex processing
-                if( FALSE == bFormatConfirmed[f] )
-                {
-                    dwBehavior[f] = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-					
-                    if( SUCCEEDED( ConfirmDevice( &pDevice->d3dCaps, dwBehavior[f], formats[f] ) ) )
-                        bFormatConfirmed[f] = TRUE;
-                }
-				
                 // Find a suitable depth/stencil buffer format for this device/format
-                if( bFormatConfirmed[f] ) //&& m_bUseDepthBuffer
+     //           if( bFormatConfirmed[f] ) //&& m_bUseDepthBuffer
                 {
                     if( !FindDepthStencilFormat( iAdapter, pDevice->DeviceType, formats[f], &fmtDepthStencil[f] ) )
                     {
