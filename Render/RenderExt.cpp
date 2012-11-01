@@ -386,8 +386,8 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 
 	//InitCombinerBlenderForSimpleTextureDraw();
 	SetCombinerAndBlender();
-	SetAddressUAllStages( 0, TEXTURE_UV_FLAG_CLAMP );
-	SetAddressVAllStages( 0, TEXTURE_UV_FLAG_CLAMP );
+	SetAddressUAllStages( 0, D3DTADDRESS_CLAMP );
+	SetAddressVAllStages( 0, D3DTADDRESS_CLAMP );
 
 	D3DCOLOR speColor = PostProcessSpecularColor();
 	D3DCOLOR difColor = PostProcessDiffuseColor(0xffffffff);

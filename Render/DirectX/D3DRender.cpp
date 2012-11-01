@@ -30,13 +30,6 @@ inline float round( float x )
 	return (float)(s32)( x + 0.5f );
 }
 
-UVFlagMap DirectXUVFlagMaps[] =
-{
-	TEXTURE_UV_FLAG_WRAP,	D3DTADDRESS_WRAP,
-	TEXTURE_UV_FLAG_MIRROR,	D3DTADDRESS_MIRROR,
-	TEXTURE_UV_FLAG_CLAMP,	D3DTADDRESS_CLAMP,
-};
-
 
 //*****************************************************************************
 // Creator function for singleton
@@ -321,12 +314,12 @@ void D3DRender::DrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dw
 	g_pD3DDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, frv, sizeof(FILLRECTVERTEX));
 }
 
-void D3DRender::SetTextureUFlag(TextureUVFlag dwFlag, uint32 tile)
+void D3DRender::SetTextureUFlag(int dwFlag, uint32 tile)
 {
 	TileUFlags[tile] = dwFlag;
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
-		g_pD3DDev->SetSamplerState(0, D3DSAMP_ADDRESSU, DirectXUVFlagMaps[dwFlag].realFlag );
+		g_pD3DDev->SetSamplerState(0, D3DSAMP_ADDRESSU, dwFlag );
 	}
 	else
 	{
@@ -334,18 +327,18 @@ void D3DRender::SetTextureUFlag(TextureUVFlag dwFlag, uint32 tile)
 		{
 			if( m_curCombineInfo.stages[i].dwTexture == tile-gRSP.curTile )
 			{
-				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSU, DirectXUVFlagMaps[dwFlag].realFlag );
+				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSU, dwFlag );
 			}
 		}
 	}
 }
 
-void D3DRender::SetTextureVFlag(TextureUVFlag dwFlag, uint32 tile)
+void D3DRender::SetTextureVFlag(int dwFlag, uint32 tile)
 {
 	TileVFlags[tile] = dwFlag;
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
-		g_pD3DDev->SetSamplerState(0, D3DSAMP_ADDRESSV, DirectXUVFlagMaps[dwFlag].realFlag );
+		g_pD3DDev->SetSamplerState(0, D3DSAMP_ADDRESSV, dwFlag );
 	}
 	else
 	{
@@ -353,18 +346,18 @@ void D3DRender::SetTextureVFlag(TextureUVFlag dwFlag, uint32 tile)
 		{
 			if( m_curCombineInfo.stages[i].dwTexture == tile-gRSP.curTile )
 			{
-				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSV, DirectXUVFlagMaps[dwFlag].realFlag );
+				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSV, dwFlag );
 			}
 		}
 	}
 }
 
-void D3DRender::SetAddressUAllStages(uint32 dwTile, TextureUVFlag dwFlag)
+void D3DRender::SetAddressUAllStages(uint32 dwTile, int dwFlag)
 {
 	SetTextureUFlag(dwFlag, dwTile);
 }
 
-void D3DRender::SetAddressVAllStages(uint32 dwTile, TextureUVFlag dwFlag)
+void D3DRender::SetAddressVAllStages(uint32 dwTile, int dwFlag)
 {
 	SetTextureVFlag(dwFlag, dwTile);
 }

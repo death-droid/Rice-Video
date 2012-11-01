@@ -74,7 +74,7 @@ CRender::CRender() :
 		g_textures[i].m_fTexWidth = 64.0f;		// Value doesn't really matter, as tex not set
 		g_textures[i].m_fTexHeight = 64.0f;
 
-		TileUFlags[i] = TileVFlags[i] = TEXTURE_UV_FLAG_CLAMP;
+		TileUFlags[i] = TileVFlags[i] = D3DTADDRESS_CLAMP;
 	}
 
 
@@ -641,7 +641,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		m_texRectTex1UV[0].u = t0u0/widthDiv;
 		m_texRectTex1UV[1].u = t0u1/widthDiv;
 		if(!tile0.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex0.m_dwTileWidth, tile0.dwMaskS, widthDiv, m_texRectTex1UV[0].u, m_texRectTex1UV[1].u) )
-			SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile);
+			SetTextureUFlag(D3DTADDRESS_CLAMP, gRSP.curTile);
 	}
 
 	float t0v0;
@@ -667,7 +667,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	m_texRectTex1UV[0].v = t0v0/heightDiv;
 	m_texRectTex1UV[1].v = t0v1/heightDiv;
 	if(!tile0.bMirrorT && RemapTextureCoordinate(t0v0, t0v1, tex0.m_dwTileHeight, tile0.dwMaskT, heightDiv, m_texRectTex1UV[0].v, m_texRectTex1UV[1].v) )
-		SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile);
+		SetTextureVFlag(D3DTADDRESS_CLAMP, gRSP.curTile);
 	
 	D3DCOLOR speColor = PostProcessSpecularColor();
 	D3DCOLOR difColor;
@@ -738,14 +738,14 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 			m_texRectTex2UV[0].u = t0u0/widthDiv;
 			m_texRectTex2UV[1].u = t0u1/widthDiv;
 			if(!tile1.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex1.m_dwTileWidth, tile1.dwMaskS, widthDiv, m_texRectTex2UV[0].u, m_texRectTex2UV[1].u) )
-				SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, (gRSP.curTile+1)&7);
+				SetTextureUFlag(D3DTADDRESS_CLAMP, (gRSP.curTile+1)&7);
 		}
 
 		m_texRectTex2UV[0].v = t0v0/heightDiv;
 		m_texRectTex2UV[1].v = t0v1/heightDiv;
 
 		if(!tile1.bMirrorT && RemapTextureCoordinate(t0v0, t0v1, tex1.m_dwTileHeight, tile1.dwMaskT, heightDiv, m_texRectTex2UV[0].v, m_texRectTex2UV[1].v) )
-			SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, (gRSP.curTile+1)&7);
+			SetTextureVFlag(D3DTADDRESS_CLAMP, (gRSP.curTile+1)&7);
 
 		SetVertexTextureUVCoord(g_texRectTVtx[0], m_texRectTex1UV[0].u, m_texRectTex1UV[0].v, m_texRectTex2UV[0].u, m_texRectTex2UV[0].v);
 		SetVertexTextureUVCoord(g_texRectTVtx[1], m_texRectTex1UV[1].u, m_texRectTex1UV[0].v, m_texRectTex2UV[1].u, m_texRectTex2UV[0].v);
@@ -763,7 +763,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 
 	bool res;
 	TurnFogOnOff(false);
-	if( TileUFlags[gRSP.curTile]==TEXTURE_UV_FLAG_CLAMP && TileVFlags[gRSP.curTile]==TEXTURE_UV_FLAG_CLAMP && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
+	if( TileUFlags[gRSP.curTile]==D3DTADDRESS_CLAMP && TileVFlags[gRSP.curTile]==D3DTADDRESS_CLAMP && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
 	{
 		int dwFilter = m_dwMagFilter;
 		m_dwMagFilter = m_dwMinFilter = D3DTEXF_LINEAR;
@@ -842,8 +842,8 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 
 	float depth = (gRDP.otherMode.depth_source == 1 ? gRDP.fPrimitiveDepth : 0 );
 
-	if( t0u0 >= 0 && t0u1 <= 1 && t0u1 >= t0u0 ) SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile);
-	if( t0v0 >= 0 && t0v1 <= 1 && t0v1 >= t0v0 ) SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile);
+	if( t0u0 >= 0 && t0u1 <= 1 && t0u1 >= t0u0 ) SetTextureUFlag(D3DTADDRESS_CLAMP, gRSP.curTile);
+	if( t0v0 >= 0 && t0v1 <= 1 && t0v1 >= t0v0 ) SetTextureVFlag(D3DTADDRESS_CLAMP, gRSP.curTile);
 
 	SetCombinerAndBlender();
 
@@ -958,11 +958,11 @@ void CRender::StartDrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32
 	m_simpleRectVtx[1].y = ViewPortTranslatei_y(nY1);
 }
 
-void CRender::SetAddressUAllStages(uint32 dwTile, TextureUVFlag dwFlag)
+void CRender::SetAddressUAllStages(uint32 dwTile, int dwFlag)
 {
 }
 
-void CRender::SetAddressVAllStages(uint32 dwTile, TextureUVFlag dwFlag)
+void CRender::SetAddressVAllStages(uint32 dwTile, int dwFlag)
 {
 }
 
@@ -983,36 +983,36 @@ void CRender::SetTexelRepeatFlags(uint32 dwTile)
 	Tile &tile = gRDP.tiles[dwTile];
 
 	if( tile.bForceClampS )
-		SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, dwTile);
+		SetTextureUFlag(D3DTADDRESS_CLAMP, dwTile);
 	else if( tile.bForceWrapS )
-			SetTextureUFlag(TEXTURE_UV_FLAG_WRAP, dwTile);
+			SetTextureUFlag(D3DTADDRESS_WRAP, dwTile);
 	else if( tile.dwMaskS == 0 || tile.bClampS )
 	{
 		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			SetTextureUFlag(TEXTURE_UV_FLAG_WRAP, dwTile);	// Can not clamp in COPY/FILL mode
+			SetTextureUFlag(D3DTADDRESS_WRAP, dwTile);	// Can not clamp in COPY/FILL mode
 		else
-			SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, dwTile);
+			SetTextureUFlag(D3DTADDRESS_CLAMP, dwTile);
 	}
 	else if (tile.bMirrorS )
-		SetTextureUFlag(TEXTURE_UV_FLAG_MIRROR, dwTile);
+		SetTextureUFlag(D3DTADDRESS_MIRROR, dwTile);
 	else								
-		SetTextureUFlag(TEXTURE_UV_FLAG_WRAP, dwTile);
+		SetTextureUFlag(D3DTADDRESS_WRAP, dwTile);
 	
 	if( tile.bForceClampT )
-		SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, dwTile);
+		SetTextureVFlag(D3DTADDRESS_CLAMP, dwTile);
 	else if( tile.bForceWrapT )
-		SetTextureVFlag(TEXTURE_UV_FLAG_WRAP, dwTile);
+		SetTextureVFlag(D3DTADDRESS_WRAP, dwTile);
 	else if( tile.dwMaskT == 0 || tile.bClampT)
 	{
 		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			SetTextureVFlag(TEXTURE_UV_FLAG_WRAP, dwTile);	// Can not clamp in COPY/FILL mode
+			SetTextureVFlag(D3DTADDRESS_WRAP, dwTile);	// Can not clamp in COPY/FILL mode
 		else
-			SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, dwTile);
+			SetTextureVFlag(D3DTADDRESS_CLAMP, dwTile);
 	}
 	else if (tile.bMirrorT )
-		SetTextureVFlag(TEXTURE_UV_FLAG_MIRROR, dwTile);
+		SetTextureVFlag(D3DTADDRESS_MIRROR, dwTile);
 	else								
-		SetTextureVFlag(TEXTURE_UV_FLAG_WRAP, dwTile);
+		SetTextureVFlag(D3DTADDRESS_WRAP, dwTile);
 }
 
 void CRender::Initialize(void)
@@ -1278,11 +1278,11 @@ bool CRender::DrawTriangles()
 
 			if( clampS )
 			{
-				SetTextureUFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile+t);
+				SetTextureUFlag(D3DTADDRESS_CLAMP, gRSP.curTile+t);
 			}
 			if( clampT )
 			{
-				SetTextureVFlag(TEXTURE_UV_FLAG_CLAMP, gRSP.curTile+t);
+				SetTextureVFlag(D3DTADDRESS_CLAMP, gRSP.curTile+t);
 			}
 			*/
 		}

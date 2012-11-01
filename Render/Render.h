@@ -35,8 +35,8 @@ class CRender : public CExtendedRender
 protected:
 	CRender();
 
-	TextureUVFlag TileUFlags[8];
-	TextureUVFlag TileVFlags[8];
+	int TileUFlags[8];
+	int TileVFlags[8];
 
 public:
 
@@ -181,10 +181,10 @@ public:
 	bool FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor);
 	bool Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth);
 
-	virtual void SetAddressUAllStages(uint32 dwTile, TextureUVFlag dwFlag);	// For DirectX only, fix me
-	virtual void SetAddressVAllStages(uint32 dwTile, TextureUVFlag dwFlag);	// For DirectX only, fix me
-	virtual void SetTextureUFlag(TextureUVFlag dwFlag, uint32 tile)=0;
-	virtual void SetTextureVFlag(TextureUVFlag dwFlag, uint32 tile)=0;
+	virtual void SetAddressUAllStages(uint32 dwTile, int dwFlag);	// For DirectX only, fix me
+	virtual void SetAddressVAllStages(uint32 dwTile, int dwFlag);	// For DirectX only, fix me
+	virtual void SetTextureUFlag(int dwFlag, uint32 tile)=0;
+	virtual void SetTextureVFlag(int dwFlag, uint32 tile)=0;
 	virtual void SetTexelRepeatFlags(uint32 dwTile);
 	virtual void SetAllTexelRepeatFlag();
 	

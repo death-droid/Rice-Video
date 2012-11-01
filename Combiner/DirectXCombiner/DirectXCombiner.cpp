@@ -572,8 +572,8 @@ void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32
 	m_pD3DRender->m_curCombineInfo.m_dwShadeAlphaChannelFlag = 0;
 	m_pD3DRender->m_curCombineInfo.specularPostOp = 0;
 
-	m_pD3DRender->SetAddressUAllStages( 0, TEXTURE_UV_FLAG_CLAMP );
-	m_pD3DRender->SetAddressVAllStages( 0, TEXTURE_UV_FLAG_CLAMP );
+	m_pD3DRender->SetAddressUAllStages( 0, D3DTADDRESS_CLAMP );
+	m_pD3DRender->SetAddressVAllStages( 0, D3DTADDRESS_CLAMP );
 }
 
 #ifdef _DEBUG

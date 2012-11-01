@@ -63,11 +63,11 @@ public:
 
 	void ApplyTextureFilter();
 
-	void SetAddressUAllStages(uint32 dwTile, TextureUVFlag dwFlag);
-	void SetAddressVAllStages(uint32 dwTile, TextureUVFlag dwFlag);
+	void SetAddressUAllStages(uint32 dwTile, int dwFlag);
+	void SetAddressVAllStages(uint32 dwTile, int dwFlag);
 
-	void SetTextureUFlag(TextureUVFlag dwFlag, uint32 tile);
-	void SetTextureVFlag(TextureUVFlag dwFlag, uint32 tile);
+	void SetTextureUFlag(int dwFlag, uint32 tile);
+	void SetTextureVFlag(int dwFlag, uint32 tile);
 
 	void SetCullMode(bool bCullFront, bool bCullBack);
 

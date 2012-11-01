@@ -431,18 +431,6 @@ typedef enum {
 	SHADE_SMOOTH,
 } RenderShadeMode;
 
-typedef enum {
-	TEXTURE_UV_FLAG_WRAP,
-	TEXTURE_UV_FLAG_MIRROR,
-	TEXTURE_UV_FLAG_CLAMP,
-} TextureUVFlag;
-
-typedef struct
-{
-	TextureUVFlag	N64flag;
-	uint32			realFlag;
-} UVFlagMap;
-
 typedef struct {
 	char	*description;
 	int		number;
