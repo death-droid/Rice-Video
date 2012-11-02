@@ -190,106 +190,6 @@ exit:
 	if( g_curRomInfo.bForceScreenClear )	needCleanScene = true;
 }
 
-//-----------------------------------------------------------------------------
-// Name: FindDepthStencilFormat()
-// Desc: Finds a depth/stencil format for the given device that is compatible
-//       with the render target format and meets the needs of the app.
-//-----------------------------------------------------------------------------
-BOOL CDXGraphicsContext::FindDepthStencilFormat( UINT iAdapter, D3DDEVTYPE DeviceType,
-											  D3DFORMAT TargetFormat,
-											  D3DFORMAT* pDepthStencilFormat )
-{
-	if( m_dwMinDepthBits <= 16 && m_dwMinStencilBits == 0 )
-	{
-		if( SUCCEEDED( m_pD3D->CheckDeviceFormat( iAdapter, DeviceType,
-			TargetFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D16 ) ) )
-		{
-			if( SUCCEEDED( m_pD3D->CheckDepthStencilMatch( iAdapter, DeviceType,
-				TargetFormat, TargetFormat, D3DFMT_D16 ) ) )
-			{
-				
-				*pDepthStencilFormat = D3DFMT_D16;
-				return TRUE;
-			}
-		}
-	}
-	
-	if( m_dwMinDepthBits <= 15 && m_dwMinStencilBits <= 1 )
-	{
-		if( SUCCEEDED( m_pD3D->CheckDeviceFormat( iAdapter, DeviceType,
-			TargetFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D15S1 ) ) )
-		{
-			if( SUCCEEDED( m_pD3D->CheckDepthStencilMatch( iAdapter, DeviceType,
-				TargetFormat, TargetFormat, D3DFMT_D15S1 ) ) )
-			{
-				*pDepthStencilFormat = D3DFMT_D15S1;
-				return TRUE;
-			}
-		}
-	}
-	
-	if( m_dwMinDepthBits <= 24 && m_dwMinStencilBits == 0 )
-	{
-		if( SUCCEEDED( m_pD3D->CheckDeviceFormat( iAdapter, DeviceType,
-			TargetFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24X8 ) ) )
-		{
-			if( SUCCEEDED( m_pD3D->CheckDepthStencilMatch( iAdapter, DeviceType,
-				TargetFormat, TargetFormat, D3DFMT_D24X8 ) ) )
-			{
-				*pDepthStencilFormat = D3DFMT_D24X8;
-				return TRUE;
-			}
-		}
-	}
-	
-	if( m_dwMinDepthBits <= 24 && m_dwMinStencilBits <= 8 )
-	{
-		if( SUCCEEDED( m_pD3D->CheckDeviceFormat( iAdapter, DeviceType,
-			TargetFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24S8 ) ) )
-		{
-			if( SUCCEEDED( m_pD3D->CheckDepthStencilMatch( iAdapter, DeviceType,
-				TargetFormat, TargetFormat, D3DFMT_D24S8 ) ) )
-			{
-				
-				
-				*pDepthStencilFormat = D3DFMT_D24S8;
-				return TRUE;
-				
-			}
-		}
-	}
-	
-	if( m_dwMinDepthBits <= 24 && m_dwMinStencilBits <= 4 )
-	{
-		if( SUCCEEDED( m_pD3D->CheckDeviceFormat( iAdapter, DeviceType,
-			TargetFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24X4S4 ) ) )
-		{
-			if( SUCCEEDED( m_pD3D->CheckDepthStencilMatch( iAdapter, DeviceType,
-				TargetFormat, TargetFormat, D3DFMT_D24X4S4 ) ) )
-			{
-				*pDepthStencilFormat = D3DFMT_D24X4S4;
-				return TRUE;
-			}
-		}
-	}
-	
-	if( m_dwMinDepthBits <= 32 && m_dwMinStencilBits == 0 )
-	{
-		if( SUCCEEDED( m_pD3D->CheckDeviceFormat( iAdapter, DeviceType,
-			TargetFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32 ) ) )
-		{
-			if( SUCCEEDED( m_pD3D->CheckDepthStencilMatch( iAdapter, DeviceType,
-				TargetFormat, TargetFormat, D3DFMT_D32 ) ) )
-			{
-				*pDepthStencilFormat = D3DFMT_D32;
-				return TRUE;
-			}
-		}
-	}
-	
-	return FALSE;
-}
-
 //*****************************************************************************
 //
 //*****************************************************************************
@@ -547,8 +447,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
     m_d3dpp.Windowed               = pDeviceInfo->bWindowed;
     m_d3dpp.BackBufferCount        = 1;
 	m_d3dpp.EnableAutoDepthStencil = TRUE; /*m_bUseDepthBuffer;*/
-    m_d3dpp.AutoDepthStencilFormat = pModeInfo->DepthStencilFormat;
-	m_d3dpp.AutoDepthStencilFormat = (D3DFORMAT)(DirectXDepthBufferSetting[options.DirectXDepthBufferSetting].number);
+	m_d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 	m_d3dpp.hDeviceWindow          = m_hWnd;
 	m_d3dpp.MultiSampleType        = pDeviceInfo->MultiSampleType;
 
@@ -677,50 +576,9 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 						SWP_SHOWWINDOW );
         }
 
-        // Store device description
-        if( pDeviceInfo->DeviceType == D3DDEVTYPE_REF )
-            lstrcpy( m_strDeviceStats, "REF" );
-        else if( pDeviceInfo->DeviceType == D3DDEVTYPE_HAL )
-            lstrcpy( m_strDeviceStats, "HAL" );
-        else if( pDeviceInfo->DeviceType == D3DDEVTYPE_SW )
-            lstrcpy( m_strDeviceStats, "SW" );
-		
-        if( pModeInfo->dwBehavior & D3DCREATE_HARDWARE_VERTEXPROCESSING &&
-            pModeInfo->dwBehavior & D3DCREATE_PUREDEVICE )
-        {
-            if( pDeviceInfo->DeviceType == D3DDEVTYPE_HAL )
-                lstrcat( m_strDeviceStats, " (pure hw vp)" );
-            else
-                lstrcat( m_strDeviceStats, " (simulated pure hw vp)" );
-        }
-        else if( pModeInfo->dwBehavior & D3DCREATE_HARDWARE_VERTEXPROCESSING )
-        {
-            if( pDeviceInfo->DeviceType == D3DDEVTYPE_HAL )
-                lstrcat( m_strDeviceStats, " (hw vp)" );
-            else
-                lstrcat( m_strDeviceStats, " (simulated hw vp)" );
-        }
-        else if( pModeInfo->dwBehavior & D3DCREATE_MIXED_VERTEXPROCESSING )
-        {
-            if( pDeviceInfo->DeviceType == D3DDEVTYPE_HAL )
-                lstrcat( m_strDeviceStats, " (mixed vp)" );
-            else
-                lstrcat( m_strDeviceStats, " (simulated mixed vp)" );
-        }
-        else if( pModeInfo->dwBehavior & D3DCREATE_SOFTWARE_VERTEXPROCESSING )
-        {
-            lstrcat( m_strDeviceStats, " (sw vp)" );
-        }
-		
-        if( pDeviceInfo->DeviceType == D3DDEVTYPE_HAL )
-        {
-            lstrcat( m_strDeviceStats, ": " );
-            lstrcat( m_strDeviceStats, pAdapterInfo->d3dAdapterIdentifier.Description );
-        }
-	
 		if ( IsWindow(m_hWndStatus ) )
 		{
-			SetWindowText(m_hWndStatus, m_strDeviceStats);
+			SetWindowText(m_hWndStatus, pAdapterInfo->d3dAdapterIdentifier.Description);
 		}
 		TRACE0(m_strDeviceStats);
 
@@ -997,11 +855,6 @@ HRESULT CDXGraphicsContext::AdjustWindowForChange()
 //-----------------------------------------------------------------------------
 HRESULT CDXGraphicsContext::BuildDeviceList()
 {
-    BOOL bHALExists = FALSE;
-    BOOL bHALIsWindowedCompatible = FALSE;
-    BOOL bHALIsDesktopCompatible = FALSE;
-    BOOL bHALIsSampleCompatible = FALSE;
-
 	m_dwNumAdapters = 0;
 	
     // Loop through all the adapters on the system (usually, there's just one
@@ -1107,44 +960,15 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
             // work with this device and meets the needs of the application.
             BOOL  bFormatConfirmed[20];
             uint32 dwBehavior[20];
-            D3DFORMAT fmtDepthStencil[20];
-			
+
             for( uint32 f=0; f<dwNumFormats; f++ )
             {
-                bFormatConfirmed[f] = FALSE;
-                fmtDepthStencil[f] = D3DFMT_UNKNOWN;
+                bFormatConfirmed[f] = TRUE;
 				
                 // Skip formats that cannot be used as render targets on this device
                 if( FAILED( m_pD3D->CheckDeviceType( iAdapter, pDevice->DeviceType,
 					formats[f], formats[f], FALSE ) ) )
                     continue;
-				
-                if( pDevice->DeviceType == D3DDEVTYPE_HAL )
-                {
-                    // This system has a HAL device
-                    bHALExists = TRUE;
-					
-					// Assume all DirectX9 can render window mode
-                    //if( pDevice->d3dCaps.Caps2 & D3DCAPS2_CANRENDERWINDOWED )
-                    {
-                        // HAL can run in a window for some mode
-                        bHALIsWindowedCompatible = TRUE;
-						
-                        if( f == 0 )
-                        {
-                            // HAL can run in a window for the current desktop mode
-                            bHALIsDesktopCompatible = TRUE;
-                        }
-                    }
-                }
-                // Find a suitable depth/stencil buffer format for this device/format
-     //           if( bFormatConfirmed[f] ) //&& m_bUseDepthBuffer
-                {
-                    if( !FindDepthStencilFormat( iAdapter, pDevice->DeviceType, formats[f], &fmtDepthStencil[f] ) )
-                    {
-                        bFormatConfirmed[f] = FALSE;
-                    }
-                }
             }
 			
             // Add all enumerated display modes with confirmed formats to the
@@ -1155,7 +979,7 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
                 {
                     if( modes[m].Format == formats[f] )
                     {
-                        if( bFormatConfirmed[f] == TRUE )
+                     //   if( bFormatConfirmed[f] == TRUE )
                         {
                             // Add this mode to the device's list of valid modes
                             pDevice->modes[pDevice->dwNumModes].Width			= modes[m].Width;
@@ -1163,11 +987,7 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
                             pDevice->modes[pDevice->dwNumModes].Format			= modes[m].Format;
 							pDevice->modes[pDevice->dwNumModes].RefreshRate     = modes[m].RefreshRate;
                             pDevice->modes[pDevice->dwNumModes].dwBehavior		= dwBehavior[f];
-                            pDevice->modes[pDevice->dwNumModes].DepthStencilFormat = fmtDepthStencil[f];
                             pDevice->dwNumModes++;
-							
-                            if( pDevice->DeviceType == D3DDEVTYPE_HAL )
-                                bHALIsSampleCompatible = TRUE;
                         }
                     }
                 }
@@ -1207,22 +1027,6 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
                 m_Adapters[a].dwCurrentDevice = d;
                 m_dwAdapter = a;
 				m_bWindowed = true;
-				
-                // Display a warning message
-                if( m_Adapters[a].devices[d].DeviceType == D3DDEVTYPE_REF )
-                {
-                    if( !bHALExists )
-                        DisplayD3DErrorMsg( D3DAPPERR_NOHARDWAREDEVICE, MSGWARN_SWITCHEDTOREF );
-                    else if( !bHALIsSampleCompatible )
-                        DisplayD3DErrorMsg( D3DAPPERR_HALNOTCOMPATIBLE, MSGWARN_SWITCHEDTOREF );
-                    else if( !bHALIsWindowedCompatible )
-                        DisplayD3DErrorMsg( D3DAPPERR_NOWINDOWEDHAL, MSGWARN_SWITCHEDTOREF );
-                    else if( !bHALIsDesktopCompatible )
-                        DisplayD3DErrorMsg( D3DAPPERR_NODESKTOPHAL, MSGWARN_SWITCHEDTOREF );
-                    else // HAL is desktop compatible, but not sample compatible
-                        DisplayD3DErrorMsg( D3DAPPERR_NOHALTHISMODE, MSGWARN_SWITCHEDTOREF );
-                }
-				
                 return S_OK;
             }
         }

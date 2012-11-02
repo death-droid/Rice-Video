@@ -130,9 +130,6 @@ protected:
 	friend class DirectXDeviceBuilder;
 	CDXGraphicsContext();
 
-	BOOL FindDepthStencilFormat( UINT iAdapter, D3DDEVTYPE DeviceType,
-		D3DFORMAT TargetFormat, D3DFORMAT* pDepthStencilFormat );
-
 	HRESULT BuildDeviceList();
 	int		FindCurrentDisplayModeIndex();
 	static HRESULT ConfirmDevice( MYD3DCAPS* pCaps, uint32 dwBehavior, D3DFORMAT Format );
