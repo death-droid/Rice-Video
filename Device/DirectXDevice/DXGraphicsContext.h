@@ -140,7 +140,6 @@ protected:
 
 	HRESULT ResizeD3DEnvironment();
 	HRESULT DoToggleFullscreen();
-	HRESULT ForceWindowed();
 	HRESULT AdjustWindowForChange();
 	
 	void Pause( bool bPause );
