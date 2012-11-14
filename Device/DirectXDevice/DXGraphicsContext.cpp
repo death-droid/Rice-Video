@@ -33,7 +33,6 @@ MYD3DCAPS		CDXGraphicsContext::m_d3dCaps;           // Caps for the device
 bool			CDXGraphicsContext::m_bSupportAnisotropy;
 const	uint32		dwNumDeviceTypes = 2;
 extern const char*	strDXDeviceDescs[];
-const	D3DDEVTYPE	DeviceTypes[] = { D3DDEVTYPE_HAL, D3DDEVTYPE_REF };
 
 
 CDXGraphicsContext::CDXGraphicsContext() :
@@ -42,7 +41,6 @@ CDXGraphicsContext::CDXGraphicsContext() :
 	m_hFont(NULL),
 	m_pID3DFont(NULL),
 	m_dwAdapter(0),			// Default Adapter
-	m_dwCreateFlags(0),
 	m_dwMinDepthBits(16),
 	m_dwMinStencilBits(0),
 	m_desktopFormat(D3DFMT_A8R8G8B8),
@@ -207,9 +205,7 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 		return false;
 	}
 
-	// Build a list of Direct3D adapters, modes and devices. The
-    // ConfirmDevice() callback is used to confirm that only devices that
-    // meet the app's requirements are considered.
+	// Build a list of Direct3D adapters, modes and devices.
     if( FAILED( hr = BuildDeviceList() ) )
     {
         if ( m_pD3D )
@@ -318,12 +314,11 @@ void CDXGraphicsContext::InitDeviceParameters()
 	{
 		// Fill in device info
 		D3DDeviceInfo* pDevice	= &pAdapter->devices[iDevice];
-		pDevice->DeviceType     = DeviceTypes[iDevice];
 		pDevice->strDesc        = strDXDeviceDescs[iDevice];
 
 		// for each devices in each adapter
 		// Get device caps
-		pD3D->GetDeviceCaps( iAdapter, DeviceTypes[iDevice], &pDevice->d3dCaps );
+		pD3D->GetDeviceCaps( iAdapter, D3DDEVTYPE_HAL, &pDevice->d3dCaps );
 
 		pDevice->dwNumModes     = 0;
 		pDevice->MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -494,7 +489,6 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	m_d3dpp.BackBufferHeight	= windowSetting.uDisplayHeight;
 
 	// pDeviceInfo->DeviceType,m_hWnd, pModeInfo->dwBehavior
-	//
     // Create the device
 	if(!SUCCEEDED(m_pD3D->CreateDevice(
 		m_dwAdapter, 
@@ -532,8 +526,6 @@ HRESULT CDXGraphicsContext::InitializeD3D()
         // Store device Caps
         m_pd3dDevice->GetDeviceCaps( &m_d3dCaps );
 
-        m_dwCreateFlags = pModeInfo->dwBehavior;
-		
         if( m_bWindowed )
         {
             SetWindowPos( m_hWnd, HWND_NOTOPMOST,
@@ -599,9 +591,6 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 		}
 	}
 	*/
-
-    // If that failed, fall back to the reference rasterizer (removed)
-	
     return E_FAIL;
 }
 
@@ -770,10 +759,6 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
             // Get the display mode attributes
             D3DDISPLAYMODE DisplayMode;
            m_pD3D->EnumAdapterModes( iAdapter, D3DFMT_X8R8G8B8, iMode, &DisplayMode );
-			
-            // Filter out low-resolution modes
-            if( DisplayMode.Width  < 320 || DisplayMode.Height < 200 )
-                continue;
 
 			uint32 m;
 			
@@ -825,8 +810,8 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
             // Fill in device info
             D3DDeviceInfo* pDevice;
             pDevice                 = &pAdapter->devices[pAdapter->dwNumDevices];
-            pDevice->DeviceType     = DeviceTypes[iDevice];
-            m_pD3D->GetDeviceCaps( iAdapter, DeviceTypes[iDevice], &pDevice->d3dCaps );
+        //    pDevice->DeviceType     = DeviceTypes[iDevice];
+        //    m_pD3D->GetDeviceCaps( iAdapter, DeviceTypes[iDevice], &pDevice->d3dCaps );
             pDevice->strDesc        = strDXDeviceDescs[iDevice];
             pDevice->dwNumModes     = 0;
             pDevice->bCanDoWindowed = false;
@@ -948,20 +933,6 @@ int	CDXGraphicsContext::FindCurrentDisplayModeIndex()
 
 	return 0;
 }
-
-
-//-----------------------------------------------------------------------------
-// Name: ConfirmDevice()
-// Desc: Called during device initialization, this code checks the device
-//       for some minimum set of capabilities
-//-----------------------------------------------------------------------------
-HRESULT CDXGraphicsContext::ConfirmDevice( MYD3DCAPS* pCaps, uint32 dwBehavior,
-										D3DFORMAT Format )
-{
-	
-    return S_OK;
-}
-
 
 //-----------------------------------------------------------------------------
 // Name: DisplayD3DErrorMsg()

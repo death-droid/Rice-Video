@@ -43,13 +43,12 @@ enum APPMSGTYPE { MSG_NONE, MSGERR_APPMUSTEXIT, MSGWARN_SWITCHEDTOREF };
 // Name: struct D3DModeInfo
 // Desc: Structure for holding information about a display mode
 //-----------------------------------------------------------------------------
-struct D3DModeInfo
+struct D3DModeInfo //BACKTOME
 {
     uint32      Width;      // Screen width in this mode
     uint32      Height;     // Screen height in this mode
     D3DFORMAT  Format;     // Pixel format in this mode
     uint32	   RefreshRate;     // Pixel format in this mode
-    uint32      dwBehavior; // Hardware / Software / Mixed vertex processing
     D3DFORMAT  DepthStencilFormat; // Which depth/stencil format to use with this mode
 };
 
@@ -132,9 +131,7 @@ protected:
 
 	HRESULT BuildDeviceList();
 	int		FindCurrentDisplayModeIndex();
-	static HRESULT ConfirmDevice( MYD3DCAPS* pCaps, uint32 dwBehavior, D3DFORMAT Format );
 
-	
 	HRESULT Create3D( BOOL bWindowed );
 	HRESULT InitializeD3D();
 
@@ -161,8 +158,6 @@ protected:
 	// Graphic context
 	MYLPDIRECT3D			m_pD3D;
 	MYLPDIRECT3DDEVICE	m_pd3dDevice;
-
-    uint32				m_dwCreateFlags;     // Indicate sw or hw vertex processing
 
 	D3DPRESENT_PARAMETERS m_d3dpp;
 

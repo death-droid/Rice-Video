@@ -156,6 +156,7 @@ void MirrorEmulator_Draw(DrawInfo& destInfo, DrawInfo& srcInfo, uint32 nDestX, u
 
 void MirrorTexture(uint32 dwTile, TxtrCacheEntry *pEntry)
 {
+	//Do we still need to do this?? //TODO
 	if( ((gRDP.tiles[dwTile].bMirrorS) || (gRDP.tiles[dwTile].bMirrorT)) && CGraphicsContext::Get()->m_supportTextureMirror == false )
 	{
 		if(pEntry->pEnhancedTexture)
