@@ -154,68 +154,6 @@ void MirrorEmulator_Draw(DrawInfo& destInfo, DrawInfo& srcInfo, uint32 nDestX, u
 	}
 }
 
-void MirrorTexture(uint32 dwTile, TxtrCacheEntry *pEntry)
-{
-	//Do we still need to do this?? //TODO
-	if( ((gRDP.tiles[dwTile].bMirrorS) || (gRDP.tiles[dwTile].bMirrorT)) && CGraphicsContext::Get()->m_supportTextureMirror == false )
-	{
-		if(pEntry->pEnhancedTexture)
-		{
-			return;
-		}
-		else
-		{
-			CTexture* pSurfaceHandler = NULL;
-
-			// FIXME: Compute the correct values. 2/2 seems to always work correctly in Mario64
-			uint32 nXTimes = gRDP.tiles[dwTile].bMirrorS ? 2 : 1;
-			uint32 nYTimes = gRDP.tiles[dwTile].bMirrorT ? 2 : 1;
-			
-			// For any texture need to use mirror, we should not need to rescale it
-			// because texture need to be mirrored must with MaskS and MaskT
-
-			// But again, check me
-
-			//if( pEntry->pTexture->m_bScaledS == false || pEntry->pTexture->m_bScaledT == false)
-			//{
-			//	pEntry->pTexture->ScaleImageToSurface();
-			//}
-
-			DrawInfo srcInfo;	
-			if( pEntry->pTexture->StartUpdate(&srcInfo) )
-			{
-				uint32 nWidth = srcInfo.dwWidth;
-				uint32 nHeight = srcInfo.dwHeight;
-
-				pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(nWidth * nXTimes, nHeight * nYTimes);
-
-				if( pSurfaceHandler )
-				{
-					DrawInfo destInfo;
-					if( pSurfaceHandler->StartUpdate(&destInfo) )
-					{
-						for(uint32 nY = 0; nY < nYTimes; nY++)
-						{
-							for(uint32 nX = 0; nX < nXTimes; nX++)
-							{
-								MirrorEmulator_Draw(destInfo, srcInfo, nWidth * nX, nHeight * nY, nX & 0x1, nY & 0x1);
-							}
-						}
-
-						pSurfaceHandler->EndUpdate(&destInfo);
-					}
-					
-					pSurfaceHandler->SetOthersVariables();
-				}
-
-				pEntry->pTexture->EndUpdate(&srcInfo);	
-				pEntry->dwEnhancementFlag = TEXTURE_MIRRORED;
-			}
-
-			pEntry->pEnhancedTexture = pSurfaceHandler;
-		}
-	}
-}
 
 /****
  All code bellow, CLEAN ME

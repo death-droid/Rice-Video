@@ -33,7 +33,7 @@ static uint32 dwSavedMagFilter = 0;
 void D3DRender::DrawSpriteR_Render()	// With Rotation
 {
 	uint16 wIndices[2*3] = {1,0,2, 2,0,3};
-	gD3DDevWrapper.SetFVF(RICE_FVF_TLITVERTEX);
+	g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
 	g_pD3DDev->DrawIndexedPrimitiveUP( D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, g_texRectTVtx, sizeof(TLITVERTEX));
 }
 

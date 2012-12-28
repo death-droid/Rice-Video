@@ -242,12 +242,7 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 	Unlock();
 
 	g_pD3DDev->GetDeviceCaps(&g_D3DDeviceCaps);
-	CGraphicsContext::Get()->m_supportTextureMirror = false;
-	if( g_D3DDeviceCaps.TextureAddressCaps & D3DPTADDRESSCAPS_MIRROR )
-	{
-		CGraphicsContext::Get()->m_supportTextureMirror = true;
-	}
-	
+
 	// Force to use Software T&L
 	if( options.bForceSoftwareTnL )
 		g_pD3DDev->SetSoftwareVertexProcessing(TRUE);

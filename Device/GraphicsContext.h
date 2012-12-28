@@ -65,8 +65,6 @@ public:
 	static void InitWindowInfo();
 	static void InitDeviceParameters();
 
-	bool m_supportTextureMirror;
-
 public:
 	static	HWND		m_hWnd;
 	static	HWND		m_hWndStatus;

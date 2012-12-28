@@ -171,7 +171,7 @@ bool D3DRender::RenderTexRect()
 {
 	gD3DDevWrapper.SetRenderState(D3DRS_ZBIAS,0);
 	uint16 wIndices[2*3] = {1,0,2, 2,0,3};
-	gD3DDevWrapper.SetFVF(RICE_FVF_TLITVERTEX);
+	g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
 	//ClipVertexesForRect();
 	return S_OK == g_pD3DDev->DrawIndexedPrimitiveUP( D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, g_texRectTVtx, sizeof(TLITVERTEX));
 }
@@ -185,7 +185,7 @@ bool D3DRender::RenderFillRect(uint32 dwColor, float depth)
 	static uint16 wIndices[2*3] = {1,0,2, 2,0,3};
 
 	gD3DDevWrapper.SetRenderState(D3DRS_ZBIAS,0);
-	gD3DDevWrapper.SetFVF(RICE_FVF_FILLRECTVERTEX);
+	g_pD3DDev->SetFVF(RICE_FVF_FILLRECTVERTEX);
 	return S_OK == g_pD3DDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, frv, sizeof(FILLRECTVERTEX));
 }
 
@@ -218,7 +218,7 @@ bool D3DRender::RenderFlushTris()
 	{
 #define RICE_HW_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX0 ) 
 
-		HRESULT res = gD3DDevWrapper.SetFVF( RICE_HW_VERTEX );
+		HRESULT res = g_pD3DDev->SetFVF( RICE_HW_VERTEX );
 		//D3DXMATRIX mat;
 		//D3DXMatrixIdentity(&mat);
 		//g_pD3DDev->SetTransform( D3DTS_WORLD, &mat );
@@ -254,7 +254,7 @@ bool D3DRender::RenderFlushTris()
 	}
 	else
 	{
-		gD3DDevWrapper.SetFVF(RICE_FVF_TLITVERTEX);
+		g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
 		ClipVertexes();
 		if( g_clippedVtxCount > 0 )
 			g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_clippedVtxCount/3, g_clippedVtxBuffer, sizeof(TLITVERTEX));
@@ -273,7 +273,7 @@ bool D3DRender::RenderLine3D()
 	static uint16 wIndices[2*3] = {1,0,2, 2,1,3};
 
 	gD3DDevWrapper.SetRenderState(D3DRS_ZBIAS,0);
-	gD3DDevWrapper.SetFVF(RICE_FVF_FILLRECTVERTEX);
+	g_pD3DDev->SetFVF(RICE_FVF_FILLRECTVERTEX);
 	HRESULT hr = g_pD3DDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, frv, sizeof(FILLRECTVERTEX));
 
 	return hr == S_OK;
@@ -294,7 +294,7 @@ void D3DRender::DrawSimple2DTexture(float x0, float y0, float x1, float y1, floa
 	StartDrawSimple2DTexture(x0, y0, x1, y1, u0, v0, u1, v1, dif, spe, z, rhw);
 	
 	uint16 wIndices[2*3] = {1,0,2, 2,0,3};
-	gD3DDevWrapper.SetFVF(RICE_FVF_TLITVERTEX);
+	g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
 	g_pD3DDev->DrawIndexedPrimitiveUP( D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, g_texRectTVtx, sizeof(TLITVERTEX));
 }
 
@@ -310,7 +310,7 @@ void D3DRender::DrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dw
 
 	static uint16 wIndices[2*3] = {1,0,2, 2,0,3};
 
-	gD3DDevWrapper.SetFVF(RICE_FVF_FILLRECTVERTEX);
+	g_pD3DDev->SetFVF(RICE_FVF_FILLRECTVERTEX);
 	g_pD3DDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, frv, sizeof(FILLRECTVERTEX));
 }
 

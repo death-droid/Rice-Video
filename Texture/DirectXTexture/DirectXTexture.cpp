@@ -100,40 +100,17 @@ LPRICETEXTURE CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, Te
 	MYLPDIRECT3DTEXTURE lpSurf = NULL;
 	unsigned int dwNumMaps = 1;
 
-	D3DFORMAT pf = ((CDXGraphicsContext*)(CGraphicsContext::g_pGraphicsContext))->GetFormat();
-	switch( pf )
+	D3DFORMAT pf = D3DFMT_A8R8G8B8;
+	switch(usage)
 	{
-	case D3DFMT_R5G6B5:
-	case D3DFMT_X1R5G5B5:
-	case D3DFMT_A1R5G5B5:
-	case D3DFMT_A4R4G4B4:
-	case D3DFMT_X4R4G4B4:
-		switch(usage)
-		{
-		case AS_BACK_BUFFER_SAVE:
-			pf = D3DFMT_X4R4G4B4;
-			break;
-		case AS_RENDER_TARGET:
-			pf = D3DFMT_A4R4G4B4;
-			break;
-		default:
-			pf = D3DFMT_A4R4G4B4;
-			break;
-		}
+	case AS_BACK_BUFFER_SAVE:
+		pf = D3DFMT_X8R8G8B8;
+		break;
+	case AS_RENDER_TARGET:
+		pf = D3DFMT_A8R8G8B8;
 		break;
 	default:
-		switch(usage)
-		{
-		case AS_BACK_BUFFER_SAVE:
-			pf = D3DFMT_X8R8G8B8;
-			break;
-		case AS_RENDER_TARGET:
-			pf = D3DFMT_A8R8G8B8;
-			break;
-		default:
-			pf = D3DFMT_A8R8G8B8;
-			break;
-		}
+		pf = D3DFMT_A8R8G8B8;
 		break;
 	}
 
