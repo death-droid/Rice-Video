@@ -866,7 +866,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 	);
 }
 
-void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)
+void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 {
 	TxtrInfo gti;
 	gti.Format	= sprite.sprite.imageFmt;

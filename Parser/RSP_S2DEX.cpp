@@ -318,7 +318,7 @@ void RSP_S2DEX_SPObjLoadTxtr(MicroCodeCommand command)
 
 		for( int i=offset; i<offset+size; i++ )
 		{
-			g_wRDPTlut[i^1] = RDRAM_UHALF(addr);
+			g_wRDPTlut[i^1] = RDRAM_UHALF(addr);//backtome
 			addr += 2;
 			//g_wRDPTlut[i] = (*(uint16 *)(addr+g_pRDRAMu8));
 			//g_wRDPTlut[i] = *(srcPal++);
@@ -343,7 +343,6 @@ void RSP_S2DEX_SPObjLoadTxSprite(MicroCodeCommand command)
 {
 	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	gObjTxtr = (uObjTxtr*)ptr;
-	
 	//Now draw the sprite
 	CRender::g_pRender->LoadObjSprite(*ptr);
 	CRender::g_pRender->DrawSpriteR(*ptr);
@@ -541,7 +540,6 @@ void RSP_S2DEX_OBJ_RECTANGLE_R(MicroCodeCommand command)
 	if( g_TxtLoadBy == CMD_LOAD_OBJ_TXTR )
 	{
 		memcpy(&(objtx.txtr.block),&(gObjTxtr->block),sizeof(uObjTxtr));
-		//CRender::g_pRender->LoadObjSprite(*ptr,true);
 		CRender::g_pRender->LoadObjSprite(objtx,true);
 	}
 	else

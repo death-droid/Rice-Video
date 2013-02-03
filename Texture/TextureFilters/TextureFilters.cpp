@@ -41,9 +41,7 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	}
 
 	if( status.primitiveType != PRIM_TEXTRECT && options.bTexRectOnly )
-	{
 		return;
-	}
 
 	DrawInfo srcInfo;	
 	//Start the draw update
@@ -55,14 +53,10 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 		return;
 	}
 
-	uint32 realwidth = srcInfo.dwWidth;
-	uint32 realheight = srcInfo.dwHeight;
-	uint32 nWidth = srcInfo.dwCreatedWidth;
-	uint32 nHeight = srcInfo.dwCreatedHeight;
 	pEntry->dwEnhancementFlag = options.textureEnhancement;
 
 	// Don't enhance for large textures
-	if( nWidth + nHeight > 1024/2 )
+	if( srcInfo.dwCreatedWidth + srcInfo.dwCreatedHeight > 1024/2 )
 	{
 		//End the draw update
 		pEntry->pTexture->EndUpdate(&srcInfo);
@@ -75,32 +69,29 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 
 	CTexture* pSurfaceHandler = NULL;
 	//Create the surface for the texture
-	pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(nWidth*2, nHeight*2);
+	pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(srcInfo.dwCreatedWidth*2, srcInfo.dwCreatedHeight*2);
 
 	DrawInfo destInfo;
 	if(pSurfaceHandler)
 	{
 		if( pSurfaceHandler->StartUpdate(&destInfo))
 		{
-
 			switch(options.textureEnhancement)
 			{
 				case TEXTURE_2XSAI_ENHANCEMENT:
-					Super2xSaI((uint32*)(srcInfo.lpSurface),(uint32*)(destInfo.lpSurface), nWidth, realheight, nWidth);
+					Super2xSaI((uint32*)(srcInfo.lpSurface),(uint32*)(destInfo.lpSurface), srcInfo.dwCreatedWidth, srcInfo.dwCreatedHeight, srcInfo.dwCreatedWidth);
 					break;
 				case TEXTURE_HQ2X_ENHANCEMENT:
-					hq2x((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight);
+					hq2x((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, srcInfo.dwCreatedWidth, srcInfo.dwCreatedHeight);
 					break;
 				case TEXTURE_HQ2XS_ENHANCEMENT:
-					hq2xS((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, nWidth, realheight);
+					hq2xS((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, srcInfo.dwCreatedWidth, srcInfo.dwCreatedHeight);
 					break;
 				default:
 					break;
 			}
-
 			pSurfaceHandler->EndUpdate(&destInfo);	
 		}
-
 		pSurfaceHandler->SetOthersVariables();
 		pSurfaceHandler->m_bIsEnhancedTexture = true;
 	}
@@ -114,46 +105,6 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-void MirrorEmulator_DrawLine(DrawInfo& destInfo, DrawInfo& srcInfo, LPDWORD pSource, LPDWORD pDest, uint32 nWidth, BOOL bFlipLeftRight)
-{
-	if(!bFlipLeftRight)
-	{
-		memcpy(pDest, pSource, nWidth * 4);
-	}
-	else
-	{
-		LPDWORD pMaxDest = pDest + nWidth;
-		pSource += nWidth - 1;
-		for(; pDest < pMaxDest; pDest++, pSource--)
-		{
-			*pDest = *pSource;
-		}
-	}
-}
-
-
-void MirrorEmulator_Draw(DrawInfo& destInfo, DrawInfo& srcInfo, uint32 nDestX, uint32 nDestY, BOOL bFlipLeftRight, BOOL bFlipUpDown)
-{
-	LPBYTE pDest = (LPBYTE)((uint32)destInfo.lpSurface + (destInfo.lPitch * nDestY) + (4 * nDestX));
-	LPBYTE pMaxDest = pDest + (destInfo.lPitch * srcInfo.dwHeight);
-	LPBYTE pSource = (LPBYTE)(srcInfo.lpSurface);
-	if(!bFlipUpDown)
-	{
-		for(; pDest < pMaxDest; pDest += destInfo.lPitch, pSource += srcInfo.lPitch)
-		{
-			MirrorEmulator_DrawLine(destInfo, srcInfo, (LPDWORD)pSource, (LPDWORD)pDest, srcInfo.dwWidth, bFlipLeftRight);
-		}
-	}
-	else
-	{
-		pSource += (srcInfo.lPitch * (srcInfo.dwHeight - 1));
-		for(; pDest < pMaxDest; pDest += destInfo.lPitch, pSource -= srcInfo.lPitch)
-		{
-			MirrorEmulator_DrawLine(destInfo, srcInfo, (LPDWORD)pSource, (LPDWORD)pDest, srcInfo.dwWidth, bFlipLeftRight);
-		}
-	}
-}
-
 
 /****
  All code bellow, CLEAN ME
@@ -630,8 +581,6 @@ void FindAllDumpedTextures(void)
 	char	foldername[256];
 	GetPluginDir(foldername);
 
-	if(foldername[strlen(foldername) - 1] != '\\') 
-		strcat(foldername, "\\");
 	strcat(foldername,"texture_dump\\");
 
 	CheckAndCreateFolder(foldername);
@@ -680,9 +629,7 @@ void FindAllHiResTextures(char* WIPFolderName = NULL)
 	char	foldername[256];
 	// get the path of the plugin directory
 	GetPluginDir(foldername);
-	// assure that a backslash exists at the end (should be handled by GetPluginDir())
-	if(foldername[strlen(foldername) - 1] != '\\') 
-		strcat(foldername, "\\");
+
 	// add the relative path to the hires folder
 	strcat(foldername,"hires_texture\\");
 	// it does not exist? => create it
@@ -915,7 +862,6 @@ int FindScaleFactor(ExtTxtrInfo &info, TxtrCacheEntry &entry)
 		if(info.height == entry.ti.HeightToLoad*(1<<info.scaleShift)  && info.width == entry.ti.WidthToLoad*(1<<info.scaleShift))
 			// found appropriate scale shift, return it
 			return info.scaleShift;
-
 		info.scaleShift++;
 	}
 
@@ -1039,9 +985,6 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 				sprintf(filename1, "%sci_bmp\\%s#%08X#%d#%d_ci", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
 				SaveCITextureToFile(entry, filename1, false, false);
 			}
-
-			sprintf(filename1, "%sci_bmp_with_pal_crc\\%s#%08X#%d#%d#%08X_ci", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
-			SaveCITextureToFile(entry, filename1, false, false);
 
 			sprintf(filename1, "%sci_by_png\\%s#%08X#%d#%d#%08X_ciByRGBA", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
 			CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename1, TXT_RGBA, false, false, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
@@ -1198,136 +1141,6 @@ bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, 
 	}
 }
 
-bool LoadRGBABufferFromColorIndexedFile(char *filename, TxtrCacheEntry &entry, unsigned char **pbuf, int &width, int &height)
-{
-	BITMAPFILEHEADER fileHeader;
-	BITMAPINFOHEADER infoHeader;
-
-	FILE *f;
-	f = fopen(filename, "rb");
-	if(f != NULL)
-	{
-        if (fread(&fileHeader, sizeof(BITMAPFILEHEADER), 1, f) != 1 ||
-            fread(&infoHeader, sizeof(BITMAPINFOHEADER), 1, f) != 1)
-        {
-            TRACE1("Couldn't read BMP headers in file '%s'", filename);
-            return false;
-        }
-
-		if( infoHeader.biBitCount != 4 && infoHeader.biBitCount != 8 )
-		{
-			fclose(f);
-			TRACE1("Unsupported BMP file format: %s", filename);
-			*pbuf = NULL;
-			return false;
-		}
-
-		int tablesize = infoHeader.biBitCount == 4 ? 16 : 256;
-		uint32 *pTable = new uint32[tablesize];
-        if (fread(pTable, tablesize*4, 1, f) != 1)
-        {
-            TRACE1("Couldn't read BMP palette in file '%s'", filename);
-            delete [] pTable;
-            return false;
-        }
-
-		// Create the pallette table
-		uint16 * pPal = (uint16 *)entry.ti.PalAddress;
-		if( entry.ti.Size == TXT_SIZE_4b )
-		{
-			// 4-bit table
-			for( int i=0; i<16; i++ )
-			{
-				pTable[i] = entry.ti.TLutFmt == TLUT_FMT_RGBA16 ? Convert555ToRGBA(pPal[i^1]) : ConvertIA16ToRGBA(pPal[i^1]);
-			}
-		}
-		else
-		{
-			// 8-bit table
-			for( int i=0; i<256; i++ )
-			{
-				pTable[i] = entry.ti.TLutFmt == TLUT_FMT_RGBA16 ? Convert555ToRGBA(pPal[i^1]) : ConvertIA16ToRGBA(pPal[i^1]);
-			}
-		}
-
-		*pbuf = new BYTE[infoHeader.biWidth*infoHeader.biHeight*4];
-		if( *pbuf )
-		{
-			BYTE *colorIdxBuf = new BYTE[infoHeader.biSizeImage];
-			if( colorIdxBuf )
-			{
-                if (fread(colorIdxBuf, infoHeader.biSizeImage, 1, f) != 1)
-                {
-                    TRACE1("Couldn't read BMP image data in file '%s'", filename);
-                }				
-
-				width = infoHeader.biWidth;
-				height = infoHeader.biHeight;
-
-				// Converting pallette texture to RGBA texture
-				int idx = 0;
-				uint32 *pbuf2 = (uint32*) *pbuf;
-
-				for( int i=height-1; i>=0; i--)
-				{
-					for( int j=0; j<width; j++)
-					{
-						if( entry.ti.Size == TXT_SIZE_4b )
-						{
-							// 4 bits
-							if( idx%2 )
-							{
-								// 1
-								*pbuf2++ = pTable[colorIdxBuf[(idx++)>>1]&0xF];
-							}
-							else
-							{
-								// 0
-								*pbuf2++ = pTable[(colorIdxBuf[(idx++)>>1]>>4)&0xF];
-							}
-						}
-						else
-						{
-							// 8 bits
-							*pbuf2++ = pTable[colorIdxBuf[idx++]];
-						}
-					}
-
-					if( entry.ti.Size == TXT_SIZE_4b )
-					{
-						if( idx%8 )	idx = (idx/8+1)*8;
-					}
-					else
-					{
-						if( idx%4 )	idx = (idx/4+1)*4;
-					}
-				}
-
-				delete [] colorIdxBuf;
-			}
-			else
-			{
-				TRACE0("Out of memory");
-			}
-
-			delete [] pTable;
-			return true;
-		}
-		else
-		{
-			fclose(f);
-			delete [] pTable;
-			return false;
-		}
-	}
-	else
-	{
-		// Do something
-		TRACE1("Fail to open file %s", filename);
-		*pbuf = NULL;
-		return false;
-	}
-}
 /*******************************************************
  * Loads the hires equivaltent of a texture
  * parameter:
@@ -1352,7 +1165,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 	// search the index of the appropriate hires replacement texture
 	// in the list containing the infos of the external textures
 	// ciidx is not needed here (just needed for dumping)
-	int idx = CheckTextureInfos(gHiresTxtrInfos,entry,ciidx,false); 
+	int idx = CheckTextureInfos(gHiresTxtrInfos, entry, ciidx, false);//backtomenow
 	if( idx < 0 )
 	{
 		// there is no hires replacement => indicate that
@@ -1764,7 +1577,7 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	ExtTexInfo.height = height;
 
 	// If texture could not be loaded
-	if( !bResRGBA )
+	if( !bResRGBA || !ExtTexInfo.pHiresTextureRGB )
 	{
 		TRACE1("Cannot open %s", filename_rgb);
 		// free the memory that has been alocated for the texture

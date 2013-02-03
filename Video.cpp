@@ -77,6 +77,8 @@ void GetPluginDir( char * Directory )
 	_splitpath( path_buffer, drive, dir, fname, ext );
 	strcpy(Directory,drive);
 	strcat(Directory,dir);
+	if(Directory[strlen(Directory) - 1] != '\\') 
+		strcat(Directory, "\\");
 }
 
 //-------------------------------------------------------------------------------------
