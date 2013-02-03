@@ -492,7 +492,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				// The key format is: <DRAM(texture)-CRC-8byte><PAL(palette)-CRC-6byte(2bytes have been truncated to have space for format and size)><format-1byte><size-1byte>
 				uint64 crc64 = newinfo->crc32;
 				crc64 <<= 32;
-				crc64 |= (newinfo->pal_crc32&0xFFFFFF00)|(newinfo->fmt<<4)|newinfo->siz;
+				crc64 |= newinfo->pal_crc32&0xFFFFFFFF;
 
 				// if caching has been enabled, also cache the actual texture
 				if(bCacheTextures)
@@ -897,9 +897,9 @@ int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &e
 	crc64a <<= 32;
 	uint64 crc64b = crc64a;
 	// crc64a = <DRAM-CRC-8bytes><FFFFFF><format-1byte><size-1byte>
-	crc64a |= (0xFFFFFF00|(entry.ti.Format<<4)|entry.ti.Size);
+	crc64a |= (0xFFFFFFFF);
 	// crc64b = <DRAM-CRC-8bytes><palette-crc-6bytes (lowest 2 bytes are removed)><format-1byte><size-1byte>
-	crc64b |= ((entry.dwPalCRC&0xFFFFFF00)|(entry.ti.Format<<4)|entry.ti.Size);
+	crc64b |= (entry.dwPalCRC&0xFFFFFFFF);
 
 	// infos is the list containing the references to the detected external textures
 	// get the number of items contained in this list
@@ -1033,7 +1033,7 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 
 		uint64 crc64 = newinfo.crc32;
 		crc64 <<= 32;
-		crc64 |= (newinfo.pal_crc32&0xFFFFFF00)|(newinfo.fmt<<4)|newinfo.siz;
+		crc64 |= newinfo.pal_crc32&0xFFFFFFFF;
 		gTxtrDumpInfos.add(crc64,newinfo);
 
 	}
