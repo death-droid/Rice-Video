@@ -1191,6 +1191,12 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 
 	int scale = 1 <<gHiresTxtrInfos[idx].scaleShift;
 
+	int input_height_shift = gHiresTxtrInfos[idx].height - entry.ti.HeightToLoad * scale;
+	int input_pitch_a = gHiresTxtrInfos[idx].width;
+	int input_pitch_rgb = gHiresTxtrInfos[idx].width;
+	gHiresTxtrInfos[idx].width = entry.ti.WidthToLoad * scale;
+	gHiresTxtrInfos[idx].height = entry.ti.HeightToLoad * scale;
+
 	entry.pEnhancedTexture = CDeviceBuilder::GetBuilder()->CreateTexture(entry.ti.WidthToCreate*scale, entry.ti.HeightToCreate*scale);
 	DrawInfo info;
 
@@ -1198,13 +1204,16 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 	{
 		if( gHiresTxtrInfos[idx].type == RGB_PNG )
 		{
-			unsigned char *pRGB = gHiresTxtrInfos[idx].pHiresTextureRGB;
-			unsigned char *pA = gHiresTxtrInfos[idx].pHiresTextureAlpha;
+			input_pitch_rgb *= 3;
+			input_pitch_a *= 3;
 
 			// Update the texture by using the buffer
-			for( int i=gHiresTxtrInfos[idx].height-1; i>=0; i--)
+			for( int i=0; i<gHiresTxtrInfos[idx].height; i++)
 			{
-				BYTE *pdst = (BYTE*)info.lpSurface + i*info.lPitch;
+				unsigned char *pRGB = gHiresTxtrInfos[idx].pHiresTextureRGB + (input_height_shift + i) * input_pitch_rgb;
+				unsigned char *pA = gHiresTxtrInfos[idx].pHiresTextureAlpha + (input_height_shift + i) * input_pitch_a;
+				unsigned char* pdst = (unsigned char*)info.lpSurface + (gHiresTxtrInfos[idx].height - i - 1)*info.lPitch;
+
 				for( unsigned int j=0; j<gHiresTxtrInfos[idx].width; j++)
 				{
 					*pdst++ = *pRGB++;		// R
@@ -1230,10 +1239,11 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 		else
 		{
 			// Update the texture by using the buffer
-			uint32 *pRGB = (uint32*)gHiresTxtrInfos[idx].pHiresTextureRGB;
+			input_pitch_rgb *= 4;
 			for( int i=gHiresTxtrInfos[idx].height-1; i>=0; i--)
 			{
-				uint32 *pdst = (uint32*)((BYTE*)info.lpSurface + i*info.lPitch);
+				uint32 *pRGB = (uint32*)(gHiresTxtrInfos[idx].pHiresTextureRGB + (input_height_shift + i) * input_pitch_rgb);
+				 uint32 *pdst = (uint32*)((unsigned char*)info.lpSurface + (gHiresTxtrInfos[idx].height - i - 1)*info.lPitch);
 				for( unsigned int j=0; j<gHiresTxtrInfos[idx].width; j++)
 				{
 					*pdst++ = *pRGB++;		// RGBA
