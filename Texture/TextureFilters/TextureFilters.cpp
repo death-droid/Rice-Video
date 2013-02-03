@@ -127,8 +127,8 @@ typedef struct {
 	int crc32;
 	int pal_crc32;
 	char *foldername;
-	char RGBNameTail[23];
-	char AlphaNameTail[23];
+	char *filename;
+	char *filename_a;
 	TextureType type;
 	bool bSeparatedAlpha;
 	int scaleShift;
@@ -175,13 +175,14 @@ extern char * right(char * src, int nchars);
 void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo> &infos, bool extraCheck, bool bRecursive, bool bCacheTextures = false, bool bMainFolder = true)
 {
 	// check if folder actually exists
-	if( PathIsDirectory(foldername) == FALSE )
+	if(!PathIsDirectory(foldername) )
 		return;
 
 	// the path of the texture
 	char			texturefilename[_MAX_PATH];
 	// the folder path which is scanned for textures
 	char			searchpath[_MAX_PATH];
+	const char *foundfilename;
 	// counter to count the identified hires textures
 	static int      count;
 	// handle to the first file found with a particular name (pattern search)
@@ -460,6 +461,10 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				newinfo->foldername = new char[strlen(foldername)+1];
 				// store the name of the folder it has been found in
 				strcpy(newinfo->foldername,foldername);
+				//store the name of the texture
+				newinfo->filename = _strdup(libaa.cFileName);
+				//assume by default theres no alpha texture
+				newinfo->filename_a = NULL;
 				// store the format
 				newinfo->fmt	= fmt;
 				// store the size (bit-size not texture size)
@@ -472,33 +477,16 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				newinfo->type = type;
 				// indicate if there is a separate alpha file that has to be loaded
 				newinfo->bSeparatedAlpha	= bSeparatedAlpha;
-				// determine the begin of the string indicating the texture and corresponding the apha type (if any)
-				// That assures that if there would be a non-supported type, RGBNameTail & AlphaNameTail would at 
-				// least be NULL
-				newinfo->RGBNameTail[0] = newinfo->AlphaNameTail[0] =	0;
 
 				// store the extention of the texture and also the extention of the alpha channel (if existing)
-				// (I won't comment the following lines as they should be really obvious. If not, contact microdev @ emutalk)
-				switch ( type )
+				if(bSeparatedAlpha)
 				{
-				case RGB_PNG:
-					strcpy(newinfo->RGBNameTail,	"_rgb.png");
-					strcpy(newinfo->AlphaNameTail, "_a.png");
-					break;
-				case COLOR_INDEXED_BMP:
-					strcpy(newinfo->RGBNameTail,	"_ci.bmp");
-					break;
-				case RGBA_PNG_FOR_CI:
-					//This format has the PAL CRC.
-					strcpy(newinfo->RGBNameTail,	right(ptr,22));
-					break;
-				case RGBA_PNG_FOR_ALL_CI:
-					strcpy(newinfo->RGBNameTail,	"_allciByRGBA.png");
-					break;
-				default:
-					strcpy(newinfo->RGBNameTail,	"_all.png");
-					break;
+					char filename2[_MAX_PATH];
+					strcpy(filename2, libaa.cFileName);
+					strcpy(filename2+strlen(filename2)-8,"_a.png");
+					newinfo->filename_a = _strdup(filename2);
 				}
+
 				// generate the key for the record describing the hires texture.
 				// This key is used to find it back in the list
 				// The key format is: <DRAM(texture)-CRC-8byte><PAL(palette)-CRC-6byte(2bytes have been truncated to have space for format and size)><format-1byte><size-1byte>
@@ -668,10 +656,16 @@ void CloseHiresTextures(void)
 	{
 		if( gHiresTxtrInfos[i].foldername )
 			delete [] gHiresTxtrInfos[i].foldername;
+		if( gHiresTxtrInfos[i].filename )
+			delete []gHiresTxtrInfos[i].filename;
+		if( gHiresTxtrInfos[i].filename_a )
+			delete []gHiresTxtrInfos[i].filename_a;
 
 		// don't forget to also free memory of cached textures
-		delete [] gHiresTxtrInfos[i].pHiresTextureRGB;
-		delete [] gHiresTxtrInfos[i].pHiresTextureAlpha;
+		if(gHiresTxtrInfos[i].pHiresTextureRGB)
+			delete [] gHiresTxtrInfos[i].pHiresTextureRGB;
+		if(gHiresTxtrInfos[i].pHiresTextureAlpha)
+			delete [] gHiresTxtrInfos[i].pHiresTextureAlpha;
 	}
 
 	gHiresTxtrInfos.clear();
@@ -683,6 +677,10 @@ void CloseTextureDump(void)
 	{
 		if( gTxtrDumpInfos[i].foldername )	
 			delete [] gTxtrDumpInfos[i].foldername;
+		if( gTxtrDumpInfos[i].filename )
+			delete []gTxtrDumpInfos[i].filename;
+		if( gTxtrDumpInfos[i].filename_a )
+			delete []gTxtrDumpInfos[i].filename_a;
 	}
 
 	gTxtrDumpInfos.clear();
@@ -1030,7 +1028,8 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 		newinfo.crc32 = entry.dwCRC;
 		newinfo.pal_crc32 = entry.dwPalCRC;
 		newinfo.foldername = NULL;
-		newinfo.RGBNameTail[0] = newinfo.AlphaNameTail[0] = 0;
+		newinfo.filename = NULL;
+		newinfo.filename_a = NULL;
 
 		uint64 crc64 = newinfo.crc32;
 		crc64 <<= 32;
@@ -1429,16 +1428,17 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 
 	// get the folder of the texture
 	strcpy(filename_rgb, ExtTexInfo.foldername);
+	strcat(filename_rgb, ExtTexInfo.filename);
 
-	// and assemble the file name (without tail)
-	sprintf(filename_rgb+strlen(filename_rgb), "%s#%08X#%d#%d", g_curRomInfo.szGameName, ExtTexInfo.crc32, ExtTexInfo.fmt, ExtTexInfo.siz);
-	// copy the path including the texture name (without tail) to the path of the alpha texture
-	strcpy(filename_alpha,filename_rgb);
-	// add the tail to the RGB texture
-	strcat(filename_rgb,ExtTexInfo.RGBNameTail);
-	// add the tail to the alpha texture
-	strcat(filename_alpha,ExtTexInfo.AlphaNameTail);
-
+	if (ExtTexInfo.filename_a) 
+	{
+		strcpy(filename_alpha, ExtTexInfo.foldername);
+		strcat(filename_alpha, ExtTexInfo.filename_a);
+	}
+	else
+	{
+		strcpy(filename_alpha, "");
+	}
 	// init the pointer to the RGB texture data
 	ExtTexInfo.pHiresTextureRGB = NULL;
 	// init the pointer to the alpha channel data
@@ -1490,8 +1490,8 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 			strcpy(filenames_rgbAlt[i], ExtTexInfo.foldername);
 			sprintf(filenames_rgbAlt[i]+strlen(filenames_rgbAlt[i]), "%s#%08X#%d#%d_alt%d", g_curRomInfo.szGameName, ExtTexInfo.crc32, ExtTexInfo.fmt, ExtTexInfo.siz, i);
 			strcpy(filenames_alphaAlt[i],filenames_rgbAlt[i]);
-			strcat(filenames_rgbAlt[i],ExtTexInfo.RGBNameTail);
-			strcat(filenames_alphaAlt[i],ExtTexInfo.AlphaNameTail);
+			strcat(filenames_rgbAlt[i],ExtTexInfo.filename);
+			strcat(filenames_alphaAlt[i],ExtTexInfo.filename_a);
 		}
 	}
 	// /CODE MODIFICATION
@@ -1576,7 +1576,7 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	ExtTexInfo.width = width;
 	ExtTexInfo.height = height;
 
-	// If texture could not be loaded
+	// If texture could not be loaded, or loaded texture is invalid (nulled)
 	if( !bResRGBA || !ExtTexInfo.pHiresTextureRGB )
 	{
 		TRACE1("Cannot open %s", filename_rgb);
