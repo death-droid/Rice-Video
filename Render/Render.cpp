@@ -1861,8 +1861,8 @@ void CRender::UpdateScissorWithClipRatio()
 	w.clipping.top	= (uint32)(gRSP.real_clip_scissor_top*windowSetting.fMultY);
 	w.clipping.bottom = (uint32)(gRSP.real_clip_scissor_bottom*windowSetting.fMultY);
 	w.clipping.right = (uint32)(gRSP.real_clip_scissor_right*windowSetting.fMultX);
-	if( w.clipping.left > 0 || w.clipping.top > 0 || w.clipping.right < (uint32)windowSetting.uWindowDisplayWidth-1 ||
-		w.clipping.bottom < (uint32)windowSetting.uWindowDisplayHeight-1 )
+	if( w.clipping.left > 0 || w.clipping.top > 0 || w.clipping.right < (uint32)windowSetting.uDisplayWidth-1 ||
+		w.clipping.bottom < (uint32)windowSetting.uDisplayHeight-1 )
 	{
 		w.clipping.needToClip = true;
 	}
@@ -1994,68 +1994,21 @@ bool SaveRGBBufferToFile(char *filename, unsigned char *buf, int width, int heig
 	if( pitch == -1 )
 		pitch = width*3;
 
-	if( _stricmp(right(filename,3),"bmp") == 0 )
-	{
-		//if( _stricmp(right(filename,4),".bmp") != 0 )	strcat(filename,".bmp");
+	if( _stricmp(right(filename,4),".png") != 0 )	strcat(filename,".png");
 
-		BITMAPFILEHEADER fileHeader;
-		BITMAPINFOHEADER infoHeader;
-		HANDLE hBitmapFile;
+	struct BMGImageStruct img;
+	InitBMGImage(&img);
+	img.bits = buf;
+	img.bits_per_pixel = 24;
+	img.height = height;
+	img.width = width;
+	img.scan_width = pitch;
+	BMG_Error code = WritePNG(filename, img);
 
-		infoHeader.biSize = sizeof( BITMAPINFOHEADER );
-		infoHeader.biWidth = width;
-		infoHeader.biHeight = height;
-		infoHeader.biPlanes = 1;
-		infoHeader.biBitCount = 24;
-		infoHeader.biCompression = BI_RGB;
-		infoHeader.biSizeImage = width * height * 3;
-		infoHeader.biXPelsPerMeter = 0;
-		infoHeader.biYPelsPerMeter = 0;
-		infoHeader.biClrUsed = 0;
-		infoHeader.biClrImportant = 0;
-
-		fileHeader.bfType = 19778;
-		fileHeader.bfSize = sizeof( BITMAPFILEHEADER ) + sizeof( BITMAPINFOHEADER ) + infoHeader.biSizeImage;
-		fileHeader.bfReserved1 = fileHeader.bfReserved2 = 0;
-		fileHeader.bfOffBits = sizeof( BITMAPFILEHEADER ) + sizeof( BITMAPINFOHEADER );
-
-
-		uint32 res;
-		hBitmapFile = CreateFile( filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-		if( hBitmapFile != INVALID_HANDLE_VALUE )
-		{
-			WriteFile( hBitmapFile, &fileHeader, sizeof( BITMAPFILEHEADER ), (DWORD*)&res, NULL );
-			WriteFile( hBitmapFile, &infoHeader, sizeof( BITMAPINFOHEADER ), (DWORD*)&res, NULL );
-			WriteFile( hBitmapFile, buf, infoHeader.biSizeImage, (DWORD*)&res, NULL );
-
-			CloseHandle( hBitmapFile );
-			return true;
-		}
-		else
-		{
-			// Do something
-			TRACE1("Fail to create file %s", filename);
-			return false;
-		}	
-	}
+	if( code == BMG_OK )
+		return true;
 	else
-	{
-		if( _stricmp(right(filename,4),".png") != 0 )	strcat(filename,".png");
-
-		struct BMGImageStruct img;
-		InitBMGImage(&img);
-		img.bits = buf;
-		img.bits_per_pixel = 24;
-		img.height = height;
-		img.width = width;
-		img.scan_width = pitch;
-		BMG_Error code = WritePNG(filename, img);
-
-		if( code == BMG_OK )
-			return true;
-		else
-			return false;
-	}
+		return false;
 }
 
 bool SaveRGBABufferToPNGFile(char *filename, unsigned char *buf, int width, int height, int pitch)

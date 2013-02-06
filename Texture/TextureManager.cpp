@@ -512,14 +512,7 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 
 		pEntry->pTexture = CDeviceBuilder::GetBuilder()->CreateTexture(dwWidth, dwHeight);
 		if (pEntry->pTexture == NULL || pEntry->pTexture->GetTexture() == NULL)
-		{
 			TRACE2("Warning, unable to create %d x %d texture!", dwWidth, dwHeight);
-		}
-		else
-		{
-			pEntry->pTexture->m_bScaledS = false;
-			pEntry->pTexture->m_bScaledT = false;
-		}
 	}
 	
 	// Initialize
@@ -584,13 +577,11 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		}
 	}
 
-	bool loadFromBackBuffer=false;
 	if( frameBufferOptions.bCheckBackBufs && g_pFrameBufferManager->CheckAddrInBackBuffers(pgti->Address, pgti->HeightToLoad*pgti->Pitch) >= 0 )
 	{
 		if( !frameBufferOptions.bWriteBackBufToRDRAM )
 		{
 			// Load the texture from recent back buffer
-			loadFromBackBuffer = true;
 			txtBufIdxToLoadFrom = g_pFrameBufferManager->CheckAddrInRenderTextures(pgti->Address);
 			if( txtBufIdxToLoadFrom >= 0 )
 			{
@@ -737,17 +728,9 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	pEntry->maxCI = maxCI;
 
 	if( pEntry->pTexture->m_dwCreatedTextureWidth < pgti->WidthToCreate )
-	{
 		pEntry->ti.WidthToLoad = pEntry->pTexture->m_dwCreatedTextureWidth;
-		pEntry->pTexture->m_bScaledS = false;
-		pEntry->pTexture->m_bScaledT = false;
-	}
 	if( pEntry->pTexture->m_dwCreatedTextureHeight < pgti->HeightToCreate )
-	{
 		pEntry->ti.HeightToLoad = pEntry->pTexture->m_dwCreatedTextureHeight;
-		pEntry->pTexture->m_bScaledT = false;
-		pEntry->pTexture->m_bScaledS = false;
-	}
 
 	try 
 	{
@@ -820,7 +803,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 				}
 				DebuggerAppendMsg("W:%d, H:%d, RealW:%d, RealH:%d, D3DW:%d, D3DH: %d", pEntry->ti.WidthToCreate, pEntry->ti.HeightToCreate,
 					pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry->pTexture->m_dwCreatedTextureWidth, pEntry->pTexture->m_dwCreatedTextureHeight);
-				DebuggerAppendMsg("ScaledS:%s, ScaledT:%s, CRC=%08X", pEntry->pTexture->m_bScaledS?"T":"F", pEntry->pTexture->m_bScaledT?"T":"F", pEntry->dwCRC);
+				DebuggerAppendMsg("CRC=%08X", pEntry->dwCRC);
 				DebuggerPause();
 				CRender::g_pRender->SetCurrentTexture( 0, NULL, 64, 64, NULL);
 			}

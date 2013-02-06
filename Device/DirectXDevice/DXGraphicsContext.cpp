@@ -478,7 +478,6 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 			windowSetting.uFullScreenRefreshRate = pModeInfo->RefreshRate;
 		}
     }
-
 	m_desktopFormat = pAdapterInfo->d3ddmDesktop.Format;
 	m_d3dpp.BackBufferWidth		= windowSetting.uDisplayWidth;
 	m_d3dpp.BackBufferHeight	= windowSetting.uDisplayHeight;

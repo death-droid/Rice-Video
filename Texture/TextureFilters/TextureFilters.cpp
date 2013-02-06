@@ -559,11 +559,10 @@ bool CheckAndCreateFolder(const char* pathname)
 char *subfolders[] = {
 	"png_all\\",
 	"png_by_rgb_a\\",
-	"ci_bmp\\",
-	"ci_bmp_with_pal_crc\\",
 	"ci_by_png\\",
 };
 
+//
 void FindAllDumpedTextures(void)
 {
 	char	foldername[256];
@@ -978,13 +977,8 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 
 		if( (gRDP.otherMode.text_tlut>=2 || entry.ti.Format == TXT_FMT_CI || entry.ti.Format == TXT_FMT_RGBA) && entry.ti.Size <= TXT_SIZE_8b )
 		{
-			if( ciidx < 0 )
-			{
-				sprintf(filename1, "%sci_bmp\\%s#%08X#%d#%d_ci", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
-				SaveCITextureToFile(entry, filename1, false, false);
-			}
-
 			sprintf(filename1, "%sci_by_png\\%s#%08X#%d#%d#%08X_ciByRGBA", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
+			//BACKTOMENOW
 			CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename1, TXT_RGBA, false, false, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
 		}
 		else

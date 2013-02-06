@@ -852,7 +852,6 @@ void PrepareTextures()
 				{
 					if( pEntry->txtrBufIdx <= 0 )
 					{
-
 						if( pEntry->pEnhancedTexture && pEntry->dwEnhancementFlag == TEXTURE_EXTERNAL && !options.bLoadHiResTextures )
 						{
 							SAFE_DELETE(pEntry->pEnhancedTexture);

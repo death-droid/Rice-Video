@@ -114,7 +114,7 @@ FUNC_TYPE(void) NAME_DEFINE(DllConfig) ( HWND hParent )
 void ChangeWindowStep2()//backtome
 {
 	status.bDisableFPS = true;
-	windowSetting.bDisplayFullscreen = 1-windowSetting.bDisplayFullscreen;
+	windowSetting.bDisplayFullscreen = !windowSetting.bDisplayFullscreen;
 	g_CritialSection.Lock();
 	windowSetting.bDisplayFullscreen = CGraphicsContext::Get()->ToggleFullscreen();
 
@@ -256,7 +256,7 @@ bool StartVideo(void)
 		CGraphicsContext::InitWindowInfo();
 		
 		windowSetting.bDisplayFullscreen = FALSE;
-		bool res = CGraphicsContext::Get()->Initialize(g_GraphicsInfo.hWnd, g_GraphicsInfo.hStatusBar, 640, 480, TRUE);
+		bool res = CGraphicsContext::Get()->Initialize(g_GraphicsInfo.hWnd, g_GraphicsInfo.hStatusBar, 640, 480, !windowSetting.bDisplayFullscreen);
 		
 		if(!res)
 		{
@@ -673,7 +673,6 @@ FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 #endif
 
 	memset(&status, 0, sizeof(status));
-	windowSetting.bDisplayFullscreen = FALSE;
 	memcpy(&g_GraphicsInfo, &Gfx_Info, sizeof(GFX_INFO));
 	
 	g_pRDRAMu8			= Gfx_Info.RDRAM;

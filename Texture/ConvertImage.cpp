@@ -756,9 +756,7 @@ void ConvertCI4_RGBA16(CTexture *pTexture, const TxtrInfo &tinfo)
                 uint8 bhi = (b&0xf0)>>4;
                 *pDst = Convert555ToRGBA(pPal[bhi^1]);    // Remember palette is in different endian order!
                 if( bIgnoreAlpha )
-                {
                     *pDst |= 0xFF000000;
-                }
             }
             else
 			{
@@ -1209,8 +1207,6 @@ void Convert4b(CTexture *pTexture, const TxtrInfo &tinfo)
 
 	for (uint32 y = 0; y < tinfo.HeightToLoad; y++)
 	{
-		uint32 * pDst = (uint32 *)((uint8 *)dInfo.lpSurface + y * dInfo.lPitch);
-
 		uint32 nFiddle;
 		if( tinfo.tileNo < 0 )	
 		{
@@ -1231,7 +1227,7 @@ void Convert4b(CTexture *pTexture, const TxtrInfo &tinfo)
 			nFiddle = ( y&1 )? 0x4 : 0;
 		}
 
-		//uint32 * pDst = (uint32 *)((uint8 *)dInfo.lpSurface + y * dInfo.lPitch);
+		uint32 * pDst = (uint32 *)((uint8 *)dInfo.lpSurface + y * dInfo.lPitch);
 		int idx = tinfo.tileNo>=0 ? tile.dwLine*8*y : ((y+tinfo.TopToLoad) * tinfo.Pitch) + (tinfo.LeftToLoad / 2);
 
         if (tinfo.WidthToLoad == 1)

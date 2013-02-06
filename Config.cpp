@@ -805,7 +805,7 @@ void GenerateCurrentRomOptions()
 
 void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 {
-	LONG i;
+	int i;
 
 	i = FindIniEntry(pGameSetting->romheader.dwCRC1,
 							  pGameSetting->romheader.dwCRC2,
@@ -843,7 +843,7 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 
 void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 {
-	LONG i;
+	int i;
 
 	i = FindIniEntry(pGameSetting->romheader.dwCRC1,
 		pGameSetting->romheader.dwCRC2,
