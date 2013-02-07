@@ -26,7 +26,6 @@ public:
 
 	bool StartUpdate(DrawInfo *di);
 	void EndUpdate(DrawInfo *di);
-	CDirectXTexture *DuplicateTexture();
 
 protected:
 	friend class DirectXDeviceBuilder;
