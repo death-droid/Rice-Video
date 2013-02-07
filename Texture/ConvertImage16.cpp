@@ -127,7 +127,7 @@ void ConvertRGBA16_16(CTexture *pTexture, const TxtrInfo &tinfo)
 	}
 
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 void ConvertRGBA32_16(CTexture *pTexture, const TxtrInfo &tinfo)
@@ -229,7 +229,7 @@ void ConvertRGBA32_16(CTexture *pTexture, const TxtrInfo &tinfo)
 
 
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 
 }
 
@@ -317,7 +317,7 @@ void ConvertIA4_16(CTexture *pTexture, const TxtrInfo &tinfo)
 	}
 	
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 
 }
 
@@ -380,7 +380,7 @@ void ConvertIA8_16(CTexture *pTexture, const TxtrInfo &tinfo)
 	}	
 	
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 
 }
 
@@ -415,7 +415,7 @@ void ConvertIA16_16(CTexture *pTexture, const TxtrInfo &tinfo)
 		}
 	}		
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 
@@ -499,7 +499,7 @@ void ConvertI4_16(CTexture *pTexture, const TxtrInfo &tinfo)
 		}
 	}
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 // Used by MarioKart
@@ -561,7 +561,7 @@ void ConvertI8_16(CTexture *pTexture, const TxtrInfo &tinfo)
 
 	}
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 
 }
 
@@ -634,7 +634,7 @@ void ConvertCI4_RGBA16_16(CTexture *pTexture, const TxtrInfo &tinfo)
 
 	}
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 //*****************************************************************************
@@ -734,7 +734,7 @@ void ConvertCI4_IA16_16(CTexture *pTexture, const TxtrInfo &tinfo)
 
 	}
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 
@@ -798,7 +798,7 @@ void ConvertCI8_RGBA16_16(CTexture *pTexture, const TxtrInfo &tinfo)
 		}
 	}
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 
 }
 
@@ -861,7 +861,7 @@ void ConvertCI8_IA16_16(CTexture *pTexture, const TxtrInfo &tinfo)
 		}
 	}
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 
@@ -972,7 +972,7 @@ void ConvertYUV_16(CTexture *pTexture, const TxtrInfo &tinfo)
 	}
 
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 uint16 ConvertYUV16ToR4G4B4(int Y, int U, int V)
@@ -1088,7 +1088,7 @@ void Convert4b_16(CTexture *pTexture, const TxtrInfo &tinfo)
 	}
 
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 void Convert8b_16(CTexture *pTexture, const TxtrInfo &tinfo)
@@ -1176,7 +1176,7 @@ void Convert8b_16(CTexture *pTexture, const TxtrInfo &tinfo)
 	}
 
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }
 
 
@@ -1243,5 +1243,5 @@ void Convert16b_16(CTexture *pTexture, const TxtrInfo &tinfo)
 	}
 
 	pTexture->EndUpdate(&dInfo);
-	pTexture->SetOthersVariables();
+
 }

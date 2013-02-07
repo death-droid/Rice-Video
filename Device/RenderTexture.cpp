@@ -160,7 +160,6 @@ void CDXRenderTexture::LoadTexture(TxtrCacheEntry* pEntry)
 		SetAsRenderTarget(true);
 	}
 
-	pSurf->SetOthersVariables();
 	SAFE_RELEASE(pSourceSurface);
 	TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("Load texture from render_texture"););
 }

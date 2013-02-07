@@ -26,7 +26,6 @@ public:
 
 	bool StartUpdate(DrawInfo *di);
 	void EndUpdate(DrawInfo *di);
-	void RestoreAlphaChannel(void);	// Restore Alpha channel from RGB channel
 	CDirectXTexture *DuplicateTexture();
 
 protected:

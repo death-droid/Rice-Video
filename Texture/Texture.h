@@ -75,8 +75,6 @@ public:
 	virtual bool StartUpdate(DrawInfo *di)=0;
 	virtual void EndUpdate(DrawInfo *di)=0;
 
-	virtual void RestoreAlphaChannel(void);	// Restore Alpha channel from RGB channel
-
 protected:
 	CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
 	LPRICETEXTURE	m_pTexture;

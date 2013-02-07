@@ -157,24 +157,6 @@ LPRICETEXTURE CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, Te
 	m_fYScale = (float)m_dwCreatedTextureHeight/(float)m_dwHeight;
 	m_fXScale = (float)m_dwCreatedTextureWidth/(float)m_dwWidth;
 
-	// D3D likes texture w/h to be a power of two, so the condition below
-	// will almost always hold. 
-	// D3D should usually create textures large enough (on nVidia cards anyway),
-	// and so there will usually be some "slack" left in the texture (blank space
-	// that isn't used). The D3DRender code takes care of this (mostly)
-	// Voodoo cards are limited to 256x256 and so often textures will be
-	// created that are too small for the required dimensions. We compensate for
-	// this by passing in a dummy area of memory when the surface is locked,
-	// and copying across pixels to the real surface when the surface is unlocked.
-	// In this case there will be no slack and D3DRender takes this into account.
-	// 
-	/*if (dwWidth != d3dTextureWidth ||
-		dwHeight != d3dTextureHeight)
-	{
-		DebuggerAppendMsg("Couldn't create texture of size %d x %d (get %d x %d)",
-			dwWidth, dwHeight, d3dTextureWidth, d3dTextureHeight);
-	}*/
-
 	// HACK - we should only assign this when m_pTexture is assigned!
 	
 	if( pf == D3DFMT_A8R8G8B8 || pf == D3DFMT_X8R8G8B8  )
@@ -188,58 +170,4 @@ LPRICETEXTURE CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, Te
 		return NULL;
 	}
 	return lpSurf;		
-}
-
-CDirectXTexture *CDirectXTexture::DuplicateTexture()
-{
-	CDirectXTexture *dsttxtr = new CDirectXTexture(m_dwWidth, m_dwHeight, AS_NORMAL);
-	if( dsttxtr )
-	{
-		MYLPDIRECT3DSURFACE pSrc;
-		MYLPDIRECT3DSURFACE pDst;
-		(MYLPDIRECT3DTEXTURE(GetTexture()))->GetSurfaceLevel(0,&pSrc);
-		(MYLPDIRECT3DTEXTURE(dsttxtr->GetTexture()))->GetSurfaceLevel(0,&pDst);
-		g_pD3DDev->UpdateSurface(pSrc,NULL,pDst,NULL);
-		pSrc->Release();
-		pDst->Release();
-	}
-
-	return dsttxtr;
-}
-
-void CDirectXTexture::RestoreAlphaChannel(void)
-{
-	DrawInfo di;
-
-	if ( StartUpdate(&di) )
-	{
-		EndUpdate(&di);
-		CTexture::RestoreAlphaChannel();
-		return;
-	}
-	else
-	{
-		CDirectXTexture *duptxtr = DuplicateTexture();
-		if( duptxtr )
-		{
-			duptxtr->CTexture::RestoreAlphaChannel();
-
-			MYLPDIRECT3DSURFACE pSrc;
-			MYLPDIRECT3DSURFACE pDst;
-			(MYLPDIRECT3DTEXTURE(GetTexture()))->GetSurfaceLevel(0,&pDst);
-			(MYLPDIRECT3DTEXTURE(duptxtr->GetTexture()))->GetSurfaceLevel(0,&pSrc);
-			HRESULT res;
-			res = g_pD3DDev->UpdateSurface(pSrc,NULL,pDst,NULL);
-			//res = D3DXLoadSurfaceFromSurface(pDst,NULL,NULL,pSrc,NULL,NULL,D3DX_FILTER_POINT,0xFF000000);
-			pSrc->Release();
-			pDst->Release();
-
-			if( res != S_OK )
-			{
-				TRACE0("Error to RestoreAlphaChannel");
-			}
-
-			delete duptxtr;
-		}
-	}
 }
