@@ -2090,7 +2090,7 @@ void SetLightCol(uint32 dwLight, uint32 dwCol)
 	if( status.isVertexShaderEnabled )
 	{
 		float c[4] = {gRSPlights[dwLight].r/255.0f, gRSPlights[dwLight].g/255.0f, gRSPlights[dwLight].b/255.0f, gRSPlights[dwLight].a/255.0f};
-		g_pD3DDev->SetVertexShaderConstant( CV_LIGHT0_AMBIENT+dwLight, &c[0], 1 );
+		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT0_AMBIENT+dwLight, &c[0], 1 );
 	}
 
 	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
@@ -2113,7 +2113,7 @@ void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)
 	
 	if( status.isVertexShaderEnabled && dwLight>0 )
 	{
-		g_pD3DDev->SetVertexShaderConstant( CV_LIGHT1_DIRECTION+dwLight, &(gRSPlights[dwLight].x), 1 );
+		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT1_DIRECTION+dwLight, &(gRSPlights[dwLight].x), 1 );
 	}
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE5("Set Light %d dir: %.4f, %.4f, %.4f, %.4f", dwLight, x, y, z, range));

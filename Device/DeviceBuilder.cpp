@@ -143,7 +143,7 @@ CColorCombiner * DirectXDeviceBuilder::CreateColorCombiner(CRender *pRender)
 {
 	if( m_pColorCombiner == NULL )
 	{
-		extern MYD3DCAPS g_D3DDeviceCaps;
+		extern D3DCAPS9 g_D3DDeviceCaps;
 		bool canUsePixelShader = g_D3DDeviceCaps.PixelShaderVersion >= D3DPS_VERSION(1, 1);
 
 		if(!canUsePixelShader)

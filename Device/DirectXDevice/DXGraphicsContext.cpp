@@ -19,9 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "stdafx.h"
 #include <WinGDI.h>
 
-MYLPDIRECT3DDEVICE g_pD3DDev = NULL;
+LPDIRECT3DDEVICE9 g_pD3DDev = NULL;
 CD3DDevWrapper    gD3DDevWrapper;
-MYD3DCAPS g_D3DDeviceCaps;
+D3DCAPS9 g_D3DDeviceCaps;
 LPDIRECT3DVERTEXSHADER9 gVertexShader = NULL;
 
 //////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ LPDIRECT3DVERTEXSHADER9 gVertexShader = NULL;
 //////////////////////////////////////////////////////////////////////
 int				CDXGraphicsContext::m_dwNumAdapters;
 D3DAdapterInfo	CDXGraphicsContext::m_1stAdapters;
-MYD3DCAPS		CDXGraphicsContext::m_d3dCaps;           // Caps for the device
+D3DCAPS9		CDXGraphicsContext::m_d3dCaps;           // Caps for the device
 bool			CDXGraphicsContext::m_bSupportAnisotropy;
 const	uint32		dwNumDeviceTypes = 2;
 extern const char*	strDXDeviceDescs[];
@@ -231,7 +231,7 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 		UpdateFrame();
 	}
 
-	MYD3DVIEWPORT vp = {
+	D3DVIEWPORT9 vp = {
 		0, 
 			windowSetting.toolbarHeightToUse, 
 			windowSetting.uDisplayWidth, 
@@ -283,7 +283,7 @@ void CDXGraphicsContext::InitDeviceParameters()
 	SetWindowText(m_hWndStatus, "Initialize DirectX Device");
 
 	// Create Direct3D object
-	MYLPDIRECT3D pD3D;
+	LPDIRECT3D9 pD3D;
 	pD3D = Direct3DCreate9( D3D_SDK_VERSION );
 	if( pD3D == NULL )
 	{
@@ -537,7 +537,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 
 		
         // Store render target surface desc
-        MYLPDIRECT3DSURFACE pBackBuffer;
+        LPDIRECT3DSURFACE9 pBackBuffer;
         m_pd3dDevice->GetBackBuffer( 0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer );
         pBackBuffer->GetDesc( &m_d3dsdBackBuffer );
         pBackBuffer->Release();
@@ -566,7 +566,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	}
 	
 	/*
-	extern MYLPDIRECT3DSURFACE g_pLockableBackBuffer;
+	extern LPDIRECT3DSURFACE9 g_pLockableBackBuffer;
 	if( g_pLockableBackBuffer == NULL )
 	{
 		if( IsResultGood(g_pD3DDev->CreateDepthStencilSurface(windowSetting.uDisplayWidth, windowSetting.uDisplayHeight, D3DFMT_D16_LOCKABLE, D3DMULTISAMPLE_NONE, &g_pLockableBackBuffer)) && g_pLockableBackBuffer )
@@ -616,7 +616,7 @@ HRESULT CDXGraphicsContext::ResizeD3DEnvironment()
 	}
 	
     // Store render target surface desc
-    MYLPDIRECT3DSURFACE pBackBuffer;
+    LPDIRECT3DSURFACE9 pBackBuffer;
     m_pd3dDevice->GetBackBuffer( 0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer );
     pBackBuffer->GetDesc( &m_d3dsdBackBuffer );
     pBackBuffer->Release();
@@ -1145,7 +1145,7 @@ bool CDXGraphicsContext::IsResultGood(HRESULT hr, bool displayError)
 }
 
 
-void CDXGraphicsContext::SaveSurfaceToFile(char *filenametosave, MYLPDIRECT3DSURFACE surf, bool bShow)
+void CDXGraphicsContext::SaveSurfaceToFile(char *filenametosave, LPDIRECT3DSURFACE9 surf, bool bShow)
 {
 	char filename[256];
 	strcpy(filename, filenametosave);
@@ -1154,8 +1154,8 @@ void CDXGraphicsContext::SaveSurfaceToFile(char *filenametosave, MYLPDIRECT3DSUR
 	surf->GetDesc(&desc);
 	CDirectXTexture *dsttxtr = new CDirectXTexture(desc.Width, desc.Height, AS_NORMAL);
 
-	MYLPDIRECT3DSURFACE pDst;
-	(MYLPDIRECT3DTEXTURE(dsttxtr->GetTexture()))->GetSurfaceLevel(0,&pDst);
+	LPDIRECT3DSURFACE9 pDst;
+	dsttxtr->GetTexture()->GetSurfaceLevel(0,&pDst);
 
 	if( pDst )
 	{
@@ -1284,7 +1284,7 @@ HRESULT CD3DDevWrapper::SetPixelShaderConstant(DWORD Register, float* pfdata)
 	return S_OK;
 }
 
-HRESULT CD3DDevWrapper::SetViewport(MYD3DVIEWPORT* pViewport)
+HRESULT CD3DDevWrapper::SetViewport(D3DVIEWPORT9* pViewport)
 {
 	if( m_pD3DDev != NULL )
 	{
@@ -1309,7 +1309,7 @@ HRESULT CD3DDevWrapper::SetViewport(MYD3DVIEWPORT* pViewport)
 
 	return S_OK;
 }
-HRESULT CD3DDevWrapper::SetTexture(DWORD Stage,MYIDirect3DBaseTexture* pTexture)
+HRESULT CD3DDevWrapper::SetTexture(DWORD Stage,IDirect3DBaseTexture9* pTexture)
 {
 	if( m_pD3DDev != NULL )
 	{
@@ -1337,7 +1337,7 @@ HRESULT CD3DDevWrapper::SetFVF(DWORD FVF)
 	return S_OK;
 }
 
-void CD3DDevWrapper::SetD3DDev(MYLPDIRECT3DDEVICE pD3DDev)
+void CD3DDevWrapper::SetD3DDev(LPDIRECT3DDEVICE9 pD3DDev)
 {
 	m_pD3DDev = pD3DDev;
 	Initalize();

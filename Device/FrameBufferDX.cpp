@@ -30,14 +30,14 @@ Overview of DX framebuffer code:
 //But, its needed to render framebuffer effects, due to the current implementation.
 void DXFrameBufferManager::CopyBackBufferToRenderTexture(int idx, RecentCIInfo &ciInfo, RECT* pDstRect)
 {
-	MYLPDIRECT3DSURFACE pSavedBuffer;
-	MYLPDIRECT3DTEXTURE(gRenderTextureInfos[idx].pRenderTexture->m_pTexture->GetTexture())->GetSurfaceLevel(0,&pSavedBuffer);
+	LPDIRECT3DSURFACE9 pSavedBuffer;
+	gRenderTextureInfos[idx].pRenderTexture->m_pTexture->GetTexture()->GetSurfaceLevel(0,&pSavedBuffer);
 
 	HRESULT res;
 
 	if( pSavedBuffer != NULL )
 	{
-		MYLPDIRECT3DSURFACE pBackBufferToSave = NULL;
+		LPDIRECT3DSURFACE9 pBackBufferToSave = NULL;
 		g_pD3DDev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBufferToSave);
 
 		if( pBackBufferToSave )
@@ -72,12 +72,12 @@ void DXFrameBufferManager::CopyBackBufferToRenderTexture(int idx, RecentCIInfo &
 
 //Copies Direct3D graphics surface to the RDRAM memory structure
 //Doesnt use render-targets (no HWFBE)
-void DXFrameBufferManager::CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, D3DFORMAT surf_fmt, MYIDirect3DSurface *surf)
+void DXFrameBufferManager::CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, D3DFORMAT surf_fmt, IDirect3DSurface9 *surf)
 {
 	if( addr == 0 || addr>=g_dwRamSize )	return;
 	if( pitch == 0 ) pitch = width;
 
-	MYIDirect3DSurface *surf2 = NULL;
+	IDirect3DSurface9 *surf2 = NULL;
 
 	TXTRBUF_DUMP(DebuggerAppendMsg("Copy Back to N64 RDRAM"););
 
@@ -112,7 +112,7 @@ void DXFrameBufferManager::CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32
 //Performs main backbuffer to main N64 emulated RDRAM for FB effects....
 void DXFrameBufferManager::StoreBackBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, D3DFORMAT surf_fmt)
 {
-	MYIDirect3DSurface *backBuffer = NULL;
+	IDirect3DSurface9 *backBuffer = NULL;
 	g_pD3DDev->GetBackBuffer(0, 0,D3DBACKBUFFER_TYPE_MONO, &backBuffer);
 
 	TXTRBUF_DUMP(DebuggerAppendMsg("Copy Back Buffer to N64 RDRAM"););

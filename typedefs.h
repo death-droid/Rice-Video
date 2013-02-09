@@ -33,7 +33,6 @@ typedef long						s32;
 typedef unsigned long				u32;
 typedef unsigned char				u8;
 
-
 //Fix me, these macro should not be used anymore in DirectX 8
 
 #define RGBA_GETALPHA(rgb)      ((rgb) >> 24)
@@ -43,7 +42,6 @@ typedef unsigned char				u8;
 
 typedef D3DXMATRIX Matrix;
 typedef D3DVECTOR Vector3;
-typedef void* LPRICETEXTURE ;
 typedef D3DLOCKED_RECT LockRectType;
 
 #define COLOR_RGBA D3DCOLOR_RGBA
@@ -321,7 +319,7 @@ typedef struct
 	uint32 dwAddressW;
 
 	uint32 dwTexCoordIndex;
-	MYLPDIRECT3DBASETEXTURE pTexture; 
+	LPDIRECT3DBASETEXTURE9 pTexture; 
 } D3DCombinerStage;
 
 typedef struct
@@ -383,7 +381,7 @@ class CDirectXTexture;
 struct TxtrCacheEntry;
 
 typedef struct {
-	LPRICETEXTURE m_lpsTexturePtr;
+	LPDIRECT3DTEXTURE9 m_lpsTexturePtr;
 	union {
 		CTexture *			m_pCTexture;
 	};

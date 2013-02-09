@@ -64,7 +64,7 @@ struct D3DDeviceInfo
 {
     // Device data
     D3DDEVTYPE   DeviceType;      // Reference, HAL, etc.
-    MYD3DCAPS     d3dCaps;         // Capabilities of this device
+    D3DCAPS9     d3dCaps;         // Capabilities of this device
     const TCHAR* strDesc;         // Name of this device
     bool		 bCanDoWindowed;  // Whether this device can work in windowed mode
 	
@@ -88,7 +88,7 @@ struct D3DDeviceInfo
 struct D3DAdapterInfo
 {
     // Adapter data
-    MYD3DADAPTER_IDENTIFIER d3dAdapterIdentifier;
+    D3DADAPTER_IDENTIFIER9 d3dAdapterIdentifier;
     D3DDISPLAYMODE d3ddmDesktop;      // Desktop display mode for this adapter
 	
     // Devices for this adapter
@@ -117,7 +117,7 @@ public:
 	void UpdateFrame(bool swaponly=false);
 	bool IsFSAAEnable() {return m_FSAAIsEnabled;}
 
-	virtual void SaveSurfaceToFile(char *filenametosave, MYLPDIRECT3DSURFACE surf, bool bShow = true);
+	virtual void SaveSurfaceToFile(char *filenametosave, LPDIRECT3DSURFACE9 surf, bool bShow = true);
 
 	int ToggleFullscreen();		// return 0 as the result is windowed
 	D3DFORMAT GetFormat() {return m_desktopFormat;}
@@ -150,14 +150,14 @@ protected:
 	// Device information
 	static int				m_dwNumAdapters;
 	static D3DAdapterInfo	m_1stAdapters;
-	static MYD3DCAPS			m_d3dCaps;           // Caps for the device
+	static D3DCAPS9			m_d3dCaps;           // Caps for the device
 	static bool				m_bSupportAnisotropy;
 	static HRESULT			DisplayD3DErrorMsg( HRESULT hr, uint32 dwType );
 
 
 	// Graphic context
-	MYLPDIRECT3D			m_pD3D;
-	MYLPDIRECT3DDEVICE	m_pd3dDevice;
+	LPDIRECT3D9			m_pD3D;
+	LPDIRECT3DDEVICE9	m_pd3dDevice;
 
 	D3DPRESENT_PARAMETERS m_d3dpp;
 
@@ -193,26 +193,26 @@ public:
 		m_pD3DDev = NULL;
 	}
 
-	void SetD3DDev(MYLPDIRECT3DDEVICE pD3DDev);
+	void SetD3DDev(LPDIRECT3DDEVICE9 pD3DDev);
 
 	HRESULT SetRenderState(D3DRENDERSTATETYPE State,DWORD Value);
 	HRESULT SetTextureStageState(DWORD Stage,D3DTEXTURESTAGESTATETYPE Type,DWORD Value);
 	HRESULT SetPixelShader(IDirect3DPixelShader9* pShader);
 	HRESULT SetPixelShaderConstant (DWORD Register,float* pfdata);
-	HRESULT SetViewport (MYD3DVIEWPORT* pViewport);
-	HRESULT SetTexture (DWORD Stage,MYIDirect3DBaseTexture* pTexture);
+	HRESULT SetViewport (D3DVIEWPORT9* pViewport);
+	HRESULT SetTexture (DWORD Stage,IDirect3DBaseTexture9* pTexture);
 	HRESULT SetFVF (DWORD Handle);
 	void    Initalize(void);
 
 private:
-	MYLPDIRECT3DDEVICE m_pD3DDev;
+	LPDIRECT3DDEVICE9 m_pD3DDev;
 	DWORD m_savedRenderStates[MAX_RENDER_STATE];
 	DWORD m_savedTextureStageStates[8][MAX_TEXTURE_STAGE_STATE];
 	IDirect3DPixelShader9* m_savedPixelShader;
 	DWORD m_savedFVF;
 	float m_savedPixelShaderConstants[MAX_NUM_OF_PIXEL_SHADER_CONSTANT][4];
-	MYD3DVIEWPORT m_savedViewport;
-	MYIDirect3DBaseTexture* m_savedTexturePointers[8];
+	D3DVIEWPORT9 m_savedViewport;
+	IDirect3DBaseTexture9* m_savedTexturePointers[8];
 };
 
 #endif

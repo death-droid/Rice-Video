@@ -116,8 +116,8 @@ public:
 #endif
 
 protected:
-	MYLPDIRECT3DSURFACE m_pColorBufferSave;
-	MYLPDIRECT3DSURFACE m_pDepthBufferSave;
+	LPDIRECT3DSURFACE9 m_pColorBufferSave;
+	LPDIRECT3DSURFACE9 m_pDepthBufferSave;
 };
 
 #endif

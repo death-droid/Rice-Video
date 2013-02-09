@@ -96,7 +96,7 @@ public:
 	virtual void CopyBackBufferToRenderTexture(int idx, RecentCIInfo &ciInfo, RECT* pRect=NULL);			// Copy the current back buffer to temp buffer
 	virtual void CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, 
 		uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr=0xFFFFFFFF, 
-		uint32 memsize=0xFFFFFFFF, uint32 pitch=0, D3DFORMAT surf_fmt=D3DFMT_A8R8G8B8, MYIDirect3DSurface *surf=NULL);
+		uint32 memsize=0xFFFFFFFF, uint32 pitch=0, D3DFORMAT surf_fmt=D3DFMT_A8R8G8B8, IDirect3DSurface9 *surf=NULL);
 	virtual void StoreBackBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, 
 		uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr=0xFFFFFFFF, 
 		uint32 memsize=0xFFFFFFFF, uint32 pitch=0, D3DFORMAT surf_fmt=D3DFMT_A8R8G8B8);

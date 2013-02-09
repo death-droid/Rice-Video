@@ -52,7 +52,7 @@ bool D3DRender::ClearDeviceObjects()
 	{
 		if (g_textures[i].m_lpsTexturePtr)		// We keep a reference to the most recently selected texture
 		{
-			MYLPDIRECT3DTEXTURE(g_textures[i].m_lpsTexturePtr)->Release();
+			g_textures[i].m_lpsTexturePtr->Release();
 			g_textures[i].m_lpsTexturePtr = NULL;
 			gD3DDevWrapper.SetTexture( i, NULL );
 		}
@@ -169,7 +169,7 @@ bool D3DRender::InitDeviceObjects()
 
 bool D3DRender::RenderTexRect()
 {
-	gD3DDevWrapper.SetRenderState(D3DRS_ZBIAS,0);
+	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,0);
 	uint16 wIndices[2*3] = {1,0,2, 2,0,3};
 	g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
 	//ClipVertexesForRect();
@@ -184,7 +184,7 @@ bool D3DRender::RenderFillRect(uint32 dwColor, float depth)
 								{m_fillRectVtx[0].x, m_fillRectVtx[1].y, depth, 1, dwColor}  };
 	static uint16 wIndices[2*3] = {1,0,2, 2,0,3};
 
-	gD3DDevWrapper.SetRenderState(D3DRS_ZBIAS,0);
+	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,0);
 	g_pD3DDev->SetFVF(RICE_FVF_FILLRECTVERTEX);
 	return S_OK == g_pD3DDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, frv, sizeof(FILLRECTVERTEX));
 }
@@ -234,7 +234,7 @@ bool D3DRender::RenderFlushTris()
 		//gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING,	  FALSE);
 		//gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
 
-		//MYD3DVIEWPORT vp = {0, 0, 640, 480, -1, 1};
+		//D3DVIEWPORT9 vp = {0, 0, 640, 480, -1, 1};
 		//gD3DDevWrapper.SetViewport(&vp);
 		g_pD3DDev->DrawIndexedPrimitiveUP( D3DPT_TRIANGLELIST, 0, gRSP.maxVertexID, gRSP.numVertices/3, g_vtxIndex, D3DFMT_INDEX32, g_vtxForExternal, sizeof(EXTERNAL_VERTEX) );
 	}
@@ -272,7 +272,7 @@ bool D3DRender::RenderLine3D()
 
 	static uint16 wIndices[2*3] = {1,0,2, 2,1,3};
 
-	gD3DDevWrapper.SetRenderState(D3DRS_ZBIAS,0);
+	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,0);
 	g_pD3DDev->SetFVF(RICE_FVF_FILLRECTVERTEX);
 	HRESULT hr = g_pD3DDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, frv, sizeof(FILLRECTVERTEX));
 
@@ -280,7 +280,7 @@ bool D3DRender::RenderLine3D()
 }
 
 
-MYLPDIRECT3DSURFACE g_pLockableBackBuffer=NULL;
+LPDIRECT3DSURFACE9 g_pLockableBackBuffer=NULL;
 
 void D3DRender::DrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, D3DCOLOR spe, float z, float rhw)
 {
@@ -452,16 +452,16 @@ bool D3DRender::SetCurrentTexture(int tile, CTexture *handler, uint32 dwTileWidt
 	{
 		if( texture.m_lpsTexturePtr )
 		{
-			MYLPDIRECT3DTEXTURE(texture.m_lpsTexturePtr)->Release();
+			texture.m_lpsTexturePtr->Release();
 			texture.m_lpsTexturePtr = NULL;
 		}
 
-		texture.m_lpsTexturePtr = MYLPDIRECT3DTEXTURE(handler->GetTexture());
+		texture.m_lpsTexturePtr = handler->GetTexture();
 		texture.m_pCTexture = handler;
 
 		if (texture.m_lpsTexturePtr != NULL)
 		{
-			MYLPDIRECT3DTEXTURE(texture.m_lpsTexturePtr)->AddRef();
+			texture.m_lpsTexturePtr->AddRef();
 		}
 			
 		texture.m_dwTileWidth = dwTileWidth;
@@ -622,7 +622,7 @@ void D3DRender::UpdateScissor()
 		// Hack for RE2
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
 		uint32 height = (gRDP.scissor.right*gRDP.scissor.bottom)/width;
-		MYD3DVIEWPORT vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
+		D3DVIEWPORT9 vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
 		//if( !gRSP.bNearClip )
 		//	vp.MinZ = -10000;
 
@@ -646,7 +646,7 @@ void D3DRender::ApplyRDPScissor(bool force)
 		// Hack for RE2
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
 		uint32 height = (gRDP.scissor.right*gRDP.scissor.bottom)/width;
-		MYD3DVIEWPORT vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
+		D3DVIEWPORT9 vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
 		//if( !gRSP.bNearClip )
 		//	vp.MinZ = -10000;
 
@@ -657,7 +657,7 @@ void D3DRender::ApplyRDPScissor(bool force)
 	}
 	else
 	{
-		MYD3DVIEWPORT vp = {
+		D3DVIEWPORT9 vp = {
 			(uint32)(gRDP.scissor.left*windowSetting.fMultX), 
 				(uint32)(gRDP.scissor.top*windowSetting.fMultY), 
 				(uint32)((gRDP.scissor.right-gRDP.scissor.left+1)*windowSetting.fMultX), 
@@ -680,7 +680,7 @@ void D3DRender::ApplyScissorWithClipRatio(bool force)
 	if( !force && status.curScissor == RSP_SCISSOR )	return;
 
 	WindowSettingStruct &w = windowSetting;
-	MYD3DVIEWPORT vp = { w.clipping.left, w.clipping.top, w.clipping.width, w.clipping.height, 0, 1};
+	D3DVIEWPORT9 vp = { w.clipping.left, w.clipping.top, w.clipping.width, w.clipping.height, 0, 1};
 	//if( !gRSP.bNearClip )
 		//	vp.MinZ = -10000;
 
@@ -708,7 +708,7 @@ void D3DRender::BeginRendering(void)
 
 void D3DRender::CaptureScreen(char *filename)
 {
-	MYLPDIRECT3DSURFACE surface;
+	LPDIRECT3DSURFACE9 surface;
 	g_pD3DDev->GetRenderTarget(0,&surface);
 	((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->SaveSurfaceToFile(filename, surface, false);
 	//D3DXSaveSurfaceToFile(filename,D3DXIFF_BMP,surface,NULL,NULL);

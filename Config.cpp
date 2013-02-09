@@ -2243,7 +2243,7 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		EnumChildWndTooltip();
 
 		{
-			MYD3DADAPTER_IDENTIFIER &identifier = CDXGraphicsContext::GetAdapterInfo().d3dAdapterIdentifier;
+			D3DADAPTER_IDENTIFIER9 &identifier = CDXGraphicsContext::GetAdapterInfo().d3dAdapterIdentifier;
 			LONG high = identifier.DriverVersion.HighPart;
 			LONG low = identifier.DriverVersion.LowPart;
 

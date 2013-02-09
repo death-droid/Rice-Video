@@ -62,7 +62,7 @@ char* MuxToA(uint8 val)
 }
 
 //========================================================================
-extern MYD3DCAPS g_D3DDeviceCaps;
+extern D3DCAPS9 g_D3DDeviceCaps;
 
 CDirectXPixelShaderCombiner::CDirectXPixelShaderCombiner(CRender *pRender)
 	:CColorCombiner(pRender), m_pD3DRender((D3DRender*)pRender)
@@ -155,12 +155,12 @@ void CDirectXPixelShaderCombiner::DisableCombiner(void)
 
 			if( m_bTex0Enabled )
 			{
-				gD3DDevWrapper.SetTexture( 0, MYLPDIRECT3DTEXTURE(g_textures[gRSP.curTile].m_lpsTexturePtr) );
+				gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
 				m_pD3DRender->SetTexelRepeatFlags(gRSP.curTile);
 			}
 			else
 			{
-				gD3DDevWrapper.SetTexture( 0, MYLPDIRECT3DTEXTURE(g_textures[(gRSP.curTile+1)&7].m_lpsTexturePtr) );
+				gD3DDevWrapper.SetTexture( 0, g_textures[(gRSP.curTile+1)&7].m_lpsTexturePtr );
 				m_pD3DRender->SetTexelRepeatFlags((gRSP.curTile+1)&7);
 			}
 
@@ -261,8 +261,8 @@ void CDirectXPixelShaderCombiner::DisableCombiner(void)
 			gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
 			gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_ALPHAARG2, D3DTA_CURRENT );
 
-			gD3DDevWrapper.SetTexture( 0, MYLPDIRECT3DTEXTURE(g_textures[gRSP.curTile].m_lpsTexturePtr) );
-			gD3DDevWrapper.SetTexture( 1, MYLPDIRECT3DTEXTURE(g_textures[(gRSP.curTile+1)&7].m_lpsTexturePtr) );
+			gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
+			gD3DDevWrapper.SetTexture( 1, g_textures[(gRSP.curTile+1)&7].m_lpsTexturePtr );
 
 			m_pD3DRender->SetTexelRepeatFlags(gRSP.curTile);
 			m_pD3DRender->SetTexelRepeatFlags((gRSP.curTile+1)&7);
@@ -286,7 +286,7 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleCopy(void)
 	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = true;
 	m_pD3DRender->m_curCombineInfo.nStages = 1;
 
-	gD3DDevWrapper.SetTexture( 0, MYLPDIRECT3DTEXTURE(g_textures[gRSP.curTile].m_lpsTexturePtr) );
+	gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
 	m_pD3DRender->SetTexelRepeatFlags(gRSP.curTile);
 	gD3DDevWrapper.SetTexture( 1, NULL );
 	gD3DDevWrapper.SetPixelShader( NULL );
@@ -483,14 +483,14 @@ void CDirectXPixelShaderCombiner::InitCombinerCycle12(void)
 	{
 		m_pD3DRender->SetTexelRepeatFlags(gRSP.curTile);
 		if( g_textures[gRSP.curTile].m_pCTexture != NULL )
-			gD3DDevWrapper.SetTexture( 0, MYLPDIRECT3DTEXTURE(g_textures[gRSP.curTile].m_lpsTexturePtr) );
+			gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
 	}
 
 	if( m_bTex1Enabled )
 	{
 		m_pD3DRender->SetTexelRepeatFlags((gRSP.curTile+1)&7);
 		if( g_textures[(gRSP.curTile+1)&7].m_pCTexture != NULL )
-			gD3DDevWrapper.SetTexture( 1, MYLPDIRECT3DTEXTURE(g_textures[(gRSP.curTile+1)&7].m_lpsTexturePtr) );
+			gD3DDevWrapper.SetTexture( 1, g_textures[(gRSP.curTile+1)&7].m_lpsTexturePtr );
 	}
 
 	gRDP.texturesAreReloaded = false;
@@ -561,7 +561,7 @@ void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32
 	//SetNumStages(0);
 	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = true;
 
-	gD3DDevWrapper.SetTexture( 0, MYLPDIRECT3DTEXTURE(g_textures[tile].m_lpsTexturePtr) );
+	gD3DDevWrapper.SetTexture( 0, g_textures[tile].m_lpsTexturePtr );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG1 );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 

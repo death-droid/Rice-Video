@@ -32,7 +32,7 @@ protected:
 	friend class CDXRenderTexture;
 	friend class CDXGraphicsContext;
 	CDirectXTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
-	LPRICETEXTURE	CreateTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage);
+	LPDIRECT3DTEXTURE9	CreateTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage);
 };
 
 #endif

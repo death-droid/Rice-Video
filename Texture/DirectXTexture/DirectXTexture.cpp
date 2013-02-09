@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 CDirectXTexture::CDirectXTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
 	CTexture(dwWidth,dwHeight,usage)
 {
-	MYLPDIRECT3DTEXTURE pTxt;
+	LPDIRECT3DTEXTURE9 pTxt;
 
 	if (dwWidth < 1)	
 		dwWidth = 1;
@@ -32,12 +32,12 @@ CDirectXTexture::CDirectXTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage u
 	if (dwWidth*dwHeight > 256*256 && usage == AS_NORMAL )
 		TRACE2("Large texture: width (%d) , height (%d)", dwWidth, dwHeight);
 
-	pTxt = (MYLPDIRECT3DTEXTURE)CreateTexture(dwWidth, dwHeight, usage);
+	pTxt = CreateTexture(dwWidth, dwHeight, usage);
 
 	// Copy from old surface to new surface
 	if (m_pTexture != NULL)
 	{
-		MYLPDIRECT3DTEXTURE(m_pTexture)->Release();
+		m_pTexture->Release();
 	}
 
 	m_dwWidth = dwWidth;
@@ -47,7 +47,7 @@ CDirectXTexture::CDirectXTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage u
 	
 CDirectXTexture::~CDirectXTexture()
 {
-	MYLPDIRECT3DTEXTURE(m_pTexture)->Release();
+	m_pTexture->Release();
 	m_pTexture = NULL;
 	m_dwWidth = 0;
 	m_dwHeight = 0;
@@ -65,7 +65,7 @@ bool CDirectXTexture::StartUpdate(DrawInfo *di)
 		return false;
 
 	D3DLOCKED_RECT d3d_lr;
-	HRESULT hr = MYLPDIRECT3DTEXTURE(m_pTexture)->LockRect(0, &d3d_lr, NULL, D3DLOCK_NOSYSLOCK);
+	HRESULT hr = m_pTexture->LockRect(0, &d3d_lr, NULL, D3DLOCK_NOSYSLOCK);
 	if (SUCCEEDED(hr))
 	{
 		di->dwHeight = (uint16)m_dwHeight;
@@ -90,14 +90,14 @@ void CDirectXTexture::EndUpdate(DrawInfo *di)
 	if (m_pTexture == NULL)
 		return;
 
-	MYLPDIRECT3DTEXTURE(m_pTexture)->UnlockRect( 0 );
+	m_pTexture->UnlockRect( 0 );
 }
 
 
-LPRICETEXTURE CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage)
+LPDIRECT3DTEXTURE9 CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage)
 {
 	HRESULT hr;
-	MYLPDIRECT3DTEXTURE lpSurf = NULL;
+	LPDIRECT3DTEXTURE9 lpSurf = NULL;
 	unsigned int dwNumMaps = 1;
 
 	D3DFORMAT pf = D3DFMT_A8R8G8B8;

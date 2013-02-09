@@ -66,7 +66,7 @@ public:
 	
 	TextureUsage	m_Usage;
 
-	virtual LPRICETEXTURE GetTexture() { return m_pTexture; }
+	virtual LPDIRECT3DTEXTURE9 GetTexture() { return m_pTexture; }
 
 	uint32			GetPixelSize();
 	TextureFmt		GetSurfaceFormat(void);	// Surface pixel format...
@@ -77,7 +77,7 @@ public:
 
 protected:
 	CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
-	LPRICETEXTURE	m_pTexture;
+	LPDIRECT3DTEXTURE9	m_pTexture;
 	TextureFmt		m_dwTextureFmt;
 };
 

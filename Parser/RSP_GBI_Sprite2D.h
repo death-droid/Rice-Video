@@ -96,9 +96,6 @@ void RSP_GBI_Sprite2D_PuzzleMaster64(MicroCodeCommand command)
 
 void RSP_GBI1_Sprite2DDraw(MicroCodeCommand command)
 {
-	
-	
-
 	// This ucode is shared by PopMtx and gSPSprite2DDraw
 	g_Sprite2DInfo.px = (short)(((command.inst.cmd1)>>16)&0xFFFF)/4;
 	g_Sprite2DInfo.py = (short)((command.inst.cmd1)&0xFFFF)/4;
@@ -116,9 +113,6 @@ void RSP_GBI1_Sprite2DDraw(MicroCodeCommand command)
 
 void RSP_GBI0_Sprite2DDraw(MicroCodeCommand command)
 {
-	
-	
-
 	// This ucode is shared by PopMtx and gSPSprite2DDraw
 	g_Sprite2DInfo.px = (short)(((command.inst.cmd1)>>16)&0xFFFF)/4;
 	g_Sprite2DInfo.py = (short)((command.inst.cmd1)&0xFFFF)/4;
@@ -132,10 +126,8 @@ void RSP_GBI0_Sprite2DDraw(MicroCodeCommand command)
 void RSP_GBI1_Sprite2DScaleFlip(MicroCodeCommand command)
 {
 
-	
-
 	g_Sprite2DInfo.scaleX = (((command.inst.cmd1)>>16)&0xFFFF)/1024.0f;
-	g_Sprite2DInfo.scaleY = ((command.inst.cmd1)&0xFFFF)/1024.0f;
+	g_Sprite2DInfo.scaleY = ( (command.inst.cmd1)     &0xFFFF)/1024.0f;
 
 	if( ((command.inst.cmd1)&0xFFFF) < 0x100 )
 	{
@@ -143,7 +135,7 @@ void RSP_GBI1_Sprite2DScaleFlip(MicroCodeCommand command)
 	}
 
 	g_Sprite2DInfo.flipX = (uint8)(((command.inst.cmd0)>>8)&0xFF);
-	g_Sprite2DInfo.flipY = (uint8)((command.inst.cmd0)&0xFF);
+	g_Sprite2DInfo.flipY = (uint8)( (command.inst.cmd0)    &0xFF);
 	//RSP_RDP_NOIMPL("RSP_SPRITE2D_SCALEFLIP is not implemented", (command.inst.cmd0), (command.inst.cmd1));
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, 
 		{DebuggerAppendMsg("Pause after Sprite2DScaleFlip, Flip (%d,%d), Scale (%f, %f)\n", g_Sprite2DInfo.flipX, g_Sprite2DInfo.flipY,

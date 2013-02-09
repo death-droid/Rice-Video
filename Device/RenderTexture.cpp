@@ -65,14 +65,14 @@ bool CDXRenderTexture::SetAsRenderTarget(bool enable)
 		{
 			if(m_pTexture )
 			{
-				MYLPDIRECT3DSURFACE pColorBuffer;
+				LPDIRECT3DSURFACE9 pColorBuffer;
 
 				// save the current back buffer
 				g_pD3DDev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pColorBufferSave);
 				g_pD3DDev->GetDepthStencilSurface(&m_pDepthBufferSave);
 
 				// Activate the render_texture
-				(MYLPDIRECT3DTEXTURE(m_pTexture->GetTexture()))->GetSurfaceLevel(0,&pColorBuffer);
+				m_pTexture->GetTexture()->GetSurfaceLevel(0,&pColorBuffer);
 				HRESULT res = g_pD3DDev->SetRenderTarget(0, pColorBuffer);
 				SAFE_RELEASE(pColorBuffer);
 				if( res != S_OK )
@@ -133,11 +133,11 @@ void CDXRenderTexture::LoadTexture(TxtrCacheEntry* pEntry)
 
 	// Need to load texture from the saved back buffer
 
-	MYLPDIRECT3DTEXTURE pNewTexture = MYLPDIRECT3DTEXTURE(pSurf->GetTexture());
-	MYLPDIRECT3DSURFACE pNewSurface = NULL;
+	LPDIRECT3DTEXTURE9 pNewTexture = pSurf->GetTexture();
+	LPDIRECT3DSURFACE9 pNewSurface = NULL;
 	HRESULT res = pNewTexture->GetSurfaceLevel(0,&pNewSurface);
-	MYLPDIRECT3DSURFACE pSourceSurface = NULL;
-	(MYLPDIRECT3DTEXTURE(m_pTexture->GetTexture()))->GetSurfaceLevel(0,&pSourceSurface);
+	LPDIRECT3DSURFACE9 pSourceSurface = NULL;
+	m_pTexture->GetTexture()->GetSurfaceLevel(0,&pSourceSurface);
 
 	int left = (pEntry->ti.Address- m_pInfo->CI_Info.dwAddr )%m_pInfo->CI_Info.bpl + pEntry->ti.LeftToLoad;
 	int top = (pEntry->ti.Address- m_pInfo->CI_Info.dwAddr)/m_pInfo->CI_Info.bpl + pEntry->ti.TopToLoad;
@@ -173,8 +173,8 @@ void CDXRenderTexture::StoreToRDRAM(int infoIdx)
 
 	uint32 fmt = info.CI_Info.dwFormat;
 
-	MYLPDIRECT3DSURFACE pSourceSurface = NULL;
-	(MYLPDIRECT3DTEXTURE(m_pTexture->GetTexture()))->GetSurfaceLevel(0,&pSourceSurface);
+	LPDIRECT3DSURFACE9 pSourceSurface = NULL;
+	m_pTexture->GetTexture()->GetSurfaceLevel(0,&pSourceSurface);
 
 	// Ok, we are using texture render target right now
 	// Need to copy content from the texture render target back to frame buffer
@@ -230,8 +230,8 @@ void CDXRenderTexture::StoreToRDRAM(int infoIdx)
 #ifdef _DEBUG
 void CDXRenderTexture::Display(int idx)
 {
-	MYLPDIRECT3DSURFACE pSourceSurface = NULL;
-	(MYLPDIRECT3DTEXTURE(m_pTexture->GetTexture()))->GetSurfaceLevel(0,&pSourceSurface);
+	LPDIRECT3DSURFACE9 pSourceSurface = NULL;
+	m_pTexture->GetTexture()->GetSurfaceLevel(0,&pSourceSurface);
 	char filename[256];
 	sprintf(filename,"\\DxTxtBuf%d",idx);
 	((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->SaveSurfaceToFile(filename, pSourceSurface);

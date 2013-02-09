@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 class ofstream;
-extern MYLPDIRECT3DDEVICE g_pD3DDev;
+extern LPDIRECT3DDEVICE9 g_pD3DDev;
 extern CD3DDevWrapper    gD3DDevWrapper;
 extern LPDIRECT3DVERTEXSHADER9 gVertexShader;
 

@@ -73,8 +73,8 @@ void UpdateVertexShaderConstant()
 	{
 		//HRESULT res = g_pD3DDev->SetVertexShader( gVertexShader );
 		UpdateCombinedMatrix();
-		g_pD3DDev->SetVertexShaderConstant( CV_WORLDVIEWPROJ_0, (float*)&gRSPworldProjectTransported, 4 );
-		g_pD3DDev->SetVertexShaderConstant( CV_WORLDVIEW_0, (float*)&gRSPmodelViewTopTranspose, 4 );
+		g_pD3DDev->SetVertexShaderConstantF( CV_WORLDVIEWPROJ_0, (float*)&gRSPworldProjectTransported, 4 );
+		g_pD3DDev->SetVertexShaderConstantF( CV_WORLDVIEW_0, (float*)&gRSPmodelViewTopTranspose, 4 );
 	}
 }
 
@@ -85,25 +85,25 @@ void InitVertexShaderConstants()
 	for( int i=0; i<90; i++ )
 	{
 		// Initialize all constant to 0
-		g_pD3DDev->SetVertexShaderConstant( i, (float*)&f1, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( i, (float*)&f1, 1 );
 	}
 
-	g_pD3DDev->SetVertexShaderConstant( CV_ZERO, (float*)&f1, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( CV_ZERO, (float*)&f1, 1 );
 
 	float f2[]={1.0f,1.0f,1.0f,1.0f};
-	g_pD3DDev->SetVertexShaderConstant( CV_ONE, (float*)&f2, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( CV_ONE, (float*)&f2, 1 );
 
 	float f3[]={0.5f,0.5f,0.5f,0.5f};
-	g_pD3DDev->SetVertexShaderConstant( CV_HALF, (float*)&f3, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( CV_HALF, (float*)&f3, 1 );
 
 	float f4[]={0.1f,0.1f,0.1f,0.1f};
-	g_pD3DDev->SetVertexShaderConstant( CV_TENTH, (float*)&f4, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( CV_TENTH, (float*)&f4, 1 );
 
 	float f5[]={0.9f,0.9f,0.9f,0.9f};
-	g_pD3DDev->SetVertexShaderConstant( CV_NINE_TENTH, (float*)&f5, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( CV_NINE_TENTH, (float*)&f5, 1 );
 
 	float f6[]={200.0f,200.0f,200.0f,200.0f};
-	g_pD3DDev->SetVertexShaderConstant( CV_200, (float*)&f6, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( CV_200, (float*)&f6, 1 );
 
 }
 
@@ -115,46 +115,46 @@ void UpdateOptionsForVertexShader(float halfS, float halfT)
 	float (*pf)[4];
 
 	pf = gRSP.bFogEnabled ? &f1 : &f0;
-	g_pD3DDev->SetVertexShaderConstant( FOG_IS_ENABLED, (float*)pf, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( FOG_IS_ENABLED, (float*)pf, 1 );
 
 	pf = gRSP.bLightingEnable ? &f1 : &f0;
-	g_pD3DDev->SetVertexShaderConstant( LIGHTING_ENABLED, (float*)pf, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( LIGHTING_ENABLED, (float*)pf, 1 );
 
 	if(  gRDP.otherMode.key_en )
 	{
-		g_pD3DDev->SetVertexShaderConstant( FORCE_VTX_ALPHA, (float*)&f1, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( FORCE_VTX_ALPHA, (float*)&f1, 1 );
 		float f2[]={gRDP.keyA/255.0f,gRDP.keyA/255.0f,gRDP.keyA/255.0f,gRDP.keyA/255.0f};
-		g_pD3DDev->SetVertexShaderConstant( VTX_ALPHA, (float*)&f2, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( VTX_ALPHA, (float*)&f2, 1 );
 	}
 	else if( gRDP.otherMode.aa_en && gRDP.otherMode.clr_on_cvg==0 )
 	{
-		g_pD3DDev->SetVertexShaderConstant( FORCE_VTX_ALPHA, (float*)&f1, 1 );
-		g_pD3DDev->SetVertexShaderConstant( VTX_ALPHA, (float*)&f1, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( FORCE_VTX_ALPHA, (float*)&f1, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( VTX_ALPHA, (float*)&f1, 1 );
 	}
 	else
-		g_pD3DDev->SetVertexShaderConstant( FORCE_VTX_ALPHA, (float*)&f0, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( FORCE_VTX_ALPHA, (float*)&f0, 1 );
 
 	pf = g_curRomInfo.bZHack ? &f1 : &f0;
-	g_pD3DDev->SetVertexShaderConstant( Z_HACK_ENABLE, (float*)pf, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( Z_HACK_ENABLE, (float*)pf, 1 );
 
 	pf = ( (gRDP.geometryMode & G_SHADE) == 0 && gRSP.ucode < 5 ) ? &f1 : &f0;
-	g_pD3DDev->SetVertexShaderConstant( USE_PRIMARY_COLOR, (float*)pf, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( USE_PRIMARY_COLOR, (float*)pf, 1 );
 
 	if( (g_curRomInfo.bPrimaryDepthHack || options.enableHackForGames == HACK_FOR_NASCAR ) && gRDP.otherMode.depth_source )
 		pf = &f1;
 	else
 		pf = &f0;
-	g_pD3DDev->SetVertexShaderConstant( USE_PRIMARY_DEPTH, (float*)pf, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( USE_PRIMARY_DEPTH, (float*)pf, 1 );
 
 
 	// Fog
 	float f = -gRSPfFogDivider/255.0f;
 	float f6[]={f,f,f,f};
-	g_pD3DDev->SetVertexShaderConstant( FOG_MUL, (float*)&f6, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( FOG_MUL, (float*)&f6, 1 );
 
 	f = 1.0f + gRSPfFogMin * gRSPfFogDivider / 255.0f;
 	float f7[]={f,f,f,f};
-	g_pD3DDev->SetVertexShaderConstant( FOG_ADD, (float*)&f6, 1 );
+	g_pD3DDev->SetVertexShaderConstantF( FOG_ADD, (float*)&f6, 1 );
 
 
 	// Texture
@@ -206,10 +206,10 @@ void UpdateOptionsForVertexShader(float halfS, float halfT)
 		float offset0[4] = {offset0x,offset0y,0,0};
 		float offset1[4] = {offset1x,offset1y,0,0};
 
-		g_pD3DDev->SetVertexShaderConstant( T0_SCALE_X_Y, (float*)&scales0, 1 );
-		g_pD3DDev->SetVertexShaderConstant( T1_SCALE_X_Y, (float*)&scales1, 1 );
-		g_pD3DDev->SetVertexShaderConstant( T0_OFFSET_X_Y, (float*)&offset0, 1 );
-		g_pD3DDev->SetVertexShaderConstant( T1_OFFSET_X_Y, (float*)&offset1, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( T0_SCALE_X_Y, (float*)&scales0, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( T1_SCALE_X_Y, (float*)&scales1, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( T0_OFFSET_X_Y, (float*)&offset0, 1 );
+		g_pD3DDev->SetVertexShaderConstantF( T1_OFFSET_X_Y, (float*)&offset1, 1 );
 	}
 
 }

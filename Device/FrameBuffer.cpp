@@ -1666,7 +1666,7 @@ void FrameBufferManager::ActiveTextureBuffer(void)
 			//SetScreenMult(1, 1);
 			SetScreenMult(gRenderTextureInfos[m_curRenderTextureIndex].scaleX, gRenderTextureInfos[m_curRenderTextureIndex].scaleY);
 			CRender::g_pRender->UpdateClipRectangle();
-			MYD3DVIEWPORT vp = {0,0,gRenderTextureInfos[idxToUse].bufferWidth,gRenderTextureInfos[idxToUse].bufferHeight,0,1};
+			D3DVIEWPORT9 vp = {0,0,gRenderTextureInfos[idxToUse].bufferWidth,gRenderTextureInfos[idxToUse].bufferHeight,0,1};
 			gD3DDevWrapper.SetViewport(&vp);
 
 			// If needed, draw RDRAM into the render_texture

@@ -43,12 +43,12 @@ void D3DRender::LoadTxtrBufFromRDRAM(void)
 	LPD3DXSPRITE d3dSprite = InitSpriteDraw();
 	if( d3dSprite != NULL )
 	{
-		d3dSprite->Draw(MYLPDIRECT3DTEXTURE(g_textures[0].m_lpsTexturePtr), NULL, NULL, NULL, 0xFFFFFFFF);
+		d3dSprite->Draw(g_textures[0].m_lpsTexturePtr, NULL, NULL, NULL, 0xFFFFFFFF);
 #ifdef _DEBUG
 		if( pauseAtNext && eventToPause == NEXT_RENDER_TEXTURE )
 		{
-			MYLPDIRECT3DTEXTURE pD3DTexture = MYLPDIRECT3DTEXTURE(g_textures[0].m_lpsTexturePtr);
-			MYLPDIRECT3DSURFACE pD3DSurface = NULL;
+			LPDIRECT3DTEXTURE9 pD3DTexture = g_textures[0].m_lpsTexturePtr;
+			LPDIRECT3DSURFACE9 pD3DSurface = NULL;
 			pD3DTexture->GetSurfaceLevel(0,&pD3DSurface);
 			((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->SaveSurfaceToFile("\\DxTxtBuf25", pD3DSurface);
 		}
@@ -140,7 +140,7 @@ void D3DRender::DrawObjBGCopy(uObjBg &info)
 
 		// I can not finish this function because Z buffer is not lockable
 		// and lockable zbuffer does not work
-		MYLPDIRECT3DSURFACE pDepthBufferSurf = NULL;
+		LPDIRECT3DSURFACE9 pDepthBufferSurf = NULL;
 		g_pD3DDev->GetDepthStencilSurface(&pDepthBufferSurf);
 
 		D3DLOCKED_RECT dlre;
@@ -203,7 +203,7 @@ LPD3DXSPRITE D3DRender::InitSpriteDraw(void)
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_DISABLE );
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_ALPHAOP, D3DTOP_DISABLE );
 
-	gD3DDevWrapper.SetTexture( 0, MYLPDIRECT3DTEXTURE(g_textures[gRSP.curTile].m_lpsTexturePtr) );
+	gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG1 );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 
