@@ -103,6 +103,7 @@
       <DataExecutionPrevention />
       <ImportLibrary />
       <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86</AdditionalLibraryDirectories>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -151,6 +152,7 @@
       <DataExecutionPrevention />
       <ImportLibrary>../obj/1964Video/Debug/1964Video-Debug.lib</ImportLibrary>
       <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86</AdditionalLibraryDirectories>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
