@@ -859,8 +859,8 @@ void DLParser_Process(OSTask * pTask)
 
 			MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
 #ifdef _DEBUG
-			LOG_UCODE("0x%08x: %08x %08x %-10s", 
-				gDlistStack[gDlistStackPointer].pc, p_command.inst.cmd0, p_command.inst.cmd1, (gRSP.ucode!=5&&gRSP.ucode!=10)?ucodeNames_GBI1[(p_command.inst.cmd0>>24)]:ucodeNames_GBI2[(p_command.inst.cmd0>>24)]);
+	//		LOG_UCODE("0x%08x: %08x %08x %-10s", 
+//				gDlistStack[gDlistStackPointer].pc, p_command.inst.cmd0, p_command.inst.cmd1, (gRSP.ucode!=5&&gRSP.ucode!=10)?ucodeNames_GBI1[(p_command.inst.cmd0>>24)]:ucodeNames_GBI2[(p_command.inst.cmd0>>24)]);
 #endif
 			gDlistStack[gDlistStackPointer].pc += 8;
 			currentUcodeMap[p_command->inst.cmd0 >>24](*p_command);

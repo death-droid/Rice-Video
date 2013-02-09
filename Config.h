@@ -149,8 +149,6 @@ typedef struct {
 	BOOL	bSkipFrame;
 	BOOL	bDisplayTooltip;
 	BOOL	bHideAdvancedOptions;
-	BOOL	bFullTMEM;
-	BOOL	bUseFullTMEM;
 
 	uint32	bDisplayOnscreenFPS;
 	uint32	FPSColor;
@@ -252,7 +250,6 @@ typedef struct IniSection
 	int		VIHeight;
 	uint32	UseCIWidthAndRatio;
 
-	uint32	dwFullTMEM;
 	BOOL	bTxtSizeMethod2;
 	BOOL	bEnableTxtLOD;
 } section;
@@ -320,7 +317,6 @@ typedef struct
 	int		VIHeight;
 	uint32	UseCIWidthAndRatio;
 
-	uint32	dwFullTMEM;
 	BOOL	bTxtSizeMethod2;
 	BOOL	bEnableTxtLOD;
 } GameSetting, *LPGAMESETTING;

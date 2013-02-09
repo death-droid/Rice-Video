@@ -768,8 +768,9 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 		gti.TLutFmt = TLUT_FMT_RGBA16;		// Force RGBA
 
 	gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
-	if( !options.bUseFullTMEM && tile.dwSize == TXT_SIZE_4b )
-		gti.PalAddress += 16  * 2 * tile.dwPalette; 
+
+	//if( !options.bUseFullTMEM && tile.dwSize == TXT_SIZE_4b )
+	//	gti.PalAddress += 16  * 2 * tile.dwPalette; BACKTOME
 
 	gti.Address = (info->dwLoadAddress+(tile.dwTMem-infoTmemAddr)*8) & (g_dwRamSize-1) ;
 	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
@@ -1009,12 +1010,9 @@ void DLParser_LoadTLut(MicroCodeCommand command)
 		g_wRDPTlut[(i+dwTMEMOffset)^1] = srcPal[i^1];
 	}
 
-	if( options.bUseFullTMEM )
+	for (uint32 i=0; i<dwCount && i+tile.dwTMem<0x200; i++)
 	{
-		for (uint32 i=0; i<dwCount && i+tile.dwTMem<0x200; i++)
-		{
-			*(uint16*)(&g_Tmem.g_Tmem64bit[tile.dwTMem+i]) = srcPal[i^1];
-		}
+		*(uint16*)(&g_Tmem.g_Tmem64bit[tile.dwTMem+i]) = srcPal[i^1];
 	}
 
 	LOG_TEXTURE(
@@ -1119,43 +1117,39 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 
 	g_TxtLoadBy = CMD_LOADBLOCK;
 
-
-	if( options.bUseFullTMEM ) //force us to do this
+	uint32 bytes = (lrs + 1) << tile.dwSize >> 1;
+	uint32 address = g_TI.dwAddr + ult * g_TI.bpl + (uls << g_TI.dwSize >> 1);
+	if ((bytes == 0) || ((address + bytes) > g_dwRamSize) || (((tile.dwTMem << 3) + bytes) > 4096))
 	{
-		uint32 bytes = (lrs + 1) << tile.dwSize >> 1;
-		uint32 address = g_TI.dwAddr + ult * g_TI.bpl + (uls << g_TI.dwSize >> 1);
-		if ((bytes == 0) || ((address + bytes) > g_dwRamSize) || (((tile.dwTMem << 3) + bytes) > 4096))
-		{
-			return;
-		}
-		uint64* src = (uint64*)(g_pRDRAMu8+address);
-		uint64* dest = &g_Tmem.g_Tmem64bit[tile.dwTMem];
-
-		if( dxt > 0)
-		{
-			void (*Interleave)( void *mem, uint32 numDWords );
-
-			uint32 line = (2047 + dxt) / dxt;
-			uint32 bpl = line << 3;
-			uint32 height = bytes / bpl;
-
-			if (tile.dwSize == TXT_SIZE_32b)
-				Interleave = QWordInterleave;
-			else
-				Interleave = DWordInterleave;
-
-			for (uint32 y = 0; y < height; y++)
-			{
-				UnswapCopy( src, dest, bpl );
-				if (y & 1) Interleave( dest, line );
-
-				src += line;
-				dest += line;
-			}
-		}
-		else
-			UnswapCopy( src, dest, bytes );
+		return;
 	}
+	uint64* src = (uint64*)(g_pRDRAMu8+address);
+	uint64* dest = &g_Tmem.g_Tmem64bit[tile.dwTMem];
+
+	if( dxt > 0)
+	{
+		void (*Interleave)( void *mem, uint32 numDWords );
+
+		uint32 line = (2047 + dxt) / dxt;
+		uint32 bpl = line << 3;
+		uint32 height = bytes / bpl;
+
+		if (tile.dwSize == TXT_SIZE_32b)
+			Interleave = QWordInterleave;
+		else
+			Interleave = DWordInterleave;
+
+		for (uint32 y = 0; y < height; y++)
+		{
+			UnswapCopy( src, dest, bpl );
+			if (y & 1) Interleave( dest, line );
+
+			src += line;
+			dest += line;
+		}
+	}
+	else
+		UnswapCopy( src, dest, bytes );
 
 
 	LOG_UCODE("    Tile:%d (%d,%d - %d) DXT:0x%04x\n", tileno, uls, ult, lrs, dxt);
@@ -1201,64 +1195,61 @@ void DLParser_LoadTile(MicroCodeCommand command)
 	tile.hilite_th = tile.th = lrt;
 	tile.bSizeIsValid = true;
 
-	if( options.bUseFullTMEM )
+	void (*Interleave)( void *mem, uint32 numDWords );
+	uint32 address, height, bpl, line, y;
+	uint64 *dest;
+	uint8 *src;
+
+	if( g_TI.bpl == 0 )
 	{
-		void (*Interleave)( void *mem, uint32 numDWords );
-		uint32 address, height, bpl, line, y;
-		uint64 *dest;
-		uint8 *src;
-
-		if( g_TI.bpl == 0 )
+		if( options.enableHackForGames == HACK_FOR_BUST_A_MOVE )
 		{
-			if( options.enableHackForGames == HACK_FOR_BUST_A_MOVE )
-			{
-				g_TI.bpl = 1024;		// Hack for Bust-A-Move
-			}
-			else
-			{
-				TRACE0("Warning: g_TI.bpl = 0" );
-			}
-		}
-
-		address = g_TI.dwAddr + tile.tl * g_TI.bpl + (tile.sl << g_TI.dwSize >> 1);
-		dest = &g_Tmem.g_Tmem64bit[tile.dwTMem];
-		if( tile.sh < tile.sl )	swap(tile.sh, tile.sl);
-		bpl = (tile.sh - tile.sl + 1) << tile.dwSize >> 1;
-		height = tile.th - tile.tl + 1;
-		src = &g_pRDRAMu8[address];
-
-		if (((address + height * bpl) > g_dwRamSize) || (((tile.dwTMem << 3) + bpl * height) > 4096)) // Stay within TMEM
-		{
-			return;
-		}
-
-		// Line given for 32-bit is half what it seems it should since they split the
-		// high and low words. I'm cheating by putting them together.
-		if (tile.dwSize == TXT_SIZE_32b)
-		{
-			line = tile.dwLine << 1;
-			Interleave = QWordInterleave;
+			g_TI.bpl = 1024;		// Hack for Bust-A-Move
 		}
 		else
 		{
-			line = tile.dwLine;
-			Interleave = DWordInterleave;
+			TRACE0("Warning: g_TI.bpl = 0" );
 		}
+	}
 
-		if( tile.dwLine == 0 )
-		{
-			//tile.dwLine = 1;
-			return;
-		}
+	address = g_TI.dwAddr + tile.tl * g_TI.bpl + (tile.sl << g_TI.dwSize >> 1);
+	dest = &g_Tmem.g_Tmem64bit[tile.dwTMem];
+	if( tile.sh < tile.sl )	swap(tile.sh, tile.sl);
+	bpl = (tile.sh - tile.sl + 1) << tile.dwSize >> 1;
+	height = tile.th - tile.tl + 1;
+	src = &g_pRDRAMu8[address];
 
-		for (y = 0; y < height; y++)
-		{
-			UnswapCopy( src, dest, bpl );
-			if (y & 1) Interleave( dest, line );
+	if (((address + height * bpl) > g_dwRamSize) || (((tile.dwTMem << 3) + bpl * height) > 4096)) // Stay within TMEM
+	{
+		return;
+	}
 
-			src += g_TI.bpl;
-			dest += line;
-		}
+	// Line given for 32-bit is half what it seems it should since they split the
+	// high and low words. I'm cheating by putting them together.
+	if (tile.dwSize == TXT_SIZE_32b)
+	{
+		line = tile.dwLine << 1;
+		Interleave = QWordInterleave;
+	}
+	else
+	{
+		line = tile.dwLine;
+		Interleave = DWordInterleave;
+	}
+
+	if( tile.dwLine == 0 )
+	{
+		//tile.dwLine = 1;
+		return;
+	}
+
+	for (y = 0; y < height; y++)
+	{
+		UnswapCopy( src, dest, bpl );
+		if (y & 1) Interleave( dest, line );
+
+		src += g_TI.bpl;
+		dest += line;
 	}
 
 
@@ -1445,66 +1436,18 @@ void DLParser_SetTileSize(MicroCodeCommand command)
 	Tile &tile = gRDP.tiles[tileno];
 	tile.bForceWrapS = tile.bForceWrapT = tile.bForceClampS = tile.bForceClampT = false;
 
-	if( options.bUseFullTMEM )
-	{
-		tile.bSizeIsValid = true;
-		tile.hilite_sl = tile.sl = sl / 4;
-		tile.hilite_tl = tile.tl = tl / 4;
-		tile.hilite_sh = tile.sh = sh / 4;
-		tile.hilite_th = tile.th = th / 4;
+	tile.bSizeIsValid = true;
+	tile.hilite_sl = tile.sl = sl / 4;
+	tile.hilite_tl = tile.tl = tl / 4;
+	tile.hilite_sh = tile.sh = sh / 4;
+	tile.hilite_th = tile.th = th / 4;
 
-		tile.fhilite_sl = tile.fsl = sl / 4.0f;
-		tile.fhilite_tl = tile.ftl = tl / 4.0f;
-		tile.fhilite_sh = tile.fsh = sh / 4.0f;
-		tile.fhilite_th = tile.fth = th / 4.0f;
+	tile.fhilite_sl = tile.fsl = sl / 4.0f;
+	tile.fhilite_tl = tile.ftl = tl / 4.0f;
+	tile.fhilite_sh = tile.fsh = sh / 4.0f;
+	tile.fhilite_th = tile.fth = th / 4.0f;
 
-		tile.lastTileCmd = CMD_SETTILE_SIZE;
-	}
-	else
-	{
-		if( tile.lastTileCmd != CMD_SETTILE_SIZE )
-		{
-			tile.bSizeIsValid = true;
-			if( sl/4 > sh/4 || tl/4 > th/4 || (sh == 0 && tile.dwShiftS==0 && th == 0 && tile.dwShiftT ==0 ) )
-			{
-#ifdef _DEBUG
-				if( sl != 0 || tl != 0 || sh != 0 || th != 0 )
-				{
-					if( tile.dwMaskS==0 || tile.dwMaskT==0 )
-						TRACE0("Check me, setTileSize is not correct");
-				}
-#endif
-				tile.bSizeIsValid = false;
-			}
-			tile.hilite_sl = tile.sl = sl / 4;
-			tile.hilite_tl = tile.tl = tl / 4;
-			tile.hilite_sh = tile.sh = sh / 4;
-			tile.hilite_th = tile.th = th / 4;
-
-			tile.fhilite_sl = tile.fsl = sl / 4.0f;
-			tile.fhilite_tl = tile.ftl = tl / 4.0f;
-			tile.fhilite_sh = tile.fsh = sh / 4.0f;
-			tile.fhilite_th = tile.fth = th / 4.0f;
-
-			tile.lastTileCmd = CMD_SETTILE_SIZE;
-		}
-		else
-		{
-			tile.fhilite_sh = tile.fsh;
-			tile.fhilite_th = tile.fth;
-			tile.fhilite_sl = tile.fsl = (sl>0x7ff ? (sl-0xfff) : sl)/4.0f;
-			tile.fhilite_tl = tile.ftl = (tl>0x7ff ? (tl-0xfff) : tl)/4.0f;
-
-			tile.hilite_sl = sl>0x7ff ? (sl-0xfff) : sl;
-			tile.hilite_tl = tl>0x7ff ? (tl-0xfff) : tl;
-			tile.hilite_sl /= 4;
-			tile.hilite_tl /= 4;
-			tile.hilite_sh = sh/4;
-			tile.hilite_th = th/4;
-
-			tile.lastTileCmd = CMD_SETTILE_SIZE;
-		}
-	}
+	tile.lastTileCmd = CMD_SETTILE_SIZE;
 
 	LOG_TEXTURE(
 	{

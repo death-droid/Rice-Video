@@ -182,7 +182,6 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 	char			texturefilename[_MAX_PATH];
 	// the folder path which is scanned for textures
 	char			searchpath[_MAX_PATH];
-	const char *foundfilename;
 	// counter to count the identified hires textures
 	static int      count;
 	// handle to the first file found with a particular name (pattern search)
@@ -1173,13 +1172,13 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 
 	if( !gHiresTxtrInfos[idx].pHiresTextureRGB )
 	{
-		TRACE1("RGBBuffer creation failed for file '%s'.", filename_rgb);
+//		TRACE1("RGBBuffer creation failed for file '%s'.", filename_rgb);
 		return;
 	}
 	// check if the alpha channel has been loaded if the texture has a separate alpha channel
 	else if( gHiresTxtrInfos[idx].bSeparatedAlpha && !gHiresTxtrInfos[idx].pHiresTextureAlpha )
 	{
-		TRACE1("Alpha buffer creation failed for file '%s'.", filename_a);
+//		TRACE1("Alpha buffer creation failed for file '%s'.", filename_a);
 		return;
 	}
 

@@ -94,7 +94,6 @@
 #define IDC_ANISOTROPIC_TEXT            1095
 #define IDC_ANISOTROPIC_MAX_TEXT        1096
 #define IDC_ANTI_ALIASING_MAX_TEXT      1097
-#define IDC_FULL_TMEM                   1098
 #define IDC_EDIT_HEIGHT                 1099
 #define IDC_TMEM_EMULATION_DEBUG        1100
 #define IDC_NORMAL_COMBINER             1101
@@ -139,7 +138,6 @@
 #define IDC_DUMP_TEXTURE_TO_FILES       1144
 #define IDC_LABEL6                      1145
 #define IDC_LABEL7                      1146
-#define IDC_TMEM                        1147
 #define IDC_TXT_SIZE_METHOD_2           1148
 #define IDC_LOG_TO_SCREEN               1149
 #define IDC_ENABLE_LOD                  1150

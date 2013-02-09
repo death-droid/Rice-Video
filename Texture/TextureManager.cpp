@@ -842,7 +842,7 @@ void CTextureManager::ConvertTexture(TxtrCacheEntry * pEntry, bool fromTMEM)
 	static uint32 dwCount = 0;
 	
 	ConvertFunction pF;
-	if( options.bUseFullTMEM && fromTMEM && status.bAllowLoadFromTMEM )
+	if( fromTMEM && status.bAllowLoadFromTMEM )//backtomenoww
 	{
 		pF = gConvertFunctions_FullTMEM[ pEntry->ti.Format ][ pEntry->ti.Size ];
 	}
@@ -889,7 +889,7 @@ void CTextureManager::ConvertTexture_16(TxtrCacheEntry * pEntry, bool fromTMEM)
 	
 	ConvertFunction pF;
 
-	if( options.bUseFullTMEM && fromTMEM && status.bAllowLoadFromTMEM )
+	if(fromTMEM && status.bAllowLoadFromTMEM ) //backtomenoww
 	{
 		pF = gConvertFunctions_16_FullTMEM[ pEntry->ti.Format ][ pEntry->ti.Size ];
 	}

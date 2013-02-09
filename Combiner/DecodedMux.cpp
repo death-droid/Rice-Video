@@ -302,7 +302,7 @@ extern const char *translatedCombTypes[];
 void DecodedMux::DisplayMuxString(const char *prompt)
 {
 	DebuggerAppendMsg("//Mux=0x%08x%08x\t%s in %s\n", m_dwMux0, m_dwMux1, prompt, g_curRomInfo.szGameName);
-	Display(false);
+//	Display(false);
 	TRACE0("\n");
 }
 
@@ -310,7 +310,7 @@ void DecodedMux::DisplaySimpliedMuxString(const char *prompt)
 {
 	DebuggerAppendMsg("//Simplied Mux=0x%08x%08x\t%s in %s\n", m_dwMux0, m_dwMux1, prompt, g_curRomInfo.szGameName);
 	DebuggerAppendMsg("Simplied DWORDs=%08X, %08X, %08X, %08X", m_dWords[0],m_dWords[1],m_dWords[2],m_dWords[3]);
-	Display(true);
+//	Display(true);
 	DebuggerAppendMsg("Simplfied type: %s", muxTypeStrs[mType]);
 	if( m_dwShadeColorChannelFlag != 0 )
 	{

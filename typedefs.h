@@ -386,7 +386,6 @@ typedef struct {
 	LPRICETEXTURE m_lpsTexturePtr;
 	union {
 		CTexture *			m_pCTexture;
-		CDirectXTexture *	m_pCDirectXTexture;
 	};
 	
 	uint32 m_dwTileWidth;

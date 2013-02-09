@@ -134,96 +134,30 @@ void ConvertRGBA32(CTexture *pTexture, const TxtrInfo &tinfo)
 
 	uint32 * pSrc = (uint32*)(tinfo.pPhysicalAddress);
 
-	if( options.bUseFullTMEM )
+	Tile &tile = gRDP.tiles[tinfo.tileNo];
+
+	uint32 *pWordSrc;
+	if( tinfo.tileNo >= 0 )
 	{
-		Tile &tile = gRDP.tiles[tinfo.tileNo];
+		pWordSrc = (uint32*)&g_Tmem.g_Tmem64bit[tile.dwTMem];
 
-		uint32 *pWordSrc;
-		if( tinfo.tileNo >= 0 )
+		for (uint32 y = 0; y < tinfo.HeightToLoad; y++)
 		{
-			pWordSrc = (uint32*)&g_Tmem.g_Tmem64bit[tile.dwTMem];
+			uint32 * dwDst = (uint32 *)((uint8 *)dInfo.lpSurface + y*dInfo.lPitch);
 
-			for (uint32 y = 0; y < tinfo.HeightToLoad; y++)
+			uint32 nFiddle = ( y&1 )? 0x2 : 0;
+			int idx = tile.dwLine*4*y;
+
+			for (uint32 x = 0; x < tinfo.WidthToLoad; x++, idx++)
 			{
-				uint32 * dwDst = (uint32 *)((uint8 *)dInfo.lpSurface + y*dInfo.lPitch);
-
-				uint32 nFiddle = ( y&1 )? 0x2 : 0;
-				int idx = tile.dwLine*4*y;
-
-				for (uint32 x = 0; x < tinfo.WidthToLoad; x++, idx++)
-				{
-					uint32 w = pWordSrc[idx^nFiddle];
-					uint8* psw = (uint8*)&w;
-					uint8* pdw = (uint8*)&dwDst[x];
-					pdw[0] = psw[2];	// Blue
-					pdw[1] = psw[1];	// Green
-					pdw[2] = psw[0];	// Red
-					pdw[3] = psw[3];	// Alpha
-				}
+				uint32 w = pWordSrc[idx^nFiddle];
+				uint8* psw = (uint8*)&w;
+				uint8* pdw = (uint8*)&dwDst[x];
+				pdw[0] = psw[2];	// Blue
+				pdw[1] = psw[1];	// Green
+				pdw[2] = psw[0];	// Red
+				pdw[3] = psw[3];	// Alpha
 			}
-		}
-	}
-	else
-	{
-
-		if (tinfo.bSwapped)
-		{
-			for (uint32 y = 0; y < tinfo.HeightToLoad; y++)
-			{
-				if ((y%2) == 0)
-				{
-
-					uint8 *pDst = (uint8 *)dInfo.lpSurface + y * dInfo.lPitch;
-					uint8 *pS = (uint8 *)pSrc + (y+tinfo.TopToLoad) * tinfo.Pitch + (tinfo.LeftToLoad*4);
-
-					for (uint32 x = 0; x < tinfo.WidthToLoad; x++)
-					{
-						pDst[0] = pS[1];	// Blue
-						pDst[1] = pS[2];	// Green
-						pDst[2] = pS[3];	// Red
-						pDst[3] = pS[0];	// Alpha
-						pS+=4;
-						pDst+=4;
-					}
-				}
-				else
-				{
-
-					uint32 *pDst = (uint32 *)((uint8 *)dInfo.lpSurface + y * dInfo.lPitch);
-					uint8 *pS = (uint8 *)pSrc;
-					LONG n;
-
-					n = (y+tinfo.TopToLoad) * tinfo.Pitch + (tinfo.LeftToLoad*4);
-					for (uint32 x = 0; x < tinfo.WidthToLoad; x++)
-					{
-						*pDst++ = COLOR_RGBA(pS[(n+3)^0x8],
-							pS[(n+2)^0x8],
-							pS[(n+1)^0x8],
-							pS[(n+0)^0x8]);
-
-						n += 4;
-					}
-				}
-			}
-		}
-		else
-		{
-			for (uint32 y = 0; y < tinfo.HeightToLoad; y++)
-			{
-				uint8 *pDst = (uint8 *)dInfo.lpSurface + y * dInfo.lPitch;
-				uint8 *pS = (uint8 *)pSrc + (y+tinfo.TopToLoad) * tinfo.Pitch + (tinfo.LeftToLoad*4);
-
-				for (uint32 x = 0; x < tinfo.WidthToLoad; x++)
-				{
-					pDst[0] = pS[1];	// Blue
-					pDst[1] = pS[2];	// Green
-					pDst[2] = pS[3];	// Red
-					pDst[3] = pS[0];	// Alpha
-					pS+=4;
-					pDst+=4;
-				}
-			}
-
 		}
 	}
 
@@ -1065,95 +999,33 @@ void ConvertYUV(CTexture *pTexture, const TxtrInfo &tinfo)
 	uint32 x, y;
 	uint32 nFiddle;
 
-	if( options.bUseFullTMEM )
-	{
-		Tile &tile = gRDP.tiles[tinfo.tileNo];
+	Tile &tile = gRDP.tiles[tinfo.tileNo];
 
-		uint16 * pSrc;
-		if( tinfo.tileNo >= 0 )
-			pSrc = (uint16*)&g_Tmem.g_Tmem64bit[tile.dwTMem];
-		else
-			pSrc = (uint16*)(tinfo.pPhysicalAddress);
-
-		uint8 * pByteSrc = (uint8 *)pSrc;
-
-		for (y = 0; y < tinfo.HeightToLoad; y++)
-		{
-			nFiddle = ( y&1 )? 0x4 : 0;
-			int dwWordOffset = tinfo.tileNo>=0? tile.dwLine*8*y : ((y+tinfo.TopToLoad) * tinfo.Pitch) + (tinfo.LeftToLoad * 2);
-			uint32 * dwDst = (uint32 *)((uint8 *)dInfo.lpSurface + y*dInfo.lPitch);
-
-			for (x = 0; x < tinfo.WidthToLoad/2; x++)
-			{
-				int y0 = *(uint8*)&pByteSrc[(dwWordOffset+1)^nFiddle];
-				int y1 = *(uint8*)&pByteSrc[(dwWordOffset+3)^nFiddle];
-				int u0 = *(uint8*)&pByteSrc[(dwWordOffset  )^nFiddle];
-				int v0 = *(uint8*)&pByteSrc[(dwWordOffset+2)^nFiddle];
-
-				dwDst[x*2+0] = ConvertYUV16ToR8G8B8(y0,u0,v0);
-				dwDst[x*2+1] = ConvertYUV16ToR8G8B8(y1,u0,v0);
-
-				dwWordOffset += 4;
-			}
-		}
-	}
+	uint16 * pSrc;
+	if( tinfo.tileNo >= 0 )
+		pSrc = (uint16*)&g_Tmem.g_Tmem64bit[tile.dwTMem];
 	else
+		pSrc = (uint16*)(tinfo.pPhysicalAddress);
+
+	uint8 * pByteSrc = (uint8 *)pSrc;
+
+	for (y = 0; y < tinfo.HeightToLoad; y++)
 	{
-		uint16 * pSrc = (uint16*)(tinfo.pPhysicalAddress);
-		uint8 * pByteSrc = (uint8 *)pSrc;
+		nFiddle = ( y&1 )? 0x4 : 0;
+		int dwWordOffset = tinfo.tileNo>=0? tile.dwLine*8*y : ((y+tinfo.TopToLoad) * tinfo.Pitch) + (tinfo.LeftToLoad * 2);
+		uint32 * dwDst = (uint32 *)((uint8 *)dInfo.lpSurface + y*dInfo.lPitch);
 
-		if (tinfo.bSwapped)
+		for (x = 0; x < tinfo.WidthToLoad/2; x++)
 		{
-			for (y = 0; y < tinfo.HeightToLoad; y++)
-			{
-				if ((y&1) == 0)
-					nFiddle = 0x3;
-				else
-					nFiddle = 0x7;
+			int y0 = *(uint8*)&pByteSrc[(dwWordOffset+1)^nFiddle];
+			int y1 = *(uint8*)&pByteSrc[(dwWordOffset+3)^nFiddle];
+			int u0 = *(uint8*)&pByteSrc[(dwWordOffset  )^nFiddle];
+			int v0 = *(uint8*)&pByteSrc[(dwWordOffset+2)^nFiddle];
 
-				// dwDst points to start of destination row
-				uint32 * dwDst = (uint32 *)((uint8 *)dInfo.lpSurface + y*dInfo.lPitch);
+			dwDst[x*2+0] = ConvertYUV16ToR8G8B8(y0,u0,v0);
+			dwDst[x*2+1] = ConvertYUV16ToR8G8B8(y1,u0,v0);
 
-				// DWordOffset points to the current dword we're looking at
-				// (process 2 pixels at a time). May be a problem if we don't start on even pixel
-				uint32 dwWordOffset = ((y+tinfo.TopToLoad) * tinfo.Pitch) + (tinfo.LeftToLoad * 2);
-
-				for (x = 0; x < tinfo.WidthToLoad/2; x++)
-				{
-					int y0 = *(uint8*)&pByteSrc[(dwWordOffset  )^nFiddle];
-					int v0 = *(uint8*)&pByteSrc[(dwWordOffset+1)^nFiddle];
-					int y1 = *(uint8*)&pByteSrc[(dwWordOffset+2)^nFiddle];
-					int u0 = *(uint8*)&pByteSrc[(dwWordOffset+3)^nFiddle];
-
-					dwDst[x*2+0] = ConvertYUV16ToR8G8B8(y0,u0,v0);
-					dwDst[x*2+1] = ConvertYUV16ToR8G8B8(y1,u0,v0);
-
-					dwWordOffset += 4;
-				}
-			}
-		}
-		else
-		{
-			for (y = 0; y < tinfo.HeightToLoad; y++)
-			{
-				// dwDst points to start of destination row
-				uint32 * dwDst = (uint32 *)((uint8 *)dInfo.lpSurface + y*dInfo.lPitch);
-				uint32 dwByteOffset = y * 32;
-
-				for (x = 0; x < tinfo.WidthToLoad/2; x++)
-				{
-					int y0 = *(uint8*)&pByteSrc[dwByteOffset];
-					int v0 = *(uint8*)&pByteSrc[dwByteOffset+1];
-					int y1 = *(uint8*)&pByteSrc[dwByteOffset+2];
-					int u0 = *(uint8*)&pByteSrc[dwByteOffset+3];
-
-					dwDst[x*2+0] = ConvertYUV16ToR8G8B8(y0,u0,v0);
-					dwDst[x*2+1] = ConvertYUV16ToR8G8B8(y1,u0,v0);
-
-					// Increment word offset to point to the next two pixels
-					dwByteOffset += 4;
-				}
-			}
+			dwWordOffset += 4;
 		}
 	}
 

@@ -304,9 +304,6 @@ void WriteConfiguration(void)
 	fprintf(f, "MipMaps ");
 	fprintf(f, "%d\n", options.bMipMaps);
 
-	fprintf(f, "FullTMEMEmulation ");
-	fprintf(f, "%d\n", options.bFullTMEM);
-
 	fprintf(f, "ForceSoftwareTnL ");
 	fprintf(f, "%d\n", options.bForceSoftwareTnL);
 
@@ -489,8 +486,6 @@ void ReadConfiguration(void)
 		options.bEnableFog = TRUE;
 		options.bWinFrameMode = FALSE;
 		options.bMipMaps = TRUE;
-		options.bFullTMEM = FALSE;
-		options.bUseFullTMEM = FALSE;
 		options.bForceSoftwareTnL = TRUE;
 		options.bEnableSSE = TRUE;
 		options.bEnableVertexShader = FALSE;
@@ -564,7 +559,6 @@ void ReadConfiguration(void)
 		options.bEnableFog = ReadRegistryDwordVal("EnableFog");
 		options.bWinFrameMode = ReadRegistryDwordVal("WinFrameMode");
 		options.bMipMaps = ReadRegistryDwordVal("MipMaps");
-		options.bFullTMEM = ReadRegistryDwordVal("FullTMEMEmulation");
 		options.bForceSoftwareTnL = ReadRegistryDwordVal("ForceSoftwareTnL");
 		options.bEnableSSE = ReadRegistryDwordVal("EnableSSE");
 		options.bEnableVertexShader = ReadRegistryDwordVal("EnableVertexShader");
@@ -793,8 +787,6 @@ void GenerateCurrentRomOptions()
 	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
 	else currentRomOptions.bNormalBlender--;
 
-	options.bUseFullTMEM = ((options.bFullTMEM && (g_curRomInfo.dwFullTMEM == 0)) || g_curRomInfo.dwFullTMEM == 2);
-
 	GenerateFrameBufferOptions();
 
 	if( options.enableHackForGames == HACK_FOR_MARIO_GOLF || options.enableHackForGames == HACK_FOR_MARIO_TENNIS )
@@ -825,7 +817,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->VIWidth				= IniSections[i].VIWidth;
 	pGameSetting->VIHeight				= IniSections[i].VIHeight;
 	pGameSetting->UseCIWidthAndRatio	= IniSections[i].UseCIWidthAndRatio;
-	pGameSetting->dwFullTMEM			= IniSections[i].dwFullTMEM;
 	pGameSetting->bTxtSizeMethod2		= IniSections[i].bTxtSizeMethod2;
 	pGameSetting->bEnableTxtLOD			= IniSections[i].bEnableTxtLOD;
 
@@ -952,11 +943,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	if( IniSections[i].UseCIWidthAndRatio	!= pGameSetting->UseCIWidthAndRatio )
 	{
 		IniSections[i].UseCIWidthAndRatio	=pGameSetting->UseCIWidthAndRatio;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].dwFullTMEM	!= pGameSetting->dwFullTMEM )
-	{
-		IniSections[i].dwFullTMEM	=pGameSetting->dwFullTMEM;
 		bIniIsChanged=true;
 	}
 	if( IniSections[i].bTxtSizeMethod2	!= pGameSetting->bTxtSizeMethod2 )
@@ -1257,14 +1243,6 @@ ToolTipMsg ttmsg[] = {
 			"Data must be entered exactly in 8 hex numbers, or the entered value won't be accepted."
 	},
 	{ 
-		IDC_FULL_TMEM, //Rewrite texture loading to allow renaming of non tmem textures
-			"TMEM (N64 Texture Memory) Full Emulation",
-			"If this option is on, texture data will be loaded into the 4KB TMEM, textures are then created from data in the TMEM.\n"
-			"If this option is off, textures are then loaded directly from N64 RDRAM.\n\n"
-			"This feature is required by certain games. If it is on, Faster_Loading_Tile option will not work, and sprite ucodes may give errors.\n\n"
-			"Sorry for an non-perfect implementation."
-	},
-	{ 
 		IDC_SAVE_VRAM,
 			"Try to save video RAM for lower end video cards",
 			"If enabled, will automatically check if render-to-texture or saved back buffer texture has "
@@ -1317,11 +1295,6 @@ ToolTipMsg ttmsg[] = {
 	   "Dump textures to files",
 	   "This option dumps the textures in the game to normal JPG/BMP/PNG files.\n\nThis can be very useful "
 	   "for custom game art, high resolution textures, and other graphics modifications to games."
-	},
-	{
-	   IDC_TMEM,
-	   "Enable TMEM emulation",
-	   "Enables partial emulation of the TMEM memory area."
 	},
 	{
 	   IDC_TXT_SIZE_METHOD_2,
@@ -1580,7 +1553,6 @@ BOOL ReadIniFile()
 				newsection.VIWidth = -1;
 				newsection.VIHeight = -1;
 				newsection.UseCIWidthAndRatio = NOT_USE_CI_WIDTH_AND_RATIO;
-				newsection.dwFullTMEM = 0;
 				newsection.bTxtSizeMethod2 = FALSE;
 				newsection.bEnableTxtLOD = FALSE;
 
@@ -1633,9 +1605,6 @@ BOOL ReadIniFile()
 
 				if (lstrcmpi(left(readinfo,18), "UseCIWidthAndRatio")==0)
 					IniSections[sectionno].UseCIWidthAndRatio = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,8), "FullTMEM")==0)
-					IniSections[sectionno].dwFullTMEM = strtol(right(readinfo,1),NULL,10);
 
 				if (lstrcmpi(left(readinfo,24), "AlternativeTxtSizeMethod")==0)
 					IniSections[sectionno].bTxtSizeMethod2 = strtol(right(readinfo,1),NULL,10);
@@ -1841,9 +1810,6 @@ void OutputSectionDetails(uint32 i, FILE * fh)
 	if (IniSections[i].UseCIWidthAndRatio > 0)
 		fprintf(fh, "UseCIWidthAndRatio=%d\n", IniSections[i].UseCIWidthAndRatio);
 
-	if (IniSections[i].dwFullTMEM > 0)
-		fprintf(fh, "FullTMEM=%d\n", IniSections[i].dwFullTMEM);
-
 	if (IniSections[i].bTxtSizeMethod2 != FALSE )
 		fprintf(fh, "AlternativeTxtSizeMethod=%d\n", IniSections[i].bTxtSizeMethod2);
 
@@ -1915,7 +1881,6 @@ int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
 	newsection.VIWidth = -1;
 	newsection.VIHeight = -1;
 	newsection.UseCIWidthAndRatio = NOT_USE_CI_WIDTH_AND_RATIO;
-	newsection.dwFullTMEM = 0;
 	newsection.bTxtSizeMethod2 = FALSE;
 	newsection.bEnableTxtLOD = FALSE;
 
@@ -2540,7 +2505,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		}
 		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_SETCURSEL, options.forceTextureFilter, 0);
 
-		SendDlgItemMessage(hDlg, IDC_FULL_TMEM, BM_SETCHECK, options.bFullTMEM ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXRECT_ONLY, BM_SETCHECK, options.bTexRectOnly ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_SETCHECK, options.bLoadHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 		// fetch the value the user has set for caching from dialog
@@ -2587,7 +2551,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			i = SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0);
 			options.forceTextureFilter = ForceTextureFilterSettings[i].setting;
 
-			options.bFullTMEM = (SendDlgItemMessage(hDlg, IDC_FULL_TMEM, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bTexRectOnly = (SendDlgItemMessage(hDlg, IDC_TEXRECT_ONLY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			{
 				BOOL bLoadHiResTextures = options.bLoadHiResTextures;
@@ -2768,10 +2731,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, state, 0);
 
-		state = g_curRomInfo.dwFullTMEM ==2 ? BST_CHECKED : (g_curRomInfo.dwFullTMEM ==1?BST_UNCHECKED:BST_INDETERMINATE);
-		SendDlgItemMessage(hDlg, IDC_TMEM, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
-		SendDlgItemMessage(hDlg, IDC_TMEM, BM_SETCHECK, state, 0);
-
 		// Normal bi-state variable
 		SendDlgItemMessage(hDlg, IDC_DISABLE_BLENDER, BM_SETCHECK, g_curRomInfo.bDisableBlender?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_FORCE_DEPTH_COMPARE, BM_SETCHECK, g_curRomInfo.bForceDepthBuffer?BST_CHECKED:BST_UNCHECKED, 0);
@@ -2879,9 +2838,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			
 			state = SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwNormalCombiner = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
-
-			state = SendDlgItemMessage(hDlg, IDC_TMEM, BM_GETCHECK, 0, 0);
-			g_curRomInfo.dwFullTMEM = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
 
 			// Bi-state options
 			g_curRomInfo.bDisableBlender = (SendDlgItemMessage(hDlg, IDC_DISABLE_BLENDER, BM_GETCHECK, 0, 0)==BST_CHECKED);

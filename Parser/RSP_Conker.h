@@ -144,7 +144,7 @@ void RSP_MoveMem_Conker(MicroCodeCommand command)
 			}
 			DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_SET_LIGHT, 
 			{
-				DebuggerAppendMsg("RSP_MoveMemLight: %d, Addr=%08X, cmd0=%08X", dwLight, dwAddr, (command.inst.cmd0));
+				DebuggerAppendMsg("RSP_MoveMemLight: Addr=%08X, cmd0=%08X", dwAddr, (command.inst.cmd0));
 				TRACE0("Pause after MoveMemLight");
 			});
 		}

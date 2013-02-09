@@ -45,7 +45,7 @@ CTexture::CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
 CTexture::~CTexture(void)
 {
 }
-
+//LPDIRECT3DTEXTURE9
 TextureFmt CTexture::GetSurfaceFormat(void)
 {
 	if (m_pTexture == NULL)
