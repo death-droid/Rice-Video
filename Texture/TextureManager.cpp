@@ -20,11 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "stdafx.h"
 
 CTextureManager gTextureManager;
-
-DWORD g_maxTextureMemUsage = (5*1024*1024);
-DWORD g_amountToFree = (512*1024);
-bool g_bUseSetTextureMem = false;
-
 // Returns the first prime greater than or equal to nFirst
 inline LONG GetNextPrime(LONG nFirst)
 {
@@ -82,10 +77,6 @@ CTextureManager::CTextureManager() :
 {
 	m_numOfCachedTxtrList = GetNextPrime(800);
 
-	m_currentTextureMemUsage	= 0;
-	m_pYoungestTexture			= NULL;
-	m_pOldestTexture			= NULL;
-
 	m_pCacheTxtrList = new TxtrCacheEntry *[m_numOfCachedTxtrList];
 	SAFE_CHECK(m_pCacheTxtrList);
 
@@ -115,15 +106,12 @@ bool CTextureManager::CleanUp()
 {
 	RecycleAllTextures();
 
-	if (!g_bUseSetTextureMem)
+	while (m_pHead)
 	{
-		while (m_pHead)
-		{
-			TxtrCacheEntry * pVictim = m_pHead;
-			m_pHead = pVictim->pNext;
+		TxtrCacheEntry * pVictim = m_pHead;
+		m_pHead = pVictim->pNext;
 
-			delete pVictim;
-		}
+		delete pVictim;
 	}
 
 	if( m_blackTextureEntry.pTexture )		delete m_blackTextureEntry.pTexture;	
@@ -153,7 +141,7 @@ bool CTextureManager::TCacheEntryIsLoaded(TxtrCacheEntry *pEntry)
 // Check here
 void CTextureManager::PurgeOldTextures()
 {
-	if (m_pCacheTxtrList == NULL || g_bUseSetTextureMem)
+	if (m_pCacheTxtrList == NULL)
 		return;
 
 	static const uint32 dwFramesToKill = 5*30;			// 5 secs at 30 fps
@@ -214,9 +202,6 @@ void CTextureManager::RecycleAllTextures()
 	
 	uint32 dwCount = 0;
 	uint32 dwTotalUses = 0;
-	
-	m_pYoungestTexture			= NULL;
-	m_pOldestTexture			= NULL;
 
 	for (uint32 i = 0; i < m_numOfCachedTxtrList; i++)
 	{
@@ -227,9 +212,6 @@ void CTextureManager::RecycleAllTextures()
 			
 			dwTotalUses += pTVictim->dwUses;
 			dwCount++;
-			if (g_bUseSetTextureMem)
-				delete pTVictim;
-			else
 			RecycleTexture(pTVictim);
 		}
 	}
@@ -256,9 +238,6 @@ void CTextureManager::RecheckHiresForAllTextures()
 // Add to the recycle list
 void CTextureManager::RecycleTexture(TxtrCacheEntry *pEntry)
 {
-	if (g_bUseSetTextureMem)
-		return;
-
 	if (pEntry->pTexture == NULL)
 	{
 		// No point in saving!
@@ -293,9 +272,6 @@ void CTextureManager::RecycleTexture(TxtrCacheEntry *pEntry)
 // Search for a texture of the specified dimensions to recycle
 TxtrCacheEntry * CTextureManager::ReviveTexture( uint32 width, uint32 height )
 {
-	if (g_bUseSetTextureMem)
-		return NULL;
-
 	TxtrCacheEntry * pPrev;
 	TxtrCacheEntry * pCurr;
 	
@@ -323,54 +299,11 @@ TxtrCacheEntry * CTextureManager::ReviveTexture( uint32 width, uint32 height )
 	return NULL;
 }
 
-
 uint32 CTextureManager::Hash(uint32 dwValue)
 {
 	// Divide by four, because most textures will be on a 4 byte boundry, so bottom four
 	// bits are null
 	return (dwValue>>2) % m_numOfCachedTxtrList;
-}
-
-void CTextureManager::MakeTextureYoungest(TxtrCacheEntry *pEntry)
-{
-	if (!g_bUseSetTextureMem || pEntry == m_pYoungestTexture)
-		return;
-
-	// if its the oldest, then change the oldest pointer
-	if (pEntry == m_pOldestTexture)
-	{
-		m_pOldestTexture = pEntry->pNextYoungest;
-	}
-
-	// if its a not a new texture, close the gap in the age list
-	// where pEntry use to reside
-	if (pEntry->pNextYoungest != NULL || pEntry->pLastYoungest != NULL)
-	{
-		if (pEntry->pNextYoungest != NULL)
-		{
-			pEntry->pNextYoungest->pLastYoungest = pEntry->pLastYoungest;
-		}
-		if (pEntry->pLastYoungest != NULL)
-		{
-			pEntry->pLastYoungest->pNextYoungest = pEntry->pNextYoungest;
-		}
-	}
-
-	// this texture is now the youngest, so place it on the end of the list
-	if (m_pYoungestTexture != NULL)
-	{
-		m_pYoungestTexture->pNextYoungest = pEntry;
-	}
-
-	pEntry->pNextYoungest = NULL;
-	pEntry->pLastYoungest = m_pYoungestTexture;
-	m_pYoungestTexture = pEntry;
-	 
-	// if this is the first texture in memory then its also the oldest
-	if (m_pOldestTexture == NULL)
-	{
-		m_pOldestTexture = pEntry;
-	}
 }
 
 void CTextureManager::AddTexture(TxtrCacheEntry *pEntry)
@@ -385,12 +318,7 @@ void CTextureManager::AddTexture(TxtrCacheEntry *pEntry)
 	// Add to head (not tail, for speed - new textures are more likely to be accessed next)
 	pEntry->pNext = m_pCacheTxtrList[dwKey];
 	m_pCacheTxtrList[dwKey] = pEntry;
-
-	// Move the texture to the top of the age list
-	MakeTextureYoungest(pEntry);
 }
-
-
 
 TxtrCacheEntry * CTextureManager::GetTxtrCacheEntry(TxtrInfo * pti)
 {
@@ -406,15 +334,12 @@ TxtrCacheEntry * CTextureManager::GetTxtrCacheEntry(TxtrInfo * pti)
 	{
 		if ( pEntry->ti == *pti )
 		{
-			MakeTextureYoungest(pEntry);
 			return pEntry;
 		}
 	}
 
 	return NULL;
 }
-
-
 
 void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 {
@@ -440,27 +365,7 @@ void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 			else
 			   m_pCacheTxtrList[dwKey] = pCurr->pNext;
 
-			if (g_bUseSetTextureMem)
-			{
-				// remove the texture from the age list
-				if (pEntry->pNextYoungest != NULL)
-				{
-					pEntry->pNextYoungest->pLastYoungest = pEntry->pLastYoungest;
-				}
-				if (pEntry->pLastYoungest != NULL)
-				{
-					pEntry->pLastYoungest->pNextYoungest = pEntry->pNextYoungest;
-				}
-
-				// decrease the mem usage counter
-				m_currentTextureMemUsage -= (pEntry->pTexture->m_dwWidth * pEntry->pTexture->m_dwHeight * 4);
-			
-				delete pEntry;
-			}
-			else
-			{
-				RecycleTexture(pEntry);
-			}
+			RecycleTexture(pEntry);
 
 			break;
 		}
@@ -475,33 +380,10 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 {
 	TxtrCacheEntry * pEntry = NULL;
 
-	if (g_bUseSetTextureMem)
-	{
-		uint32 widthToCreate = dwWidth;
-		uint32 heightToCreate = dwHeight;
-		DWORD freeUpSize = (widthToCreate * heightToCreate * 4) + g_amountToFree;
+	// Find a used texture
+	pEntry = ReviveTexture(dwWidth, dwHeight);
 
-		// make sure there is enough room for the new texture by deleting old textures
-		while ((m_currentTextureMemUsage + freeUpSize) > g_maxTextureMemUsage && m_pOldestTexture != NULL)
-		{
-			TxtrCacheEntry *nextYoungest = m_pOldestTexture->pNextYoungest;
-
-			RemoveTexture(m_pOldestTexture);
-
-			m_pOldestTexture = nextYoungest;
-
-			OutputDebugString("Freeing Texture\n");
-		}
-
-		m_currentTextureMemUsage += widthToCreate * heightToCreate * 4;
-	}
-	else
-	{
-		// Find a used texture
-		pEntry = ReviveTexture(dwWidth, dwHeight);
-    }
-
-	if (pEntry == NULL || g_bUseSetTextureMem)
+	if (pEntry == NULL)
 	{
 		// Couldn't find on - recreate!
 		pEntry = new TxtrCacheEntry;
@@ -540,12 +422,9 @@ uint32 dwAsmHeight;
 uint32 dwAsmPitch;
 uint32 dwAsmdwBytesPerLine;
 uint32 dwAsmCRC;
-uint32 dwAsmCRC2;
 uint8* pAsmStart;
-
 TxtrCacheEntry *g_lastTextureEntry=NULL;
 bool lastEntryModified = false;
-
 
 TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, bool AutoExtendTexture)
 {
@@ -643,12 +522,6 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		}
 
 		pStart = (uint8*)pgti->PalAddress+dwOffset*2;
-
-		//uint32 y;
-		//for (y = 0; y < dwPalSize*2; y+=4)
-		//{
-		//	dwPalCRC = (dwPalCRC + *(uint32*)&pStart[y]);
-		//}
 
 		uint32 dwAsmCRCSave = dwAsmCRC;
 		//dwPalCRC = CalculateRDRAMCRC(pStart, 0, 0, dwPalSize, 1, TXT_SIZE_16b, dwPalSize*2);

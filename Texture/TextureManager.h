@@ -232,11 +232,6 @@ protected:
 	TxtrCacheEntry * GetLODFracTexture(uint8 fac);
 	TxtrCacheEntry * GetPrimLODFracTexture(uint8 fac);
 
-    void MakeTextureYoungest(TxtrCacheEntry *pEntry);
-	DWORD m_currentTextureMemUsage;
-	TxtrCacheEntry *m_pYoungestTexture;
-	TxtrCacheEntry *m_pOldestTexture;
-
 public:
 	CTextureManager();
 	~CTextureManager();
