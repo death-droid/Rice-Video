@@ -781,11 +781,6 @@ void DLParser_Process(OSTask * pTask)
 		}
 	}
 
-	if( currentRomOptions.N64RenderToTextureEmuType != TXT_BUF_NONE && defaultRomOptions.bSaveVRAM )
-	{
-		g_pFrameBufferManager->CheckRenderTextureCRCInRDRAM();
-	}
-
 	g_pOSTask = pTask;
 	
 	DebuggerPauseCountN( NEXT_DLIST );

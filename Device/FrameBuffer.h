@@ -42,7 +42,6 @@ public:
 
 	int			CheckAddrInRenderTextures(uint32 addr, bool checkcrc = true);
 	uint32		ComputeRenderTextureCRCInRDRAM(int infoIdx);
-	void		CheckRenderTextureCRCInRDRAM(void);
 	int			CheckRenderTexturesWithNewCI(SetImgInfo &CIinfo, uint32 height, bool byNewTxtrBuf);
 	virtual void ClearN64FrameBufferToBlack(uint32 left=0, uint32 top=0, uint32 width=0, uint32 height=0);
 	virtual int SetBackBufferAsRenderTexture(SetImgInfo &CIinfo, int ciInfoIdx);

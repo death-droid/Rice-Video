@@ -121,7 +121,6 @@ BEGIN
     GROUPBOX        "N64 Frame Buffer Effect Emulation Options",IDC_STATIC,6,54,288,120
     LTEXT           "Frame Buffer Write Back:",IDC_STATIC,18,104,126,8
     COMBOBOX        IDC_FRAME_BUFFER_WRITE_BACK_CONTROL,150,102,132,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Try to save VRAM",IDC_SAVE_VRAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,132,126,10
     CONTROL         "Automatic Write Back Overlapped Texture",IDC_AUTO_WRITE_BACK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,144,264,10
     CONTROL         "Double the Resolution for Small Render-to-Textures",IDC_TXTR_BUF_DOUBLE_SIZE,

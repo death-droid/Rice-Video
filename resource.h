@@ -125,7 +125,6 @@
 #define IDC_SHOW_FPS                    1131
 #define IDC_FPS_COLOR                   1132
 #define IDC_IN_N64_RESOLUTION           1133
-#define IDC_SAVE_VRAM                   1134
 #define IDC_AUTO_WRITE_BACK             1135
 #define IDC_LABEL8                      1136
 #define IDC_USE_CI_WIDTH_AND_RATIO      1137

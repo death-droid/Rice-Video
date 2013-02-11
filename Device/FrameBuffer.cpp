@@ -1471,35 +1471,7 @@ void FrameBufferManager::CopyBackToFrameBufferIfReadByCPU(uint32 addr)
 		TRACE1("Copy back for CI Addr=%08X", info->dwAddr);
 	}
 }
-//we do this checks to see if a render_texture operation is occuring...
-void FrameBufferManager::CheckRenderTextureCRCInRDRAM(void)
-{
-	for( int i=0; i<numOfTxtBufInfos; i++ )
-	{
-		if( !gRenderTextureInfos[i].isUsed )	
-			continue;
 
-		if( gRenderTextureInfos[i].pRenderTexture->IsBeingRendered() )
-			continue;
-
-		if( gRenderTextureInfos[i].crcCheckedAtFrame < status.gDlistCount )
-		{
-			uint32 crc = ComputeRenderTextureCRCInRDRAM(i);
-			if( gRenderTextureInfos[i].crcInRDRAM != crc )
-			{
-				// RDRAM has been modified by CPU core
-				TXTRBUF_DUMP(TRACE2("Delete txtr buf %d at %08X, CRC in RDRAM changed", i, gRenderTextureInfos[i].CI_Info.dwAddr ));
-				SAFE_DELETE(gRenderTextureInfos[i].pRenderTexture);
-				gRenderTextureInfos[i].isUsed = false;
-				continue;
-			}
-			else
-			{
-				gRenderTextureInfos[i].crcCheckedAtFrame = status.gDlistCount;
-			}
-		}
-	}
-}
 //check render_texture memory addresses
 int	FrameBufferManager::CheckAddrInRenderTextures(uint32 addr, bool checkcrc)
 {

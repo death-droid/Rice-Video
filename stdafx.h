@@ -32,11 +32,6 @@
 #include <fstream>
 #include <istream>
 
-#if _MSC_VER > 1200
-#include "xmmintrin.h"
-#endif
-
-
 #include <process.h>
 
 #include <d3d9.h>

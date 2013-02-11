@@ -209,7 +209,6 @@ typedef struct {
 	BOOL 	bNormalCombiner;
 	BOOL 	bNormalBlender;
 	BOOL 	bDoubleSizeForSmallTxtrBuf;
-	BOOL 	bSaveVRAM;
 	BOOL 	bOverlapAutoWriteBack;
 } RomOptions;
 

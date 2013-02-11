@@ -370,9 +370,6 @@ void WriteConfiguration(void)
 	fprintf(f, "FullScreenFrequency ");
 	fprintf(f, "%d\n", (uint32)windowSetting.uFullScreenRefreshRate);
 
-	fprintf(f, "SaveVRAM ");
-	fprintf(f, "%d\n", (uint32)defaultRomOptions.bSaveVRAM);
-
 	fprintf(f, "OverlapAutoWriteBack ");
 	fprintf(f, "%d\n", (uint32)defaultRomOptions.bOverlapAutoWriteBack);
 
@@ -515,7 +512,6 @@ void ReadConfiguration(void)
 
 		defaultRomOptions.bNormalBlender = FALSE;
 		defaultRomOptions.bNormalCombiner = FALSE;
-		defaultRomOptions.bSaveVRAM = FALSE;
 		defaultRomOptions.bOverlapAutoWriteBack = FALSE;
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
 		windowSetting.uFullScreenRefreshRate = 0;	// 0 is the default value, means to use Window default frequency
@@ -583,7 +579,6 @@ void ReadConfiguration(void)
 		options.DirectXMaxFSAA = ReadRegistryDwordVal("DirectXMaxFSAA");
 		options.FPSColor = ReadRegistryDwordVal("FPSColor");
 		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");
-		defaultRomOptions.bSaveVRAM = ReadRegistryDwordVal("SaveVRAM");
 		defaultRomOptions.bOverlapAutoWriteBack = ReadRegistryDwordVal("OverlapAutoWriteBack");
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = ReadRegistryDwordVal("DoubleSizeForSmallTxtrBuf");
 		windowSetting.uFullScreenRefreshRate = ReadRegistryDwordVal("FullScreenFrequency");
@@ -1241,13 +1236,6 @@ ToolTipMsg ttmsg[] = {
 			"Onscreen FPS Display Text Color",
 			"Color must be in 32bit HEX format, as AARRGGBB, AA=alpha, RR=red, GG=green, BB=Blue\n"
 			"Data must be entered exactly in 8 hex numbers, or the entered value won't be accepted."
-	},
-	{ 
-		IDC_SAVE_VRAM,
-			"Try to save video RAM for lower end video cards",
-			"If enabled, will automatically check if render-to-texture or saved back buffer texture has "
-			"been overwritten by the CPU thread. If yes,the plugin will delete the rendertexture to save VRAM.\n"
-			"This may be slower because extra checking need to be done at each frame."
 	},
 	{ 
 		IDC_AUTO_WRITE_BACK,
@@ -2630,7 +2618,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, defaultRomOptions.bNormalCombiner ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_SAVE_VRAM, BM_SETCHECK, defaultRomOptions.bSaveVRAM ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_AUTO_WRITE_BACK, BM_SETCHECK, defaultRomOptions.bOverlapAutoWriteBack ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_SETCHECK, defaultRomOptions.bDoubleSizeForSmallTxtrBuf ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -2694,7 +2681,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.bSaveVRAM = (SendDlgItemMessage(hDlg, IDC_SAVE_VRAM, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bOverlapAutoWriteBack = (SendDlgItemMessage(hDlg, IDC_AUTO_WRITE_BACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bDoubleSizeForSmallTxtrBuf = (SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
