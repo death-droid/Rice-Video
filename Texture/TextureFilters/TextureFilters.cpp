@@ -1201,7 +1201,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 			input_pitch_a *= 3;
 
 			// Update the texture by using the buffer
-			for( int i=0; i<gHiresTxtrInfos[idx].height; i++)
+			for( uint32 i=0; i<gHiresTxtrInfos[idx].height; i++)
 			{
 				unsigned char *pRGB = gHiresTxtrInfos[idx].pHiresTextureRGB + (input_height_shift + i) * input_pitch_rgb;
 				unsigned char *pA = gHiresTxtrInfos[idx].pHiresTextureAlpha + (input_height_shift + i) * input_pitch_a;

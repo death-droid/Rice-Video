@@ -136,9 +136,6 @@ typedef struct TxtrCacheEntry
 	
 	struct TxtrCacheEntry *pNext;		// Must be first element!
 
-	struct TxtrCacheEntry *pNextYoungest;
-	struct TxtrCacheEntry *pLastYoungest;
-
 	TxtrInfo ti;
 	uint32		dwCRC;
 	uint32		dwPalCRC;

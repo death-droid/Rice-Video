@@ -400,8 +400,6 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 	// Initialize
 	pEntry->ti.Address = dwAddr;
 	pEntry->pNext = NULL;
-	pEntry->pNextYoungest = NULL;
-	pEntry->pLastYoungest = NULL;
 	pEntry->dwUses = 0;
 	pEntry->dwTimeLastUsed = status.gRDPTime;
 	pEntry->dwCRC = 0;
