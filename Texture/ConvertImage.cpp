@@ -1035,27 +1035,16 @@ void ConvertYUV(CTexture *pTexture, const TxtrInfo &tinfo)
 
 uint32 ConvertYUV16ToR8G8B8(int Y, int U, int V)
 {
-	uint32 A= 1;
-
-	/*
-	int R = int(g_convc0 *(Y-16) + g_convc1 * V);
-	int G = int(g_convc0 *(Y-16) + g_convc2 * U - g_convc3 * V);
-	int B = int(g_convc0 *(Y-16) + g_convc4 * U);
-	*/
 
 	int R = int(Y + (1.370705f * (V-128)));
 	int G = int(Y - (0.698001f * (V-128)) - (0.337633f * (U-128)));
 	int B = int(Y + (1.732446f * (U-128)));
 
-	R = R<0 ? 0 : R;
-	G = G<0 ? 0 : G;
-	B = B<0 ? 0 : B;
+	R = R < 0 ? 0 : (R>255 ? 255 : R);
+	G = G < 0 ? 0 : (G>255 ? 255 : G);
+	B = B < 0 ? 0 : (B>255 ? 255 : B);
 
-	uint32 R2 = R>255 ? 255 : R;
-	uint32 G2 = G>255 ? 255 : G;
-	uint32 B2 = B>255 ? 255 : B;
-
-	return COLOR_RGBA(R2, G2, B2, 0xFF*A);
+	return COLOR_RGBA(R, G, B, 0xFF);
 }
 
 

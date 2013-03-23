@@ -319,9 +319,6 @@
     <ClCompile Include="Texture\ConvertImage.cpp">
       <Filter>Graphics\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="Texture\ConvertImage16.cpp">
-      <Filter>Graphics\Texture</Filter>
-    </ClCompile>
     <ClCompile Include="Texture\Texture.cpp">
       <Filter>Graphics\Texture</Filter>
     </ClCompile>

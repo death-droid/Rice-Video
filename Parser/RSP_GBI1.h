@@ -314,13 +314,13 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 	// dwAddr is offset into RD_RAM of 8 x 16bits of data...
 	scale[0] = *(short *)(g_pRDRAMu8 + ((dwAddr+(0*2))^0x2));
 	scale[1] = *(short *)(g_pRDRAMu8 + ((dwAddr+(1*2))^0x2));
-	scale[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(2*2))^0x2));
-	scale[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(3*2))^0x2));
+//	scale[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(2*2))^0x2));
+//	scale[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(3*2))^0x2));
 
 	trans[0] = *(short *)(g_pRDRAMu8 + ((dwAddr+(4*2))^0x2));
 	trans[1] = *(short *)(g_pRDRAMu8 + ((dwAddr+(5*2))^0x2));
-	trans[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(6*2))^0x2));
-	trans[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(7*2))^0x2));
+//	trans[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(6*2))^0x2));
+//	trans[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(7*2))^0x2));
 
 
 	int nCenterX = trans[0]/4;

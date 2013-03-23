@@ -253,7 +253,6 @@
     <ClCompile Include="Device\RenderTexture.cpp" />
     <ClCompile Include="Device\DirectXDevice\DXGraphicsContext.cpp" />
     <ClCompile Include="Texture\ConvertImage.cpp" />
-    <ClCompile Include="Texture\ConvertImage16.cpp" />
     <ClCompile Include="Texture\Texture.cpp" />
     <ClCompile Include="Texture\TextureManager.cpp" />
     <ClCompile Include="Texture\DirectXTexture\DirectXTexture.cpp" />

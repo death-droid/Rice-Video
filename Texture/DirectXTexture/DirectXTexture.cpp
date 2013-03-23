@@ -161,8 +161,6 @@ LPDIRECT3DTEXTURE9 CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeigh
 	
 	if( pf == D3DFMT_A8R8G8B8 || pf == D3DFMT_X8R8G8B8  )
 		m_dwTextureFmt = TEXTURE_FMT_A8R8G8B8;
-	else
-		m_dwTextureFmt = TEXTURE_FMT_A4R4G4B4;
 
 	if( !CDXGraphicsContext::IsResultGood(hr))
 	{

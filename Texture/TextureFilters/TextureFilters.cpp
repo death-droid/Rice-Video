@@ -1246,23 +1246,23 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 
 		if( entry.ti.WidthToCreate/entry.ti.WidthToLoad == 2 )
 		{
-			gTextureManager.Mirror(info.lpSurface, gHiresTxtrInfos[idx].width, entry.ti.maskS+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].height, S_FLAG, 4 );
+			gTextureManager.Mirror((uint32*)info.lpSurface, gHiresTxtrInfos[idx].width, entry.ti.maskS+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].height, S_FLAG);
 		}
 
 		if( entry.ti.HeightToCreate/entry.ti.HeightToLoad == 2 )
 		{
-			gTextureManager.Mirror(info.lpSurface, gHiresTxtrInfos[idx].height, entry.ti.maskT+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].height*2, entry.pEnhancedTexture->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG, 4 );
+			gTextureManager.Mirror((uint32*)info.lpSurface, gHiresTxtrInfos[idx].height, entry.ti.maskT+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].height*2, entry.pEnhancedTexture->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG);
 		}
 
 		if( entry.ti.WidthToCreate*scale < entry.pEnhancedTexture->m_dwCreatedTextureWidth )
 		{
 			// Clamp
-			gTextureManager.Clamp(info.lpSurface, gHiresTxtrInfos[idx].width, entry.pEnhancedTexture->m_dwCreatedTextureWidth, entry.pEnhancedTexture->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, S_FLAG, 4 );
+			gTextureManager.Clamp((uint32*)info.lpSurface, gHiresTxtrInfos[idx].width, entry.pEnhancedTexture->m_dwCreatedTextureWidth, entry.pEnhancedTexture->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, S_FLAG);
 		}
 		if( entry.ti.HeightToCreate*scale < entry.pEnhancedTexture->m_dwCreatedTextureHeight )
 		{
 			// Clamp
-			gTextureManager.Clamp(info.lpSurface, gHiresTxtrInfos[idx].height, entry.pEnhancedTexture->m_dwCreatedTextureHeight, entry.pEnhancedTexture->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG, 4 );
+			gTextureManager.Clamp((uint32*)info.lpSurface, gHiresTxtrInfos[idx].height, entry.pEnhancedTexture->m_dwCreatedTextureHeight, entry.pEnhancedTexture->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG);
 		}
 
 		entry.pEnhancedTexture->EndUpdate(&info);
@@ -1342,23 +1342,23 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 
 				if( entry.ti.WidthToCreate/entry.ti.WidthToLoad == 2 )
 				{
-					gTextureManager.Mirror(info2.lpSurface, gHiresTxtrInfos[idx].width, entry.ti.maskS+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].height, S_FLAG, 4 );
+					gTextureManager.Mirror((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].width, entry.ti.maskS+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].height, S_FLAG);
 				}
 
 				if( entry.ti.HeightToCreate/entry.ti.HeightToLoad == 2 )
 				{
-					gTextureManager.Mirror(info2.lpSurface, gHiresTxtrInfos[idx].height, entry.ti.maskT+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].height*2, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG, 4 );
+					gTextureManager.Mirror((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].height, entry.ti.maskT+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].height*2, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG);
 				}
 
 				if( entry.ti.WidthToCreate*scale < entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth )
 				{
 					// Clamp
-					gTextureManager.Clamp(info2.lpSurface, gHiresTxtrInfos[idx].width, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, S_FLAG, 4 );
+					gTextureManager.Clamp((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].width, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, S_FLAG);
 				}
 				if( entry.ti.HeightToCreate*scale < entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureHeight )
 				{
 					// Clamp
-					gTextureManager.Clamp(info2.lpSurface, gHiresTxtrInfos[idx].height, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureHeight, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG, 4 );
+					gTextureManager.Clamp((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].height, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureHeight, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG);
 				}
 
 				entry.pEnhancedTextureAlts[i]->EndUpdate(&info2);
