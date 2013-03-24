@@ -172,8 +172,7 @@ inline uint32 ConvertIA16ToRGBA(uint16 wIA)
 	return COLOR_RGBA(dwIntensity, dwIntensity, dwIntensity, dwAlpha);
 }
 
-extern int g_convk0,g_convk1,g_convk2,g_convk3,g_convk4,g_convk5;
-extern float g_convc0,g_convc1,g_convc2,g_convc3,g_convc4,g_convc5;
+
 
 uint32 ConvertYUV16ToR8G8B8(int Y, int U, int V);
 

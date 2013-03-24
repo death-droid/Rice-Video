@@ -53,11 +53,3 @@ TextureFmt CTexture::GetSurfaceFormat(void)
 	else
 		return m_dwTextureFmt;
 }
-
-uint32 CTexture::GetPixelSize()
-{
-	if( m_dwTextureFmt == TEXTURE_FMT_A8R8G8B8 )
-		return 4;
-	else
-		return 2;
-}

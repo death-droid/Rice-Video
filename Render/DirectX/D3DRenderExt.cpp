@@ -145,7 +145,6 @@ void D3DRender::DrawObjBGCopy(uObjBg &info)
 
 		D3DLOCKED_RECT dlre;
 		ZeroMemory( &dlre, sizeof(D3DLOCKED_RECT) );
-		//int pixSize = GetPixelSize();
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
 		uint32 height = (info.frameW/4*info.frameH/4)/width;
 		uint32 pitch = width;

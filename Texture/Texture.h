@@ -68,7 +68,6 @@ public:
 
 	virtual LPDIRECT3DTEXTURE9 GetTexture() { return m_pTexture; }
 
-	uint32			GetPixelSize();
 	TextureFmt		GetSurfaceFormat(void);	// Surface pixel format...
 
 	// Provides access to "surface"

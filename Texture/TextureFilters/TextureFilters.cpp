@@ -68,12 +68,14 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	}
 
 	CTexture* pSurfaceHandler = NULL;
+
 	//Create the surface for the texture
 	pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(srcInfo.dwCreatedWidth*2, srcInfo.dwCreatedHeight*2);
 
 	DrawInfo destInfo;
 	if(pSurfaceHandler)
 	{
+		//Open up the surface handler for updating
 		if( pSurfaceHandler->StartUpdate(&destInfo))
 		{
 			switch(options.textureEnhancement)
@@ -90,6 +92,7 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 				default:
 					break;
 			}
+			//Tell it that we have finished updating the surface
 			pSurfaceHandler->EndUpdate(&destInfo);	
 		}
 

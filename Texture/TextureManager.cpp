@@ -752,7 +752,6 @@ void CTextureManager::ExpandTexture(TxtrCacheEntry * pEntry, uint32 sizeToLoad, 
 	if( sizeToLoad >= sizeCreated )	return;
 
 	uint32 maskWidth = (1<<mask);
-	int size = pEntry->pTexture->GetPixelSize();
 
 #ifdef _DEBUG
 	// Some checks
@@ -1149,31 +1148,10 @@ void CTextureManager::updateColorTexture(CTexture *ptexture, uint32 color)
 		return;
 	}
 
-	int size = ptexture->GetPixelSize();
-	switch( size )
+	uint32 *buf = (uint32*)di.lpSurface;
+	for( int i=0; i<16; i++ )
 	{
-	case 2:	// 16 bits
-		{
-			uint16 *buf = (uint16*)di.lpSurface;
-			uint16 color16= (uint16)((color>>4)&0xF);
-			color16 |= ((color>>12)&0xF)<<4;
-			color16 |= ((color>>20)&0xF)<<8;
-			color16 |= ((color>>28)&0xF)<<12;
-			for( int i=0; i<16; i++ )
-			{
-				buf[i] = color16;
-			}
-		}
-		break;
-	case 4: // 32 bits
-		{
-			uint32 *buf = (uint32*)di.lpSurface;
-			for( int i=0; i<16; i++ )
-			{
-				buf[i] = color;
-			}
-		}
-		break;
+		buf[i] = color;
 	}
 
 	ptexture->EndUpdate(&di);
