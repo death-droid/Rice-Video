@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CTexture::CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
 	m_pTexture(NULL),
-	m_dwTextureFmt(TEXTURE_FMT_A8R8G8B8),
 	m_dwWidth(dwWidth),
 	m_dwHeight(dwHeight),
 	m_dwCreatedTextureWidth(dwWidth),
@@ -44,12 +43,4 @@ CTexture::CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
 
 CTexture::~CTexture(void)
 {
-}
-//LPDIRECT3DTEXTURE9
-TextureFmt CTexture::GetSurfaceFormat(void)
-{
-	if (m_pTexture == NULL)
-		return TEXTURE_FMT_UNKNOWN;
-	else
-		return m_dwTextureFmt;
 }

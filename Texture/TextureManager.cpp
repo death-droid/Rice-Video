@@ -532,14 +532,17 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	// in the cachelist. This was causing the slowdowns. Thus we have to iterate through the bucket of the cache list and see
 	// which of the textures that have been placed to it is the one we are looking for
 	if(pEntry && pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC != dwPalCRC &&
-			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed )){
+			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
+	{
 		bool bChecksumDoMatch=false;
 		// iterate through all textures located in the same bucket
-		while(pEntry->pNext){
+		while(pEntry->pNext)
+		{
 			// check the next texture in the same bucket
 			pEntry = pEntry->pNext;
 				// let's see if this one is the one we are actually looking for
-				if(pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed )){
+				if(pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
+				{
 					// found it in the neighbourhood
 					bChecksumDoMatch = true;
 					break;
@@ -600,6 +603,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 
 	if( pEntry->pTexture->m_dwCreatedTextureWidth < pgti->WidthToCreate )
 		pEntry->ti.WidthToLoad = pEntry->pTexture->m_dwCreatedTextureWidth;
+
 	if( pEntry->pTexture->m_dwCreatedTextureHeight < pgti->HeightToCreate )
 		pEntry->ti.HeightToLoad = pEntry->pTexture->m_dwCreatedTextureHeight;
 
@@ -607,39 +611,35 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	{
 		if (pEntry->pTexture != NULL)
 		{
-			TextureFmt dwType = pEntry->pTexture->GetSurfaceFormat();
 			SAFE_DELETE(pEntry->pEnhancedTexture);
 			pEntry->dwEnhancementFlag = TEXTURE_NO_ENHANCEMENT;
 
-			if (dwType != TEXTURE_FMT_UNKNOWN)
+			if( loadFromTextureBuffer )
 			{
-				if( loadFromTextureBuffer )
-				{
-					g_pFrameBufferManager->LoadTextureFromRenderTexture(pEntry, txtBufIdxToLoadFrom);
-					DEBUGGER_IF_DUMP((pauseAtNext && loadFromTextureBuffer) ,
-					{DebuggerAppendMsg("Load texture from render_texture %d", txtBufIdxToLoadFrom);}
-					);
+				g_pFrameBufferManager->LoadTextureFromRenderTexture(pEntry, txtBufIdxToLoadFrom);
+				DEBUGGER_IF_DUMP((pauseAtNext && loadFromTextureBuffer) ,
+				{DebuggerAppendMsg("Load texture from render_texture %d", txtBufIdxToLoadFrom);}
+				);
 
-					extern void ConvertTextureRGBAtoI(TxtrCacheEntry* pEntry, bool alpha);
-					if( g_pRenderTextureInfo->CI_Info.dwFormat == TXT_FMT_I )
-					{
-						// Convert texture from RGBA to I
-						ConvertTextureRGBAtoI(pEntry,false);
-					}
-					else if( g_pRenderTextureInfo->CI_Info.dwFormat == TXT_FMT_IA )
-					{
-						// Convert texture from RGBA to IA
-						ConvertTextureRGBAtoI(pEntry,true);
-					}
-				}
-				else
+				extern void ConvertTextureRGBAtoI(TxtrCacheEntry* pEntry, bool alpha);
+				if( g_pRenderTextureInfo->CI_Info.dwFormat == TXT_FMT_I )
 				{
-					LOG_TEXTURE(TRACE0("   Load new texture from RDRAM:\n"));
-					ConvertTexture(pEntry, fromTMEM);
-					pEntry->FrameLastUpdated = status.gDlistCount;
-					SAFE_DELETE(pEntry->pEnhancedTexture);
-					pEntry->dwEnhancementFlag = TEXTURE_NO_ENHANCEMENT;
+					// Convert texture from RGBA to I
+					ConvertTextureRGBAtoI(pEntry,false);
 				}
+				else if( g_pRenderTextureInfo->CI_Info.dwFormat == TXT_FMT_IA )
+				{
+					// Convert texture from RGBA to IA
+					ConvertTextureRGBAtoI(pEntry,true);
+				}
+			}
+			else
+			{
+				LOG_TEXTURE(TRACE0("   Load new texture from RDRAM:\n"));
+				ConvertTexture(pEntry, fromTMEM);
+				pEntry->FrameLastUpdated = status.gDlistCount;
+				SAFE_DELETE(pEntry->pEnhancedTexture);
+				pEntry->dwEnhancementFlag = TEXTURE_NO_ENHANCEMENT;
 			}
 
 			pEntry->ti.WidthToLoad = pgti->WidthToLoad;

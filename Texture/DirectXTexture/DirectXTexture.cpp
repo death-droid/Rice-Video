@@ -157,11 +157,6 @@ LPDIRECT3DTEXTURE9 CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeigh
 	m_fYScale = (float)m_dwCreatedTextureHeight/(float)m_dwHeight;
 	m_fXScale = (float)m_dwCreatedTextureWidth/(float)m_dwWidth;
 
-	// HACK - we should only assign this when m_pTexture is assigned!
-	
-	if( pf == D3DFMT_A8R8G8B8 || pf == D3DFMT_X8R8G8B8  )
-		m_dwTextureFmt = TEXTURE_FMT_A8R8G8B8;
-
 	if( !CDXGraphicsContext::IsResultGood(hr))
 	{
 		TRACE2("!!Unable to create surface!! %d x %d", dwWidth, dwHeight);

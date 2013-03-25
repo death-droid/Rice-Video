@@ -72,7 +72,7 @@ void DXFrameBufferManager::CopyBackBufferToRenderTexture(int idx, RecentCIInfo &
 
 //Copies Direct3D graphics surface to the RDRAM memory structure
 //Doesnt use render-targets (no HWFBE)
-void DXFrameBufferManager::CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, D3DFORMAT surf_fmt, IDirect3DSurface9 *surf)
+void DXFrameBufferManager::CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, IDirect3DSurface9 *surf)
 {
 	if( addr == 0 || addr>=g_dwRamSize )	return;
 	if( pitch == 0 ) pitch = width;
@@ -98,8 +98,7 @@ void DXFrameBufferManager::CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32
 		}
 	}
 
-	TextureFmt bufFmt = (surf_fmt==D3DFMT_A8R8G8B8 || surf_fmt==D3DFMT_X8R8G8B8) ? TEXTURE_FMT_A8R8G8B8 : TEXTURE_FMT_A4R4G4B4;
-	CopyBufferToRDRAM(addr, fmt, siz, width, height, bufWidth, bufHeight, startaddr, memsize, pitch, bufFmt, dlre.pBits, dlre.Pitch);
+	CopyBufferToRDRAM(addr, fmt, siz, width, height, bufWidth, bufHeight, startaddr, memsize, pitch, dlre.pBits, dlre.Pitch);
 
 	if( surf2 )	
 	{
@@ -110,13 +109,13 @@ void DXFrameBufferManager::CopyD3DSurfaceToRDRAM(uint32 addr, uint32 fmt, uint32
 		surf->UnlockRect();
 }
 //Performs main backbuffer to main N64 emulated RDRAM for FB effects....
-void DXFrameBufferManager::StoreBackBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, D3DFORMAT surf_fmt)
+void DXFrameBufferManager::StoreBackBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch)
 {
 	IDirect3DSurface9 *backBuffer = NULL;
 	g_pD3DDev->GetBackBuffer(0, 0,D3DBACKBUFFER_TYPE_MONO, &backBuffer);
 
 	TXTRBUF_DUMP(DebuggerAppendMsg("Copy Back Buffer to N64 RDRAM"););
 
-	CopyD3DSurfaceToRDRAM(addr, fmt, siz, width, height, bufWidth, bufHeight, startaddr, memsize, pitch, surf_fmt, backBuffer);
+	CopyD3DSurfaceToRDRAM(addr, fmt, siz, width, height, bufWidth, bufHeight, startaddr, memsize, pitch, backBuffer);
 	backBuffer->Release();
 }

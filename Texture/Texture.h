@@ -68,8 +68,6 @@ public:
 
 	virtual LPDIRECT3DTEXTURE9 GetTexture() { return m_pTexture; }
 
-	TextureFmt		GetSurfaceFormat(void);	// Surface pixel format...
-
 	// Provides access to "surface"
 	virtual bool StartUpdate(DrawInfo *di)=0;
 	virtual void EndUpdate(DrawInfo *di)=0;
@@ -77,7 +75,6 @@ public:
 protected:
 	CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
 	LPDIRECT3DTEXTURE9	m_pTexture;
-	TextureFmt		m_dwTextureFmt;
 };
 
 #endif

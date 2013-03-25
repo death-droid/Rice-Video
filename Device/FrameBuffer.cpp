@@ -1826,7 +1826,7 @@ void FrameBufferManager::StoreRenderTextureToRDRAM(int infoIdx)
 }
 
 //does FB copy to N64 RDAM structure
-void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, TextureFmt bufFmt, void *buffer, uint32 bufPitch)
+void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, uint32 width, uint32 height, uint32 bufWidth, uint32 bufHeight, uint32 startaddr, uint32 memsize, uint32 pitch, void *buffer, uint32 bufPitch)
 {
 	uint32 startline=0;
 	if( startaddr == 0xFFFFFFFF )	startaddr = addr;
@@ -1874,65 +1874,51 @@ void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, 
 	{
 		uint16 *frameBufferBase = (uint16*)(g_pRDRAMu8+addr);
 
-		if( bufFmt==TEXTURE_FMT_A8R8G8B8 )
-		{
-			int  sy0;
-			float ratio = bufHeight/(float)height;
+		int  sy0;
+		float ratio = bufHeight/(float)height;
 
-			for( uint32 i=startline; i<endline; i++ )
+		for( uint32 i=startline; i<endline; i++ )
+		{
+			sy0 = int(i*ratio+0.5);
+
+			uint16 *pD = frameBufferBase + i * pitch;
+			uint8 *pS0 = (uint8 *)buffer + sy0 * bufPitch;
+
+			for( uint32 j=0; j<width; j++ )
 			{
-				sy0 = int(i*ratio+0.5);
+				// Point
+				uint8 r = pS0[indexes[j]+2];
+				uint8 g = pS0[indexes[j]+1];
+				uint8 b = pS0[indexes[j]+0];
+				uint8 a = pS0[indexes[j]+3];
 
-				uint16 *pD = frameBufferBase + i * pitch;
-				uint8 *pS0 = (uint8 *)buffer + sy0 * bufPitch;
+				// Liner
+				*(pD+(j^1)) = ConvertRGBATo555( r, g, b, a);
 
-				for( uint32 j=0; j<width; j++ )
-				{
-					// Point
-					uint8 r = pS0[indexes[j]+2];
-					uint8 g = pS0[indexes[j]+1];
-					uint8 b = pS0[indexes[j]+0];
-					uint8 a = pS0[indexes[j]+3];
-
-					// Liner
-					*(pD+(j^1)) = ConvertRGBATo555( r, g, b, a);
-
-				}
 			}
-		}
-		else
-		{
-			TRACE1("Copy %sb FrameBuffer to Rdram, not implemented", pszImgSize[siz]);
 		}
 	}
 	else if( siz == TXT_SIZE_8b && fmt == TXT_FMT_CI )
 	{
 		uint8 *frameBufferBase = (uint8*)(g_pRDRAMu8+addr);
 
-		if( bufFmt==TEXTURE_FMT_A8R8G8B8 )
-		{
-			uint16 tempword;
-			InitTlutReverseLookup();
+		uint16 tempword;
+		InitTlutReverseLookup();
 
-			for( uint32 i=startline; i<endline; i++ )
-			{
-				uint8 *pD = frameBufferBase + i * width;
-				uint8 *pS = (uint8 *)buffer + i*bufHeight/height * bufPitch;
-				for( uint32 j=0; j<width; j++ )
-				{
-					int pos = 4*(j*bufWidth/width);
-					tempword = ConvertRGBATo555((pS[pos+2]),		// Red
-						(pS[pos+1]),		// G
-						(pS[pos+0]),		// B
-						(pS[pos+3]));		// Alpha
-					//*pD = CIFindIndex(tempword);
-					*(pD+(j^3)) = RevTlutTable[tempword];
-				}
-			}
-		}
-		else
+		for( uint32 i=startline; i<endline; i++ )
 		{
-			TRACE1("Copy %sb FrameBuffer to Rdram, not implemented", pszImgSize[siz]);
+			uint8 *pD = frameBufferBase + i * width;
+			uint8 *pS = (uint8 *)buffer + i*bufHeight/height * bufPitch;
+			for( uint32 j=0; j<width; j++ )
+			{
+				int pos = 4*(j*bufWidth/width);
+				tempword = ConvertRGBATo555((pS[pos+2]),		// Red
+					(pS[pos+1]),		// G
+					(pS[pos+0]),		// B
+					(pS[pos+3]));		// Alpha
+				//*pD = CIFindIndex(tempword);
+				*(pD+(j^3)) = RevTlutTable[tempword];
+			}
 		}
 		DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Copy %sb FrameBuffer to Rdram", pszImgSize[siz]);});
 	}
@@ -1940,34 +1926,27 @@ void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, 
 	{
 		uint8 *frameBufferBase = (uint8*)(g_pRDRAMu8+addr);
 
-		if( bufFmt==TEXTURE_FMT_A8R8G8B8 )
-		{
-			int sy0;
-			float ratio = bufHeight/(float)height;
+		int sy0;
+		float ratio = bufHeight/(float)height;
 
-			for( uint32 i=startline; i<endline; i++ )
+		for( uint32 i=startline; i<endline; i++ )
+		{
+			sy0 = int(i*ratio+0.5);
+
+			uint8 *pD = frameBufferBase + i * width;
+			uint8 *pS0 = (uint8 *)buffer + sy0 * bufPitch;
+
+			for( uint32 j=0; j<width; j++ )
 			{
-				sy0 = int(i*ratio+0.5);
+				// Point
+				uint32 r = pS0[indexes[j]+2];
+				uint32 g = pS0[indexes[j]+1];
+				uint32 b = pS0[indexes[j]+0];
 
-				uint8 *pD = frameBufferBase + i * width;
-				uint8 *pS0 = (uint8 *)buffer + sy0 * bufPitch;
+				// Liner
+				*(pD+(j^3)) = (uint8)((r+b+g)/3);
 
-				for( uint32 j=0; j<width; j++ )
-				{
-					// Point
-					uint32 r = pS0[indexes[j]+2];
-					uint32 g = pS0[indexes[j]+1];
-					uint32 b = pS0[indexes[j]+0];
-
-					// Liner
-					*(pD+(j^3)) = (uint8)((r+b+g)/3);
-
-				}
 			}
-		}
-		else
-		{
-			//DebuggerAppendMsg("Copy %sb FrameBuffer to Rdram, not implemented", pszImgSize[siz]);
 		}
 		DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Copy %sb FrameBuffer to Rdram", pszImgSize[siz]);});
 	}

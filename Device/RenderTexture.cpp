@@ -197,7 +197,7 @@ void CDXRenderTexture::StoreToRDRAM(int infoIdx)
 			height = info.knownHeight ? info.N64Height : info.maxUsedHeight;
 			memsize = info.N64Width*height;
 			FBmgr.CopyD3DSurfaceToRDRAM(info.CI_Info.dwAddr, fmt, info.CI_Info.dwSize, width, height,
-				bufWidth, bufHeight, info.CI_Info.dwAddr, memsize, info.N64Width, D3DFMT_A8R8G8B8, pSourceSurface);
+				bufWidth, bufHeight, info.CI_Info.dwAddr, memsize, info.N64Width, pSourceSurface);
 			info.CI_Info.dwFormat = TXT_FMT_CI;
 		}
 		else
@@ -207,14 +207,14 @@ void CDXRenderTexture::StoreToRDRAM(int infoIdx)
 				height = info.knownHeight ? info.N64Height : info.maxUsedHeight;
 				memsize = info.N64Width*height;
 				FBmgr.CopyD3DSurfaceToRDRAM(info.CI_Info.dwAddr, fmt, info.CI_Info.dwSize, width, height,
-					bufWidth, bufHeight, info.CI_Info.dwAddr, memsize, info.N64Width, D3DFMT_A8R8G8B8, pSourceSurface);
+					bufWidth, bufHeight, info.CI_Info.dwAddr, memsize, info.N64Width, pSourceSurface);
 			}
 			else
 			{
 				height = info.knownHeight ? info.N64Height : info.maxUsedHeight;
 				memsize = g_pRenderTextureInfo->N64Width*height*2;
 				FBmgr.CopyD3DSurfaceToRDRAM(info.CI_Info.dwAddr, fmt, info.CI_Info.dwSize, width, height,
-					bufWidth, bufHeight, info.CI_Info.dwAddr, memsize, info.N64Width, D3DFMT_X8R8G8B8, pSourceSurface);
+					bufWidth, bufHeight, info.CI_Info.dwAddr, memsize, info.N64Width, pSourceSurface);
 			}
 		}
 		TXTRBUF_DUMP(TRACE2("Write back: width=%d, height=%d", width, height));	
