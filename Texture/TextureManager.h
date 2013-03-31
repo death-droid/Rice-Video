@@ -101,7 +101,6 @@ public:
 			Size == sec.Size &&
 			Pitch == sec.Pitch &&
 			bSwapped == sec.bSwapped &&
-			TLutFmt == sec.TLutFmt &&
 			mirrorS == sec.mirrorS &&
 			mirrorT == sec.mirrorT &&
 			clampS == sec.clampS &&
