@@ -1001,38 +1001,11 @@ void DLParser_SetKeyR(MicroCodeCommand command)
 	gRDP.fKeyA = gRDP.keyA/255.0f;
 }
 
-int g_convk0,g_convk1,g_convk2,g_convk3,g_convk4,g_convk5;
-float g_convc0,g_convc1,g_convc2,g_convc3,g_convc4,g_convc5;
 void DLParser_SetConvert(MicroCodeCommand command)
 {
 	DP_Timing(DLParser_SetConvert);
 
-	int temp;
-
-	temp = ((command.inst.cmd0)>>13)&0x1FF;
-	g_convk0 = temp>0xFF ? -(temp-0x100) : temp;
-
-	temp = ((command.inst.cmd0)>>4)&0x1FF;
-	g_convk1 = temp>0xFF ? -(temp-0x100) : temp;
-
-	temp = (command.inst.cmd0)&0xF;
-	temp = (temp<<5)|(((command.inst.cmd1)>>27)&0x1F);
-	g_convk2 = temp>0xFF ? -(temp-0x100) : temp;
-
-	temp = ((command.inst.cmd1)>>18)&0x1FF;
-	g_convk3 = temp>0xFF ? -(temp-0x100) : temp;
-
-	temp = ((command.inst.cmd1)>>9)&0x1FF;
-	g_convk4 = temp>0xFF ? -(temp-0x100) : temp;
-
-	temp = (command.inst.cmd1)&0x1FF;
-	g_convk5 = temp>0xFF ? -(temp-0x100) : temp;
-
-	g_convc0 = g_convk5/255.0f+1.0f;
-	g_convc1 = g_convk0/255.0f*g_convc0;
-	g_convc2 = g_convk1/255.0f*g_convc0;
-	g_convc3 = g_convk2/255.0f*g_convc0;
-	g_convc4 = g_convk3/255.0f*g_convc0;
+	LOG_UCODE("SetConvert: (Ignored)");
 }
 void DLParser_SetPrimDepth(MicroCodeCommand command)
 {
