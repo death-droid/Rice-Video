@@ -130,7 +130,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 {
 	SP_Timing(RSP_GBI1_BranchZ);
 
-	uint32 vtx = ((command.inst.cmd0)&0xFFF)>1;
+	uint32 vtx = ((command.inst.cmd0)&0xFFF)>>1;
 	float vtxdepth = g_vecProjected[vtx].z/g_vecProjected[vtx].w;
 
 #ifdef _DEBUG
