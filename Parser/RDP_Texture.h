@@ -972,7 +972,7 @@ void DLParser_LoadTLut(MicroCodeCommand command)
 	uint32 lrs		= command.loadtile.sh/4;
 	uint32 lrt		= command.loadtile.th/4;
 
-	uint32 dwTLutFmt = (gRDP.otherModeH >> RSP_SETOTHERMODE_SHIFT_TEXTLUT)&0x3;
+	uint32 dwTLutFmt = (gRDP.otherMode.H >> RSP_SETOTHERMODE_SHIFT_TEXTLUT)&0x3;
 
 	uint32 dwCount;
 

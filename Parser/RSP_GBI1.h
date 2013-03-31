@@ -584,11 +584,11 @@ void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 
 	uint32 dwMask = ((1<<dwLength)-1)<<dwShift;
 
-	uint32 modeL = gRDP.otherModeL;
+	uint32 modeL = gRDP.otherMode.L;
 	modeL = (modeL&(~dwMask)) | dwData;
 
 	MicroCodeCommand tempgfx;
-	tempgfx.inst.cmd0 = gRDP.otherModeH;
+	tempgfx.inst.cmd0 = gRDP.otherMode.H;
 	tempgfx.inst.cmd1 = modeL;
 	DLParser_RDPSetOtherMode(tempgfx);
 }
@@ -603,12 +603,12 @@ void RSP_GBI1_SetOtherModeH(MicroCodeCommand command)
 	uint32 dwData  = (command.inst.cmd1);
 
 	uint32 dwMask = ((1<<dwLength)-1)<<dwShift;
-	uint32 dwModeH = gRDP.otherModeH;
+	uint32 dwModeH = gRDP.otherMode.H;
 
 	dwModeH = (dwModeH&(~dwMask)) | dwData;
 	MicroCodeCommand tempgfx;
 	tempgfx.inst.cmd0 = dwModeH;
-	tempgfx.inst.cmd1 = gRDP.otherModeL;
+	tempgfx.inst.cmd1 = gRDP.otherMode.L;
 	DLParser_RDPSetOtherMode(tempgfx );
 }
 

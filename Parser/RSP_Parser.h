@@ -529,7 +529,13 @@ typedef struct
 
 		};
 		uint64			_u64;
-		uint32			_u32[2];
+
+		struct
+		{
+			u32	L;
+			u32	H;
+		};
+
 	};
 } RDP_OtherMode;
 

@@ -1050,20 +1050,18 @@ void DLParser_SetPrimDepth(MicroCodeCommand command)
 void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 {
 	DP_Timing(DLParser_RDPSetOtherMode);
-	gRDP.otherMode._u32[1] = (command.inst.cmd0);	// High
-	gRDP.otherMode._u32[0] = (command.inst.cmd1);	// Low
 
-	if( gRDP.otherModeH != ((command.inst.cmd0) & 0x0FFFFFFF) )
+	if( gRDP.otherMode.H != ((command.inst.cmd0) & 0x0FFFFFFF) )
 	{
-		gRDP.otherModeH = ((command.inst.cmd0) & 0x0FFFFFFF);
+		gRDP.otherMode.H = ((command.inst.cmd0) & 0x0FFFFFFF);
 
-		uint32 dwTextFilt  = (gRDP.otherModeH>>RSP_SETOTHERMODE_SHIFT_TEXTFILT)&0x3;
+		uint32 dwTextFilt  = (gRDP.otherMode.H>>RSP_SETOTHERMODE_SHIFT_TEXTFILT)&0x3;
 		CRender::g_pRender->SetTextureFilter(dwTextFilt<<RSP_SETOTHERMODE_SHIFT_TEXTFILT);
 	}
 
-	if( gRDP.otherModeL != (command.inst.cmd1) )
+	if( gRDP.otherMode.L != (command.inst.cmd1) )
 	{
-		if( (gRDP.otherModeL&ZMODE_DEC) != ((command.inst.cmd1)&ZMODE_DEC) )
+		if( (gRDP.otherMode.L&ZMODE_DEC) != ((command.inst.cmd1)&ZMODE_DEC) )
 		{
 			if( ((command.inst.cmd1)&ZMODE_DEC) == ZMODE_DEC )
 				CRender::g_pRender->SetZBias( 2 );
@@ -1071,15 +1069,15 @@ void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 				CRender::g_pRender->SetZBias( 0 );
 		}
 
-		gRDP.otherModeL = (command.inst.cmd1);
+		gRDP.otherMode.L = (command.inst.cmd1);
 
-		BOOL bZCompare		= (gRDP.otherModeL & Z_COMPARE)			? TRUE : FALSE;
-		BOOL bZUpdate		= (gRDP.otherModeL & Z_UPDATE)			? TRUE : FALSE;
+		BOOL bZCompare		= (gRDP.otherMode.L & Z_COMPARE)			? TRUE : FALSE;
+		BOOL bZUpdate		= (gRDP.otherMode.L & Z_UPDATE)			? TRUE : FALSE;
 
 		CRender::g_pRender->SetZCompare( bZCompare );
 		CRender::g_pRender->SetZUpdate( bZUpdate );
 
-		uint32 dwAlphaTestMode = (gRDP.otherModeL >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3;
+		uint32 dwAlphaTestMode = (gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3;
 
 		if ((dwAlphaTestMode) != 0)
 			CRender::g_pRender->SetAlphaTestEnable( TRUE );

@@ -169,7 +169,7 @@ Possible Blending Factors:
 				Disable();
 			}
 
-			render->SetAlphaTestEnable( ((gRDP.otherModeL >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3)==1 ? TRUE : FALSE);
+			render->SetAlphaTestEnable( ((gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3)==1 ? TRUE : FALSE);
 			break;
 		case BLEND_PASS+(BLEND_OPA>>2):
 			// 0x0c19

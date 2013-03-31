@@ -611,8 +611,8 @@ void InitRenderBase()
 	gRSP.real_clip_ratio_posy = 1;
 
 	gRDP.geometryMode	= 0;
-	gRDP.otherModeL		= 0;
-	gRDP.otherModeH		= 0;
+	gRDP.otherMode.L		= 0;
+	gRDP.otherMode.H		= 0;
 	gRDP.fillColor		= 0xFFFFFFFF;
 	gRDP.originalFillColor	=0;
 
