@@ -601,16 +601,17 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	pEntry->bExternalTxtrChecked = false;
 	pEntry->maxCI = maxCI;
 
-	if( pEntry->pTexture->m_dwCreatedTextureWidth < pgti->WidthToCreate )
-		pEntry->ti.WidthToLoad = pEntry->pTexture->m_dwCreatedTextureWidth;
-
-	if( pEntry->pTexture->m_dwCreatedTextureHeight < pgti->HeightToCreate )
-		pEntry->ti.HeightToLoad = pEntry->pTexture->m_dwCreatedTextureHeight;
-
 	try 
 	{
 		if (pEntry->pTexture != NULL)
 		{
+
+			if( pEntry->pTexture->m_dwCreatedTextureWidth < pgti->WidthToCreate )
+				pEntry->ti.WidthToLoad = pEntry->pTexture->m_dwCreatedTextureWidth;
+
+			if( pEntry->pTexture->m_dwCreatedTextureHeight < pgti->HeightToCreate )
+				pEntry->ti.HeightToLoad = pEntry->pTexture->m_dwCreatedTextureHeight;
+
 			SAFE_DELETE(pEntry->pEnhancedTexture);
 			pEntry->dwEnhancementFlag = TEXTURE_NO_ENHANCEMENT;
 
