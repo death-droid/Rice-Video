@@ -52,8 +52,6 @@ void SetVtx(TLITVERTEX &v, TLITVERTEX &v1, TLITVERTEX &v2, float r)
 	}
 }
 
-
-
 void SwapVertexPos(int firstidx)
 {
 	TLITVERTEX &v1 = g_vtxBuffer[firstidx];
@@ -108,11 +106,10 @@ void ClipVertexes()
 		if( v1.rhw < 0 && v2.rhw < 0 && v3.rhw < 0 )
 			continue;	// Skip this triangle
 
-		if( v1.rhw >= 0 && v2.rhw >= 0 && v3.rhw >= 0 )	
-		//if( v1.rhw >= 0 && v2.rhw >= 0 && v3.rhw >= 0 &&
-		//	v1.x>=0 && v1.x < windowSetting.uViWidth && v1.y>=0 && v1.y<windowSetting.uViHeight &&
-		//	v2.x>=0 && v2.x < windowSetting.uViWidth && v2.y>=0 && v2.y<windowSetting.uViHeight &&
-		//	v3.x>=0 && v3.x < windowSetting.uViWidth && v3.y>=0 && v3.y<windowSetting.uViHeight )	
+		if( v1.rhw >= 0 && v2.rhw >= 0 && v3.rhw >= 0 &&
+			v1.x>=0 && v1.x < windowSetting.uViWidth && v1.y>=0 && v1.y<windowSetting.uViHeight &&
+			v2.x>=0 && v2.x < windowSetting.uViWidth && v2.y>=0 && v2.y<windowSetting.uViHeight &&
+			v3.x>=0 && v3.x < windowSetting.uViWidth && v3.y>=0 && v3.y<windowSetting.uViHeight )	
 		{
 			if( v1.z < 0 || v2.z < 0 || v3.z < 0 )
 			{
@@ -501,9 +498,9 @@ bool Clip1TriangleForNegW(TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3, int &d
 			Interp1PtZ(ps[k],v1,v2,v3);
 		}
 
-		ClipFor1LineZ(pts[lno%2], pts[(lno+1)%2], true);	// Clip for near plane
-		if( pts[(lno+1)%2].size() < 3 )
-			return false;
+	//	ClipFor1LineZ(pts[lno%2], pts[(lno+1)%2], true);	// Clip for near plane
+	//	if( pts[(lno+1)%2].size() < 3 )
+	//		return false;
 	//	ClipFor1LineZ(pts[(lno+1)%2], pts[lno%2], false);	// clip for far plane
 	//	if( pts[lno%2].size() < 3 )
 	//		return false;
@@ -558,8 +555,6 @@ bool Clip1TriangleForNegW(TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3, int &d
 
 	return true;
 }
-
-
 
 bool Clip1TriangleForZ(TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3, int &dstidx)
 {

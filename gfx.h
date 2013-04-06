@@ -237,7 +237,7 @@ FUNC_TYPE(void) NAME_DEFINE(RomClosed) (void);
   input:    none
   output:   none
 *******************************************************************/ 
-FUNC_TYPE(int) NAME_DEFINE(RomOpen) (void);
+FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void);
 
 /******************************************************************
   Function: ShowCFB

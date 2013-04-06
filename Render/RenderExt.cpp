@@ -94,7 +94,6 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 		else
 		{
 			gti.Pitch	= g_CI.dwWidth << (gti.Size-1);
-
 		}
 	}
 

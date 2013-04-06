@@ -960,6 +960,7 @@ void CRender::StartDrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32
 
 void CRender::SetAddressUAllStages(uint32 dwTile, int dwFlag)
 {
+
 }
 
 void CRender::SetAddressVAllStages(uint32 dwTile, int dwFlag)

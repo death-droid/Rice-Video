@@ -639,7 +639,8 @@ void D3DRender::UpdateScissor()
 
 void D3DRender::ApplyRDPScissor(bool force)
 {
-	if( !force && status.curScissor == RDP_SCISSOR )	return;
+	if( !force && status.curScissor == RDP_SCISSOR )
+		return;
 
 	if( options.bEnableHacks && g_CI.dwWidth == 0x200 && gRDP.scissor.right == 0x200 && g_CI.dwWidth>(*g_GraphicsInfo.VI_WIDTH_REG & 0xFFF) )
 	{

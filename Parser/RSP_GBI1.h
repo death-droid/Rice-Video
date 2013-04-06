@@ -246,7 +246,6 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 	s8 * pcBase = g_pRDRAMs8 + dwAddr;
 	uint32 * pdwBase = (uint32 *)pcBase;
 
-
 	float range = 0, x, y, z;
 	if( options.enableHackForGames == HACK_FOR_ZELDA_MM && (pdwBase[0]&0xFF) == 0x08 && (pdwBase[1]&0xFF) == 0xFF )
 	{

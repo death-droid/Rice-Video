@@ -296,7 +296,6 @@ void StopVideo()
 
 
 	try {
-
 		// Kill all textures?
 		gTextureManager.RecycleAllTextures();
 		gTextureManager.CleanUp();
@@ -337,7 +336,7 @@ FUNC_TYPE(void) NAME_DEFINE(RomClosed) (void)
 	TRACE0("Video is stopped");
 }
 
-FUNC_TYPE(int) NAME_DEFINE(RomOpen) (void)
+FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void)
 {
 	if( g_CritialSection.IsLocked() )
 	{

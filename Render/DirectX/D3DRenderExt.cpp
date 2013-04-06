@@ -58,7 +58,7 @@ void D3DRender::LoadTxtrBufFromRDRAM(void)
 }
 
 
-// #define SUPPORT_ZBUFFER_IMG		//Doesn't work good enough, still need lockable zbuffer
+ //#define SUPPORT_ZBUFFER_IMG		//Doesn't work good enough, still need lockable zbuffer
 //#define SUPPORT_LOCKABLE_ZBUFFER
 void D3DRender::DrawObjBGCopy(uObjBg &info)
 {
@@ -194,8 +194,6 @@ void D3DRender::FinishSpriteDraw(LPD3DXSPRITE d3dSprite)
 		d3dSprite->Release();
 	}
 }
-
-
 
 LPD3DXSPRITE D3DRender::InitSpriteDraw(void)
 {
