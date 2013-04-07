@@ -164,9 +164,6 @@
     <ClInclude Include="Utility\IColor.h">
       <Filter>Graphics\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\Unique.h">
-      <Filter>Graphics\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Texture\ConvertImage.h">
       <Filter>Graphics\Texture</Filter>
     </ClInclude>

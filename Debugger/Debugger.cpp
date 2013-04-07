@@ -589,7 +589,7 @@ LRESULT APIENTRY DebuggerDialog(HWND hDlg, unsigned message, LONG wParam, LONG l
 	{
 	case WM_INITDIALOG:
 		myDialogWnd = hDlg;
-		sprintf(temp,"%s Debug %s",project_name, FILE_VERSION) ;
+		sprintf(temp,"%s Debug %s",project_name, BUILD_NUMBER) ;
 		SetWindowText(myDialogWnd, temp );
 		SendDlgItemMessage(hDlg, IDC_LOG_COMBINERS, BM_SETCHECK, logCombiners ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_LOG_TRIANGLES, BM_SETCHECK, logTriangles ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -912,7 +912,7 @@ void __cdecl DebuggerAppendMsg(const char * Message, ...)
 void DebuggerPause()
 {
 	char temp[300];
-	sprintf(temp,"%s Debug %s:Paused ",project_name, FILE_VERSION) ;
+	sprintf(temp,"%s Debug %s:Paused ",project_name, BUILD_NUMBER) ;
 	SetWindowText(myDialogWnd, temp );
 	while( debuggerPause )
 	{
@@ -923,7 +923,7 @@ void DebuggerPause()
 		}
 		Sleep(100);
 	}
-	sprintf(temp,"%s Debug %s",project_name, FILE_VERSION) ;
+	sprintf(temp,"%s Debug %s",project_name, BUILD_NUMBER) ;
 	SetWindowText(myDialogWnd, temp);
 }
 

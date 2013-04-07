@@ -85,9 +85,9 @@ void GetPluginDir( char * Directory )
 FUNC_TYPE(void) NAME_DEFINE(GetDllInfo) ( PLUGIN_INFO * PluginInfo )
 {
 #ifdef _DEBUG
-	sprintf(PluginInfo->Name, "%s %s Debug",project_name, FILE_VERSION);
+	sprintf(PluginInfo->Name, "%s %s Debug",project_name, BUILD_NUMBER);
 #else
-	sprintf(PluginInfo->Name, "%s %s",project_name, FILE_VERSION);
+	sprintf(PluginInfo->Name, "%s %s",project_name, BUILD_NUMBER);
 #endif
 	PluginInfo->Version        = 0x0103;
 	PluginInfo->Type           = PLUGIN_TYPE_GFX;
@@ -700,7 +700,7 @@ void __cdecl MsgInfo (char * Message, ...)
 	vsprintf( Msg, Message, ap );
 	va_end( ap );
 
-	sprintf(generalText, "%s %s",project_name, FILE_VERSION);
+	sprintf(generalText, "%s %s",project_name, BUILD_NUMBER);
 	MessageBox(NULL,Msg,generalText,MB_OK|MB_ICONINFORMATION);
 }
 
@@ -713,7 +713,7 @@ void __cdecl ErrorMsg (char * Message, ...)
 	vsprintf( Msg, Message, ap );
 	va_end( ap );
 	
-	sprintf(generalText, "%s %s",project_name, FILE_VERSION);
+	sprintf(generalText, "%s %s",project_name, BUILD_NUMBER);
 	if( status.ToToggleFullScreen || (CGraphicsContext::g_pGraphicsContext && !CGraphicsContext::g_pGraphicsContext->IsWindowed()) )
 		SetWindowText(g_GraphicsInfo.hStatusBar,Msg);
 	else

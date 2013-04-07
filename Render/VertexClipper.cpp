@@ -106,10 +106,21 @@ void ClipVertexes()
 		if( v1.rhw < 0 && v2.rhw < 0 && v3.rhw < 0 )
 			continue;	// Skip this triangle
 
-		if( v1.rhw >= 0 && v2.rhw >= 0 && v3.rhw >= 0 &&
-			v1.x>=0 && v1.x < windowSetting.uViWidth && v1.y>=0 && v1.y<windowSetting.uViHeight &&
-			v2.x>=0 && v2.x < windowSetting.uViWidth && v2.y>=0 && v2.y<windowSetting.uViHeight &&
-			v3.x>=0 && v3.x < windowSetting.uViWidth && v3.y>=0 && v3.y<windowSetting.uViHeight )	
+		bool zeldaTempFix = false;
+		if(options.enableHackForGames != HACK_FOR_ZELDA)
+		{
+			if( v1.rhw >= 0 && v2.rhw >= 0 && v3.rhw >= 0)
+				zeldaTempFix = true;
+		} else
+		{
+			if( v1.rhw >= 0 && v2.rhw >= 0 && v3.rhw >= 0 &&
+				v1.x>=0 && v1.x < windowSetting.uViWidth && v1.y>=0 && v1.y<windowSetting.uViHeight &&
+				v2.x>=0 && v2.x < windowSetting.uViWidth && v2.y>=0 && v2.y<windowSetting.uViHeight &&
+				v3.x>=0 && v3.x < windowSetting.uViWidth && v3.y>=0 && v3.y<windowSetting.uViHeight )
+					zeldaTempFix = true;
+		}
+
+		if( zeldaTempFix)	
 		{
 			if( v1.z < 0 || v2.z < 0 || v3.z < 0 )
 			{

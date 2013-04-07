@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define INI_FILE		"RiceVideo.ini"
 #define CONFIG_FILE     "RiceVideo.cfg"
-char *project_name =	"RiceVideo 0.1";
+char *project_name =	"RiceVideo";
 
 // Disable the config dialog box to allow Vtune call graph feature to work
 #define ENABLE_CONFIG_DIALOG
@@ -3008,7 +3008,7 @@ void CreateOptionsDialogs(HWND hParent)
 	psp[PSH_ROM_SETTINGS].pszTitle		= "Current Game Options";
 	psp[PSH_ROM_SETTINGS].lParam		= 0;
 
-	sprintf(generalText, "%s %s Configuration",project_name, FILE_VERSION);
+	sprintf(generalText, "%s %s Configuration",project_name, BUILD_NUMBER);
 
 	psh.dwSize = sizeof(PROPSHEETHEADER);
 	psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW;//| PSH_USEICONID ;

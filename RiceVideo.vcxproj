@@ -191,7 +191,6 @@
     <ClInclude Include="Utility\CritSect.h" />
     <ClInclude Include="Utility\CSortedList.h" />
     <ClInclude Include="Utility\IColor.h" />
-    <ClInclude Include="Utility\Unique.h" />
     <ClInclude Include="Texture\ConvertImage.h" />
     <ClInclude Include="Texture\Texture.h" />
     <ClInclude Include="Texture\TextureManager.h" />
