@@ -49,15 +49,11 @@ void RSP_GBI2_Vtx(MicroCodeCommand command)
 
 void RSP_GBI2_EndDL(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_EndDL);
-
 	RDP_GFX_PopDL();
 }
 
 void RSP_GBI2_CullDL(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_CullDL);
-
 #ifdef _DEBUG
 	if( !debuggerEnableCullFace )
 	{
@@ -101,8 +97,6 @@ void RSP_GBI2_CullDL(MicroCodeCommand command)
 
 void RSP_GBI2_MoveWord(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_MoveWord);
-
 	switch (command.mw2.type)
 	{
 	case RSP_MOVE_WORD_MATRIX:
@@ -392,8 +386,6 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 
 void RSP_GBI2_Texture(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_Texture);
-
 	bool bEnable = command.texture.enable_gbi2;
 
 	CRender::g_pRender->SetTextureEnable( bEnable );
@@ -465,8 +457,6 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 
 void RSP_GBI2_PopMtx(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_PopMtx);
-
 	uint8 nCommand = (uint8)(command.inst.cmd0 & 0xFF);
 
 	LOG_UCODE("        PopMtx: 0x%02x (%s)",
@@ -512,8 +502,6 @@ void RSP_GBI2_PopMtx(MicroCodeCommand command)
 
 void RSP_GBI2_GeometryMode(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI2_GeometryMode);
-
 	uint32 dwAnd = ((command.inst.cmd0)) & 0x00FFFFFF;
 	uint32 dwOr  = ((command.inst.cmd1)) & 0x00FFFFFF;
 
@@ -583,7 +571,6 @@ extern uint32 dwConkerVtxZAddr;
 
 void RSP_GBI2_Mtx(MicroCodeCommand command)
 {	
-	SP_Timing(RSP_GBI0_Mtx);
 	dwConkerVtxZAddr = 0;	// For Conker BFD
 
 	uint32 addr = RSPSegmentAddr(command.mtx2.addr);
@@ -664,8 +651,6 @@ void RSP_GBI2_Mtx(MicroCodeCommand command)
 
 void RSP_GBI2_MoveMem(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_MoveMem);
-
 	uint32 addr = RSPSegmentAddr((command.inst.cmd1));
 	uint32 type    = ((command.inst.cmd0)     ) & 0xFE;
 
@@ -762,8 +747,6 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 
 void RSP_GBI2_DL(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI0_DL);
-
 	uint32 dwPush = ((command.inst.cmd0) >> 16) & 0xFF;
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 
@@ -809,8 +792,6 @@ void RSP_GBI2_DL(MicroCodeCommand command)
 
 void RSP_GBI2_SetOtherModeL(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_SetOtherModeL);
-
 	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
 	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
 	uint32 dwData  = (command.inst.cmd1);
@@ -832,8 +813,6 @@ void RSP_GBI2_SetOtherModeL(MicroCodeCommand command)
 
 void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_SetOtherModeH);
-
 	uint32 dwLength= (((command.inst.cmd0))&0xFF)+1;
 	uint32 dwShift = 32 - (((command.inst.cmd0)>>8)&0xFF) - dwLength;
 	uint32 dwData  = (command.inst.cmd1);
@@ -850,7 +829,5 @@ void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 
 void RSP_GBI2_SubModule(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI2_SubModule);
-
 	RSP_RDP_NOIMPL("RDP: RSP_GBI2_SubModule (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 }

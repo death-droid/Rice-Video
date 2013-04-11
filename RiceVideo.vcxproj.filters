@@ -191,9 +191,6 @@
     <ClInclude Include="Parser\RSP_Parser.h">
       <Filter>Graphics\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="Parser\Timing.h">
-      <Filter>Graphics\Parser</Filter>
-    </ClInclude>
     <ClInclude Include="Parser\ucode.h">
       <Filter>Graphics\Parser</Filter>
     </ClInclude>

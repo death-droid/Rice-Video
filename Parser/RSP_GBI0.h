@@ -19,8 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void RSP_GBI0_Mtx(MicroCodeCommand command)
 {	
-	SP_Timing(RSP_GBI0_Mtx);
-
 	uint32 addr = RSPSegmentAddr((command.mtx1.addr));
 
 	LOG_UCODE("    Command: %s %s %s Length %d Address 0x%08x",
@@ -83,8 +81,6 @@ void RSP_GBI0_Mtx(MicroCodeCommand command)
 
 void RSP_GBI0_Vtx(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI0_Vtx);
-
 	uint32 addr = RSPSegmentAddr((command.vtx0.addr));
 	int v0 = command.vtx0.v0;
 	int n = command.vtx0.n + 1;
@@ -112,8 +108,6 @@ void RSP_GBI0_Vtx(MicroCodeCommand command)
 
 void RSP_GBI0_DL(MicroCodeCommand command)
 {	
-	SP_Timing(RSP_GBI0_DL);
-
 	uint32 addr = RSPSegmentAddr((command.dlist.addr)) & (g_dwRamSize-1);
 
 	LOG_UCODE("    Address=0x%08x Push: 0x%02x", addr, command.dlist.param);

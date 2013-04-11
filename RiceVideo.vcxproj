@@ -80,7 +80,7 @@
       <AssemblerListingLocation>../obj/1964Video/Release/</AssemblerListingLocation>
       <ObjectFileName>../obj/1964Video/Release/</ObjectFileName>
       <ProgramDataBaseFileName>../obj/1964Video/Release/</ProgramDataBaseFileName>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat />
       <CallingConvention>Cdecl</CallingConvention>
@@ -200,7 +200,6 @@
     <ClInclude Include="Texture\TextureFilters\TextureFilters_hq2x.h" />
     <ClInclude Include="Parser\RDP_Texture.h" />
     <ClInclude Include="Parser\RSP_Parser.h" />
-    <ClInclude Include="Parser\Timing.h" />
     <ClInclude Include="Parser\ucode.h" />
     <ClInclude Include="Parser\UcodeDefs.h" />
     <ClInclude Include="Parser\RSP_GBI0.h" />

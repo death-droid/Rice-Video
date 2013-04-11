@@ -84,9 +84,6 @@ typedef struct {
 	BOOL	frameReadByCPU;
 	BOOL	frameWriteByCPU;
 
-	uint32	SPCycleCount;		// Count how many CPU cycles SP used in this DLIST
-	uint32	DPCycleCount;		// Count how many CPU cycles DP used in this DLIST
-
 	uint32	dwNumTrisRendered;
 	uint32	dwNumDListsCulled;
 	uint32	dwNumTrisClipped;

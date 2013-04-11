@@ -21,8 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void DLParser_RDPHalf1_GoldenEye(MicroCodeCommand command)		
 {
-	SP_Timing(RSP_GBI1_RDPHalf_1);
-
 	//Check for invalid address
 	if( ((command.inst.cmd1)>>24) != 0xce )
 		return;

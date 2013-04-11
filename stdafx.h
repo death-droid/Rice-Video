@@ -89,7 +89,6 @@
 
 #include "./Utility/icolor.h"
 #include "./Utility/CritSect.h"
-#include "./Parser/Timing.h"
 
 extern WindowSettingStruct windowSetting;
 

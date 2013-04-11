@@ -24,8 +24,6 @@ uint32 dwPDCIAddr = 0;
 void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void RSP_Vtx_PD(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI0_Vtx);
-
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uint32 dwV0 =  ((command.inst.cmd0)>>16)&0x0F;
 	uint32 dwN  = (((command.inst.cmd0)>>20)&0x0F)+1;

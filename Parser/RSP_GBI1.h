@@ -45,8 +45,6 @@ void RSP_GBI1_Vtx(MicroCodeCommand command)
 
 void RSP_GBI1_ModifyVtx(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_ModifyVtx);
-
 	if( gRSP.ucode == 5 && ((command.inst.cmd0)&0x00FFFFFF) == 0 && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
 	{
 		DLParser_Bomberman2TextRect(command);
@@ -128,8 +126,6 @@ extern D3DXVECTOR4 g_vtxNonTransformed[MAX_VERTS];
 
 void RSP_GBI1_BranchZ(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_BranchZ);
-
 	uint32 vtx = ((command.inst.cmd0)&0xFFF)>>1;
 	float vtxdepth = g_vecProjected[vtx].z/g_vecProjected[vtx].w;
 
@@ -165,8 +161,6 @@ void DumpUcodeInfo(UcodeInfo &info)
 
 void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_LoadUCode);
-
 	//TRACE0("Load ucode");
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 dwUcStart = RSPSegmentAddr((command.inst.cmd1));
@@ -349,8 +343,6 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 // S2DEX uses this - 0xc1
 void RSP_S2DEX_SPObjLoadTxtr_Ucode1(MicroCodeCommand command)
 {
-	SP_Timing(RSP_S2DEX_SPObjLoadTxtr_Ucode1);
-
 	// Add S2DEX ucode supporting to F3DEX, see game DT and others
 	status.bUseModifiedUcodeMap = true;
 	RSP_SetUcode(1);
@@ -367,7 +359,6 @@ void RSP_S2DEX_SPObjLoadTxtr_Ucode1(MicroCodeCommand command)
 
 void RSP_GBI1_SpNoop(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_SpNoop);
 
 /*	if( (command+1)->inst.cmd == 0x00 && gRSP.ucode >= 17 )
 	{
@@ -379,14 +370,11 @@ void RSP_GBI1_SpNoop(MicroCodeCommand command)
 
 void RSP_GBI1_Reserved(MicroCodeCommand command)
 {		
-	SP_Timing(RSP_GBI1_Reserved);
 	RSP_RDP_NOIMPL("RDP: Reserved (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 }
 
 void RSP_GBI1_MoveMem(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_MoveMem);
-
 	uint32 type    = ((command.inst.cmd0)>>16)&0xFF;
 	uint32 dwLength  = ((command.inst.cmd0))&0xFFFF;
 	uint32 addr = RSPSegmentAddr((command.inst.cmd1));
@@ -441,21 +429,15 @@ void RSP_GBI1_MoveMem(MicroCodeCommand command)
 
 void RSP_GBI1_RDPHalf_Cont(MicroCodeCommand command)	
 {
-	SP_Timing(RSP_GBI1_RDPHalf_Cont);
-
 	LOG_UCODE("RDPHalf_Cont: (Ignored)"); 
 }
 void RSP_GBI1_RDPHalf_2(MicroCodeCommand command)		
 { 
-	SP_Timing(RSP_GBI1_RDPHalf_2);
-
 	LOG_UCODE("RDPHalf_2: (Ignored)"); 
 }
 
 void RSP_GBI1_RDPHalf_1(MicroCodeCommand command)		
 {
-	SP_Timing(RSP_GBI1_RDPHalf_1);
-
 	LOG_UCODE("RDPHalf_1: (Ignored)"); 
 }
 
@@ -481,8 +463,6 @@ void RSP_GBI1_Line3D(MicroCodeCommand command)
 		status.dwNumTrisRendered++;
 
 		CRender::g_pRender->Line3D(dwV0, dwV1, dwWidth);
-		SP_Timing(RSP_GBI1_Line3D);
-		DP_Timing(RSP_GBI1_Line3D);
 	}
 	else
 	{
@@ -518,7 +498,6 @@ void RSP_GBI1_Line3D(MicroCodeCommand command)
 
 void RSP_GBI1_ClearGeometryMode(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_ClearGeometryMode);
 	uint32 dwMask = ((command.inst.cmd1));
 
 #ifdef _DEBUG
@@ -542,7 +521,6 @@ void RSP_GBI1_ClearGeometryMode(MicroCodeCommand command)
 
 void RSP_GBI1_SetGeometryMode(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_SetGeometryMode);
 	uint32 dwMask = ((command.inst.cmd1));
 
 #ifdef _DEBUG
@@ -565,7 +543,6 @@ void RSP_GBI1_SetGeometryMode(MicroCodeCommand command)
 
 void RSP_GBI1_EndDL(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_EndDL);
 	RDP_GFX_PopDL();
 }
 
@@ -575,8 +552,6 @@ static const char * sc_szBlA2[4] = { "1-A", "AMem", "1", "?" };
 
 void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_SetOtherModeL);
-
 	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
 	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
 	uint32 dwData  = (command.inst.cmd1);
@@ -595,8 +570,6 @@ void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 
 void RSP_GBI1_SetOtherModeH(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_SetOtherModeH);
-
 	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
 	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
 	uint32 dwData  = (command.inst.cmd1);
@@ -614,8 +587,6 @@ void RSP_GBI1_SetOtherModeH(MicroCodeCommand command)
 
 void RSP_GBI1_Texture(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_Texture);
-
 	bool bEnable = command.texture.enable_gbi0;
 
 	CRender::g_pRender->SetTextureEnable( bEnable );
@@ -680,8 +651,6 @@ void RSP_GBI1_Texture(MicroCodeCommand command)
 extern void RSP_RDP_InsertMatrix(uint32 word0, uint32 word1);
 void RSP_GBI1_MoveWord(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_MoveWord);
-
 	switch (command.mw1.type)
 	{
 	case RSP_MOVE_WORD_MATRIX:
@@ -808,8 +777,6 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 
 void RSP_GBI1_PopMtx(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_PopMtx);
-
 	LOG_UCODE("    Command: (%s)",	command.popmtx.projection ? "Projection" : "ModelView");
 
 	// Do any of the other bits do anything?
@@ -840,12 +807,8 @@ void RSP_GBI1_PopMtx(MicroCodeCommand command)
 #endif
 }
 
-
-
 void RSP_GBI1_CullDL(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_CullDL);
-
 #ifdef _DEBUG
 	if( !debuggerEnableCullFace )
 	{

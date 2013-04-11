@@ -285,8 +285,6 @@ void DLParser_Init()
 	status.gUcodeCount = 0;
 	status.frameReadByCPU = FALSE;
 	status.frameWriteByCPU = FALSE;
-	status.SPCycleCount = 0;
-	status.DPCycleCount = 0;
 	status.bN64IsDrawingTextureBuffer = false;
 	status.bDirectWriteIntoRDRAM = false;
 	status.bHandleN64RenderTexture = false;
@@ -989,8 +987,6 @@ void RSP_GFX_InitGeometryMode()
 
 void DLParser_SetKeyGB(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetKeyGB);
-
 	gRDP.keyB = ((command.inst.cmd1)>>8)&0xFF;
 	gRDP.keyG = ((command.inst.cmd1)>>24)&0xFF;
 	gRDP.keyA = (gRDP.keyR+gRDP.keyG+gRDP.keyB)/3;
@@ -998,8 +994,6 @@ void DLParser_SetKeyGB(MicroCodeCommand command)
 }
 void DLParser_SetKeyR(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetKeyR);
-
 	gRDP.keyR = ((command.inst.cmd1)>>8)&0xFF;
 	gRDP.keyA = (gRDP.keyR+gRDP.keyG+gRDP.keyB)/3;
 	gRDP.fKeyA = gRDP.keyA/255.0f;
@@ -1007,13 +1001,10 @@ void DLParser_SetKeyR(MicroCodeCommand command)
 
 void DLParser_SetConvert(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetConvert);
-
 	LOG_UCODE("SetConvert: (Ignored)");
 }
 void DLParser_SetPrimDepth(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetPrimDepth);
 	uint32 dwZ  = ((command.inst.cmd1) >> 16) & 0xFFFF;
 	uint32 dwDZ = ((command.inst.cmd1)      ) & 0xFFFF;
 
@@ -1026,8 +1017,6 @@ void DLParser_SetPrimDepth(MicroCodeCommand command)
 
 void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_RDPSetOtherMode);
-
 	if( gRDP.otherMode.H != ((command.inst.cmd0) & 0x0FFFFFFF) )
 	{
 		gRDP.otherMode.H = ((command.inst.cmd0) & 0x0FFFFFFF);
@@ -1074,31 +1063,25 @@ void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 
 void DLParser_RDPLoadSync(MicroCodeCommand command)	
 { 
-	DP_Timing(DLParser_RDPLoadSync);
 	LOG_UCODE("LoadSync: (Ignored)"); 
 }
 
 void DLParser_RDPPipeSync(MicroCodeCommand command)	
 { 
-	DP_Timing(DLParser_RDPPipeSync);
 	LOG_UCODE("PipeSync: (Ignored)"); 
 }
 void DLParser_RDPTileSync(MicroCodeCommand command)	
 { 
-	DP_Timing(DLParser_RDPTileSync);
 	LOG_UCODE("TileSync: (Ignored)"); 
 }
 
 void DLParser_RDPFullSync(MicroCodeCommand command)
 { 
-	DP_Timing(DLParser_RDPFullSync);
 	TriggerDPInterrupt();
 }
 
 void DLParser_SetScissor(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetScissor);
-
 	ScissorType tempScissor;
 	// The coords are all in 8:2 fixed point
 	tempScissor.x0   = ((command.inst.cmd0)>>12)&0xFFF;
@@ -1162,7 +1145,6 @@ void DLParser_SetScissor(MicroCodeCommand command)
 
 void DLParser_FillRect(MicroCodeCommand command)
 { 
-	DP_Timing(DLParser_FillRect);	// fix me
 	status.primitiveType = PRIM_FILLRECT;
 
 	if( status.bN64IsDrawingTextureBuffer && frameBufferOptions.bIgnore )
@@ -1378,8 +1360,6 @@ void DLParser_FillRect(MicroCodeCommand command)
 //Nintro64 uses Sprite2d 
 void RSP_RDP_Nothing(MicroCodeCommand command)
 {
-	SP_Timing(RSP_RDP_Nothing);
-
 #ifdef _DEBUG
 	if( logWarning )
 	{
@@ -1565,7 +1545,6 @@ void DLParser_SetCImg(MicroCodeCommand command)
 
 void DLParser_SetZImg(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetZImg);
 	LOG_UCODE("    Image: 0x%08x", RSPSegmentAddr(command.inst.cmd1));
 
 	uint32 dwFmt   = command.img.fmt;
@@ -1621,7 +1600,6 @@ bool IsUsedAsDI(uint32 addr)
 
 void DLParser_SetCombine(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetCombine);
 	uint32 dwMux0 = (command.inst.cmd0)&0x00FFFFFF;
 	uint32 dwMux1 = (command.inst.cmd1);
 	CRender::g_pRender->SetMux(dwMux0, dwMux1);
@@ -1629,7 +1607,6 @@ void DLParser_SetCombine(MicroCodeCommand command)
 
 void DLParser_SetFillColor(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetFillColor);
 	gRDP.fillColor = Convert555ToRGBA(command.setcolor.fillcolor);
 	gRDP.originalFillColor = (command.setcolor.color);
 
@@ -1639,28 +1616,24 @@ void DLParser_SetFillColor(MicroCodeCommand command)
 
 void DLParser_SetFogColor(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetFogColor);
 	CRender::g_pRender->SetFogColor( command.setcolor.r, command.setcolor.g, command.setcolor.b, command.setcolor.a );
 	FOG_DUMP(TRACE1("Set Fog color: %08X", command.setcolor.color));
 }
 
 void DLParser_SetBlendColor(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetBlendColor);
 	CRender::g_pRender->SetAlphaRef(command.setcolor.a);
 }
 
 
 void DLParser_SetPrimColor(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetPrimColor);
 	SetPrimitiveColor( COLOR_RGBA(command.setcolor.r, command.setcolor.g, command.setcolor.b, command.setcolor.a), 
 		command.setcolor.prim_min_level, command.setcolor.prim_level);
 }
 
 void DLParser_SetEnvColor(MicroCodeCommand command)
 {
-	DP_Timing(DLParser_SetEnvColor);
 	SetEnvColor( COLOR_RGBA(command.setcolor.r, command.setcolor.g, command.setcolor.b, command.setcolor.a) );
 }
 

@@ -1159,8 +1159,6 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	uint32 i;
 	for (i = dwV0; i < dwV0 + dwNum; i++)
 	{
-		SP_Timing(RSP_GBI0_Vtx);
-
 		FiddledVtx & vert = pVtxBase[i - dwV0];
 
 		g_vtxNonTransformed[i].x = (float)vert.x;
@@ -1267,8 +1265,6 @@ void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	uint32 i;
 	for (i = dwV0; i < dwV0 + dwNum; i++)
 	{
-		SP_Timing(RSP_GBI0_Vtx);
-
 		FiddledVtx & vert = pVtxBase[i - dwV0];
 
 		g_vtxNonTransformed[i].x = (float)vert.x;
@@ -1375,8 +1371,6 @@ bool PrepareTriangle(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 	}
 	else
 	{
-		SP_Timing(SP_Each_Triangle);
-
 		bool textureFlag = (CRender::g_pRender->IsTextureEnabled() || gRSP.ucode == 6 );
 
 		InitVertex(dwV0, gRSP.numVertices, textureFlag);
@@ -1838,8 +1832,6 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	uint32 i;
 	for (i = dwV0; i < dwV0 + dwNum; i++)
 	{
-		SP_Timing(RSP_GBI0_Vtx);
-
 		FiddledVtx & vert = pVtxBase[i - dwV0];
 
 		g_vtxNonTransformed[i].x = (float)vert.x;

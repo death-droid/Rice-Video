@@ -740,29 +740,6 @@ FUNC_TYPE(void) NAME_DEFINE(CloseDLL) (void)
 #endif
 }
 
-FUNC_TYPE(uint32) NAME_DEFINE(ProcessDListCountCycles)(void)
-{
-	g_CritialSection.Lock();
-	status.SPCycleCount = 100;
-	status.DPCycleCount = 0;
-	try
-	{
-		DLParser_Process((OSTask *)(g_GraphicsInfo.DMEM + 0x0FC0));
-	}
-	catch (...)
-	{
-		TRACE0("Unknown Error in ProcessDListCountCycles");
-		TriggerDPInterrupt();
-		TriggerSPInterrupt();
-	}
-	status.SPCycleCount *= 6;
-	status.DPCycleCount *= 5;
-	status.DPCycleCount += status.SPCycleCount;
-
-	g_CritialSection.Unlock();
-	return (status.DPCycleCount<<16)+status.SPCycleCount;
-}	
-
 FUNC_TYPE(void) NAME_DEFINE(ProcessRDPList)(void)
 {
 	try

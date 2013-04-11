@@ -230,8 +230,6 @@ void RSP_Mtx_DKR(MicroCodeCommand command)
 //*****************************************************************************
 void RSP_MoveWord_DKR(MicroCodeCommand command)
 {
-	SP_Timing(RSP_GBI1_MoveWord);
-
 	switch ((command.inst.cmd0) & 0xFF)
 	{
 	case RSP_MOVE_WORD_NUMLIGHT:

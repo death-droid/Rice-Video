@@ -37,9 +37,6 @@ uint32 g_TxtLoadBy = CMD_LOAD_OBJ_TXTR;
 // YoshiStory uses this - 0x02
 void RSP_S2DEX_BG_COPY(MicroCodeCommand command)
 {
-	SP_Timing(DP_Minimal16);
-	DP_Timing(DP_Minimal16);
-
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uObjBg *sbgPtr = (uObjBg*)(g_pRDRAMu8+dwAddr);
 	CRender::g_pRender->LoadObjBGCopy(*sbgPtr);
@@ -471,9 +468,6 @@ extern void RSP_GBI0_Mtx(MicroCodeCommand command);
 
 void RSP_S2DEX_BG_1CYC(MicroCodeCommand command)
 {
-	SP_Timing(DP_Minimal16);
-	DP_Timing(DP_Minimal16);
-
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uObjScaleBg *sbgPtr = (uObjScaleBg *)(dwAddr+g_pRDRAMu8);
 	CRender::g_pRender->LoadObjBG1CYC(*sbgPtr);
