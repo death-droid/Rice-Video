@@ -352,9 +352,6 @@ void WriteConfiguration(void)
 	fprintf(f, "ForceTextureFilter ");
 	fprintf(f, "%d\n", (uint32)options.forceTextureFilter);
 
-	fprintf(f, "TexRectOnly ");
-	fprintf(f, "%d\n", (uint32)options.bTexRectOnly);
-
 	fprintf(f, "LoadHiResTextures ");
 	fprintf(f, "%d\n", (uint32)options.bLoadHiResTextures);
 
@@ -487,7 +484,6 @@ void ReadConfiguration(void)
 		options.bEnableSSE = TRUE;
 		options.bEnableVertexShader = FALSE;
 		options.forceTextureFilter = 0;
-		options.bTexRectOnly = FALSE;
 		options.bLoadHiResTextures = FALSE;
 		// set caching by default to "off"
 		options.bCacheHiResTextures = FALSE;
@@ -566,7 +562,6 @@ void ReadConfiguration(void)
 		options.textureEnhancement = ReadRegistryDwordVal("TextureEnhancement");
 		options.textureEnhancementControl = ReadRegistryDwordVal("TextureEnhancementControl");
 		options.forceTextureFilter = ReadRegistryDwordVal("ForceTextureFilter");
-		options.bTexRectOnly = ReadRegistryDwordVal("TexRectOnly");
 		options.bLoadHiResTextures = ReadRegistryDwordVal("LoadHiResTextures");
 		// load key value for hires caching from registry
 		options.bCacheHiResTextures = ReadRegistryDwordVal("CacheHiResTextures");
@@ -1013,11 +1008,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_FORCE_TEXTURE_FILTER,
 			"Force texture filter",
 			"Force Nearest filter, or force bilinear filtering\n"
-	},
-	{ 
-		IDC_TEXRECT_ONLY,
-			"For TxtRect ucode only",
-			"If enabled, texture enhancement will be done only for TxtRect ucode\n"
 	},
 	{ 
 		IDC_FOG,
@@ -2493,7 +2483,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		}
 		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_SETCURSEL, options.forceTextureFilter, 0);
 
-		SendDlgItemMessage(hDlg, IDC_TEXRECT_ONLY, BM_SETCHECK, options.bTexRectOnly ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_SETCHECK, options.bLoadHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 		// fetch the value the user has set for caching from dialog
 		SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_SETCHECK, options.bCacheHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -2539,7 +2528,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			i = SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0);
 			options.forceTextureFilter = ForceTextureFilterSettings[i].setting;
 
-			options.bTexRectOnly = (SendDlgItemMessage(hDlg, IDC_TEXRECT_ONLY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			{
 				BOOL bLoadHiResTextures = options.bLoadHiResTextures;
 				BOOL bCacheHiResTextures = options.bCacheHiResTextures;

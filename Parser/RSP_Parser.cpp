@@ -296,8 +296,6 @@ void DLParser_Init()
 	status.curDisplayBuffer = NULL;
 	status.curVIOriginReg = NULL;
 
-	status.primitiveType = PRIM_TRI1;
-
 	status.lastPurgeTimeTime = 0;		// Time textures were last purged
 
 	status.UseLargerTile[0] = false;
@@ -1145,12 +1143,8 @@ void DLParser_SetScissor(MicroCodeCommand command)
 
 void DLParser_FillRect(MicroCodeCommand command)
 { 
-	status.primitiveType = PRIM_FILLRECT;
-
 	if( status.bN64IsDrawingTextureBuffer && frameBufferOptions.bIgnore )
-	{
 		return;
-	}
 
 	if( options.enableHackForGames == HACK_FOR_MARIO_TENNIS )
 	{

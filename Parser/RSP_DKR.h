@@ -281,8 +281,6 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 
 	bool bTrisAdded = false;
 
-	status.primitiveType = PRIM_DMA_TRI;
-
 	for (u32 i = 0; i < dwNum; i++)
 	{
 		uint32 dwV0 = tri->v0;

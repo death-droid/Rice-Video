@@ -230,7 +230,7 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 	}
 	else
 	{
-		status.primitiveType = PRIM_TRI1;
+	
 		bool bTrisAdded = false;
 		bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
@@ -280,7 +280,6 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 	}
 	else
 	{
-		status.primitiveType = PRIM_TRI2;
 		bool bTrisAdded = FALSE;
 
 		// While the next command pair is Tri2, add vertices
@@ -338,8 +337,6 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 	}
 	else
 	{
-		status.primitiveType = PRIM_TRI3;
-
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
 
@@ -743,8 +740,6 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 	}
 }
 
-
-
 void RSP_GBI2_DL(MicroCodeCommand command)
 {
 	uint32 dwPush = ((command.inst.cmd0) >> 16) & 0xFF;
@@ -784,11 +779,7 @@ void RSP_GBI2_DL(MicroCodeCommand command)
 	LOG_UCODE("");
 	LOG_UCODE("\\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/");
 	LOG_UCODE("#############################################");
-
-
 }
-
-
 
 void RSP_GBI2_SetOtherModeL(MicroCodeCommand command)
 {
@@ -808,8 +799,6 @@ void RSP_GBI2_SetOtherModeL(MicroCodeCommand command)
 	tempgfx.inst.cmd1 = modeL;
 	DLParser_RDPSetOtherMode(tempgfx );
 }
-
-
 
 void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 {

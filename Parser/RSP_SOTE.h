@@ -48,7 +48,6 @@ void RSP_Vtx_ShadowOfEmpire(MicroCodeCommand command)
 
 void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 {
-	status.primitiveType = PRIM_TRI2;
 	bool bTrisAdded = false;
 	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
@@ -91,7 +90,7 @@ void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 
 void RSP_Tri1_ShadowOfEmpire(MicroCodeCommand command)
 {
-	status.primitiveType = PRIM_TRI1;
+
 	bool bTrisAdded = false;
 	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 

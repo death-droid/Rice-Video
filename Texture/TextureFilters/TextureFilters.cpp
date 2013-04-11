@@ -40,9 +40,6 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 		return;
 	}
 
-	if( status.primitiveType != PRIM_TEXTRECT && options.bTexRectOnly )
-		return;
-
 	DrawInfo srcInfo;	
 	//Start the draw update
 	if( pEntry->pTexture->StartUpdate(&srcInfo) == false )

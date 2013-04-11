@@ -156,7 +156,6 @@ typedef struct {
 	uint32	forceTextureFilter;
 	uint32	textureEnhancement;
 	uint32	textureEnhancementControl;
-	BOOL	bTexRectOnly;
 	BOOL	bDumpTexturesToFiles;
 	BOOL	bLoadHiResTextures;
 	BOOL	bCacheHiResTextures;

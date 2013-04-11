@@ -86,9 +86,8 @@ void DLParser_RSP_Last_Legion_0x00(MicroCodeCommand command)
 //*****************************************************************************
 void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 {
-	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
-
-	status.primitiveType = PRIM_TEXTRECT;
+	if( !status.bCIBufferIsRendered )
+		g_pFrameBufferManager->ActiveTextureBuffer();
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.

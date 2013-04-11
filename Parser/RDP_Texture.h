@@ -796,9 +796,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	});
 
 	// Option for faster loading tiles
-	if( g_curRomInfo.bFastLoadTile && info->bSetBy == CMD_LOADTILE && ((gti.Pitch<<1)>>gti.Size) <= 0x400
-		//&& ((gti.Pitch<<1)>>gti.Size) > 128 && status.primitiveType == PRIM_TEXTRECT
-		)
+	if( g_curRomInfo.bFastLoadTile && info->bSetBy == CMD_LOADTILE && ((gti.Pitch<<1)>>gti.Size) <= 0x400)
 	{
 		uint32 idx = tileno-gRSP.curTile;
 		status.LargerTileRealLeft[idx] = gti.LeftToLoad;
@@ -1499,8 +1497,6 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-	status.primitiveType = PRIM_TEXTRECT;
-
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
@@ -1665,7 +1661,6 @@ void DLParser_TexRect(MicroCodeCommand command)
 void DLParser_TexRectFlip(MicroCodeCommand command)
 { 
 	status.bCIBufferIsRendered = true;
-	status.primitiveType = PRIM_TEXTRECTFLIP;
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.

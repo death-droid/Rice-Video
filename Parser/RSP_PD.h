@@ -46,8 +46,6 @@ void RSP_Tri4_PD(MicroCodeCommand command)
 	uint32 w0 = command.inst.cmd0;
 	uint32 w1 = command.inst.cmd1;
 
-	status.primitiveType = PRIM_TRI2;
-
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 

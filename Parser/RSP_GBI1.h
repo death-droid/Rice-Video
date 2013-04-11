@@ -79,7 +79,6 @@ void RSP_GBI1_ModifyVtx(MicroCodeCommand command)
 
 void RSP_GBI1_Tri2(MicroCodeCommand command)
 {
-	status.primitiveType = PRIM_TRI2;
 	bool bTrisAdded = false;
 	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
@@ -443,8 +442,6 @@ void RSP_GBI1_RDPHalf_1(MicroCodeCommand command)
 
 void RSP_GBI1_Line3D(MicroCodeCommand command)
 {
-	status.primitiveType = PRIM_LINE3D;
-
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
 
@@ -853,7 +850,6 @@ void RSP_GBI1_CullDL(MicroCodeCommand command)
 
 void RSP_GBI1_Tri1(MicroCodeCommand command)
 {
-	status.primitiveType = PRIM_TRI1;
 	bool bTrisAdded = false;
 	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 

@@ -128,12 +128,10 @@
 #define IDC_AUTO_WRITE_BACK             1135
 #define IDC_LABEL8                      1136
 #define IDC_USE_CI_WIDTH_AND_RATIO      1137
-#define IDC_TEXRECT_ONLY                1138
 #define IDC_HIDE_ADVANCED_OPTIONS       1140
 #define IDC_LOAD_HIRES_TEXTURE          1141
 #define IDC_CHECK2                      1141
 #define IDC_LABEL5                      1142
-#define IDC_TEXRECT_ONLY3               1143
 #define IDC_DUMP_TEXTURE_TO_FILES       1144
 #define IDC_LABEL6                      1145
 #define IDC_LABEL7                      1146
