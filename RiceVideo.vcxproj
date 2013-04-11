@@ -80,7 +80,7 @@
       <AssemblerListingLocation>../obj/1964Video/Release/</AssemblerListingLocation>
       <ObjectFileName>../obj/1964Video/Release/</ObjectFileName>
       <ProgramDataBaseFileName>../obj/1964Video/Release/</ProgramDataBaseFileName>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat />
       <CallingConvention>Cdecl</CallingConvention>

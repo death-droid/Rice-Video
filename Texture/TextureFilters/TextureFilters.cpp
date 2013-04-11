@@ -1470,8 +1470,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	// Init the pointer to the alternate alpha channel data
 	ExtTexInfo.pHiresTextureAlphaAlts = NULL;
 
-	bool lookForAlt = true;
-
 	//Look for any alterante textures to be used as an animation
 	ExtTexInfo.bAltTex = lookForAlternatives(ExtTexInfo, &ExtTexInfo.iAltCount, &ExtTexInfo.bAltShuffle, &ExtTexInfo.iAltPeriod, &ExtTexInfo.bAltSynchronized);
 

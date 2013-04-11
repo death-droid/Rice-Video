@@ -169,16 +169,7 @@ UcodeFunc( RSP_S2DEX_Yoshi_Unknown);
 UcodeFunc( RSP_RDP_InsertMatrix );
 UcodeFunc( RSP_S2DEX_SPObjLoadTxtr );
 
-
-
-UcodeFunc(RDP_TriFill);
-UcodeFunc(RDP_TriFillZ);
-UcodeFunc(RDP_TriTxtr);
-UcodeFunc(RDP_TriTxtrZ);
-UcodeFunc(RDP_TriShade);
-UcodeFunc(RDP_TriShadeZ);
-UcodeFunc(RDP_TriShadeTxtr);
-UcodeFunc(RDP_TriShadeTxtrZ);
+UcodeFunc(DLParser_TriRSP);
 
 typedef RDPInstruction UcodeMap[256] ;
 
@@ -251,8 +242,8 @@ UcodeMap ucodeMap0=
 //c0
 	RSP_GBI1_Noop,   RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing,
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,	    RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP, DLParser_TriRSP, DLParser_TriRSP,	DLParser_TriRSP,
+	DLParser_TriRSP, DLParser_TriRSP, DLParser_TriRSP,  DLParser_TriRSP,
 //d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -340,8 +331,8 @@ UcodeMap ucodeMap1 =
 //c0
 	RSP_GBI1_Noop,   RSP_S2DEX_SPObjLoadTxtr_Ucode1, RSP_RDP_Nothing,  RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing,				 RSP_RDP_Nothing,  RSP_RDP_Nothing,
-	RDP_TriFill,	 RDP_TriFillZ,					 RDP_TriTxtr,	   RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,					 RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,					 DLParser_TriRSP,	   DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,					 DLParser_TriRSP, DLParser_TriRSP,
 //d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -427,8 +418,8 @@ UcodeMap ucodeMap2 =
 	//c0
 	RSP_GBI1_Noop,	 RSP_RDP_Nothing, RSP_RDP_Nothing,	RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,	RSP_RDP_Nothing,
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,	    RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,	    DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP, DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -511,8 +502,8 @@ UcodeMap ucodeMap3=
 	//c0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing,
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,	    RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,	    DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP, DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing,  RSP_RDP_Nothing,		 RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 	RSP_RDP_Nothing,  RSP_GBI2_DL_Count,	 RSP_GBI2_SubModule, RSP_GBI2_Texture,
@@ -596,8 +587,8 @@ UcodeMap ucodeMap4=
 	//c0
 	RSP_GBI1_Noop,	 RSP_RDP_Nothing, RSP_RDP_Nothing,	RSP_RDP_Nothing,    
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,	RSP_RDP_Nothing,    
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,		RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,		DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP, DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,    
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,    
@@ -684,8 +675,8 @@ UcodeMap ucodeMap5=
 //c0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing,
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,		RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,		DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP, DLParser_TriRSP,
 //d0
 	RSP_RDP_Nothing,  RSP_RDP_Nothing,		 RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 	RSP_RDP_Nothing,  RSP_GBI2_DL_Count,	 RSP_GBI2_SubModule, RSP_GBI2_Texture,
@@ -769,8 +760,8 @@ UcodeMap ucodeMap6 =
 	//c0
 	RSP_GBI1_Noop,	 RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,	    RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,   RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,	    DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,   DLParser_TriRSP, DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
@@ -858,8 +849,8 @@ UcodeMap ucodeMap7 =
 //c0
 	RSP_GBI1_Noop,				RSP_S2DEX_SPObjLoadTxtr, RSP_S2DEX_SPObjLoadTxSprite, RSP_S2DEX_SPObjLoadTxRect,
 	RSP_S2DEX_SPObjLoadTxRectR, RSP_RDP_Nothing,		 RSP_RDP_Nothing,			  RSP_RDP_Nothing,
-	RDP_TriFill,				RDP_TriFillZ,			 RDP_TriTxtr,				  RDP_TriTxtrZ,
-	RDP_TriShade,				RDP_TriShadeZ,			 RDP_TriShadeTxtr,			  RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,				DLParser_TriRSP,			 DLParser_TriRSP,				  DLParser_TriRSP,
+	DLParser_TriRSP,				DLParser_TriRSP,			 DLParser_TriRSP,			  DLParser_TriRSP,
 //d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -944,8 +935,8 @@ UcodeMap ucodeMap9 =
 	//c0
 	RSP_GBI1_Noop,	 RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,	    RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,	    DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP, DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -1031,8 +1022,8 @@ UcodeMap ucodeMap10 =
 	//c0
 	RSP_GBI1_Noop,	 RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,	    RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,	    DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP, DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing,	RSP_RDP_Nothing,	   RSP_RDP_Nothing, RSP_RDP_Nothing,
 	RSP_RDP_Nothing,	RSP_GBI2_DL_Count,	   RSP_RDP_Nothing, RSP_GBI1_Texture,
@@ -1117,8 +1108,8 @@ UcodeMap ucodeMap11 =
 	//c0
 	RSP_GBI1_Noop,	 RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  RSP_RDP_Nothing, 
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,		RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr, RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,		DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP, DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
@@ -1202,8 +1193,8 @@ UcodeMap ucodeMap16 = {
 	//c0
 	RSP_GBI1_Noop,	 RSP_RDP_Nothing, RSP_RDP_Nothing,	RSP_RDP_Nothing,  
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,	RSP_RDP_Nothing,  
-	RDP_TriFill,	 RDP_TriFillZ,	  RDP_TriTxtr,		RDP_TriTxtrZ,
-	RDP_TriShade,	 RDP_TriShadeZ,	  RDP_TriShadeTxtr,	RDP_TriShadeTxtrZ,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,		DLParser_TriRSP,
+	DLParser_TriRSP,	 DLParser_TriRSP,	  DLParser_TriRSP,	DLParser_TriRSP,
 	//d0
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,  
@@ -1292,8 +1283,8 @@ LPCSTR ucodeNames_GBI1[256] =
 //C0
 	"RDP_NOOP",    "G_NOTHING", "G_YS_UNK1", "G_NOTHING",
 	"G_NOTHING", "G_NOTHING", "G_NOTHING", "G_NOTHING",
-	"RDP_TriFill", "RDP_TriFillZ", "RDP_TriTxtr", "RDP_TriTxtrZ",
-	"RDP_TriShade", "RDP_TriShadeZ", "RDP_TriShadeTxtr", "RDP_TriShadeTxtrZ",
+	"DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP",
+	"DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP",
 //D0
 	"G_NOTHING", "G_NOTHING", "G_NOTHING", "G_NOTHING",
 	"G_NOTHING", "G_NOTHING", "G_NOTHING", "G_NOTHING",
@@ -1380,8 +1371,8 @@ LPCSTR ucodeNames_GBI2[256] =
 //c0
 	"Nothing", "Nothing", "Nothing", "Nothing",
 	"Nothing", "Nothing", "Nothing", "Nothing",
-	"RDP_TriFill", "RDP_TriFillZ", "RDP_TriTxtr", "RDP_TriTxtrZ",
-	"RDP_TriShade", "RDP_TriShadeZ", "RDP_TriShadeTxtr", "RDP_TriShadeTxtrZ",
+	"DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP",
+	"DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP", "DLParser_TriRSP",
 //d0
 	"Nothing", "Nothing", "Nothing", "Nothing",
 	"Nothing", "GBI2_DL_N", "GBI2_SubModule", "GBI2_Texture",

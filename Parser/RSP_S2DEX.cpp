@@ -124,26 +124,12 @@ void RSP_S2DEX_OBJ_SPRITE(MicroCodeCommand command)
 // YoshiStory uses this - 0xb0
 void RSP_S2DEX_SELECT_DL(MicroCodeCommand command)
 {
-	static BOOL bWarned = FALSE;
-	//if (!bWarned)
-	{
-		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_SELECT_DL (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
-		bWarned = TRUE;
-	}
-
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_OBJ_TXT_CMD, {DebuggerAppendMsg("Paused at RSP_S2DEX_SELECT_DL");});
+	LOG_UCODE("S2DEX_SELECT_DL: (Ignored)");
 }
 
 void RSP_S2DEX_OBJ_RENDERMODE(MicroCodeCommand command)
 {
-	/*
-	static BOOL bWarned = FALSE;
-	//if (!bWarned)
-	{
-	RSP_RDP_NOIMPL("RDP: RSP_S2DEX_OBJ_RENDERMODE (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
-	bWarned = TRUE;
-	}
-	*/
+	LOG_UCODE("S2DEX_OBJ_RENDERMODE: (Ignored)");
 }
 
 // YoshiStory uses this - 0xb1
@@ -308,20 +294,15 @@ void RSP_S2DEX_SPObjLoadTxtr(MicroCodeCommand command)
 		int offset = gObjTlut->phead-0x100;
 
 		if( offset+size>0x100)
-		{
 			size = 0x100 - offset;
-		}
 
-		uint32 addr = (gObjTlutAddr);//&0xFFFFFFFC);
-		//if( addr & 3 ) addr = (addr&0xFFFFFFF0)+8;
+		uint32 addr = (gObjTlutAddr);
 		uint16 *srcPal = (uint16*)(g_pRDRAMu8 + (addr& (g_dwRamSize-1)) );
 
 		for( int i=offset; i<offset+size; i++ )
 		{
-			g_wRDPTlut[i^1] = RDRAM_UHALF(addr);//backtome
+			g_wRDPTlut[i^1] = RDRAM_UHALF(addr);
 			addr += 2;
-			//g_wRDPTlut[i] = (*(uint16 *)(addr+g_pRDRAMu8));
-			//g_wRDPTlut[i] = *(srcPal++);
 		}
 	}
 	else

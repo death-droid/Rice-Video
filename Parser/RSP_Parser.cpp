@@ -495,24 +495,27 @@ void RDP_SetUcodeMap(int ucode)
 
 void RSP_SetUcode(int ucode, uint32 ucStart, uint32 ucDStart, uint32 ucSize)
 {
+	//If ucode has been set and current ucode matches with one where parsing then return
 	if( status.ucodeHasBeenSet && gRSP.ucode == ucode )
 		return;
 
+	//Set it so we know the ucode has been
 	status.ucodeHasBeenSet = true;
 
+	//If ucode seems invalid, just ucode 5 as default
 	if( ucode < 0 )
 		ucode = 5;
 
+	//Set the ucode map to the specified ucode
 	RDP_SetUcodeMap(ucode);
-	if( status.bUseModifiedUcodeMap )
-	{
-		currentUcodeMap = &LoadedUcodeMap[0];
-	}
-	else
-	{
-		currentUcodeMap = *ucodeMaps[ucode];
-	}
 
+	//If where using a modified ucode map, then lets use that instead of our current one
+	if( status.bUseModifiedUcodeMap )
+		currentUcodeMap = &LoadedUcodeMap[0];
+	else
+		currentUcodeMap = *ucodeMaps[ucode];
+
+	//Grab our vertex multiplier from our table
 	gRSP.vertexMult = vertexMultVals[ucode];
 
 	//if( gRSP.ucode != ucode )	DebuggerAppendMsg("Set to ucode: %d", ucode);
@@ -538,6 +541,7 @@ void RSP_SetUcode(int ucode, uint32 ucStart, uint32 ucDStart, uint32 ucSize)
 //*****************************************************************************
 static uint32 DLParser_IdentifyUcodeFromString( const CHAR * str_ucode )
 {
+	//Lets try and indentify what ucode where using via a string
 	const CHAR str_ucode0[] = "RSP SW Version: 2.0";
 	const CHAR str_ucode1[] = "RSP MicroCodeCommand ucode ";
 
@@ -1699,36 +1703,10 @@ void RDP_DLParser_Process(void)
 	CRender::g_pRender->EndRendering();
 }
 
-void RDP_TriFill(MicroCodeCommand command)
+//You will never see these any HLE emulation, and since where a HLE plugin ignore them completely
+void DLParser_TriRSP(MicroCodeCommand command)
 {
-}
-
-void RDP_TriFillZ(MicroCodeCommand command)
-{
-}
-
-void RDP_TriTxtr(MicroCodeCommand command)
-{
-}
-
-void RDP_TriTxtrZ(MicroCodeCommand command)
-{
-}
-
-void RDP_TriShade(MicroCodeCommand command)
-{
-}
-
-void RDP_TriShadeZ(MicroCodeCommand command)
-{
-}
-
-void RDP_TriShadeTxtr(MicroCodeCommand command)
-{
-}
-
-void RDP_TriShadeTxtrZ(MicroCodeCommand command)
-{
+	LOG_UCODE("DLParser_TriRSP: (Ignored)");
 }
 
 static int crc_table_empty = 1;

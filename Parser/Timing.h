@@ -70,14 +70,7 @@ enum
 	Timing_DP_Minimal16 = 160,
 	Timing_DP_Each_Point = 1,
 
-	Timing_RDP_TriFill = Timing_DP_Minimal8,
-	Timing_RDP_TriFillZ = Timing_DP_Minimal8,
-	Timing_RDP_TriTxtr = Timing_DP_Minimal8,
-	Timing_RDP_TriTxtrZ = Timing_DP_Minimal8,
-	Timing_RDP_TriShade = Timing_DP_Minimal8,
-	Timing_RDP_TriShadeZ = Timing_DP_Minimal8,
-	Timing_RDP_TriShadeTxtr = Timing_DP_Minimal8,
-	Timing_RDP_TriShadeTxtrZ = Timing_DP_Minimal8,
+	Timing_DLParser_TriRSP = Timing_DP_Minimal8,
 
 	Timing_DLParser_TexRect = Timing_DP_Minimal8,
 	Timing_DLParser_TexRectFlip = Timing_DP_Minimal8,

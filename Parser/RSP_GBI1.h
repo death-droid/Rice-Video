@@ -342,8 +342,8 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 	CRender::g_pRender->SetViewport(nLeft, nTop, nRight, nBottom, maxZ);
 
 
-	LOG_UCODE("        Scale: %d %d %d %d = %d,%d", scale[0], scale[1], scale[2], scale[3], nWidth, nHeight);
-	LOG_UCODE("        Trans: %d %d %d %d = %d,%d", trans[0], trans[1], trans[2], trans[3], nCenterX, nCenterY);
+	LOG_UCODE("        Scale: %d %d = %d,%d", scale[0], scale[1],  nWidth, nHeight);
+	LOG_UCODE("        Trans: %d %d = %d,%d", trans[0], trans[1], nCenterX, nCenterY);
 }
 
 // S2DEX uses this - 0xc1

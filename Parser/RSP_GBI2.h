@@ -349,7 +349,7 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
 
-		bool bTrisAdded = FALSE;
+		bool bTrisAdded = false;
 
 		do {
 			uint32 dwV0 = command.gbi2line3d.v0/gRSP.vertexMult;

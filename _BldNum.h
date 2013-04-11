@@ -4,6 +4,6 @@
 #ifdef _DEBUG
 #define FILE_VERSION "DEBUG"
 #else
-#define FILE_VERSION ""
+#define FILE_VERSION "RELEASE"
 #endif
 #define BUILD_NUMBER "0.1.5.1"
