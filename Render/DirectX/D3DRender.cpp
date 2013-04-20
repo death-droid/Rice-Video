@@ -172,7 +172,6 @@ bool D3DRender::RenderTexRect()
 	gD3DDevWrapper.SetRenderState(D3DRS_DEPTHBIAS,0);
 	uint16 wIndices[2*3] = {1,0,2, 2,0,3};
 	g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
-	//ClipVertexesForRect();
 	return S_OK == g_pD3DDev->DrawIndexedPrimitiveUP( D3DPT_TRIANGLELIST, 0, 4, 2, wIndices, D3DFMT_INDEX16, g_texRectTVtx, sizeof(TLITVERTEX));
 }
 

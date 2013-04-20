@@ -1028,14 +1028,6 @@ void CRender::CleanUp(void)
 	ClearDeviceObjects();
 }
 
-void myVec3Transform(float *vecout, float *vecin, float* m)
-{
-	float w = m[3]*vecin[0]+m[7]*vecin[1]+m[11]*vecin[2]+m[15];
-	vecout[0] = (m[0]*vecin[0]+m[4]*vecin[1]+m[8]*vecin[2]+m[12])/w;
-	vecout[1] = (m[1]*vecin[0]+m[5]*vecin[1]+m[9]*vecin[2]+m[13])/w;
-	vecout[2] = (m[2]*vecin[0]+m[6]*vecin[1]+m[10]*vecin[2]+m[14])/w;
-}
-
 void CRender::SetTextureEnable(bool bEnable)
 {
 	gRSP.bTextureEnabled = bEnable;

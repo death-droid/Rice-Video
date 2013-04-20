@@ -36,8 +36,6 @@ enum FillMode
 
 enum { MAX_VERTS = 80 };		// F3DLP.Rej supports up to 80 verts!
 
-void myVec3Transform(float *vecout, float *vecin, float* m);
-
 // All these arrays are moved out of the class CRender
 // to be accessed in faster speed
 extern D3DXVECTOR4	g_vecProjected[MAX_VERTS];

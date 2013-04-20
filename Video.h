@@ -140,6 +140,4 @@ extern PluginStatus status;
 extern char generalText[];
 
 void SetVIScales();
-extern void XBOX_Debugger_Log(const char *Message, ...);
-
 #endif

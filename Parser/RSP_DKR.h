@@ -106,9 +106,6 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d", dwAddr, dwV0, dwN);
 	DEBUGGER_ONLY_IF( (pauseAtNext && (eventToPause==NEXT_VERTEX_CMD||eventToPause==NEXT_MATRIX_CMD)), {DebuggerAppendMsg("DKR Vtx: Cmd0=%08X, Cmd1=%08X", (command.inst.cmd0), (command.inst.cmd1));});
 
-	VTX_DUMP(TRACE2("Vtx_DKR, cmd0=%08X cmd1=%08X", (command.inst.cmd0), (command.inst.cmd1)));
-	VTX_DUMP(TRACE2("Vtx_DKR, v0=%d n=%d", dwV0, dwN));
-
 	if (dwV0 >= 32)		dwV0 = 31;
 	
 	if ((dwV0 + dwN) > 32)
@@ -127,7 +124,6 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 		ProcessVertexDataDKR(dwAddr, dwV0, dwN);
 
 		status.dwNumVertices += dwN;
-
 		RDP_GFX_DumpVtxInfoDKR(dwAddr, dwV0, dwN);
 	}
 }
@@ -237,11 +233,13 @@ void RSP_MoveWord_DKR(MicroCodeCommand command)
 		LOG_UCODE("    gDKRBillBoard = %d", gDKRBillBoard);
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_MATRIX_CMD, {DebuggerAppendMsg("DKR Moveword, select gRSP.DKRBillBoard %s, cmd0=%08X, cmd1=%08X", gDKRBillBoard?"true":"false", (command.inst.cmd0), (command.inst.cmd1));});
 		break;
+
 	case RSP_MOVE_WORD_LIGHTCOL:
 		gDKRCMatrixIndex = (command.inst.cmd1 >> 6) & 0x7;
 		LOG_UCODE("    gDKRCMatrixIndex = %d", gDKRCMatrixIndex);
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_MATRIX_CMD, {DebuggerAppendMsg("DKR Moveword, select matrix %d, cmd0=%08X, cmd1=%08X", gDKRCMatrixIndex, (command.inst.cmd0), (command.inst.cmd1));});
 		break;
+
 	default:
 		RSP_GBI1_MoveWord(command);
 		break;

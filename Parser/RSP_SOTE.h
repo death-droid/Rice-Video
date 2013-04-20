@@ -19,9 +19,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef RSP_SOTE_H__
 #define RSP_SOTE_H__
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_Vtx_ShadowOfEmpire(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr(command.inst.cmd1);
+	uint32 dwAddr   = RSPSegmentAddr(command.inst.cmd1);
 	uint32 dwLength = ((command.inst.cmd0))&0xFFFF;
 
 	uint32 dwN= ((command.inst.cmd0 >> 4) & 0xFFF) / 33 + 1;
@@ -45,7 +48,9 @@ void RSP_Vtx_ShadowOfEmpire(MicroCodeCommand command)
 	DisplayVertexInfo(dwAddr, dwV0, dwN);
 }
 
-
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 {
 	bool bTrisAdded = false;
@@ -88,6 +93,9 @@ void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 	DEBUG_TRIANGLE(TRACE0("Pause at GBI1 TRI1"));
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_Tri1_ShadowOfEmpire(MicroCodeCommand command)
 {
 
