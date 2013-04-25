@@ -350,6 +350,7 @@ FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void)
 		g_CritialSection.Unlock();
 		TRACE0("g_CritialSection is locked when game is starting, unlock it now.");
 	}
+
 	status.bDisableFPS=false;
 
 	__try{
@@ -517,13 +518,6 @@ void SetVIScales()
 FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
 {
 	status.bVIOriginIsUpdated = false;
-
-	if( status.ToToggleFullScreen && status.gDlistCount > 0 )
-	{
-		//ChangeWindowStep2();
-		//return;
-	}
-
 	g_CritialSection.Lock();
 	if( status.bHandleN64RenderTexture )
 		g_pFrameBufferManager->CloseRenderTexture(true);
