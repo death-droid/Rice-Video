@@ -50,13 +50,15 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH: 
+		//Once we have been attached to a process, init our configuration
 		InitConfiguration();
 		break;
 	case DLL_THREAD_ATTACH: 
 		break; 
 	case DLL_THREAD_DETACH: 
 		break; 
-	case DLL_PROCESS_DETACH: 
+	case DLL_PROCESS_DETACH:
+		//Process has been detached, write anything that needs to be back to the ini 
 		if (bIniIsChanged)
 		{
 			WriteIniFile();
@@ -64,8 +66,6 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
 		}
 		break; 
 	} 
-	
-	
 	return TRUE; 
 } 
 
@@ -84,11 +84,8 @@ void GetPluginDir( char * Directory )
 //-------------------------------------------------------------------------------------
 FUNC_TYPE(void) NAME_DEFINE(GetDllInfo) ( PLUGIN_INFO * PluginInfo )
 {
-#ifdef _DEBUG
-	sprintf(PluginInfo->Name, "%s %s Debug",project_name, BUILD_NUMBER);
-#else
-	sprintf(PluginInfo->Name, "%s %s",project_name, BUILD_NUMBER);
-#endif
+	sprintf(PluginInfo->Name, "%s %s %s",project_name, BUILD_NUMBER, FILE_VERSION);
+
 	PluginInfo->Version        = 0x0103;
 	PluginInfo->Type           = PLUGIN_TYPE_GFX;
 	PluginInfo->NormalMemory   = FALSE;
@@ -146,14 +143,6 @@ void ChangeWindowStep2()//backtome
 	status.ToToggleFullScreen = FALSE;
 }
 
-FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
-{
-	if( status.ToToggleFullScreen )
-		status.ToToggleFullScreen = FALSE;
-	else
-		status.ToToggleFullScreen = TRUE;
-}
-
 void ChangeWinSize( void ) 
 {
 	//ShowWindow(g_GraphicsInfo.hWnd, SW_HIDE);
@@ -175,9 +164,22 @@ void ChangeWinSize( void )
 
     AdjustWindowRectEx( &rc1,GetWindowLong( g_GraphicsInfo.hWnd, GWL_STYLE ), GetMenu( g_GraphicsInfo.hWnd ) != NULL, GetWindowLong( g_GraphicsInfo.hWnd, GWL_EXSTYLE ) ); 
     MoveWindow( g_GraphicsInfo.hWnd, wndpl.rcNormalPosition.left, wndpl.rcNormalPosition.top, rc1.right - rc1.left, rc1.bottom - rc1.top, TRUE );
-	//ShowWindow(g_GraphicsInfo.hWnd, SW_SHOW);
 	Sleep(100);
 }
+//---------------------------------------------------------------------------------------
+
+FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
+{
+	
+	if( status.ToToggleFullScreen )
+		status.ToToggleFullScreen = FALSE;
+	else
+		status.ToToggleFullScreen = TRUE;
+
+	ChangeWindowStep2();
+	ChangeWinSize();
+}
+
 //---------------------------------------------------------------------------------------
 
 FUNC_TYPE(void) NAME_DEFINE(DrawScreen) (void)
@@ -240,15 +242,20 @@ bool StartVideo(void)
 		p--;
 	}
 
+	//Grab any rom options that are set only for this rim
 	GenerateCurrentRomOptions();
+
+	//Lets figure out what the tv system is
 	status.dwTvSystem = CountryCodeToTVSystem(g_curRomInfo.romheader.nCountryID);
 	if( status.dwTvSystem == TV_SYSTEM_NTSC )
 		status.fRatio = 0.75f;
 	else
 		status.fRatio = 9/11.0f;
 	
+	//Grab any external textures.
 	InitExternalTextures();
 	
+	//Change the window size to our required one.
 	ChangeWinSize();
 		
 	try {
@@ -513,8 +520,8 @@ FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
 
 	if( status.ToToggleFullScreen && status.gDlistCount > 0 )
 	{
-		ChangeWindowStep2();
-		return;
+		//ChangeWindowStep2();
+		//return;
 	}
 
 	g_CritialSection.Lock();
@@ -536,7 +543,6 @@ FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
 		g_CritialSection.Unlock();
 		return;
 	}
-
 
 	if( status.toCaptureScreen )
 	{
