@@ -177,7 +177,6 @@ FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
 		status.ToToggleFullScreen = TRUE;
 
 	ChangeWindowStep2();
-	ChangeWinSize();
 }
 
 //---------------------------------------------------------------------------------------

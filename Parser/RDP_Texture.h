@@ -1075,8 +1075,10 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 
 	for( int i=0; i<8; i++ )
 	{
-		if( tile.dwTMem == tile.dwTMem )//checkme this is always true
-			tile.lastTileCmd = CMD_LOADBLOCK;
+		//replaced with a similar code in another place (DLParser_LoadTile), look for side effecst
+		
+		if( gRDP.tiles[i].dwTMem == tile.dwTMem )
+			gRDP.tiles[i].lastTileCmd = CMD_LOADBLOCK;
 	}
 
 	info.dwLoadAddress = g_TI.dwAddr;
