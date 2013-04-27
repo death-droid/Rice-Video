@@ -39,8 +39,10 @@ void RSP_Vtx_WRUS(MicroCodeCommand command)
 
 	ProcessVertexData(dwAddr, dwV0, dwN);
 
+#ifdef _DEBUG
 	status.dwNumVertices += dwN;
 	DisplayVertexInfo(dwAddr, dwV0, dwN);
+#endif
 }
 
 #endif //RSP_WRUS_H__

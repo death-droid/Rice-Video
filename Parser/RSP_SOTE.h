@@ -43,9 +43,10 @@ void RSP_Vtx_ShadowOfEmpire(MicroCodeCommand command)
 
 	ProcessVertexData(dwAddr, dwV0, dwN);
 
+#ifdef _DEBUG
 	status.dwNumVertices += dwN;
-
 	DisplayVertexInfo(dwAddr, dwV0, dwN);
+#endif
 }
 
 //*****************************************************************************

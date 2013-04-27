@@ -39,8 +39,10 @@ void RSP_GBI1_Vtx(MicroCodeCommand command)
 	}
 
 	ProcessVertexData(addr, v0, n);
+#ifdef _DEBUG
 	status.dwNumVertices += n;
 	DisplayVertexInfo(addr, v0, n);
+#endif
 }
 
 void RSP_GBI1_ModifyVtx(MicroCodeCommand command)

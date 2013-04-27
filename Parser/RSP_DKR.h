@@ -123,8 +123,10 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 	{
 		ProcessVertexDataDKR(dwAddr, dwV0, dwN);
 
+#ifdef _DEBUG
 		status.dwNumVertices += dwN;
 		RDP_GFX_DumpVtxInfoDKR(dwAddr, dwV0, dwN);
+#endif
 	}
 }
 
@@ -356,9 +358,10 @@ void RSP_Vtx_Gemini(MicroCodeCommand command)
 	{
 		ProcessVertexDataDKR(dwAddr, dwV0, dwN);
 
+#ifdef _DEBUG
 		status.dwNumVertices += dwN;
-
 		RDP_GFX_DumpVtxInfoDKR(dwAddr, dwV0, dwN);
+#endif
 	}
 }
 

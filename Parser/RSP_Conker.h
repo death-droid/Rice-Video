@@ -32,8 +32,11 @@ void RSP_Vtx_Conker(MicroCodeCommand command)
 	LOG_UCODE("    Vtx: Address 0x%08x, vEnd: %d, v0: %d, Num: %d", dwAddr, dwVEnd, dwV0, dwN);
 
 	ProcessVertexDataConker(dwAddr, dwV0, dwN);
+
+#ifdef _DEBUG
 	status.dwNumVertices += dwN;
 	DisplayVertexInfo(dwAddr, dwV0, dwN);
+#endif
 }
 
 void RSP_Tri4_Conker(MicroCodeCommand command)

@@ -42,8 +42,11 @@ void RSP_GBI2_Vtx(MicroCodeCommand command)
 	else
 	{
 		ProcessVertexData(addr, v0, n);
+
+#ifdef _DEBUG
 		status.dwNumVertices += n;
 		DisplayVertexInfo(addr, v0, n);
+#endif
 	}
 }
 

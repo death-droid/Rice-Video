@@ -36,7 +36,10 @@ void RSP_Vtx_PD(MicroCodeCommand command)
 	LOG_UCODE("    Address [0x%08x], Len[%d], v0: [%d], Num: [%d]", dwAddr, dwLength, dwV0, dwN);
 
 	ProcessVertexDataPD(dwAddr, dwV0, dwN);
+
+#ifdef _DEBUG
 	status.dwNumVertices += dwN;
+#endif
 }
 
 void RSP_Set_Vtx_CI_PD(MicroCodeCommand command)

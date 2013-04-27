@@ -81,9 +81,9 @@ void RSP_GBI0_Mtx(MicroCodeCommand command)
 
 void RSP_GBI0_Vtx(MicroCodeCommand command)
 {
-	uint32 addr = RSPSegmentAddr((command.vtx0.addr));
-	int v0 = command.vtx0.v0;
-	int n = command.vtx0.n + 1;
+	uint32 addr = RSPSegmentAddr(command.vtx0.addr);
+	uint32 v0 = command.vtx0.v0;
+	uint32 n = command.vtx0.n + 1;
 
 	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", addr, v0, n, command.vtx0.len);
 
@@ -101,8 +101,11 @@ void RSP_GBI0_Vtx(MicroCodeCommand command)
 	else
 	{
 		ProcessVertexData(addr, v0, n);
+
+#ifdef _DEBUG
 		status.dwNumVertices += n;
 		DisplayVertexInfo(addr, v0, n);
+#endif
 	}
 }
 
