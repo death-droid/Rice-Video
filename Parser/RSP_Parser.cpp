@@ -1142,7 +1142,7 @@ void DLParser_SetScissor(MicroCodeCommand command)
 
 
 void DLParser_FillRect(MicroCodeCommand command)
-{ 
+{
 	if( status.bN64IsDrawingTextureBuffer && frameBufferOptions.bIgnore )
 		return;
 

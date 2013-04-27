@@ -147,13 +147,13 @@ struct GBI_Texture
 
 struct SetCullDL
 {
-    u32 pad0:1;             
-    u32 first:15;   
-    u32 pad2:8;            
-    u32 cmd:8;             
-    u32 pad3:1;            
-    u32 end:15;    
-    u32 pad4:8;             
+    u32 pad0:1;
+    u32 first:15;
+    u32 pad2:8;
+    u32 cmd:8;
+    u32 pad3:1;
+    u32 end:15;
+    u32 pad4:8;
 };
 
 struct SetTImg
@@ -406,8 +406,8 @@ union MicroCodeCommand
 	GGBI1_Dlist		dlist;
 
 	SetCullDL		culldl;	
-	SetTImg			img;
 	GSetColor		setcolor;
+	SetTImg			img;
 
 	LoadTile		loadtile;
 	SetFillRect		fillrect;

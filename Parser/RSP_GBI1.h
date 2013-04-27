@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void RSP_GBI1_Vtx(MicroCodeCommand command)
 {
-	uint32 addr = RSPSegmentAddr((command.vtx1.addr));
+	uint32 addr = RSPSegmentAddr(command.vtx1.addr);
 	uint32 v0  = command.vtx1.v0;
 	uint32 n   = command.vtx1.n;
 
@@ -81,12 +81,11 @@ void RSP_GBI1_ModifyVtx(MicroCodeCommand command)
 
 void RSP_GBI1_Tri2(MicroCodeCommand command)
 {
-	bool bTrisAdded = false;
-	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
-
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+
+	bool bTrisAdded = false;
 
 	do {
 		// Vertex indices are multiplied by 10 for Mario64, by 2 for MarioKart
@@ -164,7 +163,7 @@ void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 {
 	//TRACE0("Load ucode");
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 dwUcStart = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwUcStart = RSPSegmentAddr(command.inst.cmd1);
 	uint32 dwSize = ((command.inst.cmd0)&0xFFFF)+1;
 	uint32 dwUcDStart = RSPSegmentAddr(*(uint32 *)(g_pRDRAMu8 + dwPC-12));
 
@@ -853,11 +852,10 @@ void RSP_GBI1_CullDL(MicroCodeCommand command)
 void RSP_GBI1_Tri1(MicroCodeCommand command)
 {
 	bool bTrisAdded = false;
-	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
 	// While the next command pair is Tri1, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8+  dwPC);
 	
 	do
 	{
