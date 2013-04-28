@@ -1,0 +1,917 @@
+	The Official (because its the only one) BMGLib API Manual
+			        Version 2.5
+
+				Scott Heiman
+			     scottheiman@cox.net
+		    http://members.cox.net/scottheiman/
+
+				24 January 2004
+INTRODUCTION
+------------
+
+This document describes the BMGLib API.  BMGLib is an API for reading and 
+saving BitMapped Graphics (BMG) on the Windows operating system.  It does not
+contain functions for displaying images; however, several examples have been 
+provided to show software developers how to display the bitmaps using Borland's
+VCL components and Microsoft's MFC library.  This document was written to help
+developers use BMGLib in their own projects.  
+
+OBLIGATORY LEGAL RAMBLINGS
+--------------------------
+
+  BMGLib is Copyright 2000-2002 M. Scott Heiman
+  All Rights Reserved
+  libTIFF is Copyright Sam Leffler and Silicon Graphics International
+  libJPEG is Copyright (C) 1991-1998, Thomas G. Lane and is part of the
+      Independent JPEG Group's software.
+  libPNG is Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.
+  zLib Copyright (C) 1995-1998 Jean-loup Gailly.
+  libUnGif is Copyright (c) 1997,  Eric S. Raymond
+
+ You may use the software for any purpose you see fit.  You may modify
+ it, incorporate it in a commercial application, use it for school,
+ even turn it in as homework.  You must keep the Copyright in the
+ header and source files.  This software is not in the "Public Domain".  
+ You may use this software at your own risk.  I have made a reasonable 
+ effort to verify that this software works in the manner I expect it to; 
+ however,...
+
+ THE MATERIAL EMBODIED ON THIS SOFTWARE IS PROVIDED TO YOU "AS-IS" AND
+ WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE, INCLUDING
+ WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A
+ PARTICULAR PURPOSE. IN NO EVENT SHALL MICHAEL S. HEIMAN BE LIABLE TO
+ YOU OR ANYONE ELSE FOR ANY DIRECT, SPECIAL, INCIDENTAL, INDIRECT OR
+ CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER, INCLUDING
+ WITHOUT LIMITATION, LOSS OF PROFIT, LOSS OF USE, SAVINGS OR REVENUE,
+ OR THE CLAIMS OF THIRD PARTIES, WHETHER OR NOT MICHAEL S. HEIMAN HAS
+ BEEN ADVISED OF THE POSSIBILITY OF SUCH LOSS, HOWEVER CAUSED AND ON
+ ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE
+ POSSESSION, USE OR PERFORMANCE OF THIS SOFTWARE.
+
+CHANGES FROM 2.4 TO 2.5
+-------------------------------------
+
+Added the PCX format as a read-only format.
+
+The ReadTIFF function has been modified to read multiplanar images and
+and 16-bit per color images.  16-bit per color images are converted to 8-bit 
+per color images to conform to the Windows operating system.  The 8 LSBs
+of each color are removed.  This will result in a loss of resolution when
+you try to display 16-bit per color images on Windows.
+
+OVERVIEW
+--------
+
+BMGLib is a DLL that will read/write data from/to various bitmap graphics 
+files.  It will also create Windows bitmaps (HBITMAPS) from the data that can 
+easily be displayed in any windows application.  The data can also be 
+converted to texture maps and used in OpenGL.  Currently, BMGLib supports the 
+following image formats:
+
+File Type	Read	Write	comments
+-------------------------------------------------------------------------------
+TIFF		yes	yes	No LZW compression (can read, but not write).  
+                                Cannot read or write YCbCr or CIE variants
+PNG		yes	yes
+JPEG		yes	yes
+BMP		yes	yes	Supports BI_RGB only.
+RGB (SGI)	yes	yes	cannot write compressed files
+TGA             yes     yes
+GIF		yes	no	BMGLib does not support animated GIFs, but 
+				GIFLib does.
+CEL             yes     no	supports FLC and FLI formats
+PSD		yes	no	does not support LAB or CMYK formats
+IFF		yes	no	currently, only supports 8 BPP images
+PCX             yes     no
+
+A generic interface between image file formats, HBITMAPS, and raw data has been 
+created.  The BMG Image structure contains all of the information needed to
+create/save HBITMAPS from/to image files or raw data.
+
+The following BMGLib functions are exported from the BMGLib DLL:
+
+    HIGH-LEVEL INTERFACES
+    ---------------------
+    GetUnpackedArray       - returns an OpenGL texture map from a file    
+    SaveUnpackedArray      - Saves an OpenGL image to a file    
+    CreateBitmapFromFile   - creates an HBITMAP from a file        
+    SaveBitmapToFile       - saves an HBITMAP to a file      
+    CreateRGBAArray        - returns a 2-D pixel map of a file
+  
+    UTILITIES FOR MANIPULATING BMG IMAGE STRUCTURES
+    -----------------------------------------------
+    InitBMGImage             - default initialization 
+    AllocateBMGImage         - memory allocation             
+    FreeBMGImage             - memory deallocation              
+    CompressBMGImage         - paletted image compression
+    ConvertPaletteToRGB      - converts paletted and 16-BPP images to 24-BPP 
+                               or 32-BPP images
+    CopyBMGImage             - copies the contents of 1 BMGImage to another
+    ConvertToGrayscale       - converts  any color BMG image to a grayscale
+                               BMG image
+    ConvertToPseudoGrayscale - converts 24 and 32-BPP BMG images to pseudo
+                               grayscale images
+
+
+    BMG IMAGE/HBITMAP CONVERSIONS
+    ----------------------------
+    CreateBitmapFromData     - creates an HBITMAP (DIB) from a BMG Image 
+                               structure          
+    GetDataFromBitmap        - creates a BMG IMage structure from an HBITMAP
+                               (both DIB and DDB)          
+
+    BMG IMAGE/FILE CONVERSIONS
+    --------------------------
+    GetDataFromFile - stores the contents of any supported image file into a 
+                      BMG Image structure
+    ReadBMP   - Store the contents of a BMP  file into a BMG Image structure.                     
+    ReadCEL   - Store the contents of a CEL  file into a BMG Image structure.                     
+    ReadGIF   - Store the contents of a GIF  file into a BMG Image structure.                     
+    ReadIFF   - Srore the contents of a IFF  file into a BMG Image structure. 
+    ReadJPEG  - Store the contents of a JPEG file into a BMG Image structure.                     
+    ReadPNG   - Store the contents of a PNG  file into a BMG Image structure.
+    ReadPSD   - Srore the contents of a PSD  file into a BMG Image structure. 
+    ReadRGB   - Store the contents of a RGB  file into a BMG Image structure.                     
+    ReadTGA   - Store the contents of a TGA  file into a BMG Image structure.                     
+    ReadTIFF  - Store the contents of a TIFF file into a BMG Image structure.
+    ReadPCX   - Store the contents of a PCX  file into a BMG Image structure.
+    WriteBMP  - write the contents of a BMG Image structure to a BMP file.                      
+    WriteJPEG - write the contents of a BMG Image structure to a JPEG file.                     
+    WritePNG  - write the contents of a BMG Image structure to a PNG file.                       
+    WriteRGB  - write the contents of a BMG Image structure to a SGI RGB file.                     
+    WriteTIFF - write the contents of a BMG Image structure to a TIFF file. 
+    WriteTGA  - write the contents of a BMG Image structure to a TGA file. 
+
+    OTHER UTILITY FUNCTIONS
+    -----------------------
+    CreateBMI         - creates a BITMAPINFO structure        
+    FreeBMGMemory     - frees memory that was allocated in BMGLIB.DLL 
+    GetLastBMGError   - returns the last error code created by any BMGLib
+                      - function.
+    GetLastBMGErrorMessage - returns a string describing the last BMG error.
+    SetBMGBackgroundColor  - Sets the background color for alpha blending
+    SetBMGBackgroundBitmap - sets the background image for alpha blending
+    SetBMGBackgroundImage  - sets the background image for alpha blending
+                     
+
+It has built in support for alpha blending with bland backgrounds and 
+background bitmaps.  Details can be found in the text that follows and the 
+examples that have been provided.
+
+BMGLib uses Windows API calls and will not compile on other operating systems.
+
+BMGLib can be used with Borland C++ Builder (ver. 5) and Microsoft Visual C++ 
+(ver. 6).  Project files and examples have been included for both compilers. 
+If you have an earlier version of either compiler then you can build your own
+project files.  Borland's BPR files and MS's DSP files are ASCII text files,
+therefore, they can be viewed with any ASCII text editor.  These files are
+similar to make files.  They list all of the source code files and flags needed
+to build the project.  You can build your own project files from scratch using
+the information provided in those files.
+ 
+BMGLib is framework independent.  It does not use the VCL, OWL, or MFC.  It 
+should compile with any Win32 compiler with minor tweaks, but I have not tested 
+it with other compilers.
+
+THE BMG IMAGE INTERFACE STRUCTURE
+---------------------------------
+
+The BMGImageStruct is a common interface between all image file formats.  The 
+structure contains the basic information required to create/save a bitmap or a 
+texture map. The structure is defined as:
+
+struct BMGImageStruct
+{
+    unsigned int width;
+    unsigned int height;
+    unsigned char bits_per_pixel;
+    unsigned char *bits;
+    unsigned short palette_size;
+    unsigned char bytes_per_palette_entry;
+    unsigned char *palette;
+    unsigned int scan_width;
+    int opt_for_bmp; 
+    short transparency_index;
+};
+
+width & height define the horizontal and vertical dimensions (in pixels) of the 
+bitmap.
+
+bits_per_pixel defines the bit resolution of a pixel.  Valid values are 1, 4, 
+8, 16, 24 and 32.  The image must have a palette if bits_per_pixel <= 8.  Any 
+palette will be ignored if bits_per_pixel > 8.
+
+bits points to an array that specifies the pixel values.  If 
+bits_per_pixel <= 8, then bits is an array of indices into a palette.  
+If bits_per_pixel < 8, then the array indices are compressed as required by a 
+Windows bitmap.  If bits_per_pixel = 16 then bits is an array of shorts that
+define the BGR colors as defined by the Win32 API.  If bits_per_pixel = 24, 
+then the array contains BGR values.  If bits_per_pixel = 32, then the array 
+contains BGRA values.  Its dimension will be scan_width * height.
+
+palette_size is the number of palette entries in the array.  It can range from 
+2 - 256.
+
+bytes_per_palette_entry is the number of bytes in each palette entry.  It can 
+be either 3 or 4.  bytes_per_palette_entry must equal 4 if opt_for_bmp equals 1.
+
+palette is a pointer to the palette array.  Its dimension must be 
+bytes_per_palette_entry * palette_size.  palette must equal NULL if 
+bits_per_pixel is greater than 8.
+
+opt_for_bmp is a flag.  If set to 1, bytes_per_palette_entry and scan_width will 
+be set such that the contents of bits and palette can be directly copied into an 
+HBITMAP.  If set to 0, then bits and palette will be dimensioned to minimize 
+memory.
+
+opt_for_bmp	bytes_per_palette_entry	scan_width
+-------------------------------------------------------------------------------
+	0	3 or 4			( bits_per_pixel * width + 7 ) / 8
+	1	4			( bits_per_pixel * width + 7 ) / 8 + 
+                                        padding that makes scan_width % 4 = 0
+
+scan_width is the number of bytes along a single scan line.  scan_width modulo 4 
+must equal 0 if opt_for_bmp equals 1.
+
+The scan_width variable will depend upon opt_for_bmp.  The following pseudo code
+demonstrates how to calculate scan_width:
+
+BMGImageStruct img;
+img.scan_width = ( img.bits_per_pixel * img.width + 7 ) / 8;
+if ( img.opt_for_bmp > 0 && img.scan_width % 4 > 0 )
+	img.scan_width += 4 - img.scan_width % 4;
+
+if transparency_index > -1 then it points to a palette entry that is 
+transparent.  This palette entry should be replaced with the background pixel. 
+transparency_index is meaningless for images without palettes.
+
+Once these parameters are defined, you can set palette colors using the 
+following pseudo code:
+
+BMGImageStruct img;
+for ( unsigned char *p = img.palette; 
+	p < img.palette + img.palette_size*img.bytes_per_palette_entry; 
+	p += img.bytes_per_palette_entry )
+{
+	p[0] = blue_byte;
+	p[1] = green_byte;
+	p[2] = red_byte;
+        if ( img.bytes_per_palette_entry == 4 )
+		p[3] = 0;
+}
+
+If bytes_per_palette_entry = 4, then you can copy palette entries to/from
+RGBQUAD elements.  For example,
+
+RGBQUAD qPalette[256];
+memcpy( (void *)img.palette, (void *)qPalette, 256*sizeof(RGBQUAD) );
+
+will copy the contents of an RGBQUAD array into a palette.  One can easily 
+reverse the process as well.
+
+The format of the bit array depends upon bits_per_pixel.  If 
+bits_per_pixel <= 8 then each element of bit is an index into the palette. If
+bits_per_pixel is < 8 then the indices are compressed.  The functions 
+CompressBMGImage, Convert1to8, and Convert4to8 show you how to read and set 
+individual elements in the bit array when bits_per_pixel < 8.
+
+If bits_per_pixel = 8 then individual pixels can be set with the following pseudo 
+code:
+
+struct BMGImageStruct img;
+/* r points to the start of each row */
+for ( unsigned char *r = img.bits; r < img.bits + img.scan_width * img.height;
+      r += img.scan_width )
+{
+	/* c will point at each element in the row */
+	for ( unsigned char *c = r; c < r + img.width; c++ )
+		*c = some_value_between_0_and_255_inclusive;
+}
+
+if bits_per_pixel = 16, then bits is a sequenced array of 16-bit pixel values.
+16-bit pixel values contain 5-bits for each RGB component.  The following psuedo 
+code demonstrates how to assign individual pixel values:
+
+BMGImageStruct img;
+/* r points to the start of each row */
+for ( unsigned char *r = img.bits; r < img.bits + img.height*img.scan_width; 
+	r += img.scan_width )
+{
+	/* c will point at each element in the row */
+	for ( unsigned char *c = r; c < r + img.scan_width; c += 2 )
+	{
+		// assumes that only the most significant 5 bits are used
+                // for each color entry.
+		unsigned short pixel = (( red_byte & 0xF8 ) << 7) |
+                                       (( green_byte & 0xF8 ) << 2 ) |
+                                       (( blue_byte & 0xF8 ) >> 3 );
+		memcpy( (void *)c, (void *)&pixel, 2 );					
+	}
+} 
+
+if bits_per_pixel = 24 then bits is a sequenced array of BGR values.  If
+bits_per_pixel = 32 then bits a a sequenced array of BGRA values.  The 
+following psuedo code shows you how to assign individual pixel values:
+
+BMGImageStruct img;
+bytes_per_pixel = img.bits_per_pixel / 8;
+/* r points to the start of each row */
+for ( unsigned char *r = img.bits; r < img.bits + img.height*img.scan_width; 
+	r += img.scan_width )
+{
+	/* c will point to the first byte of a BGR[A] sequence */
+	for ( unsigned char *c = r; c < r + img.scan_width; 
+		c += bytes_per_pixel )
+	{
+		c[0] = blue_byte;
+		c[1] = green_byte;
+		c[2] = red_byte;
+		if ( bytes_per_pixel == 4 )
+			c[3] = alpha_byte;
+	}
+} 
+
+
+ERROR CODES
+-----------
+
+Most BMGLib functions will return a BMGError code.  Functions that return a
+HBITMAP will return NULL if an error occurs.  The error code can be obtained 
+by calling the GetLAstBMGError function.  GetLastBMGErrorMessage returns a 
+string describing the error.  The BMGError codes, as defined in BMGImage.h, 
+are:
+
+enum variable name		Value	Description
+------------------------------------------------------------------------------
+BMG_OK 				0	No error 
+errLib				1 	The libPNG or libJPEG libraries had
+					an internal error.  This usually
+					indicates that the file has been
+					corrupted or that it was not formatted
+					correctly.
+errInvalidPixelFormat		2	This occurs when the image format does
+					not support the requested bytes/pixel.
+errMemoryAllocation		3 	A memory allocation error occurred.
+errInvalidSize 			4	The image size was invalid.
+errInvalidBitmapHandle 		5	The HBITMAP was invalid
+errWindowsAPI 			6	A windows API error occurred.  You can
+					call the GetLastError function 
+					to determine what error occurred. 
+					GetLastBMGErrorMessage will return a
+					description of the API error.
+errFileOpen 			7	The input/output file could not be
+					opened.
+errUnsupportedFileFormat	8	The BMGLib WriteXXX functions do not
+					support all possible file formats.  
+					This is returned if a particular 
+					unsupported format is requested.
+errInvalidBMGImage 		9	The pointer to a BMGImage struct is
+					invalid.
+errInvalidFileExtension		10	this is returned by SaveBitmapToFile
+					when a user requests an unsupported
+					or undefined file format (as 
+					determined by the extension of the 
+					file name.
+errFileRead 			11	An fread error occurred.
+errFileWrite			12	An fwrite error occurred.
+errInvalidGeoTIFFPointer	13	The GeoTIFFInfo structure was 
+					invalid.
+errUndefinedBGImage             14      Alpha blending was attempted with an
+                                        undefined background image
+errBGImageTooSmall              15      Alpha blending was attempted with a
+                                        background image that was smaller than
+                                        the foreground image.
+errCorruptFile			16	The data file was corrupted (or I
+					misinterpreted the spec).
+
+
+UTILITIES FOR MANIPULATING BMG IMAGE STRUCTURES
+-----------------------------------------------
+
+There are 7 functions that can be used to manipulate a BMGImageStruct:
+
+void InitBMGImage( BMGImageStruct * )
+void FreeBMGImage( BMGImageStruct * )
+BMGError AllocateBMGImage( BMGImageStruct * )
+BMGError CompressBMGImage( BMGImageStruct * )
+BMGError CopyBMGImage( struct BMGImageStruct img_in,
+                       struct BMGImageStruct *img_out );
+BMGError ConvertToGrayScale( struct BMGImageStruct *img )
+BMGError ConvertToPseudoGrayScale( struct BMGImageStruct *img )
+BMGError ConvertPaletteToRGB( struct BMGImageStruct img_in,
+                              struct BMGImageStruct *img_out );
+
+InitBMGImage will initialize a BMGImageStruct.  It acts like a default C++ 
+class constructor.  
+
+FreeBMGImage will deallocate any memory in a BMGImageStruct and set all 
+parameter values to default values.  It acts like a C++ class destructor.  
+
+AllocateBMGImage will automatically allocate memory for bits and palette if 
+the proper variables have been assigned.  For example:
+
+BMGImageStruct img;
+InitBMGImage( &img );  // set default values. opt_for_bmp = 0
+img.width          = some_width_greater_than_0;
+img.height         = some_height_greater_than_0;
+img.bits_per_pixel = either_1_4_8_16_24_or_32;
+AllocateBMGImage( &img );
+
+will create the bitmap that has width * height pixels.  A palette will be 
+created if bits_per_pixel <= 8.  The default palette_size will be 
+( 1 << bits_per_pixel ).  If a smaller palette is desired then set 
+palette_size to the desired value before calling AllocateBMGImage.
+scan_width & bytes_per_palette_entry will be assigned the appropriate 
+values.
+
+If memory should be optimized for a windows bitmap then set opt_for_bmp to 1 
+before calling AllocateBMGImage. 
+
+AllocateBMGImage will return BMG_OK If width, height, and bits_per_pixel have 
+valid parameters and no memory allocation errors occurred.  All parameters 
+will be assigned valid values if AllocateBMGImage is successful.  
+AllocateBMGImage will return an error code if it could not allocate memory or 
+an invalid parameter was detected.
+
+Except for transparent_index, you should treat all variables in a BMGImageStruct 
+as a constant after calling AllocateBMGImage.  The bits and palette pointers can 
+still be used to set pixel values and palette entries. transparent_index can be 
+modified at any time.
+
+CompressBMGImage will convert an 8 bit-per-pixel (BPP) paletted images to 1 BPP
+or 4 BPP paletted images.  it returns BMG_OK if compression was successful or 
+no compression could be acheived.  It returns an error code if a memory 
+allocation failure occurs.
+
+CopyBMGImage copies the contents of img_in into img_out.  This function will
+return BMG_OK if the operation was successful, otherwise it returns an error 
+code.
+
+ConvertToGrayscale converts any color image to a grayscale image.  Paletted 
+images will have the same number of grayscales as palette colors.  16-BPP and 
+24-BPP images will be converted to 8-BPP grayscale images (256 grayscales).  
+32-BPP images will remain 32-BPP images to preserve the alpha channel (however,
+it is still a 256 grayscale image).  ConvertToGrayscale returns BMG_OK if
+successfull, or an error code if unsuccessfull.
+
+ConvertToPseudogray converts 24 and 32-BPP images to pseudograyscale images.  
+Pseudograyscale images take advantage of your eye's inability to distinguish
+between "true grayscale" ( red = green = blue) and "nearly gray scale" pixels 
+( red, green, and blue values within 1 pixel of each other).  This technique
+was obtained from Rich Franzen <http://rocq.home.att.net/pseudoGrey.html>.  The
+code was simplified and will only work with color images.  
+ConvertToPseudoGrayscale will return BMG_OK if successfull, or an error code 
+otherwise.
+
+ConvertPaletteToRGB will convert a paletted image to a BGR or a BGRA image.  1, 
+4, 8, and 16-BPP images that do not have tranparent pixels are converted to 
+24-BPP images.  1, 4, and 8-BPP images that have transparent pixels are converted
+to 32-BPP images.  24 and 32-BPP images are copied unchanged to the output image.  
+img_in must contain the data for a valid image.  On ouput, img_out will contain a 
+24- or 32-BPP image.  ConvertPaletteToRGB will return BMG_OK if successfull, 
+otherwise, it returns an error code.
+
+HIGH LEVEL FUNCTIONS
+--------------------
+
+There are 4 high level BMGLib functions:
+
+BMGError GetUnpackedArray( const char *filename,
+                           unsigned int *width,
+                           unsigned int *height,
+                           unsigned char **bits,
+                           int bgra );
+
+BMGError SaveUnpackedArray( const char *filename,
+		            unsigned char bits_per_pixel
+                            unsigned int width,
+                            unsigned int height,
+                            unsigned char *bits,
+                            int bgra );
+
+BMGError SaveBitmapToFile( HBITMAP hBitmap,
+                           const char *filename,
+                           void *parameters );
+
+HBITMAP CreateBitmapFromFile( const char *filename,
+                              void *parameters,
+                              int blend );
+
+GetUnpackedArray will extract the dimension and RGBA values from a bitmap 
+file.  This function is usefull for creating texture maps in OpenGL.  It 
+returns BMG_OK if successful or an error code if an error occurs.  The 
+variables are:
+
+filename - file to open (input).  It must have a file extension of BMP,
+           TIF, JPG, PNG, RGB, RGBA, TGA, CEL, or GIF.
+width    - width of the image in pixels (output)
+height   - height of the image in pixels (output)
+bits     - array of RGBA or BGRA pixel values (output).  The size of the 
+           array is 4 * width * height.  bits can be passed into 
+           gluScaleImage or glTexImage2D.
+bgra     - flag that indicates the RGB structure in bits.  if bgra == 1
+           then each pixel will be in BGRA format (your OpenGL card needs 
+           to support the EXT_BGRA extension).  if bgra == 0 then each 
+           pixel will be in RGBA format (the standard OpenGL format 
+           supported by all cards).
+
+
+SaveUnpackedArray will save a RGB or RGBA array to an image file.  This 
+function is useful for saving OpenGL images to a file.  It returns BMG_OK 
+if successful; therwise, it returns an error code.  The variables are:
+
+filename       - file to create (input).  Must have a file extension of 
+                 BMP, TIF, JPG, PNG, RGB, or RGBA.
+bits_per_pixel - the number of bits in each pixel (input).  Must be 24 
+                 or 32.
+width          - width of the image in pixels (input)
+height         - height of the image in pixels (input)
+bits           - an array of RGB or RGBA values (input).  Its dimension 
+                 must be (bits_per_pixel / 8) * width * height.  It can
+                 be the output of glReadPixels if GL_RGB or GL_RGBA was
+                 the requested format.
+bgra           - flag that indicates the RGB structure in bits.  if bgra 
+                 == 1 then each pixel will be in BGR or BGRA format 
+                 (your OpenGL card needs to support the EXT_BGRA 
+                 extension).  if bgra == 0 then each pixel will be in 
+                 RGB or RGBA format (the standard OpenGL format 
+                 supported by all cards).
+
+SaveBitmapToFile will save an HBITMAP to a file.  It returns BMG_OK if
+successfull, otherwise it returns an error code.  The variables are:
+
+hBitmap    - Handle to a bitmap that contains the image to be saved (input).
+filename   - name of the file that the image will be saved to (input).  Must 
+             have a file extension of BMP, TIF, JPG, PNG, RGB, or RGBA.
+parameters - optional parameters (input). Set to NULL if no parameters are 
+             needed.  Point to a TIFFInfoStruct if a particular storage format
+             is desired in a TIFF image.  The photometric variable in the 
+             TIFFInfoStruct is always ignored.  Point to an integer that 
+             defines the quality of the image to be saved if it is stored in a 
+             JPEG file.  If this parameter is NULL, and the bitmap is stored in
+             a TIFF or JPEG file, then default values will be used.  
+
+CreateBitmapFromFile will create a bitmap from a file.  It returns a valid
+HBITMAP if successfull; otherwise, it returns NULL.  The variables are:
+
+filename   - file to open (input).  Must have an extension of BMP, TIF, JPG,
+             PNG, RGB, RGBA, TGA, CEL, or GIF.
+parameters - optional parameters associated with the image (output).  Set 
+             to NULL if the parameters are not required.  Point to 
+             TIFFInfoStruct if you want to extract TIFF information from a TIFF
+             file.
+blend      - alpha blending flag (input).  Set to 0 if alpha blending is NOT
+             desired.  Set to 1 if alpha blending with a bland background is
+             desired (The SetBMGBackgroundColor function must be called prior
+             to CreateBitmapFromFile to specify the background color). Set to
+             2 if alpha blending with a background image/bitmap is desired (The
+             SetBMGBackgroundBitmap function or the SetBMGBackgroundImage 
+             function must be called prior to CreateBitmapFromFile to specify 
+             the background image).
+
+BMG IMAGE/HBITMAP CONVERSIONS
+-----------------------------
+
+The following 2 functions can be used to convert BMG Image structures to 
+bitmaps and vice-versa:
+
+BMGError GetDataFromBitmap( HBITMAP hBitmap,
+		            struct BMGImageStruct *img,
+                            int remove_alpha );
+
+HBITMAP CreateBitmapFromData( struct BMGImageStruct img,
+                              int alpha_blend );
+
+GetDataFromBitmap will extract the contents of an HBITMAP and store it into a 
+BMG Image structure.  It returns BMG_OK if successfull; otherwise, it returns
+an error code.  The variables are:
+
+hBitmap	     - An HBITMAP that contains an image (input).
+img          - A BMG Image structure that will contain the pixel and palette
+               data (output).
+remove_alpha - The remove alpha flag (input). Set to 1 if you want to remove
+               the background colr from the image (this option only works if
+               the background is bland (a single color). otherwise, Set to a 
+               value greater than 1.
+
+CreateBitmapFromData will create a bitmap from a BMG Image structure.  It will
+return a valid HBITMAP if succesfull; otherwise, it will return NULL.  The 
+variables are:
+
+img         - A BMG Image structure that contains the pixel and palette data
+              (input).
+alpha_blend - the alpha blend flag (input).  Set to 0 if alpha blending is 
+              NOT desired.  Set to 1 if alpha blending with a bland background 
+              is desired (The SetBMGBackgroundColor function must be called 
+              prior to CreateBitmapFromFile to specify the background color). 
+              Set to 2 if alpha blending with a background image/bitmap is 
+              desired (The SetBMGBackgroundBitmap function or the 
+              SetBMGBackgroundImage function must be called prior to 
+              CreateBitmapFromFile to specify the background image).  
+
+OTHER UTILITY FUNCTIONS
+-----------------------
+
+The following 2 miscellaneous functions are exported as well:
+
+BITMAPINFO CreateBMI( DWORD dwWidth,  
+                      DWORD dwHeight, 
+                      WORD wBitCount,  
+                      int compression );
+
+void FreeBMGMemory( unsigned char *mem );
+
+CreateBMI will create a BITMAPINFO structure fiven the input parameters.  The
+variables are:
+
+dwWidth     -  width of the image in pixels (input)
+dwHeight    -  height of the image in pixels (input)
+wBitCount   -  number of bits per pixel (input).  Must be 1, 4, 8, 16, 24, or 
+               32.
+compression -  bitamp format (input).  Must be BI_RGB, BI_RLE8, or BI_RLE4.
+
+FreeBMGMemory must be used to free memory that was allocated in the BMGLib DLL.
+This function is useful for freeing the memory assigned to the bits variable
+returned by the GetUnpackedArray function.  The input variable, mem, is a 
+pointer to the memory that should be freed.
+
+The following 3 functions are useful for alpha blending:
+
+void SetBMGBackgroundColor( unsigned char *color );
+BMGError SetBMGBackgroundBitmap( HBITMAP hBitmap );
+BMGError SetBMGBackgroundImage( struct BMGImageStruct img );
+
+
+SetBMGBackgroundColor sets the background color for alpha blending with bland 
+(single color) backgrounds.  The input, color, must point to an array of 4
+unsigned chars: color[0] = blue, color[1] = green, color[2] = red, 
+color[3] = unused.  NOTE: you can easily cast a pointer to a COLORREF or a 
+pointer to a TColor to a pointer to an unsigned char and pass it in as the
+input ;-)  This function must be called before alpha blending is attempted. 
+
+SetBMGBackgroundBitmap will copy the contents of an HBITMAP into the background
+image.  SetBMGBackgroundImage will copy the contents of the BMGImageStruct into
+the background image.  One of these functions must be called before you attempt 
+to blend an image with a background image.  The dimensions of the background 
+image must be greater than or equal to the dimensions of the foreground image.
+The lower-left corner of the foreground image will be aligned with the 
+lower-left corner of the background image.
+
+BMG IMAGE/FILE CONVERSIONS
+--------------------------
+
+The BMG image/file conversion utilities are self explanatory.
+
+BMGError GetDataFromFile( const char *filename,
+                          struct BMGImageStruct *img,
+                          void *parameters );
+
+BMGError ReadRGB( const char *filename, struct BMGImageStruct *img );
+BMGError WriteRGB( const char *filename, struct BMGImageStruct img );
+
+BMGError ReadBMP( const char *filename, struct BMGImageStruct *img );
+BMGError WriteBMP( const char *filename, struct BMGImageStruct img );
+
+BMGError ReadTIFF( const char *filename,
+              struct BMGImageStruct *img,
+              struct TIFFInfoStruct *info );
+BMGError WriteTIFF( const char *filename,
+               struct BMGImageStruct img,
+               struct TIFFInfoStruct *info );
+BMGError WriteTGA( const char *filename,
+               struct BMGImageStruct img );
+
+BMGError ReadJPEG( const char *filename, struct BMGImageStruct *img );
+BMGError WriteJPEG( const char *filename,
+               struct BMGImageStruct img,
+               int quality );
+
+BMGError ReadPNG( const char *filename, struct BMGImageStruct *img );
+BMGError WritePNG( const char *filename, struct BMGImageStruct img );
+
+BMGError ReadTGA( const char *filename, struct BMGImageStruct *img );
+
+BMGError ReadCEL( const char *filename, struct BMGImageStruct *img );
+
+BMGError ReadGIF( const char *filename, struct BMGImageStruct *img );
+
+BMGError ReadPSD( const char *filename, struct BMGImageStruct *img );
+
+BMGError ReadIFF( const char *filename, struct BMGImageStruct *img );
+
+BMGError ReadPCX( const char *filename, struct BMGImageStruct *img );
+
+
+All of these functions require a:
+filename - the file that is to be read from/written to (input).
+img      - a BMG Image struct that contains the data that will be written to a
+           file (input for WriteXXX functions) or will contain the data 
+           extracted from a file (output for all ReadXXX functions).
+
+GetDataFromFile has a void pointer that can be used to pass a TIFFInfoStruct
+into the ReadTIFF routine.  This parameter can equal NULL.
+
+ReadTIFF and WriteTIFF also have an optional pointer to a TIFFInfoStruct where
+TIFFInfoStruct is defined as
+
+struct TIFFInfoStruct
+{
+    TiffCompression compression;  - compression scheme used in a TIFF
+    TiffPhotometric photometric;  - how the data is stored in a TIFF 
+    TiffOrientation orientation;  - the orientation of the image
+    unsigned short predictor;     - variable used for compressing images
+};
+
+See the TIFF documentation, BMGDLL.H file, and the tiffrw.c file for more info
+about the variables compression, photometric, orientation, and predictor.  
+
+If you do not need to read/set TIFF parameters then set info = NULL when 
+calling ReadTIFF or WriteTIFF.
+
+ReadTIFF and WriteTIFF do not support images that have a photometric 
+interpretation of YCbCr or any of the CIE variants.  These are not common
+formats and I do not intend to support them at this time.
+
+The WriteJPEG uses the quality parameter to determine how the image is 
+compressed.  This variable should remain between 1 and 100.  The size of the
+JPEG file will decrease as you decrease this number; however, you will also 
+lose information as you decrease this value. As a result, the decompressed
+image may look "smeared" when compared to the original.  Most people recommend
+that you keep the value between 80 and 100.
+
+WriteJPEG will not save 1 BPP or 4 BPP images.  JPEG compression is lossy and
+these low color resolution images always look smeared after they are 
+compressed.  Use other file formats to save low color resolution images.
+
+ReadBMP and WriteBMP only support BI_RGB formats.  If you have any BMPs that
+use BI_RLE4 or BI_RLE8 and would like to share them, then please send them to 
+me.  I need them for testing any software I write.  I do not intend to support
+BI_BITFIELDS.
+
+WriteRGB will not write compressed files.
+
+ReadGIF will open and read animated GIFs; however, it will only return the 
+BMGImage corresponding to the first image in the sequence.  I have seen 
+non-animated GIFs that contain multiple images.  ReadGIF will only return the
+first image from these files as well.  
+
+There are several reasons for limiting the support of GIF images in BMGLib.  I 
+originally wrote ReadGIF to supplement OpenGL projects that used GIFs to store 
+texture maps.  All of the texture map files that I downloaded from the Internet 
+contained a single image.  I was not interested in displaying animated or 
+multiple image GIFs.  GIF and MNG (which I do not support) are the only 2 
+formats that I am aware of that support animated/multiple image files.  The 
+BMGImageStruct is designed to support a single image and I did not feel like 
+creating a special structure to support GIF images.  If you need support for 
+animated GIFs, then use my C++ GIFLib class.
+
+CEL, PSD, and IFF are "obscure" formats that are used in 3DS files.  I have a 
+limited number of PSD and IFF files; therefore, these Read functions do not 
+support all possible variations.  Pleases send any examples that do not appear 
+to be supported to me so I can update my software.
+
+USING BMGLIB IN YOUR PROJECT
+----------------------------
+
+BORLAND USERS: You must build libPNGStat before building the BMDlib DLL.
+
+You must include BMGDLL.h in any module that uses the BMGImageStruct or 
+accesses any of the BMGLib functions.  You must link the BMGLib.lib file with
+your project.  The BMGLib.DLL must be in your path.
+
+STAND-ALONE DLLs
+----------------
+
+Three stand-alone DLL projects have been built for those of you who do not 
+need all of the image formats in BMGLib.dll.  BMGLibTIFF, BMGLibPNG, and
+BMGLibJPEG encapsulate the LibTIFF, LibPNG, and LibJPEG libraries, 
+respectively.  All 3 libraries export the core BMGLib functions (i.e. the
+functions listed in the "UTILITIES FOR MANIPULATING BMG IMAGE STRUCTURES",
+"BMG IMAGE/HBITMAP CONVERSIONS", and "OTHER UTILITY FUNCTIONS" sections).
+Therefore, these libraries cannot be used in the same project.
+
+-- BMGLibTIFF --
+
+You must include the BMGLibTIFF.h file in any module that uses BMGLibTIFF
+functions.  You must link the BMGLibTIFF.lib file with the project.  The
+BMGLibTIFF.DLL must be in the path.
+
+The BMGLibTIFF library exports 2 additional functions:
+
+BMGError SaveBitmapToTIFFile( HBITMAP hBitmap, 
+                              const char *filename, 
+                              struct TIFFInfoStruct *info )
+
+HBITMAP CreateBitmapFromTIFFile( const char *filename,
+                                 struct TIFFInfoStruct *info,
+                                 int blend )
+
+SaveBitmapToTIFFile saves an HBITMAP to a TIF file.  
+hBitmap  - handle of the bitmap to be saved.  
+filename - name of the output file.
+info     - pointer to a TIFFInfoStruct containing output parameters.  May be
+	   NULL
+This function returns BMG_OK if successfull, or an error code otherwise.
+
+CreateBitmapFromTIFFile create an HBITMAP from the contents of a TIF file.
+filename - name of the file to open.
+info     - pointer to a TIFFInfoStruct.
+blend    - set to 1 if you want to blend 32-bPP images with the background 
+           color.  Set to 0 otherwise.
+This function returns a non-null HBITMAP if successfull.  It returns a NULL
+pointer if an error occurred.  Use GetLastBMGError to determine what type of
+error occurred.
+
+-- BMGLibPNG --
+
+BORLAND USERS: You must build the libPNGstat library begore building the
+	       BMGLibPNG.dll.
+
+You must include the BMGLibPNG.h file in any module that uses BMGLibPNG
+functions.  You must link the BMGLibPNG.lib file with the project.  The
+BMGLibPNG.DLL must be in the path.
+
+The BMGLibPNG library exports 2 additional functions:
+
+BMGError SaveBitmapToPNGFile( HBITMAP hBitmap,
+                              const char *filename)
+
+HBITMAP CreateBitmapFromPNGFile( const char *filename,
+                                 int blend )
+
+SaveBitmapToPNGFile saves an HBITMAP to a PNG file.
+hBitmap  - handle of the bitmap to be saved.  
+filename - name of the output file.
+This function returns BMG_OK if successfull, or an error code otherwise.
+
+CreateBitmapFromPNGFile create an HBITMAP from the contents of a PNG file.
+filename - name of the file to open.
+blend    - set to 1 if you want to blend 32-bPP images with the background 
+           color.  Set to 0 otherwise.
+This function returns a non-null HBITMAP if successfull.  It returns a NULL
+pointer if an error occurred.  Use GetLastBMGError to determine what type of
+error occurred.
+
+-- BMGLibJPEG --
+
+You must include the BMGLibJPEG.h file in any module that uses BMGLibJPEG
+functions.  You must link the BMGLibJPEG.lib file with the project.  The
+BMGLibJPEG.DLL must be in the path.
+
+The BMGLibJPEG library exports 2 additional functions:
+
+BMGError SaveBitmapToJPEGFile( HBITMAP hBitmap,
+                               const char *filename,
+                               int quality )
+
+HBITMAP CreateBitmapFromJPEGFile( const char *filename )
+
+SaveBitmapToPNGFile saves an HBITMAP to a JPEG file.
+hBitmap  - handle of the bitmap to be saved.  
+filename - name of the output file.
+quality  - the image quality factor.  Must be between 0 and 100, inclusive.
+           The smaller the value, the better the compression; however, the
+           larger the value, the better the image will look after 
+           decompression.  I suggest keeping quality >= 80.
+This function returns BMG_OK if successfull, or an error code otherwise.
+
+CreateBitmapFromJPEGFile create an HBITMAP from the contents of a JPEG file.
+filename - name of the file to open.
+This function returns a non-null HBITMAP if successfull.  It returns a NULL
+pointer if an error occurred.  Use GetLastBMGError to determine what type of
+error occurred.
+
+GEOTIFF INFORMATION
+-------------------
+
+All GeoTIFF functions were removed from BMGLib v2.1.  GeoTIFF functions
+were placed in the BMGGeoTIFF DLL.  The reason for doing this is because people 
+complained that the BMGLib DLL was too large.  One way to reduce the size was 
+to remove the GeoTIFF functions and place them in a separate DLL.  See the 
+Projects\BMGLib\BMGGeoTIFF_DLL folder for more informtion.
+
+BMGLib and BMGLibTIFF export almost all of the LibTIFF functions as well.  I 
+did this to make the LibTIFF functions accessible to the BMGGeoTIFF library.  
+If you do not need to access those functions, nor need to use the BMGGeoTIFF 
+library, then remove the DEF file from the project (LibTIFF.def & libtiffsa.def 
+for MSVC++ or BCLibTIFF.def & bclibtiffsa.def for BCB).
+
+MISCELLANEOUS
+-------------
+
+I do something "unusual" with 32-bit bitmaps that may pose a problem for some 
+image viewers.  According to the online help, the high word of a 32-bit color 
+value is not used -- so I use it for something else ;-)  I store the alpha 
+component in TIFF, PNG, RGBA, and TGA files in the high word.  That way I can 
+"de-alpha" an image and save it without losing any information.  The tactic 
+comes in handy when converting from 1 format to another.  I have not seen 
+any problems -- but you never know.
+
+Feel free to report any bugs.  Send an image that illustrates the problem and I 
+will attempt to fix it.
+
+Regards,
+Scott
+scottheiman@cox.net
+
+

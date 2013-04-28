@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="BMGLibJPEG.dll"/>
+    <OBJFILES value="DEBUG\bcbLibJPEG.obj DEBUG\jpegrw.obj DEBUG\BMGImage.obj DEBUG\jutils.obj 
+      DEBUG\jcapistd.obj DEBUG\jccoefct.obj DEBUG\jccolor.obj DEBUG\jcdctmgr.obj 
+      DEBUG\jchuff.obj DEBUG\jcinit.obj DEBUG\jcmainct.obj DEBUG\jcmarker.obj 
+      DEBUG\jcmaster.obj DEBUG\jcomapi.obj DEBUG\jcparam.obj DEBUG\jcphuff.obj 
+      DEBUG\jcprepct.obj DEBUG\jcsample.obj DEBUG\jctrans.obj DEBUG\jdapimin.obj 
+      DEBUG\jdapistd.obj DEBUG\jdatadst.obj DEBUG\jdatasrc.obj 
+      DEBUG\jdcoefct.obj DEBUG\jdcolor.obj DEBUG\jddctmgr.obj DEBUG\jdhuff.obj 
+      DEBUG\jdinput.obj DEBUG\jdmainct.obj DEBUG\jdmarker.obj DEBUG\jdmaster.obj 
+      DEBUG\jdmerge.obj DEBUG\jdphuff.obj DEBUG\jdpostct.obj DEBUG\jdsample.obj 
+      DEBUG\jdtrans.obj DEBUG\jerror.obj DEBUG\jfdctflt.obj DEBUG\jfdctfst.obj 
+      DEBUG\jfdctint.obj DEBUG\jidctflt.obj DEBUG\jidctfst.obj 
+      DEBUG\jidctint.obj DEBUG\jidctred.obj DEBUG\jmemmgr.obj DEBUG\jmemnobs.obj 
+      DEBUG\jquant1.obj DEBUG\jquant2.obj DEBUG\jcapimin.obj DEBUG\BMGUtils.obj"/>
+    <RESFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="Vcl50.bpi Vclx50.bpi bcbsmp50.bpi Qrpt50.bpi Vcldb50.bpi Vclbde50.bpi 
+      ibsmp50.bpi vcldbx50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi TeeQR50.bpi 
+      VCLIB50.bpi bcbie50.bpi vclie50.bpi Inetdb50.bpi Inet50.bpi dclocx50.bpi 
+      bcb2kaxserver50.bpi BCBOpenGL.bpi ScrollingCanvas.bpi NMFast50.bpi"/>
+    <PATHCPP value=".;..\JPEG"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value="_DEBUG;_BMG_LIBJPEG_STANDALONE;BUILD_BMG_DLL"/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
+    <MAINSOURCE value="BMGLibJPEG.bpf"/>
+    <INCLUDEPATH value="$(BCB)\include;..\JPEG"/>
+    <LIBPATH value="..\JPEG;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-WD -Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- 
+      -tWD -tWM -c"/>
+    <PFLAGS value="-N2DEBUG -N0DEBUG -$YD -$W -$O- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zd"/>
+    <LFLAGS value="-IDEBUG -D&quot;&quot; -aa -Tpd -x -Gn -Gi -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0d32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=3
+Item0=$(BCB)\include;..\JPEG
+Item1=$(BCB)\include;C:\Projects\BMGLib\JPEG
+Item2=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=2
+Item0=..\JPEG;$(BCB)\lib\obj;$(BCB)\lib
+Item1=$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=2
+Item0=_DEBUG;_BMG_LIBJPEG_STANDALONE;BUILD_BMG_DLL
+Item1=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=DEBUG
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

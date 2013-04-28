@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="Debug\libPNGstat.lib"/>
+    <OBJFILES value="Debug\pngwutil.obj Debug\pngerror.obj Debug\pngget.obj Debug\pngmem.obj 
+      Debug\pngpread.obj Debug\pngread.obj Debug\pngrio.obj Debug\pngrtran.obj 
+      Debug\pngrutil.obj Debug\pngset.obj Debug\pngtrans.obj Debug\pngwio.obj 
+      Debug\pngwrite.obj Debug\pngwtran.obj Debug\png.obj"/>
+    <RESFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <PACKAGES value=""/>
+    <PATHCPP value=".;..\lpng125"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <LINKER value="TLib"/>
+    <USERDEFINES value="_DEBUG"/>
+    <SYSDEFINES value="_RTLDLL;NO_STRICT"/>
+    <MAINSOURCE value="libPNGstat.bpf"/>
+    <INCLUDEPATH value="..\lpng125;$(BCB)\include;$(BCB)\include\vcl;..\zlib114"/>
+    <LIBPATH value="..\lpng125;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <LISTFILE value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c 
+      -tW -tWM"/>
+    <PFLAGS value="-N2Debug -N0Debug -$YD -$W -$O- -v -JPHNE -M"/>
+    <AFLAGS value="/mx /w2 /zd"/>
+    <LFLAGS value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="$(OBJFILES)"/>
+    <ALLLIB value=""/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=3
+Item0=..\lpng125;$(BCB)\include;$(BCB)\include\vcl;..\zlib114
+Item1=..\lpng125;$(BCB)\include;$(BCB)\include\vcl;C:\Projects\BMGLib\zlib114
+Item2=..\lpng125;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=..\lpng125;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=C:\Projects\BMGLib\BMGLib_DLL\Debug
+
+[HistoryLists\hlFinalOutputDir]
+Count=2
+Item0=Debug\
+Item1=C:\Projects\BMGLib\BMGLib_DLL\Debug
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

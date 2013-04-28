@@ -1,0 +1,24 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+USEUNIT("..\lpng125\pngwutil.c");
+USEUNIT("..\lpng125\pngerror.c");
+USEUNIT("..\lpng125\pngget.c");
+USEUNIT("..\lpng125\pngmem.c");
+USEUNIT("..\lpng125\pngpread.c");
+USEUNIT("..\lpng125\pngread.c");
+USEUNIT("..\lpng125\pngrio.c");
+USEUNIT("..\lpng125\pngrtran.c");
+USEUNIT("..\lpng125\pngrutil.c");
+USEUNIT("..\lpng125\pngset.c");
+USEUNIT("..\lpng125\pngtrans.c");
+USEUNIT("..\lpng125\pngwio.c");
+USEUNIT("..\lpng125\pngwrite.c");
+USEUNIT("..\lpng125\pngwtran.c");
+USEUNIT("..\lpng125\png.c");
+//---------------------------------------------------------------------------
+#define Library
+
+// To add a file to the library use the Project menu 'Add to Project'.
+

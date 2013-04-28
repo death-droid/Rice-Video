@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "VertexShaderConstantDef.h"
 #include "Render.h"
 #include "RenderBase.h"
-#include "./DirectX/D3DRender.h"s
+#include "./DirectX/D3DRender.h"
 #include "../Config.h"
 #include "../typedefs.h"
 
@@ -110,22 +110,14 @@ inline void RSP_Vtx_Clipping(int i) {}
 RSP_Options gRSP;
 RDP_Options gRDP;
 
-#if _MSC_VER > 1200
-__declspec(align(16)) static D3DXVECTOR4 g_normal;
-#else
 static D3DXVECTOR4 g_normal;
-#endif
+
 static int norms[3];
 
-#if _MSC_VER > 1200
-__declspec(align(16)) D3DXVECTOR4	g_vtxNonTransformed[MAX_VERTS];
-__declspec(align(16)) D3DXVECTOR4	g_vecProjected[MAX_VERTS];
-__declspec(align(16)) D3DXVECTOR4	g_vtxTransformed[MAX_VERTS];
-#else
 D3DXVECTOR4	g_vtxNonTransformed[MAX_VERTS];
 D3DXVECTOR4	g_vecProjected[MAX_VERTS];
 D3DXVECTOR4	g_vtxTransformed[MAX_VERTS];
-#endif
+
 float		g_vtxProjected5[1000][5];
 float		g_vtxProjected5Clipped[2000][5];
 //uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
@@ -151,19 +143,13 @@ float				gRSPfFogDivider;
 
 uint32			gRSPnumLights;
 Light	gRSPlights[16];
-#if _MSC_VER > 1200
-__declspec(align(16)) Matrix	gRSPworldProjectTransported;
-__declspec(align(16)) Matrix	gRSPworldProject;
-__declspec(align(16)) Matrix	gRSPmodelViewTop;
-__declspec(align(16)) Matrix	gRSPmodelViewTopTranspose;
-__declspec(align(16)) Matrix	dkrMatrixTransposed;
-#else
+
 Matrix	gRSPworldProjectTransported;
 Matrix	gRSPworldProject;
 Matrix	gRSPmodelViewTop;
 Matrix	gRSPmodelViewTopTranspose;
 Matrix	dkrMatrixTransposed;
-#endif
+
 N64Light		gRSPn64lights[16];
 
 

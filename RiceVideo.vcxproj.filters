@@ -355,6 +355,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\BMGlib.lib" />
+    <Library Include="lib\BMGLib\BMGLIBSTAT\BMGlibVC6.lib" />
   </ItemGroup>
 </Project>

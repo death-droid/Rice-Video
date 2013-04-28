@@ -1,0 +1,20 @@
+USEUNIT("..\..\..\zlib114\zutil.c");
+USEUNIT("..\..\..\zlib114\compress.c");
+USEUNIT("..\..\..\zlib114\crc32.c");
+USEUNIT("..\..\..\zlib114\deflate.c");
+USEUNIT("..\..\..\zlib114\gzio.c");
+USEUNIT("..\..\..\zlib114\infblock.c");
+USEUNIT("..\..\..\zlib114\infcodes.c");
+USEUNIT("..\..\..\zlib114\inffast.c");
+USEUNIT("..\..\..\zlib114\inflate.c");
+USEUNIT("..\..\..\zlib114\inftrees.c");
+USEUNIT("..\..\..\zlib114\infutil.c");
+USEUNIT("..\..\..\zlib114\trees.c");
+USEUNIT("..\..\..\zlib114\uncompr.c");
+USEUNIT("..\..\..\zlib114\adler32.c");
+//---------------------------------------------------------------------------
+#define Library
+
+// To add a file to the library use the Project menu 'Add to Project'.
+
+ 

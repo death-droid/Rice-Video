@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "TextureManager.h"
 #include "../Config.h"
 #include "../typedefs.h"
+#include "../Render/Render.h"
 #include "../Render/RenderBase.h"
 #include "../Debugger/Debugger.h"
 #include "../Texture/ConvertImage.h"

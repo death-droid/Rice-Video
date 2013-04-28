@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="BMGLib.dll"/>
+    <OBJFILES value="DEBUG\bcBMGLib.obj DEBUG\BMGDLL.obj DEBUG\BMGImage.obj DEBUG\bmp.obj 
+      DEBUG\cel.obj DEBUG\jpegrw.obj DEBUG\rgb.obj DEBUG\targa.obj 
+      DEBUG\tiffrw.obj DEBUG\jutils.obj DEBUG\jcapistd.obj DEBUG\jccoefct.obj 
+      DEBUG\jccolor.obj DEBUG\jcdctmgr.obj DEBUG\jchuff.obj DEBUG\jcinit.obj 
+      DEBUG\jcmainct.obj DEBUG\jcmarker.obj DEBUG\jcmaster.obj DEBUG\jcomapi.obj 
+      DEBUG\jcparam.obj DEBUG\jcphuff.obj DEBUG\jcprepct.obj DEBUG\jcsample.obj 
+      DEBUG\jctrans.obj DEBUG\jdapimin.obj DEBUG\jdapistd.obj DEBUG\jdatadst.obj 
+      DEBUG\jdatasrc.obj DEBUG\jdcoefct.obj DEBUG\jdcolor.obj DEBUG\jddctmgr.obj 
+      DEBUG\jdhuff.obj DEBUG\jdinput.obj DEBUG\jdmainct.obj DEBUG\jdmarker.obj 
+      DEBUG\jdmaster.obj DEBUG\jdmerge.obj DEBUG\jdphuff.obj DEBUG\jdpostct.obj 
+      DEBUG\jdsample.obj DEBUG\jdtrans.obj DEBUG\jerror.obj DEBUG\jfdctflt.obj 
+      DEBUG\jfdctfst.obj DEBUG\jfdctint.obj DEBUG\jidctflt.obj 
+      DEBUG\jidctfst.obj DEBUG\jidctint.obj DEBUG\jidctred.obj DEBUG\jmemmgr.obj 
+      DEBUG\jmemnobs.obj DEBUG\jquant1.obj DEBUG\jquant2.obj DEBUG\jcapimin.obj 
+      DEBUG\gif.obj DEBUG\dgif_lib.obj DEBUG\gif_err.obj DEBUG\gifalloc.obj 
+      DEBUG\BMGUtils.obj DEBUG\iff.obj DEBUG\psd.obj DEBUG\tif_zip.obj 
+      DEBUG\tif_aux.obj DEBUG\tif_close.obj DEBUG\tif_codec.obj 
+      DEBUG\tif_compress.obj DEBUG\tif_dir.obj DEBUG\tif_dirinfo.obj 
+      DEBUG\tif_dirread.obj DEBUG\tif_dirwrite.obj DEBUG\tif_dumpmode.obj 
+      DEBUG\tif_error.obj DEBUG\tif_fax3.obj DEBUG\tif_flush.obj 
+      DEBUG\tif_getimage.obj DEBUG\tif_jpeg.obj DEBUG\tif_luv.obj 
+      DEBUG\tif_lzw.obj DEBUG\tif_next.obj DEBUG\tif_ojpeg.obj 
+      DEBUG\tif_open.obj DEBUG\tif_packbits.obj DEBUG\tif_pixarlog.obj 
+      DEBUG\tif_predict.obj DEBUG\tif_print.obj DEBUG\tif_read.obj 
+      DEBUG\tif_strip.obj DEBUG\tif_swab.obj DEBUG\tif_thunder.obj 
+      DEBUG\tif_tile.obj DEBUG\tif_version.obj DEBUG\tif_warning.obj 
+      DEBUG\tif_win32.obj DEBUG\tif_write.obj DEBUG\fax3sm_winnt.obj 
+      DEBUG\zutil.obj DEBUG\compress.obj DEBUG\crc32.obj DEBUG\deflate.obj 
+      DEBUG\gzio.obj DEBUG\infblock.obj DEBUG\infcodes.obj DEBUG\inffast.obj 
+      DEBUG\inflate.obj DEBUG\inftrees.obj DEBUG\infutil.obj DEBUG\trees.obj 
+      DEBUG\uncompr.obj DEBUG\adler32.obj DEBUG\pngrw.obj DEBUG\pcx.obj"/>
+    <RESFILES value=""/>
+    <DEFFILE value="bclibtiff.def"/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value="Debug\libPNGstat.lib"/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="Vcl50.bpi Vclx50.bpi bcbsmp50.bpi Qrpt50.bpi Vcldb50.bpi Vclbde50.bpi 
+      ibsmp50.bpi vcldbx50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi TeeQR50.bpi 
+      VCLIB50.bpi bcbie50.bpi vclie50.bpi Inetdb50.bpi Inet50.bpi dclocx50.bpi"/>
+    <PATHCPP value=".;..\JPEG;..\libungif_v4_1_0b1\lib;..\tiff-v3.5.7\libtiff;..\zlib114"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value="PNG_NO_CONSOLE_IO;BUILD_BMG_DLL;TIF_PLATFORM_WINDOWED;WIN32;_DEBUG;PNG_IMPEXP"/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
+    <MAINSOURCE value="BMGLib.bpf"/>
+    <INCLUDEPATH value="..\zlib114;..\lpng125;..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\JPEG;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\zlib114;..\lpng125;..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\JPEG;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-WD -Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- 
+      -tWD -tWM -c"/>
+    <PFLAGS value="-N2DEBUG -N0DEBUG -$Y+ -$W -$O- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-IDEBUG -D&quot;&quot; -aa -Tpd -x -Gn -Gi -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0d32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=5
+Item0=..\zlib114;..\lpng125;..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\JPEG;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\JPEG;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\zlib113;..\lpng110e;..\JPEG;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\zlib113;..\tiff-v3.5.5\libtiff;..\lpng110e;..\JPEG;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\libungif_v4_1_0b1\lib;..\zlib113;..\tiff-v3.5.5\libtiff;..\lpng110e;..\JPEG;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=6
+Item0=..\zlib114;..\lpng125;..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\JPEG;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\JPEG;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\zlib113;..\lpng110e;..\JPEG;$(BCB)\lib\obj;$(BCB)\lib
+Item3=$(BCB)\lib\obj;$(BCB)\lib;..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\zlib113;..\tiff-v3.5.5\libtiff;..\lpng110e;..\JPEG
+Item4=..\tiff-v3.5.7\libtiff;..\libungif_v4_1_0b1\lib;..\zlib113;..\tiff-v3.5.5\libtiff;..\lpng110e;..\JPEG;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\libungif_v4_1_0b1\lib;..\zlib113;..\tiff-v3.5.5\libtiff;..\lpng110e;..\JPEG;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=9
+Item0=PNG_NO_CONSOLE_IO;BUILD_BMG_DLL;TIF_PLATFORM_WINDOWED;WIN32;_DEBUG;PNG_IMPEXP
+Item1=PNG_NO_CONSOLE_IO;BUILD_BMG_DLL;TIF_PLATFORM_WINDOWED;WIN32;_DEBUG;PNGAPI=&quot;__stdcall&quot;
+Item2=PNG_NO_CONSOLE_IO;BUILD_BMG_DLL;TIF_PLATFORM_WINDOWED;WIN32;_DEBUG
+Item3=PNG_NO_CONSOLE_IO;BUILD_BMG_DLL;TIF_PLATFORM_WINDOWED;WIN32
+Item4=_DEBUG;PNG_NO_CONSOLE_IO;BUILD_BMG_DLL;TIF_PLATFORM_WINDOWED;WIN32
+Item5=_DEBUG;PNG_NO_CONSOLE_IO;BUILD_BMG_DLL;TIF_PLATFORM_WINDOWED
+Item6=_DEBUG;PNG_NO_CONSOLE_IO;BUILD_BMG_DLL
+Item7=_DEBUG;PNG_NO_CONSOLE_IO
+Item8=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=DEBUG
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=C:\Projects\BMGLib\BMGLib_DLL\View3DS.exe
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
