@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _ICOLOR_H_
 #define _ICOLOR_H_
 
+#include <d3d9types.h>
+#include <D3dx9math.h>
 
 class IColor {
 public:

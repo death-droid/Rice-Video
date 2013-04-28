@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _AFX_GFXCONTEXT_H_
 #define _AFX_GFXCONTEXT_H_
 
+#include "..\typedefs.h"
 #include "..\Utility\CritSect.h"
 
 enum ClearFlag

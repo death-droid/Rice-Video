@@ -19,6 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _DIRECTX_COMBINER_H_
 #define _DIRECTX_COMBINER_H_
 
+#include <vector>
+#include "../CombinerDefs.h"
+#include "../Combiner.h"
+
 enum CycleSimplicity	//How simple is the mux
 {
 	CS_NOTUSED,				//2nd cycle is not used

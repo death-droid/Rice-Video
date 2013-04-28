@@ -24,7 +24,15 @@ Overview of DX framebuffer code:
 
 */
 
-#include "stdafx.h"
+#include <Windows.h>
+#include <d3d9.h>
+
+#include "FrameBuffer.h"
+#include "../Config.h"
+#include "../Video.h"
+#include "../Debugger/Debugger.h"
+#include "../Render/DirectX/D3DRender.h"
+
 //copies DirectX backbuffer to the render_texture structure
 //This can be slow....
 //But, its needed to render framebuffer effects, due to the current implementation.

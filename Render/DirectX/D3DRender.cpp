@@ -17,7 +17,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "stdafx.h"
+#include "D3DRender.h"
+#include "../Render.h"
+#include "../../typedefs.h"
+#include "../../Texture/Texture.h"
+#include "../../Texture/TextureManager.h"
 
 #define RICEFVF_TEXRECTFVERTEX ( D3DFVF_XYZRHW | /*D3DFVF_DIFFUSE |*/ D3DFVF_TEX2 )
 #define RICE_FVF_FILLRECTVERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE  )

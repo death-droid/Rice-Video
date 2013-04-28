@@ -19,6 +19,8 @@ the plugin
 #ifndef _GFX_H_INCLUDED__
 #define _GFX_H_INCLUDED__
 
+#include "typedefs.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif

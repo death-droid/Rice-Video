@@ -46,7 +46,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\bin\</OutDir>
     <IntDir>.\bin\</IntDir>
-    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -64,26 +64,29 @@
       <TypeLibraryName>.\Release/Video.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>%DXSDK_DIR%\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%DXSDK_DIR%\include;.\lib\pnglib\include;.\lib\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <StructMemberAlignment>16Bytes</StructMemberAlignment>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>../obj/1964Video/Release/1964Video.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>../obj/1964Video/Release/</AssemblerListingLocation>
       <ObjectFileName>../obj/1964Video/Release/</ObjectFileName>
       <ProgramDataBaseFileName>../obj/1964Video/Release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat />
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -91,7 +94,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /FIXED:NO %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3dx9.lib;d3d9.lib;dxguid.lib;dxerr.lib;shlwapi.lib;winmm.lib;opengl32.lib;comctl32.lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3dx9.lib;d3d9.lib;dxguid.lib;dxerr.lib;shlwapi.lib;winmm.lib;comctl32.lib;libpng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\bin\RiceVideo.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>libci.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -99,11 +102,16 @@
       <ProgramDatabaseFile>../obj/1964Video/Release/1964Video.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>../obj/1964Video/Release/1964Video.map</MapFileName>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention />
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
       <ImportLibrary />
-      <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86</AdditionalLibraryDirectories>
-      <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86;.\lib\pnglib\lib</AdditionalLibraryDirectories>
+      <LargeAddressAware>
+      </LargeAddressAware>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -156,16 +164,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="lib\BMGDLL.h" />
+    <ClInclude Include="lib\BMGImage.h" />
+    <ClInclude Include="lib\BMGLibJPEG.h" />
+    <ClInclude Include="lib\BMGLibPNG.h" />
+    <ClInclude Include="lib\BMGLibTIFF.h" />
+    <ClInclude Include="lib\BMGUtils.h" />
+    <ClInclude Include="lib\jpegrw.h" />
     <ClInclude Include="_BldNum.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Video.h" />
-    <ClInclude Include="Lib\BMGDLL.h" />
-    <ClInclude Include="Lib\BMGImage.h" />
-    <ClInclude Include="Lib\BMGLibJPEG.h" />
-    <ClInclude Include="Lib\BMGLibPNG.h" />
     <ClInclude Include="gfx.h" />
     <ClInclude Include="Lib\pngrw.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="Lib\tiffrw.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="Debugger\Debugger.h" />
@@ -220,13 +230,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="Video.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Debugger\Debugger.cpp" />
     <ClCompile Include="Combiner\blender.cpp" />
@@ -243,7 +249,9 @@
     <ClCompile Include="Render\DirectX\D3DRenderExt.cpp" />
     <ClCompile Include="Device\DeviceBuilder.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="Device\FrameBuffer.cpp" />
     <ClCompile Include="Device\FrameBufferDX.cpp" />
@@ -267,7 +275,7 @@
     <None Include="Render\shaderdx9.vsh" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="BMGLib.lib" />
+    <Library Include="lib\BMGlib.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -57,6 +57,9 @@
     <Filter Include="Graphics\Parser\Ucodes\Custom Ucodes">
       <UniqueIdentifier>{52c24813-2f06-4e9f-812e-329a4bccf335}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BMGLib">
+      <UniqueIdentifier>{ef32f6cb-55bf-4d18-88ec-93652c48d86c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="_BldNum.h">
@@ -68,25 +71,10 @@
     <ClInclude Include="Video.h">
       <Filter>Plugin</Filter>
     </ClInclude>
-    <ClInclude Include="Lib\BMGDLL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib\BMGImage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib\BMGLibJPEG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib\BMGLibPNG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="gfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Lib\pngrw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Lib\tiffrw.h">
@@ -242,12 +230,30 @@
     <ClInclude Include="Parser\RSP_WRUS.h">
       <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
     </ClInclude>
+    <ClInclude Include="lib\BMGDLL.h">
+      <Filter>BMGLib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\BMGImage.h">
+      <Filter>BMGLib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\BMGLibJPEG.h">
+      <Filter>BMGLib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\BMGLibPNG.h">
+      <Filter>BMGLib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\BMGLibTIFF.h">
+      <Filter>BMGLib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\BMGUtils.h">
+      <Filter>BMGLib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\jpegrw.h">
+      <Filter>BMGLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">
-      <Filter>Plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
       <Filter>Plugin</Filter>
     </ClCompile>
     <ClCompile Include="Video.cpp">
@@ -349,6 +355,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="BMGLib.lib" />
+    <Library Include="lib\BMGlib.lib" />
   </ItemGroup>
 </Project>

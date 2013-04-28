@@ -20,7 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _DLLINTERFACE_H_
 #define _DLLINTERFACE_H_
 
+#include "gfx.h"
 #include "typedefs.h"
+
 typedef struct {
 	HINSTANCE myhInst;
 	float	fViWidth, fViHeight;
@@ -138,6 +140,21 @@ typedef struct {
 
 extern PluginStatus status;
 extern char generalText[];
+void __cdecl MsgInfo (char * Message, ...);
+void __cdecl ErrorMsg (char * Message, ...);
+
+#define MI_INTR_DP          0x00000020  
+#define MI_INTR_SP          0x00000001  
+
+extern uint32 g_dwRamSize;
+
+extern uint32 * g_pRDRAMu32;
+extern signed char* g_pRDRAMs8;
+extern unsigned char *g_pRDRAMu8;
+
+extern GFX_INFO g_GraphicsInfo;
+
+extern char *project_name;
 
 void SetVIScales();
 #endif

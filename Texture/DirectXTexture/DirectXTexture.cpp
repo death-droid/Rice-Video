@@ -16,7 +16,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "stdafx.h"
+#include "DirectXTexture.h"
+#include "../Texture.h"
+#include "../TextureManager.h"
+#include "../../Config.h"
+#include "../../typedefs.h"
+#include "../../Debugger/Debugger.h"
+#include "../../Device/GraphicsContext.h"
+#include "../../Render/DirectX/D3DRender.h"
 
 CDirectXTexture::CDirectXTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
 	CTexture(dwWidth,dwHeight,usage)

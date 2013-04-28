@@ -17,7 +17,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "stdafx.h"
+#include "FrameBuffer.h"
+#include "DeviceBuilder.h"
+#include "DirectXDevice\DXGraphicsContext.h"
+#include "../typedefs.h"
+#include "../Render/Render.h"
+#include "../Render/DirectX/D3DRender.h"
+#include "../Texture/DirectXTexture/DirectXTexture.h"
+#include "../Combiner/DirectXCombiner/DirectXBlender.h"
+#include "../Combiner/DirectXCombiner/DirectXCombiner.h"
 
 //========================================================================
 CDeviceBuilder* CDeviceBuilder::m_pInstance=NULL;
@@ -173,5 +181,3 @@ CBlender * DirectXDeviceBuilder::CreateAlphaBlender(CRender *pRender)
 
 	return m_pAlphaBlender;
 }
-
-

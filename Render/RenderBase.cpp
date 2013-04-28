@@ -17,9 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "stdafx.h"
 #include "float.h"
 #include "VertexShaderConstantDef.h"
+#include "Render.h"
+#include "RenderBase.h"
+#include "./DirectX/D3DRender.h"s
+#include "../Config.h"
+#include "../typedefs.h"
 
 extern FiddledVtx * g_pVtxBase;
 
@@ -986,11 +990,6 @@ uint32 LightVertNew(D3DXVECTOR4 & norm)
 float zero = 0.0f;
 float onef = 1.0f;
 float fcosT;
-#if _MSC_VER > 1200
-__m128 cosT128;
-__m64 icolor64;
-__m128 icolor128;
-#endif
 
 __declspec( naked ) uint32  __fastcall SSELightVert()
 {

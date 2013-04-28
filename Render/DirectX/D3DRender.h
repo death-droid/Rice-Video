@@ -20,11 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __RICE_D3DRENDER_H__
 #define __RICE_D3DRENDER_H__
 
-#include "stdafx.h"
-
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)  { if(p) { (p)->Release();     (p)=NULL; } }
-#endif
+#include "../Render.h"
+#include "../../Combiner/DirectXCombiner/DirectXCombiner.h"
+#include "../../Device/DirectXDevice/DXGraphicsContext.h"
 
 class ofstream;
 extern LPDIRECT3DDEVICE9 g_pD3DDev;

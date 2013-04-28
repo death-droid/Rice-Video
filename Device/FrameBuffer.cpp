@@ -18,10 +18,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // ===========================================================================
+#include <vector>
 
-#include "stdafx.h"
+#include "FrameBuffer.h"
+#include "RenderTexture.h"
+#include "..\Video.h"
+#include "..\Config.h"
+#include "..\typedefs.h"
 #include "..\Parser\UcodeDefs.h"
 #include "..\Parser\RSP_Parser.h"
+#include "..\Texture\ConvertImage.h"
+#include "..\Render\Render.h"
+#include "..\Render\RenderBase.h"
+#include "..\Render\DirectX\D3DRender.h"
+#include "..\Device\GraphicsContext.h"
+#include "..\Debugger\Debugger.h"
 
 extern TMEMLoadMapInfo g_tmemLoadAddrMap[0x200];	// Totally 4KB TMEM;
 

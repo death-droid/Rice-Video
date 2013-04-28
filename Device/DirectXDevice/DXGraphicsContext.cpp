@@ -16,8 +16,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "stdafx.h"
+#include <Windows.h>
 #include <WinGDI.h>
+#include <CommCtrl.h>
+#include <d3d9.h>
+
+#include "DXGraphicsContext.h"
+#include "../../Render/Render.h"
+#include "../../Render/DirectX/D3DRender.h"
+#include "../../Device/FrameBuffer.h"
+#include "../../Texture/DirectXTexture/DirectXTexture.h"
 
 LPDIRECT3DDEVICE9 g_pD3DDev = NULL;
 CD3DDevWrapper    gD3DDevWrapper;
@@ -1134,8 +1142,9 @@ bool CDXGraphicsContext::IsResultGood(HRESULT hr, bool displayError)
 	{
 		if( displayError )
 		{
-			const char *errmsg = DXGetErrorString(hr);
-			TRACE1("D3D Error: %s", errmsg);
+			//backtome
+			//const char *errmsg = DXGetErrorString(hr);
+		//	TRACE1("D3D Error: %s", errmsg);
 			//ErrorMsg(errmsg);
 		}
 		return false;

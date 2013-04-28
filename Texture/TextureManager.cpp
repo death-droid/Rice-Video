@@ -17,7 +17,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "stdafx.h"
+#include <math.h>
+#include "Texture.h"
+#include "TextureManager.h"
+#include "../Config.h"
+#include "../typedefs.h"
+#include "../Render/RenderBase.h"
+#include "../Debugger/Debugger.h"
+#include "../Texture/ConvertImage.h"
+#include "../Device/DeviceBuilder.h"
+#include "../Device/FrameBuffer.h"
+#include "../Device/RenderTexture.h"
 
 CTextureManager gTextureManager;
 // Returns the first prime greater than or equal to nFirst

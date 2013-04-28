@@ -17,9 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "stdafx.h"
+
 
 #include "ucode.h"
+#include "RSP_Parser.h"
+#include "../Device/RenderTexture.h"
+#include "../Device/GraphicsContext.h"
+#include "../Texture/ConvertImage.h"
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

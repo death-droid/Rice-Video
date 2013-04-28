@@ -19,6 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _DX_TEXTURE_H
 #define _DX_TEXTURE_H
 
+#include "../Texture.h"
+#include "../TextureManager.h"
+
 class CDirectXTexture : public CTexture
 {
 public:

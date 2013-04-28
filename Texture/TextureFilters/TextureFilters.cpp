@@ -16,11 +16,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#include "stdafx.h"
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <Windows.h>
+#include <Shlwapi.h>
+
 #include "TextureFilters.h"
+#include "../Texture.h"
+#include "../TextureManager.h"
+#include "../../Config.h"
+#include "../../Video.h"
+#include "../../Debugger/Debugger.h"
+#include "../../Render/Render.h"
+#include "../../Render/RenderBase.h"
+#include "../../Device/DeviceBuilder.h"
 #include "../../lib/BMGDll.h"
 
 void EnhanceTexture(TxtrCacheEntry *pEntry)

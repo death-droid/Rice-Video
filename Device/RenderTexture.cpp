@@ -19,7 +19,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // ===========================================================================
 
-#include "stdafx.h"
+#include "RenderTexture.h"
+#include "FrameBuffer.h"
+#include "../Video.h"
+#include "../Debugger/Debugger.h"
+#include "../Render/DirectX/D3DRender.h"
+#include "../Texture/DirectXTexture/DirectXTexture.h"
 
 CDXRenderTexture::CDXRenderTexture(int width, int height, RenderTextureInfo* pInfo, TextureUsage usage)
 : CRenderTexture(width, height, pInfo, usage)

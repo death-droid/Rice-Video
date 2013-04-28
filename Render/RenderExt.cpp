@@ -17,7 +17,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "stdafx.h"
+#include "../typedefs.h"
+#include "../Parser/RSP_S2DEX.h"
+#include "../Render/Render.h"
+#include "../Texture/TextureManager.h"
+#include "../Device/RenderTexture.h"
+#include "../Device/FrameBuffer.h"
 
 // header for loading hires textures
 void LoadHiresTexture( TxtrCacheEntry &entry );

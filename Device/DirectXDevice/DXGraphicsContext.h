@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _DX_GRAPHICS_CONTEXT_H_
 #define _DX_GRAPHICS_CONTEXT_H_
 
+#include "../GraphicsContext.h"
 
 //-----------------------------------------------------------------------------
 // Error codes
@@ -35,9 +36,6 @@ enum APPMSGTYPE { MSG_NONE, MSGERR_APPMUSTEXIT, MSGWARN_SWITCHEDTOREF };
 #define D3DAPPERR_NOHALTHISMODE       0x82000009
 #define D3DAPPERR_NONZEROREFCOUNT     0x8200000a
 #define D3DAPPERR_RESIZEFAILED        0x8200000c
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: struct D3DModeInfo

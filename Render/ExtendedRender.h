@@ -19,7 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _EXTENDED_RENDER_H_
 #define _EXTENDED_RENDER_H_
 
-#include "stdafx.h"
+#include "../typedefs.h"
+#include "../Parser/RSP_Parser.h"
+#include "../Parser/RSP_S2DEX.h"
 
 // Define the render extension interface and provide empty implementation of 
 // the render extension functions.

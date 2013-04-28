@@ -4,6 +4,8 @@
 /***************************************************************************/
 /* interpolation */
 
+#include "../../typedefs.h"
+
 static unsigned interp_bits_per_pixel;
 #define INTERP_32_MASK_1_3(v) ((v)&0x00FF00FF)
 #define INTERP_32_MASK_SHIFT_2_4(v) (((v)&0xFF00FF00)>>8)
