@@ -1,7 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "1964Video", "RiceVideo.vcxproj", "{1120AACC-8C31-486A-A9B8-0568DFF718F4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RiceVideo", "RiceVideo.vcxproj", "{1120AACC-8C31-486A-A9B8-0568DFF718F4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9378E530-36A1-4775-9A09-8FF3DF13861B} = {9378E530-36A1-4775-9A09-8FF3DF13861B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BMGLIBSTAT", "lib\BMGLib\BMGLIBSTAT\BMGLIBSTAT.vcxproj", "{9378E530-36A1-4775-9A09-8FF3DF13861B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{1120AACC-8C31-486A-A9B8-0568DFF718F4}.Release|Win32.ActiveCfg = Release|Win32
 		{1120AACC-8C31-486A-A9B8-0568DFF718F4}.Release|Win32.Build.0 = Release|Win32
 		{1120AACC-8C31-486A-A9B8-0568DFF718F4}.Release|Win32.Deploy.0 = Release|Win32
+		{9378E530-36A1-4775-9A09-8FF3DF13861B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9378E530-36A1-4775-9A09-8FF3DF13861B}.Debug|Win32.Build.0 = Debug|Win32
+		{9378E530-36A1-4775-9A09-8FF3DF13861B}.Release|Win32.ActiveCfg = Release|Win32
+		{9378E530-36A1-4775-9A09-8FF3DF13861B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
