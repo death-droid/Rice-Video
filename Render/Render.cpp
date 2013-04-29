@@ -17,17 +17,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include <d3d9.h>
-#include <Shlwapi.h>
-
-#include "./Render.h"
-#include "./DirectX/D3DRender.h"
-#include "../Video.h"
-#include "../typedefs.h"
+#include "stdafx.h"
 #include "../lib/BMGDLL.h"
-#include "../Device/DeviceBuilder.h"
-#include "../Device/FrameBuffer.h"
-#include "../Texture/ConvertImage.h"
 
 extern FiddledVtx * g_pVtxBase;
 CRender * CRender::g_pRender=NULL;
@@ -399,8 +390,7 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 {
 	LOG_UCODE("Line3D: Vtx0=%d, Vtx1=%d, Width=%d", dwV0, dwV1, dwWidth);
-	if( !status.bCIBufferIsRendered ) 
-		g_pFrameBufferManager->ActiveTextureBuffer();
+	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
 	m_line3DVtx[0].z = (g_vecProjected[dwV0].z + 1.0f) * 0.5f;
 	m_line3DVtx[1].z = (g_vecProjected[dwV1].z + 1.0f) * 0.5f;
@@ -1997,8 +1987,7 @@ bool SaveRGBBufferToFile(char *filename, unsigned char *buf, int width, int heig
 	if( pitch == -1 )
 		pitch = width*3;
 
-	if( _stricmp(right(filename,4),".png") != 0 )	
-		strcat(filename,".png");
+	if( _stricmp(right(filename,4),".png") != 0 )	strcat(filename,".png");
 
 	struct BMGImageStruct img;
 	InitBMGImage(&img);
@@ -2020,8 +2009,7 @@ bool SaveRGBABufferToPNGFile(char *filename, unsigned char *buf, int width, int 
 	if( pitch == -1 )
 		pitch = width*4;
 
-	if( _stricmp(right(filename,4),".png") != 0 )	
-strcat(filename,".png");
+	if( _stricmp(right(filename,4),".png") != 0 )	strcat(filename,".png");
 
 	struct BMGImageStruct img;
 	InitBMGImage(&img);

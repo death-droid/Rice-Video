@@ -17,11 +17,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-//static BOOL g_bHiliteRGBAHack = FALSE;
+#include "stdafx.h"
 
-#include "Combiner.h"
-#include "../Config.h"
-#include "../Render/RenderBase.h"
+
+//static BOOL g_bHiliteRGBAHack = FALSE;
 
 #ifdef _DEBUG
 char *cycleTypeStrs[] = {

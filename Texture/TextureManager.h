@@ -20,9 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __TEXTUREHANDLER_H__
 #define __TEXTUREHANDLER_H__
 
-#include <string.h>
-
-#include "../typedefs.h"
 #include "Texture.h"
 
 #define absi(x)		((x)>=0?(x):(-x))

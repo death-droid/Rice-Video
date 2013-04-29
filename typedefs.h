@@ -20,27 +20,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _TYPEDEFS_H_
 #define _TYPEDEFS_H_
 
-#include <stdio.h>
-#include <exception>
-#include <d3d9.h>
-#include <d3d9types.h>
-#include <D3dx9math.h>
-
 #define uint16 unsigned __int16
 #define uint32 unsigned __int32
 #define uint64 unsigned __int64
 
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
-#endif
-
-#ifndef SAFE_CHECK
-#define SAFE_CHECK(a)  if( (a) == NULL ) {ErrorMsg( "Creater out of memory"); throw new std::exception();}
-#endif
-
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)  { if(p) { (p)->Release();     (p)=NULL; } }
-#endif
 
 typedef unsigned char				uint8;
 
@@ -51,7 +34,7 @@ typedef unsigned long				u32;
 typedef unsigned char				u8;
 
 //Fix me, these macro should not be used anymore in DirectX 8
-//backtome
+
 #define RGBA_GETALPHA(rgb)      ((rgb) >> 24)
 #define RGBA_GETRED(rgb)        (((rgb) >> 16) & 0xff)
 #define RGBA_GETGREEN(rgb)      (((rgb) >> 8) & 0xff)
@@ -255,6 +238,9 @@ typedef struct
 			float range;		// Range == 0  for directional light
 								// Range != 0  for point light, Zelda MM
 		};
+#if _MSC_VER > 1200
+		__m64 dir64[2];
+#endif
 	};
 
 	union {
@@ -275,6 +261,9 @@ typedef struct
 			float fa;
 		};
 		float fcolors[4];
+#if _MSC_VER > 1200
+		__m64 fcolor64[2];
+#endif
 	};
 
 	union {
@@ -287,6 +276,9 @@ typedef struct
 		struct {
 			D3DXVECTOR3 td;
 		};
+#if _MSC_VER > 1200
+		__m64 tdir64[2];
+#endif
 	};
 
 	union {
@@ -299,6 +291,9 @@ typedef struct
 		struct {
 			D3DXVECTOR3 od;
 		};
+#if _MSC_VER > 1200
+		__m64 odir64[2];
+#endif
 	};
 } Light;
 

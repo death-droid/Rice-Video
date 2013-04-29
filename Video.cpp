@@ -16,20 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#include <vector>
-#include <Shlwapi.h>
-
-#include "Video.h"
-#include "typedefs.h"
+#include "stdafx.h"
 #include "_BldNum.h"
-#include "Config.h"
-#include "./Render/Render.h"
-#include "./Render/RenderBase.h"
-#include "./Device/GraphicsContext.h"
-#include "./Device/DeviceBuilder.h"
-#include "./Utility/CritSect.h"
-#include "./Device/FrameBuffer.h"
-#include "./Debugger/Debugger.h"
 
 PluginStatus status;
 char generalText[256];

@@ -30,8 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /////////////////////////////////////////////////////////////////////////////
 // CDebugger dialog
-#include "../typedefs.h"
-#include "../resource.h"
+#include "resource.h"
 
 extern bool debuggerWinOpened;
 

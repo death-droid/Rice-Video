@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2003-2009 Rice1964
+Copyright (C) 2005 Rice1964
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,39 +17,4 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#if !defined(AFX_CRITSECT_H__E073C8E6_58B7_4DBE_88A3_D52539BC6C60__INCLUDED_)
-#define AFX_CRITSECT_H__E073C8E6_58B7_4DBE_88A3_D52539BC6C60__INCLUDED_
-
-#pragma once
-
-class CCritSect
-{
-public:
-	CCritSect()
-	{
-		InitializeCriticalSection(&cs);
-	}
-	~CCritSect()
-	{
-		DeleteCriticalSection(&cs);
-	}
-
-	void Lock()
-	{
-		EnterCriticalSection(&cs);
-	}
-	void Unlock()
-	{
-		LeaveCriticalSection(&cs);
-	}
-
-	bool IsLocked()
-	{
-		return cs.LockCount > 0;
-	}
-
-protected:
-	CRITICAL_SECTION cs;
-};
-
-#endif // !defined(AFX_CRITSECT_H__E073C8E6_58B7_4DBE_88A3_D52539BC6C60__INCLUDED_)
+#include "stdafx.h"

@@ -17,12 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include <vector>
-
+#include "stdafx.h"
 #include "float.h"
-#include "RenderBase.h"
-#include "../Config.h"
-#include "../typedefs.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 /*

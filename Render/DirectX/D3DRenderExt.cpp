@@ -17,9 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "D3DRender.h"
-#include "../Render.h"
-#include "../../typedefs.h"
+#include "stdafx.h"
 
 extern uObjMtxReal gObjMtxReal;
 extern Matrix gD3DMtxReal;

@@ -20,11 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _RICE_RENDER_BASE_H
 #define _RICE_RENDER_BASE_H
 
-#include "..\Video.h"
-#include "..\Debugger\Debugger.h"
-#include "..\Parser\RSP_Parser.h"
-#include "..\Device\GraphicsContext.h"
-
 /*
  *	Global variables defined in this file were moved out of Render class
  *  to make them be accessed faster
@@ -108,6 +103,9 @@ typedef struct
 			float	fAmbientLightA;
 		};
 		float fAmbientColors[4];
+#if _MSC_VER > 1200
+		__m64 fAmbientLightColor64[2];
+#endif
 	};
 	/************************************************************************/
 	/*      Don't move above                                                */

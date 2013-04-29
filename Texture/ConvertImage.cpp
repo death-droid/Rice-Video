@@ -17,8 +17,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "ConvertImage.h"
-#include "../Render/RenderBase.h"
+#include "stdafx.h"
+
 ConvertFunction		gConvertFunctions_FullTMEM[ 8 ][ 4 ] = 
 {
 	// 4bpp				8bpp			16bpp				32bpp

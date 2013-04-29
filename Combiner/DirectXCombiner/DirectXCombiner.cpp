@@ -16,10 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "../../Render/Render.h"
-#include "../../Render/DirectX/D3DRender.h"
-#include "../../typedefs.h"
-#include "DirectXCombiner.h"
+#include "stdafx.h"
 
 char *muxToPSMaps[][2] = {
 	"c0",	"c0",	//MUX_0 = 0,

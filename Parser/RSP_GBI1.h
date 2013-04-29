@@ -17,11 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "../Video.h"
-#include "../Render/Render.h"
-#include "../Render/RenderBase.h"
-#include "../Debugger/Debugger.h"
-
 void RSP_GBI1_Vtx(MicroCodeCommand command)
 {
 	uint32 addr = RSPSegmentAddr(command.vtx1.addr);

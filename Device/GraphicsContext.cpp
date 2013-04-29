@@ -18,12 +18,7 @@
 
 */
 
-#include "GraphicsContext.h"
-
-#include "FrameBuffer.h"
-#include "../Video.h"
-#include "../Debugger/Debugger.h"
-#include "../Render/DirectX/D3DRender.h"
+#include "stdafx.h"
 
 CGraphicsContext* CGraphicsContext::g_pGraphicsContext = NULL;
 bool CGraphicsContext::m_deviceCapsIsInitialized = false;

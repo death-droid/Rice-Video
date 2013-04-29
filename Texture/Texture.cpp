@@ -17,9 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-//Remove this, its no longer really needed, we should merger it in with DirectXTexture.cpp
+#include "stdafx.h"
 
-#include "Texture.h"
+
 
 //////////////////////////////////////////
 // Constructors / Deconstructors

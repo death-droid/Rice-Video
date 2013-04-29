@@ -20,14 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _RICE_RENDER_H
 #define _RICE_RENDER_H
 
-#include "RenderBase.h"
+#include "stdafx.h"
 #include "ExtendedRender.h"
-#include "../Combiner/Blender.h"
-#include "../Combiner/Combiner.h"
-#include "../Config.h"
-#include "../Debugger/Debugger.h"
-#include "../Parser/RSP_Parser.h"
-#include "../Parser/RSP_S2DEX.h"
 
 enum TextureChannel 
 {

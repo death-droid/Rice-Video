@@ -16,24 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#include <vector>
-#include <fstream>
-#include <stdlib.h>
-#include <windows.h>
-#include <windowsx.h>
-#include <commctrl.h>
 
-#include "gfx.h"
-#include "Config.h"
-#include "Video.h"
-#include "resource.h"
-#include "./Debugger/Debugger.h"
-#include "./Device/DeviceBuilder.h"
-#include "./Device/DirectXDevice/DXGraphicsContext.h"
-#include "./Render/RenderBase.h"
-#include "./Texture/TextureManager.h"
-#include "Video.h"
-
+#include "stdafx.h"
 #include "_BldNum.h"
 
 #define INI_FILE		"RiceVideo.ini"
@@ -629,6 +613,7 @@ BOOL InitConfiguration(void)
 	ReadConfiguration();
 	return TRUE;
 }
+
 
 void GenerateCurrentRomOptions()
 {
