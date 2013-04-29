@@ -1,0 +1,53 @@
+Release
+Debug
+_UpgradeReport_Files
+ipch
+
+/*.suo
+
+/RiceVideo V10.opensdf
+/RiceVideo V10.sdf
+/RiceVideo.sdf
+/RiceVideo.vcxproj.user
+/UpgradeLog.XML
+/Video.aps
+/bin/CL.read.1.tlog
+/bin/CL.write.1.tlog
+/bin/RiceVideo 0.1.5.1.zip
+/bin/RiceVideo 0.1.5.2.zip
+/bin/RiceVideo 0.1.5.3.zip
+/bin/RiceVideo.Build.CppClean.log
+/bin/RiceVideo.dll
+/bin/RiceVideo.dll.intermediate.manifest
+/bin/RiceVideo.exp
+/bin/RiceVideo.lastbuildstate
+/bin/RiceVideo.lib
+/bin/RiceVideo.log
+/bin/RiceVideo.write.1.tlog
+/bin/RiceVideo/.data
+/bin/RiceVideo/.rdata
+/bin/RiceVideo/.reloc
+/bin/RiceVideo/.rsrc/DIALOG/DEBUGGER
+/bin/RiceVideo/.rsrc/DIALOG/DEFAULTS
+/bin/RiceVideo/.rsrc/DIALOG/DIRECTX
+/bin/RiceVideo/.rsrc/DIALOG/HIDDEN
+/bin/RiceVideo/.rsrc/DIALOG/NOT_AVAILABLE
+/bin/RiceVideo/.rsrc/DIALOG/OPTIONS
+/bin/RiceVideo/.rsrc/DIALOG/ROM_SETTINGS
+/bin/RiceVideo/.rsrc/DIALOG/TEXTURES
+/bin/RiceVideo/.rsrc/MANIFEST/2
+/bin/RiceVideo/.text
+/bin/Video.res
+/bin/cl.command.1.tlog
+/bin/link-cvtres.read.1.tlog
+/bin/link-cvtres.write.1.tlog
+/bin/link.command.1.tlog
+/bin/link.read.1.tlog
+/bin/link.write.1.tlog
+/bin/mt.command.1.tlog
+/bin/mt.read.1.tlog
+/bin/mt.write.1.tlog
+/bin/rc.command.1.tlog
+/bin/rc.read.1.tlog
+/bin/rc.write.1.tlog
+/lib/BMGLib/BMGLIBSTAT/UpgradeLog.XML
