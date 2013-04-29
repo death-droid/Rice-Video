@@ -41,48 +41,6 @@
     <ClCompile Include="..\BMGLib_DLL\pngrw.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\zlib114\adler32.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\compress.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\crc32.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\deflate.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\gzio.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\infblock.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\infcodes.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\inffast.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\inflate.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\inftrees.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\infutil.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\trees.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\uncompr.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\zlib114\zutil.c">
-      <Filter>Source Files\zlib</Filter>
-    </ClCompile>
     <ClCompile Include="..\JPEG\jcapimin.c">
       <Filter>Source Files\libp%255cjpeg</Filter>
     </ClCompile>
@@ -266,6 +224,51 @@
     <ClCompile Include="..\lpng125\pngwutil.c">
       <Filter>Source Files\libpng</Filter>
     </ClCompile>
+    <ClCompile Include="..\zlib114\adler32.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\compress.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\crc32.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\deflate.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\gzclose.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\gzlib.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\gzread.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\gzwrite.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\infback.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\inffast.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\inflate.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\inftrees.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\trees.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\uncompr.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib114\zutil.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BMGLib_DLL\BMGDLL.h">
@@ -282,39 +285,6 @@
     </ClInclude>
     <ClInclude Include="..\BMGLib_DLL\pngrw.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\deflate.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\infblock.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\infcodes.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\inffast.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\inffixed.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\inftrees.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\infutil.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\trees.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\zconf.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\zlib.h">
-      <Filter>Source Files\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\zlib114\zutil.h">
-      <Filter>Source Files\zlib</Filter>
     </ClInclude>
     <ClInclude Include="..\JPEG\jchuff.h">
       <Filter>Source Files\libp%255cjpeg</Filter>
@@ -360,6 +330,39 @@
     </ClInclude>
     <ClInclude Include="..\lpng125\pngconf.h">
       <Filter>Source Files\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\crc32.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\deflate.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\gzguts.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\inffast.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\inffixed.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\inflate.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\inftrees.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\trees.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\zconf.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\zlib.h">
+      <Filter>Source Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib114\zutil.h">
+      <Filter>Source Files\zlib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
