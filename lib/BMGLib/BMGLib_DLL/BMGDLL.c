@@ -1,13 +1,11 @@
 /*
 //  source code for the BMGLib DLL
-//  This DLL encapsulates the libTIFF library, the libJPEG library, the 
+//  This DLL encapsulates the libTIFF library, the 
 //  libPNG library, and other functions
 //
 //  Copyright (C) 1998, 2000, 2001, 2002 M. Scott Heiman
 //  All Rights Reserved
 //  libTIFF is Copyright (C) Sam Leffler and SGI
-//  libJPEG is Copyright (C) 1991-1998, Thomas G. Lane and is part of the
-//  	Independent JPEG Group's software.
 //  libPNG is Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.
 //    (libpng versions 0.5, May 1995, through 0.89c, May 1996)
 //    Copyright (c) 1996, 1997 Andreas Dilger
@@ -289,13 +287,6 @@ BMGError SaveBitmapToFile( HBITMAP hBitmap, const char *filename, void *paramete
         if ( strcmp( ext, "PNG" ) == 0 )
         {
             out = WritePNG( filename, img );
-        }
-        else if ( strcmp( ext, "JPG" ) == 0 )
-        {
-            int quality =  parameters == NULL ? 100 : *((int *)parameters);
-
-            out = WriteJPEG( filename, img, quality );
-
         }
         else if ( strcmp( ext, "BMP" ) == 0 )
         {

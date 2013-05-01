@@ -26,7 +26,7 @@ extern "C" {
 
 extern
 BMGError BMG_EXPORT ReadPNG( const char *filename,
-                        struct BMGImageStruct *img );
+                        struct BMGImageStruct * volatile img );
 
 extern
 BMGError BMG_EXPORT WritePNG( const char *filename,
