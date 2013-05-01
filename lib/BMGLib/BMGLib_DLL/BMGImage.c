@@ -2,7 +2,28 @@
 // source code for the BMGImage functions
 //
 // Copyright (C) 2001 Michael S. Heiman
+//
+// You may use the software for any purpose you see fit. You may modify
+// it, incorporate it in a commercial application, use it for school,
+// even turn it in as homework. You must keep the Copyright in the
+// header and source files. This software is not in the "Public Domain".
+// You may use this software at your own risk. I have made a reasonable
+// effort to verify that this software works in the manner I expect it to;
+// however,...
+//
+// THE MATERIAL EMBODIED ON THIS SOFTWARE IS PROVIDED TO YOU "AS-IS" AND
+// WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE, INCLUDING
+// WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A
+// PARTICULAR PURPOSE. IN NO EVENT SHALL MICHAEL S. HEIMAN BE LIABLE TO
+// YOU OR ANYONE ELSE FOR ANY DIRECT, SPECIAL, INCIDENTAL, INDIRECT OR
+// CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER, INCLUDING
+// WITHOUT LIMITATION, LOSS OF PROFIT, LOSS OF USE, SAVINGS OR REVENUE,
+// OR THE CLAIMS OF THIRD PARTIES, WHETHER OR NOT MICHAEL S. HEIMAN HAS
+// BEEN ADVISED OF THE POSSIBILITY OF SUCH LOSS, HOWEVER CAUSED AND ON
+// ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE
+// POSSESSION, USE OR PERFORMANCE OF THIS SOFTWARE.
 */
+
 #include <malloc.h>
 #include <memory.h>
 #include <setjmp.h>
@@ -15,8 +36,8 @@ void InitBMGImage( struct BMGImageStruct *img )
     img->bits_per_pixel = 0;
     img->palette_size = 0;
     img->bytes_per_palette_entry = 0;
-    img->bits = 0;
-    img->palette = 0;
+    img->bits = NULL;
+    img->palette = NULL;
     img->opt_for_bmp = 0;
     img->scan_width = 0;
     img->transparency_index = -1;
@@ -25,15 +46,15 @@ void InitBMGImage( struct BMGImageStruct *img )
 /* frees memory allocated to a BMGImage */
 void FreeBMGImage( struct BMGImageStruct *img )
 {
-    if ( img->bits != 0 )
+    if ( img->bits != NULL )
     {
         free( img->bits );
-        img->bits = 0;
+        img->bits = NULL;
     }
-    if ( img->palette != 0 )
+    if ( img->palette != NULL )
     {
         free( img->palette );
-        img->palette = 0;
+        img->palette = NULL;
     }
     img->bits_per_pixel = 0;
     img->palette_size = 0;
@@ -77,15 +98,15 @@ BMGError AllocateBMGImage( struct BMGImageStruct *img )
     }
 
     /* delete old memory */
-    if ( img->bits != 0 )
+    if ( img->bits != NULL )
     {
         free( img->bits );
-        img->bits = 0;
+        img->bits = NULL;
     }
-    if ( img->palette != 0 )
+    if ( img->palette != NULL )
     {
         free( img->palette );
-        img->palette = 0;
+        img->palette = NULL;
     }
 
     /* allocate memory for the palette */
@@ -110,7 +131,7 @@ BMGError AllocateBMGImage( struct BMGImageStruct *img )
 
         mempal = img->bytes_per_palette_entry * img->palette_size;
         img->palette = (unsigned char *)calloc( mempal, sizeof(unsigned char) );
-        if ( img->palette == 0 )
+        if ( img->palette == NULL )
 		{
 			SetLastBMGError(errMemoryAllocation);
             return errMemoryAllocation;
@@ -135,12 +156,12 @@ BMGError AllocateBMGImage( struct BMGImageStruct *img )
     if ( mempal > 0 )
     {
         img->bits = (unsigned char *)calloc( mempal, sizeof( unsigned char) );
-        if ( img->bits == 0 )
+        if ( img->bits == NULL )
         {
-            if ( img->palette != 0 )
+            if ( img->palette != NULL )
             {
                 free( img->palette );
-                img->palette = 0;
+                img->palette = NULL;
             }
 			SetLastBMGError(errMemoryAllocation);
             return errMemoryAllocation;
@@ -167,7 +188,7 @@ BMGError CompressBMGImage( struct BMGImageStruct *img )
 {
     unsigned char new_bits_per_pixel;
     unsigned int new_scan_width;
-    unsigned char *new_bits = 0;
+    unsigned char *new_bits = NULL;
     unsigned int new_bit_size;
     unsigned char *new_row, *old_row, *p, *q;
     unsigned char *end;
@@ -176,7 +197,7 @@ BMGError CompressBMGImage( struct BMGImageStruct *img )
 	SetLastBMGError( BMG_OK );
 
     /* if we cannot compress it then do no harm and return "true" */
-    if ( img->palette == 0 ||
+    if ( img->palette == NULL ||
          img->palette_size > 16 ||
          img->bits_per_pixel != 8 )
     {
@@ -192,7 +213,7 @@ BMGError CompressBMGImage( struct BMGImageStruct *img )
 
     /* allocate & test memory */
     new_bits = (unsigned char *)calloc( new_bit_size, sizeof(unsigned char) );
-    if ( new_bits == 0 )
+    if ( new_bits == NULL )
 	{
 		SetLastBMGError( errMemoryAllocation );
         return errMemoryAllocation;
@@ -268,13 +289,13 @@ BMGError CompressBMGImage( struct BMGImageStruct *img )
    applications */
 void FreeBMGMemory( unsigned char *mem )
 {
-    if ( mem != 0 )
+    if ( mem != NULL )
         free( mem );
 }
 
 /* converts a BGR to a gray scale
 // color[0] = blue, color[1] = green, color[2] = red */
-unsigned char CreateGrayScale( unsigned char *color )
+static unsigned char CreateGrayScale( unsigned char *color )
 {
 	return (unsigned char)( 0.299f * color[2] + 0.587f * color[1]
 				               + 0.114f * color[0] + 0.5f );
@@ -332,7 +353,7 @@ BMGError ConvertToGrayScale( struct BMGImageStruct *img )
 		/* allocate memory for the new pixel values */
 		new_bits = (unsigned char *)calloc( new_scan_width * img->height,
                     sizeof(unsigned char) );
-		if ( new_bits == 0 )
+		if ( new_bits == NULL )
 		{
 			SetLastBMGError( errMemoryAllocation );
 			return errMemoryAllocation;
@@ -345,7 +366,7 @@ BMGError ConvertToGrayScale( struct BMGImageStruct *img )
 			(unsigned char *)calloc(img->bytes_per_palette_entry *
                                     img->palette_size,
 			                        sizeof(unsigned char) );
-		if ( img->palette == 0 )
+		if ( img->palette == NULL )
 		{
 			free( new_bits );
 			img->bytes_per_palette_entry = 0;

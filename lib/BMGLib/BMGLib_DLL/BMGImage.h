@@ -7,7 +7,7 @@
 */
 
 #include <windows.h>
-#define BUILD_BMG_DLL
+
 #ifdef BUILD_BMG_DLL
 #	define BMG_EXPORT __declspec( dllexport )
 #else

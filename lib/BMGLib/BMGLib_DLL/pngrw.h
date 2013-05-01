@@ -13,7 +13,7 @@
 //    (libpng versions 0.97, January 1998, through 1.0.5, October 15, 1999)
 */
 #include "BMGImage.h"
-#define BUILD_BMG_DLL
+
 #ifdef BUILD_BMG_DLL
 #	define BMG_EXPORT __declspec( dllexport )
 #else

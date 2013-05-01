@@ -28,11 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
-#ifdef _BMG_LIBPNG_STANDALONE
-	#include "BMGLibPNG.h"
-#else
-	#include "pngrw.h"
-#endif
+#include "pngrw.h"
 #include "BMGUtils.h"
 #include "png.h"
 
@@ -62,18 +58,19 @@
         gray scale images with alpha components are converted to 32-bit images
 */
 BMGError ReadPNG( const char *filename,
-                  struct BMGImageStruct *img )
+        struct BMGImageStruct * volatile img )
 {
     jmp_buf             err_jmp;
     int                 error;
 
-    FILE               *file = NULL;
+    FILE * volatile		file = NULL;
     int                 BitDepth;
     int                 ColorType;
     int                 InterlaceType;
     unsigned char       signature[8];
-    png_structp         png_ptr = NULL;
-    png_infop           info_ptr = NULL;
+    png_structp volatile png_ptr = NULL;
+    png_infop   volatile info_ptr = NULL;
+	png_infop	volatile end_info = NULL;
     png_color_16       *ImageBackground = NULL;
     png_bytep           trns = NULL;
     int                 NumTrans = 0;
@@ -82,7 +79,7 @@ BMGError ReadPNG( const char *filename,
     unsigned long       Width, Height;
 
     unsigned char      *bits;
-    unsigned char     **rows = NULL;
+    unsigned char** volatile rows = NULL;
 
 	BMGError tmp;
 
@@ -90,16 +87,22 @@ BMGError ReadPNG( const char *filename,
     error = setjmp( err_jmp );
     if ( error != 0 )
     {
-        if ( png_ptr != NULL )
-            png_destroy_read_struct( &png_ptr, NULL, NULL );
+        if (end_info != NULL)
+            png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, (png_infop *) &end_info);
+        else if (info_ptr != NULL)
+            png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, NULL);
+        else if (png_ptr != NULL)
+            png_destroy_read_struct((png_structp *) &png_ptr, NULL, NULL);
         if ( rows )
         {
             if ( rows[0] )
                 free( rows[0] );
             free( rows );
         }
-        FreeBMGImage( img );
-        fclose( file );
+		if (img)
+			FreeBMGImage( img );
+		if (file)
+			fclose( file );
 		SetLastBMGError( (BMGError)error );
         return (BMGError)error;
     }
@@ -108,17 +111,26 @@ BMGError ReadPNG( const char *filename,
         longjmp ( err_jmp, (int)errInvalidBMGImage );
 
     file = fopen( filename, "rb" );
-    if ( !file )
+    if ( !file || fread( signature, 1, 8, file ) != 8)
         longjmp ( err_jmp, (int)errFileOpen );
 
     /* check the signature */
-    fread( signature, 1, 8, file );
-    if ( !png_check_sig( signature, 8 ) )
+    if (png_sig_cmp( signature, 0, 8 ) != 0)
         longjmp( err_jmp, (int)errUnsupportedFileFormat );
 
     /* create a pointer to the png read structure */
     png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
     if ( !png_ptr )
+        longjmp( err_jmp, (int)errMemoryAllocation );
+
+    /* create a pointer to the png info structure */
+    info_ptr = png_create_info_struct( png_ptr );
+    if ( !info_ptr )
+        longjmp( err_jmp, (int)errMemoryAllocation );
+
+    /* create a pointer to the png end-info structure */
+    end_info = png_create_info_struct(png_ptr);
+    if (!end_info)
         longjmp( err_jmp, (int)errMemoryAllocation );
 
     /* bamboozle the PNG longjmp buffer */
@@ -128,11 +140,6 @@ BMGError ReadPNG( const char *filename,
     error = setjmp( png_jmpbuf( png_ptr ) );
     if ( error > 0 )
         longjmp( err_jmp, error );
-
-    /* create a pointer to the png info structure */
-    info_ptr = png_create_info_struct( png_ptr );
-    if ( !info_ptr )
-        longjmp( err_jmp, (int)errMemoryAllocation );
 
     /* attach file buffer to the png read pointer */
     png_init_io( png_ptr, file );
@@ -233,7 +240,7 @@ BMGError ReadPNG( const char *filename,
     free( rows[0] );
     free( rows );
     png_read_end( png_ptr, info_ptr );
-    png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
+    png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, (png_infop *) &end_info);
     fclose( file );
 
     return BMG_OK;
@@ -286,13 +293,18 @@ BMGError WritePNG( const char *filename,
     {
         if ( png_ptr != NULL )
             png_destroy_write_struct( &png_ptr, NULL );
-        if ( rows[0] )
-            free( rows[0] );
         if ( rows )
+        {
+            if ( rows[0] )
+            {
+                free( rows[0] );
+            }
             free( rows );
+        }
         if ( PNGPalette )
             free( PNGPalette );
-        fclose( outfile );
+		if ( outfile)
+			fclose( outfile );
 		SetLastBMGError( (BMGError)error );
         return (BMGError)error;
     }
@@ -316,8 +328,7 @@ BMGError WritePNG( const char *filename,
     if ( HasPalette )
     {
         NumColors = img.palette_size;
-        /* if this is a grayscale image then set the flag and delete the
-              palette*/
+        /* if this is a grayscale image then set the flag and delete the palette*/
         i = 0;
         bits = img.palette;
         while ( i < NumColors && bits[0] == bits[1] && bits[0] == bits[2] )
@@ -367,9 +378,7 @@ BMGError WritePNG( const char *filename,
         ColorType = PNG_COLOR_TYPE_PALETTE;
 
     /* create the PNG header */
-    png_set_IHDR( png_ptr, info_ptr, img.width, img.height, BitDepth,
-                ColorType, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE,
-                PNG_FILTER_TYPE_BASE );
+    png_set_IHDR( png_ptr, info_ptr, img.width, img.height, BitDepth, ColorType, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE );
 
     /* store the palette information if there is any */
     if ( img.palette != NULL && !GrayScale )
@@ -379,8 +388,7 @@ BMGError WritePNG( const char *filename,
         if ( PNGPalette )
         {
             bits = img.palette;
-            for ( i = 0; i < NumColors;
-			      i++, bits += img.bytes_per_palette_entry )
+            for ( i = 0; i < NumColors; i++, bits += img.bytes_per_palette_entry )
             {
                 PNGPalette[i].red   = bits[2];
                 PNGPalette[i].green = bits[1];
@@ -455,108 +463,3 @@ BMGError WritePNG( const char *filename,
 
     return BMG_OK;
 }
-
-#ifdef _BMG_LIBPNG_STANDALONE
-#pragma message ("Creating BMGLibPNG functions")
-
-/* saves the contents of an HBITMAP to a file.  returns 1 if successfull,
-// 0 otherwise */
-BMGError SaveBitmapToPNGFile( HBITMAP hBitmap,      /* bitmap to be saved */
-                              const char *filename) /* name of output file */
-{
-    struct BMGImageStruct img;
-    char msg[256], ext[4], *period;
-    BMGError out = BMG_OK;
-
-    InitBMGImage( &img );
-
-    /* determine the file type by using the extension */
-    strcpy( msg, filename );
-    period = strrchr( msg, '.' );
-    if ( period != NULL )
-    {
-        period++;
-        strcpy( ext, period );
-        ext[0] = toupper( ext[0] );
-        ext[1] = toupper( ext[1] );
-        ext[2] = toupper( ext[2] );
-        ext[3] = 0;
-    }
-    else
-    {
-        strcat( msg, ".PNG" );
-        strcpy( ext, "PNG" );
-    }
-
-    if ( strcmp( ext, "PNG" ) == 0 )
-    {
-    /* extract data from the bitmap.  We assume that 32 bit images have been
-    // blended with the background (unless this is a DDB - see GetDataFromBitmap
-	// for more details) */
-		out = GetDataFromBitmap( hBitmap, &img, 1 ); 
-        if (  out == BMG_OK )
-        {
-            out = WritePNG( msg, img );
-        }
-    	FreeBMGImage( &img );
-    }
-    else
-    {
-		out = errInvalidFileExtension;
-    }
-
-	SetLastBMGError( out );
-    return out;
-}
-
-/* Creates an HBITMAP to an image file.  returns an HBITMAP if successfull,
-// NULL otherwise */
-HBITMAP CreateBitmapFromPNGFile( const char *filename,
-                                 int blend )
-{
-    char ext[4], msg[256];
-    char *period;
-    BMGError out = BMG_OK;
-    struct BMGImageStruct img;
-    HBITMAP hBitmap = NULL;
-
-    InitBMGImage( &img );
-    img.opt_for_bmp = 1;
-
-    strcpy( msg, filename );
-    period = strrchr( msg, '.' );
-    if ( period != NULL )
-    {
-        period++;
-        strncpy( ext, period, 3 );
-        ext[0] = toupper( ext[0] );
-        ext[1] = toupper( ext[1] );
-        ext[2] = toupper( ext[2] );
-        ext[3] = 0;
-    }
-    else
-    {
-        strcat( msg, ".PNG" );
-        strcpy( ext, "PNG" );
-    }
-
-    if ( strcmp( ext, "PNG" ) == 0 )
-    {
-		out = ReadPNG( msg, &img ); 
-        if (  out == BMG_OK )
-		{
-	        hBitmap = CreateBitmapFromData( img, blend );
-		}
-        FreeBMGImage( &img );
-    }
-    else
-    {
-		out = errInvalidFileExtension;
-    }
-
-	SetLastBMGError( out );
-    return hBitmap;
-}
-
-#endif
-

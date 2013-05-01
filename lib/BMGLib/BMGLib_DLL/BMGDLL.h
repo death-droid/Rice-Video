@@ -21,7 +21,7 @@
 //  libPROJ (used by GeoTIFF) is Copytight (c) 2000, Frank Warmerdam
 //  libUnGif is Copyright (c) 1997,  Eric S. Raymond
 */
-#define BUILD_BMG_DLL
+
 #ifdef BUILD_BMG_DLL
 #   define BMG_EXPORT __declspec( dllexport )
 #else

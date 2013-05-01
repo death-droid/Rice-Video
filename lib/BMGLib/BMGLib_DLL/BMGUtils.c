@@ -50,7 +50,7 @@ char BMGErrorStrings[17][128] = {
 };
 
 /* stores last BMG error */
-BMGError LastBMGError;
+static BMGError LastBMGError;
 
 /* sets the last BMG error */
 void SetLastBMGError( BMGError err )
@@ -59,7 +59,7 @@ void SetLastBMGError( BMGError err )
 }
 
 /* returns the last error state */
-BMGError GetLastBMGError()
+BMGError GetLastBMGError(void)
 {
 	return LastBMGError;
 }
@@ -91,24 +91,24 @@ void GetLastBMGErrorMessage( const char **msg )
 }
 
 /* Global background color variables */
-unsigned char BackgroundColor[4];
-struct BMGImageStruct BackgroundImage;
+static unsigned char BackgroundColor[4];
+static struct BMGImageStruct BackgroundImage;
 
 /* this function simply initializes the background info.  It is called from
    the DllEntryPoint function */
-void InitBackground()
+void InitBackground(void)
 {
     memset( (void *)BackgroundColor, 0xFF, 3 ); /* white */
     BackgroundColor[3] = 0; /* ignored */
     InitBMGImage( &BackgroundImage );
 }
 
-unsigned char *GetBackgroundColor()
+unsigned char *GetBackgroundColor(void)
 {
     return &BackgroundColor[0];
 }
 
-struct BMGImageStruct *GetBackgroundImage()
+struct BMGImageStruct *GetBackgroundImage(void)
 {
     return &BackgroundImage;
 }
@@ -307,6 +307,9 @@ BITMAPINFO InternalCreateBMI( DWORD dwWidth,  /* width */
 {
    BITMAPINFO bi;         /* bitmap header */
    DWORD dwBytesPerLine;        /* Number of bytes per scanline */
+
+   /* clear the bitmapinfo structure */
+   memset(&bi, 0, sizeof(BITMAPINFO));
 
    /* Make sure bits per pixel is valid */
    if (wBitCount <= 1)

@@ -68,7 +68,7 @@
       <OpenMPSupport>false</OpenMPSupport>
     </ClCompile>
     <Lib>
-      <OutputFile>BMGlibVC6.lib</OutputFile>
+      <OutputFile>../BMGlib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <UseUnicodeResponseFiles>true</UseUnicodeResponseFiles>
     </Lib>
