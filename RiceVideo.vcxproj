@@ -74,7 +74,7 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <StructMemberAlignment>16Bytes</StructMemberAlignment>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>../obj/1964Video/Release/1964Video.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>../obj/1964Video/Release/</AssemblerListingLocation>
@@ -161,7 +161,6 @@
     <ClInclude Include="Video.h" />
     <ClInclude Include="Lib\BMGDLL.h" />
     <ClInclude Include="Lib\BMGImage.h" />
-    <ClInclude Include="Lib\BMGLibJPEG.h" />
     <ClInclude Include="Lib\BMGLibPNG.h" />
     <ClInclude Include="gfx.h" />
     <ClInclude Include="Lib\pngrw.h" />
@@ -243,7 +242,7 @@
     <ClCompile Include="Render\DirectX\D3DRenderExt.cpp" />
     <ClCompile Include="Device\DeviceBuilder.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Device\FrameBuffer.cpp" />
     <ClCompile Include="Device\FrameBufferDX.cpp" />

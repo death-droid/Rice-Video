@@ -24,7 +24,7 @@ Overview of DX framebuffer code:
 
 */
 
-#include "stdafx.h"
+#include "..\stdafx.h"
 //copies DirectX backbuffer to the render_texture structure
 //This can be slow....
 //But, its needed to render framebuffer effects, due to the current implementation.

@@ -18,7 +18,7 @@
 
 */
 
-#include "stdafx.h"
+#include "..\stdafx.h"
 
 CGraphicsContext* CGraphicsContext::g_pGraphicsContext = NULL;
 bool CGraphicsContext::m_deviceCapsIsInitialized = false;

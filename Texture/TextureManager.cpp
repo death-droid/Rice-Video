@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "stdafx.h"
+#include "..\stdafx.h"
 
 CTextureManager gTextureManager;
 // Returns the first prime greater than or equal to nFirst

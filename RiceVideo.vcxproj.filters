@@ -74,9 +74,6 @@
     <ClInclude Include="Lib\BMGImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Lib\BMGLibJPEG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Lib\BMGLibPNG.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -233,14 +230,14 @@
     <ClInclude Include="Parser\RSP_RS.h">
       <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
     </ClInclude>
-    <ClInclude Include="Parser\RSP_S2DEX.h">
-      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
-    </ClInclude>
     <ClInclude Include="Parser\RSP_SOTE.h">
       <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
     </ClInclude>
     <ClInclude Include="Parser\RSP_WRUS.h">
       <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\RSP_S2DEX.h">
+      <Filter>Graphics\Parser\Ucodes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -335,7 +332,7 @@
       <Filter>Graphics\Parser</Filter>
     </ClCompile>
     <ClCompile Include="Parser\RSP_S2DEX.cpp">
-      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
+      <Filter>Graphics\Parser\Ucodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
