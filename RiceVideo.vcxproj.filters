@@ -68,25 +68,10 @@
     <ClInclude Include="Video.h">
       <Filter>Plugin</Filter>
     </ClInclude>
-    <ClInclude Include="Lib\BMGDLL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib\BMGImage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib\BMGLibPNG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="gfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Lib\pngrw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib\tiffrw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="typedefs.h">

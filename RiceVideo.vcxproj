@@ -69,7 +69,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>%DXSDK_DIR%\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%DXSDK_DIR%\include;.\lib\BMGLib\BMGLib_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -159,13 +159,8 @@
     <ClInclude Include="_BldNum.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Video.h" />
-    <ClInclude Include="Lib\BMGDLL.h" />
-    <ClInclude Include="Lib\BMGImage.h" />
-    <ClInclude Include="Lib\BMGLibPNG.h" />
     <ClInclude Include="gfx.h" />
-    <ClInclude Include="Lib\pngrw.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Lib\tiffrw.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="Debugger\Debugger.h" />
     <ClInclude Include="Debugger\OGLDebug.h" />

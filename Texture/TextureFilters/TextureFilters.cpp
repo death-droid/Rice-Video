@@ -16,12 +16,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#include "..\../stdafx.h"
+#include "..\..\stdafx.h"
 #include <string>
 #include <fstream>
 #include <iostream>
 #include "TextureFilters.h"
-#include "..\../lib/BMGDll.h"
+#include "BMGDll.h"
 
 void EnhanceTexture(TxtrCacheEntry *pEntry)
 {
@@ -155,6 +155,74 @@ CSortedList<uint64,ExtTxtrInfo> gHiresTxtrInfos;
 extern void GetPluginDir( char * Directory );
 extern char * right(char * src, int nchars);
 
+int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
+{
+    unsigned char sig[8];
+    FILE *f;
+
+    f = fopen(pSrcFile, "rb");
+    if (f == NULL)
+    {
+		TRACE1("GetImageInfoFromFile() error: couldn't open file '%s'", pSrcFile);
+		return 1;
+    }
+    if (fread(sig, 1, 8, f) != 8)
+    {
+		TRACE1("GetImageInfoFromFile() error: couldn't read first 8 bytes of file '%s'", pSrcFile);
+		return 1;
+    }
+    fclose(f);
+
+    if(sig[0] == 'B' && sig[1] == 'M') // BMP
+    {
+        struct BMGImageStruct img;
+        memset(&img, 0, sizeof(BMGImageStruct));
+        BMG_Error code = ReadBMPInfo(pSrcFile, &img);
+        if( code == BMG_OK )
+        {
+            pSrcInfo->Width = img.width;
+            pSrcInfo->Height = img.height;
+            pSrcInfo->Depth = img.bits_per_pixel;
+            pSrcInfo->MipLevels = 1;
+            if(img.bits_per_pixel == 32)
+                pSrcInfo->Format = D3DFMT_A8R8G8B8;
+            else if(img.bits_per_pixel == 8)
+                pSrcInfo->Format = D3DFMT_P8;
+            // Resource and File Format ignored
+            FreeBMGImage(&img);
+            return 0;
+        }
+	    TRACE2("Couldn't read BMP file '%s'; error = %i", pSrcFile, code);
+        return 1;
+    }
+    else if(sig[0] == 137 && sig[1] == 'P' && sig[2] == 'N' && sig[3] == 'G' && sig[4] == '\r' && sig[5] == '\n' &&
+               sig[6] == 26 && sig[7] == '\n') // PNG
+    {
+        struct BMGImageStruct img;
+        memset(&img, 0, sizeof(BMGImageStruct));
+        BMG_Error code = ReadPNGInfo(pSrcFile, &img);
+        if( code == BMG_OK )
+        {
+            pSrcInfo->Width = img.width;
+            pSrcInfo->Height = img.height;
+            pSrcInfo->Depth = img.bits_per_pixel;
+            pSrcInfo->MipLevels = 1;
+            if(img.bits_per_pixel == 32)
+                pSrcInfo->Format = D3DFMT_A8R8G8B8;
+            else if(img.bits_per_pixel == 8)
+                pSrcInfo->Format = D3DFMT_P8;
+            // Resource and File Format ignored
+            FreeBMGImage(&img);
+            return 0;
+        }
+        TRACE2("Couldn't read PNG file '%s'; error = %i", pSrcFile, code);
+        return 1;
+    }
+
+	TRACE1("GetImageInfoFromFile : unknown file format (%s)", pSrcFile);
+    return 1;
+}
+
 /********************************************************************************************************************
  * Truncates the current list with information about hires textures and scans the hires folder for hires textures and 
  * creates a list with records of properties of the hires textures.
@@ -189,9 +257,9 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 	// the record containing the actual file data
 	WIN32_FIND_DATA libaa;
 	// 
-	D3DXIMAGE_INFO	imgInfo;
+	IMAGE_INFO	imgInfo;
 	//
-	D3DXIMAGE_INFO	imgInfo2;
+	IMAGE_INFO	imgInfo2;
 
 	// prepare message
 	sprintf(generalText,"Processing folder: %s", foldername);
@@ -266,7 +334,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			continue;
 
 		// now we've got a file. Let's check if it is a supported texture format
-		if( D3DXGetImageInfoFromFile(texturefilename, &imgInfo) != S_OK )
+		if( GetImageInfoFromFile(texturefilename, &imgInfo) != S_OK )
 		{
 			// ehmm, wait a second... no!
 			TRACE1("Cannot get image info for file: %s", libaa.cFileName);
@@ -331,7 +399,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			if( PathFileExists(filename2) )
 			{
 				// check if the file with this name is actually a texture (well an alpha channel one)
-				if( D3DXGetImageInfoFromFile(filename2, &imgInfo2) != S_OK )
+				if( GetImageInfoFromFile(filename2, &imgInfo2) != S_OK )
 				{
 					// nope, it isn't => go on with next file
 					TRACE1("Cannot get image info for file: %s", filename2);

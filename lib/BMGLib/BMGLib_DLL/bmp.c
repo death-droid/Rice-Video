@@ -186,6 +186,80 @@ BMGError ReadBMP( const char *filename,
 }
 
 /*
+    ReadBMPInfo - reads the header data from a BMP files and stores it in a
+              BMGImageStruct.
+
+    Inputs:
+        filename    - the name of the file to be opened
+
+    Outputs:
+        img         - the BMGImageStruct containing the image data
+
+    Returns:
+        BMGError - if the file could not be read or a resource error occurred
+        BMG_OK   - if the file was read and the data was stored in img
+
+*/
+BMGError ReadBMPInfo( const char *filename,
+              struct BMGImageStruct *img )
+{
+    FILE *file;
+    jmp_buf err_jmp;
+    int error;
+
+    BITMAPFILEHEADER bmfh;
+    BITMAPINFOHEADER bmih;
+
+	SetLastBMGError( BMG_OK );
+
+    /* error handler */
+    error = setjmp( err_jmp );
+    if ( error != 0 )
+    {
+        if ( file != NULL )
+            fclose( file );
+        FreeBMGImage( img );
+		SetLastBMGError( (BMGError)error );
+        return (BMGError)error;
+    }
+
+    if ( img == NULL )
+        longjmp( err_jmp, (int)errInvalidBMGImage );
+
+    file = fopen( filename, "rb" );
+    if  ( file == NULL )
+        longjmp( err_jmp, (int)errFileOpen );
+
+        /* read the file header */
+    if ( fread( (void *)&bmfh, sizeof(BITMAPFILEHEADER), 1, file ) != 1 )
+        longjmp( err_jmp, (int)errFileRead );
+
+    /* confirm that this is a BMP file */
+    if ( bmfh.bfType != BMP_ID )
+        longjmp( err_jmp, (int)errUnsupportedFileFormat );
+
+    /* read the bitmap info header */
+    if ( fread( (void *)&bmih, sizeof(BITMAPINFOHEADER), 1, file ) != 1 )
+        longjmp( err_jmp, (int)errFileRead );
+
+    /* abort if this is an unsupported format */
+    if ( bmih.biCompression != BI_RGB )
+            longjmp( err_jmp, (int)errUnsupportedFileFormat );
+
+    img->bits_per_pixel = (unsigned char)bmih.biBitCount;
+    img->width  = bmih.biWidth;
+    img->height = bmih.biHeight;
+    if ( img->bits_per_pixel <= 8 )
+    {
+        img->palette_size = (unsigned short)bmih.biClrUsed;
+        img->bytes_per_palette_entry = 4U;
+    }
+
+    fclose( file );
+    return BMG_OK;
+}
+
+/*
     WriteBMP - writes the contents of an BMGImageStruct to a bmp file.
 
     Inputs:

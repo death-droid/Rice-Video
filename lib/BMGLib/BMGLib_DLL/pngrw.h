@@ -29,9 +29,12 @@ BMGError BMG_EXPORT ReadPNG( const char *filename,
                         struct BMGImageStruct * volatile img );
 
 extern
+BMGError BMG_EXPORT ReadPNGInfo( const char *filename,
+        struct BMGImageStruct * volatile img );
+
+extern
 BMGError BMG_EXPORT WritePNG( const char *filename,
                          struct BMGImageStruct img );
-
 #if defined(__cplusplus)
  }
 #endif

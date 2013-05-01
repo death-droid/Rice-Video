@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "..\stdafx.h"
-#include "..\lib/BMGDLL.h"
+#include "BMGDLL.h"
 
 extern FiddledVtx * g_pVtxBase;
 CRender * CRender::g_pRender=NULL;

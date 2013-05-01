@@ -106,6 +106,9 @@ BMGError BMG_EXPORT WriteTGA( const char *filename,
 extern
 BMGError BMG_EXPORT ReadBMP( const char *filename,
                         struct BMGImageStruct *img );
+extern
+BMGError BMG_EXPORT ReadBMPInfo( const char *filename,
+                        struct BMGImageStruct *img );
 
 extern
 BMGError BMG_EXPORT WriteBMP( const char *filename,
