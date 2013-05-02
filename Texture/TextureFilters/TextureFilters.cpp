@@ -135,16 +135,6 @@ typedef struct {
 	// cached texture
 	unsigned char	*pHiresTextureRGB;
 	unsigned char	*pHiresTextureAlpha;
-
-	// CODE MODIFICATION
-	unsigned char	**pHiresTextureRGBAlts;
-	unsigned char	**pHiresTextureAlphaAlts;
-	bool bAltShuffle;
-	int iAltCount;
-	int iAltPeriod;
-	bool bAltSynchronized;
-	bool bAltTex;
-	// /CODE MODIFICATION
 } ExtTxtrInfo;
 
 void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo );
@@ -160,30 +150,49 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
     unsigned char sig[8];
     FILE *f;
 
+	//Open up the file so we can read from it
     f = fopen(pSrcFile, "rb");
+
+	//If the file returns empty then spit out an error
     if (f == NULL)
     {
 		TRACE1("GetImageInfoFromFile() error: couldn't open file '%s'", pSrcFile);
 		return 1;
     }
+	//Read the first 8 bytes from the image
     if (fread(sig, 1, 8, f) != 8)
     {
+		//If we couldn't read the first 8 bytes then send spit out an error
 		TRACE1("GetImageInfoFromFile() error: couldn't read first 8 bytes of file '%s'", pSrcFile);
 		return 1;
     }
+	//Close the file stream
     fclose(f);
 
+	//Now lets do some header anaylsis
+
+	//bitmaps have a magic word of BMP (obviously XD), so lets check the first 2 bytes for any signs of this
     if(sig[0] == 'B' && sig[1] == 'M') // BMP
     {
+		//Define out BMGImageStruct where we will store our info
         struct BMGImageStruct img;
+		//Set our new struct to the proper size
         memset(&img, 0, sizeof(BMGImageStruct));
+		//Read the information we need from the BMP into our BMGImageStruct
         BMG_Error code = ReadBMPInfo(pSrcFile, &img);
+
+		//If we retrieved the data fine, then continue
         if( code == BMG_OK )
         {
+			//Store the image width in our own image info
             pSrcInfo->Width = img.width;
+			//Store the iamge height in our own image info
             pSrcInfo->Height = img.height;
+			//Store the bits per pixel as our depth
             pSrcInfo->Depth = img.bits_per_pixel;
+			//Store the amount of mip levels as 1, since png's do not contain mip map data
             pSrcInfo->MipLevels = 1;
+			//Set our image format based on the amount of bits per pixel there is
             if(img.bits_per_pixel == 32)
                 pSrcInfo->Format = D3DFMT_A8R8G8B8;
             else if(img.bits_per_pixel == 8)
@@ -192,21 +201,31 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
             FreeBMGImage(&img);
             return 0;
         }
+		//If we get here it means we were unable to read the BMP
 	    TRACE2("Couldn't read BMP file '%s'; error = %i", pSrcFile, code);
         return 1;
     }
     else if(sig[0] == 137 && sig[1] == 'P' && sig[2] == 'N' && sig[3] == 'G' && sig[4] == '\r' && sig[5] == '\n' &&
                sig[6] == 26 && sig[7] == '\n') // PNG
     {
+		//Define out BMGImageStruct where we will store our info
         struct BMGImageStruct img;
+		//Set our new struct to the proper size
         memset(&img, 0, sizeof(BMGImageStruct));
+		//Read the information we need from the PNG into our BMGImageStruct
         BMG_Error code = ReadPNGInfo(pSrcFile, &img);
+
         if( code == BMG_OK )
         {
+			//Store the image width in our own image info
             pSrcInfo->Width = img.width;
+			//Store the iamge height in our own image info
             pSrcInfo->Height = img.height;
+			//Store the bits per pixel as our depth
             pSrcInfo->Depth = img.bits_per_pixel;
+			//Store the amount of mip levels as 1, since png's do not contain mip map data
             pSrcInfo->MipLevels = 1;
+			//Set our image format based on the amount of bits per pixel there is
             if(img.bits_per_pixel == 32)
                 pSrcInfo->Format = D3DFMT_A8R8G8B8;
             else if(img.bits_per_pixel == 8)
@@ -215,10 +234,12 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
             FreeBMGImage(&img);
             return 0;
         }
+		//If we get here it means we failed to read the PNG file
         TRACE2("Couldn't read PNG file '%s'; error = %i", pSrcFile, code);
         return 1;
     }
-
+	
+	//If we get here it means the image where checking is not a known format
 	TRACE1("GetImageInfoFromFile : unknown file format (%s)", pSrcFile);
     return 1;
 }
@@ -840,8 +861,6 @@ void ClearHiresCache(void)
 		{
 			SAFE_DELETE(gHiresTxtrInfos[i].pHiresTextureRGB);
 			SAFE_DELETE(gHiresTxtrInfos[i].pHiresTextureAlpha);
-			SAFE_DELETE(gHiresTxtrInfos[i].pHiresTextureRGBAlts);
-			SAFE_DELETE(gHiresTxtrInfos[i].pHiresTextureAlphaAlts);
 		}
 	}
 }
@@ -1338,144 +1357,16 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 	{
 		TRACE0("Cannot create a new texture");
 	}
-	// CODE MODIFICATION
-	if (gHiresTxtrInfos[idx].bAltTex)
-	{
-		entry.iAltCount = gHiresTxtrInfos[idx].iAltCount;
-		entry.bAltShuffle = gHiresTxtrInfos[idx].bAltShuffle;
-		entry.iAltperiod = gHiresTxtrInfos[idx].iAltPeriod;
-		entry.bAltSynchronized = gHiresTxtrInfos[idx].bAltSynchronized;
-		entry.bAltTex = gHiresTxtrInfos[idx].bAltTex;
-		entry.iCurrentAltTexIndex = 0;
-		entry.lAltLastModified = 0;
 
-		//DebuggerAppendMsg("Enhancing %d textures ", count);
-		entry.pEnhancedTextureAlts = new CTexture*[entry.iAltCount];
-		for (int i = 0; i < entry.iAltCount; i++) {
-			//DebuggerAppendMsg("Enhancing texture %d ", i);
-			entry.pEnhancedTextureAlts[i] = CDeviceBuilder::GetBuilder()->CreateTexture(entry.ti.WidthToCreate*scale, entry.ti.HeightToCreate*scale);
-			DrawInfo info2;
-
-			if( gHiresTxtrInfos[idx].pHiresTextureRGBAlts[i] && entry.pEnhancedTextureAlts[i] && entry.pEnhancedTextureAlts[i]->StartUpdate(&info2) )
-			{
-				if( gHiresTxtrInfos[idx].type == RGB_PNG )
-				{
-					unsigned char *pRGB = gHiresTxtrInfos[idx].pHiresTextureRGBAlts[i];
-					unsigned char *pA = gHiresTxtrInfos[idx].pHiresTextureAlphaAlts[i];
-
-					// Update the texture by using the buffer
-					for( int i=gHiresTxtrInfos[idx].height-1; i>=0; i--)
-					{
-						BYTE *pdst = (BYTE*)info2.lpSurface + i*info2.lPitch;
-						for( unsigned int j=0; j<gHiresTxtrInfos[idx].width; j++)
-						{
-							*pdst++ = *pRGB++;		// R
-							*pdst++ = *pRGB++;		// G
-							*pdst++ = *pRGB++;		// B
-
-							if( gHiresTxtrInfos[idx].bSeparatedAlpha )
-							{
-								*pdst++ = *pA;
-								pA += 3;
-							}
-							else if( entry.ti.Format == TXT_FMT_I )
-							{
-								*pdst++ = *(pdst-1);
-							}
-							else
-							{
-								*pdst++ = 0xFF;
-							}
-						}
-					}
-				}
-				else
-				{
-					// Update the texture by using the buffer
-					uint32 *pRGB = (uint32*)gHiresTxtrInfos[idx].pHiresTextureRGBAlts[i];
-					for( int i=gHiresTxtrInfos[idx].height-1; i>=0; i--)
-					{
-						uint32 *pdst = (uint32*)((BYTE*)info2.lpSurface + i*info2.lPitch);
-						for( unsigned int j=0; j<gHiresTxtrInfos[idx].width; j++)
-						{
-							*pdst++ = *pRGB++;		// RGBA
-						}
-					}
-				}
-
-				if( entry.ti.WidthToCreate/entry.ti.WidthToLoad == 2 )
-				{
-					gTextureManager.Mirror((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].width, entry.ti.maskS+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].width*2, gHiresTxtrInfos[idx].height, S_FLAG);
-				}
-
-				if( entry.ti.HeightToCreate/entry.ti.HeightToLoad == 2 )
-				{
-					gTextureManager.Mirror((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].height, entry.ti.maskT+gHiresTxtrInfos[idx].scaleShift, gHiresTxtrInfos[idx].height*2, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG);
-				}
-
-				if( entry.ti.WidthToCreate*scale < entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth )
-				{
-					// Clamp
-					gTextureManager.Clamp((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].width, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, S_FLAG);
-				}
-				if( entry.ti.HeightToCreate*scale < entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureHeight )
-				{
-					// Clamp
-					gTextureManager.Clamp((uint32*)info2.lpSurface, gHiresTxtrInfos[idx].height, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureHeight, entry.pEnhancedTextureAlts[i]->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG);
-				}
-
-				entry.pEnhancedTextureAlts[i]->EndUpdate(&info2);
-
-
-				entry.pEnhancedTextureAlts[i]->m_bIsEnhancedTexture = true;
-				entry.dwEnhancementFlag = TEXTURE_EXTERNAL;
-			}
-			else
-			{
-				TRACE0("Cannot create a new texture");
-			}
-		}
-	}
-	if(entry.iAltCount != 0)
-		entry.iAltCount = gHiresTxtrInfos[idx].iAltCount;
-
-	// /CODE MODIFICATION
 	// if caching has been disabled, remove
 	// cached texture from memory
 	if(!options.bCacheHiResTextures)
 	{
 		SAFE_DELETE(gHiresTxtrInfos[idx].pHiresTextureRGB);
 		SAFE_DELETE(gHiresTxtrInfos[idx].pHiresTextureAlpha);
-
-		SAFE_DELETE(gHiresTxtrInfos[idx].pHiresTextureRGBAlts);
-		SAFE_DELETE(gHiresTxtrInfos[idx].pHiresTextureAlphaAlts);
 	}
 
 }
-
-// CODE MODIFICATION
-bool lookForAlternatives( ExtTxtrInfo &ExtTexInfo, int* count, bool* shuffle, int* period, bool* synchronized) {
-	char infoFileName[1024];
-	strcpy(infoFileName, ExtTexInfo.foldername);
-	sprintf(infoFileName+strlen(infoFileName), "%s#%08X#%d#%d", g_curRomInfo.szGameName, ExtTexInfo.crc32, ExtTexInfo.fmt, ExtTexInfo.siz);
-	strcat(infoFileName, "_infos.txt");
-
-	//If the file exists, lets grab the settings from the file
-	if( PathFileExists(infoFileName) )
-	{
-		*count = ReadRegistryDwordValFromFile("Count", infoFileName);
-		*shuffle = ReadRegistryDwordValFromFile("Shuffle", infoFileName);
-		*period = ReadRegistryDwordValFromFile("Period", infoFileName);
-		*synchronized = ReadRegistryDwordValFromFile("Synchronized", infoFileName);
-		return true;
-	}
-	//If we got here then the file doesnt exist, lets return false
-	return false;
-
-	
-}
-// /CODE MODIFICATION
-
 
 /********************************************************************************************************************
  * loads the raw data of the hires from file system and caches it to memory
@@ -1511,55 +1402,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	ExtTexInfo.pHiresTextureAlpha = NULL;
 	// width and height of the loaded texture
 	int width, height;
-
-	// CODE MODIFICATION
-
-	// the boolean to check wether 
-	ExtTexInfo.bAltTex = false;
-
-	// the counter for the amount of alternate textures that are available
-	ExtTexInfo.iAltCount = 0;
-	// the boolean to check if the alterante textures should be in a random order
-	ExtTexInfo.bAltShuffle = false;
-	// the time between each alternate texture
-	ExtTexInfo.iAltPeriod = 0;
-	// wether the texture is synchronized with another animated texture so they change at the same time
-	ExtTexInfo.bAltSynchronized = false;
-	// Init the pointer to the alternate RGB textures data
-	ExtTexInfo.pHiresTextureRGBAlts = NULL;
-	// Init the pointer to the alternate alpha channel data
-	ExtTexInfo.pHiresTextureAlphaAlts = NULL;
-
-	//Look for any alterante textures to be used as an animation
-	ExtTexInfo.bAltTex = lookForAlternatives(ExtTexInfo, &ExtTexInfo.iAltCount, &ExtTexInfo.bAltShuffle, &ExtTexInfo.iAltPeriod, &ExtTexInfo.bAltSynchronized);
-
-	//DebuggerAppendMsg("resultat parsing %d , %d, %d", ExtTexInfo.count, ExtTexInfo.shuffle, ExtTexInfo.period);
-
-	char** filenames_rgbAlt = new char*[ExtTexInfo.iAltCount];
-	char** filenames_alphaAlt = new char*[ExtTexInfo.iAltCount];
-
-	if (ExtTexInfo.bAltTex) 
-	{
-		ExtTexInfo.pHiresTextureRGBAlts = new unsigned char*[ExtTexInfo.iAltCount];
-		ExtTexInfo.pHiresTextureAlphaAlts = new unsigned char*[ExtTexInfo.iAltCount];
-
-		for (int i = 0; i < ExtTexInfo.iAltCount; i++)
-			filenames_rgbAlt[i] = new char[256];
-
-		for (int i = 0; i < ExtTexInfo.iAltCount; i++)
-			filenames_alphaAlt[i] = new char[256];
-
-		for (int i = 0; i < ExtTexInfo.iAltCount; i++) 
-		{
-			strcpy(filenames_rgbAlt[i], ExtTexInfo.foldername);
-			sprintf(filenames_rgbAlt[i]+strlen(filenames_rgbAlt[i]), "%s#%08X#%d#%d_alt%d", g_curRomInfo.szGameName, ExtTexInfo.crc32, ExtTexInfo.fmt, ExtTexInfo.siz, i);
-			strcpy(filenames_alphaAlt[i],filenames_rgbAlt[i]);
-			strcat(filenames_rgbAlt[i],ExtTexInfo.filename);
-			strcat(filenames_alphaAlt[i],ExtTexInfo.filename_a);
-		}
-	}
-	// /CODE MODIFICATION
-
 	// flags for indicating if texture loading was successful
 	bool bResRGBA=false, bResA=false;
 	// a color indexed texture has to (??? or color indexed format or the RGB format) and has to be 8 bit at most per pixel
@@ -1580,18 +1422,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 			if( bResRGBA && ExtTexInfo.bSeparatedAlpha )
 				// load the alpha channel as well
 				bResA = LoadRGBBufferFromPNGFile(filename_alpha, &ExtTexInfo.pHiresTextureAlpha, width, height);
-
-			// CODE MODIFICATION
-			if(ExtTexInfo.bAltTex)
-			{
-				for (int i = 0; i < ExtTexInfo.iAltCount; i++) 
-				{
-					bResRGBA = LoadRGBBufferFromPNGFile(filenames_rgbAlt[i], &ExtTexInfo.pHiresTextureRGBAlts[i], width, height);
-					if( bResRGBA && ExtTexInfo.bSeparatedAlpha )
-						bResA = LoadRGBBufferFromPNGFile(filenames_alphaAlt[i], &ExtTexInfo.pHiresTextureAlphaAlts[i], width, height);
-				}
-			}
-			//CODE MODIFICATION
 		}
 		break;
 	case RGBA_PNG_FOR_CI:
@@ -1600,16 +1430,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 		{
 			// load the CI texture with 32bit/pixel
 			bResRGBA = LoadRGBBufferFromPNGFile(filename_rgb, &ExtTexInfo.pHiresTextureRGB, width, height, 32);
-
-			// CODE MODIFICATION
-			if(ExtTexInfo.bAltTex)
-			{
-				for (int i = 0; i < ExtTexInfo.iAltCount; i++)
-				{
-					bResRGBA = LoadRGBBufferFromPNGFile(filenames_rgbAlt[i], &ExtTexInfo.pHiresTextureRGBAlts[i], width, height, 32);
-				}
-			}
-			// /CODE MODIFICATION
 		}
 		else
 			return;
@@ -1621,16 +1441,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 		{
 			// load the RGB texture with alpha channel
 			bResRGBA = LoadRGBBufferFromPNGFile(filename_rgb, &ExtTexInfo.pHiresTextureRGB, width, height, 32);
-
-			// CODE MODIFICATION
-			if(ExtTexInfo.bAltTex)
-			{
-				for (int i = 0; i < ExtTexInfo.iAltCount; i++) 
-				{
-					bResRGBA = LoadRGBBufferFromPNGFile(filenames_rgbAlt[i], &ExtTexInfo.pHiresTextureRGBAlts[i], width, height, 32);
-				}
-			}
-			// /CODE MODIFICATION
 		}
 		break;
 	default:
@@ -1646,8 +1456,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 		TRACE1("Cannot open %s", filename_rgb);
 		// free the memory that has been alocated for the texture
 		SAFE_DELETE(ExtTexInfo.pHiresTextureRGB);
-		// free the memory that has been alocated for any alt textures
-		SAFE_DELETE(ExtTexInfo.pHiresTextureRGBAlts);
 		return;
 	}
 	// if texture has separate alpha channel but channel could not be loaded
@@ -1658,10 +1466,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 		// free the memory that has been alocated for the texture
 		SAFE_DELETE(ExtTexInfo.pHiresTextureRGB);
 		SAFE_DELETE(ExtTexInfo.pHiresTextureAlpha);
-
-		// free the memory that has been alocated for any alt textures
-		SAFE_DELETE(ExtTexInfo.pHiresTextureRGBAlts);
-		SAFE_DELETE(ExtTexInfo.pHiresTextureAlphaAlts);
 		return;
 	}
 }

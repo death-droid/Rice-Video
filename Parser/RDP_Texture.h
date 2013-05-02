@@ -16,11 +16,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-
-// CODE MODIFICATION
-#include <time.h>
-// /CODE MODIFICATION
-
 // Texture related ucode
 
 uint32 g_TmemFlag[16];
@@ -809,11 +804,6 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	return gTextureManager.GetTexture(&gti, true, true);	// Load the texture by using texture cache
 }
 
-// CODE MODIFICATION
-int synchronizedCurrentAltTexIndex;
-long synchronizedLastModified;
-// /CODE MODIFICATION
-
 void PrepareTextures()
 {
 	if( gRDP.textureIsChanged ||
@@ -867,80 +857,9 @@ void PrepareTextures()
 						}
 					}
 
-					/*CRender::g_pRender->SetCurrentTexture( tilenos[i], 
-						(pEntry->pEnhancedTexture)?pEntry->pEnhancedTexture:pEntry->pTexture,
-						pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);*/
-
-
-					// CODE MODIFICATION CLEAN ME
-					// If there is no alt textures then create the texture normally
-					if (!pEntry->bAltTex || pEntry->pEnhancedTextureAlts == NULL)
-					{ 
-						pEntry->iAltCount = 0;
-						SAFE_DELETE(pEntry->pEnhancedTextureAlts);
-						CRender::g_pRender->SetCurrentTexture( tilenos[i], 
+					CRender::g_pRender->SetCurrentTexture( tilenos[i], 
 						(pEntry->pEnhancedTexture)?pEntry->pEnhancedTexture:pEntry->pTexture,
 						pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
-					}
-					else 
-					{
-						clock_t nowClock = clock();
-
-						if (pEntry->bAltShuffle && (pEntry->lAltLastModified == 0))
-							srand (nowClock);
-						
-					    // if the period is over
-						// synchronized texture
-						if (pEntry->bAltSynchronized)
-						{
-							if ((nowClock - synchronizedLastModified) > pEntry->iAltperiod)
-							{
-								if (pEntry->bAltShuffle) 
-									synchronizedCurrentAltTexIndex = rand() % (pEntry->iAltCount + 1);
-								else {
-									synchronizedCurrentAltTexIndex++;
-									if (synchronizedCurrentAltTexIndex > pEntry->iAltCount)
-										synchronizedCurrentAltTexIndex = 0;
-								}
-
-								synchronizedLastModified = nowClock;
-								//DebuggerAppendMsg("(sync) PERIOD : %d / LAST MODIFIED : %d / INDEX : %d", pEntry->iAltperiod, pEntry->lAltLastModified, pEntry->iCurrentAltTexIndex);
-							}
-
-							pEntry->iCurrentAltTexIndex = synchronizedCurrentAltTexIndex;
-						}	
-
-						// unsynchronized texture
-						if (!pEntry->bAltSynchronized && ((nowClock - pEntry->lAltLastModified) > pEntry->iAltperiod)) 
-						{
-							if (pEntry->bAltShuffle) 
-								pEntry->iCurrentAltTexIndex = rand() % (pEntry->iAltCount + 1);
-							else 
-							{
-								pEntry->iCurrentAltTexIndex++;
-								if (pEntry->iCurrentAltTexIndex > pEntry->iAltCount)
-									pEntry->iCurrentAltTexIndex = 0;
-							}
-
-							pEntry->lAltLastModified = nowClock;
-
-							//DebuggerAppendMsg("(unsync) PERIOD : %d / LAST MODIFIED : %d / INDEX : %d", pEntry->iAltperiod, pEntry->lAltLastModified, pEntry->iCurrentAltTexIndex);
-						}	
-
-						if (pEntry->iCurrentAltTexIndex == pEntry->iAltCount)
-						{
-							CRender::g_pRender->SetCurrentTexture( tilenos[i], 
-							(pEntry->pEnhancedTexture)?pEntry->pEnhancedTexture:pEntry->pTexture,
-							pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
-						}
-						else 
-						{
-							CRender::g_pRender->SetCurrentTexture( tilenos[i], 
-							(pEntry->pEnhancedTextureAlts)?pEntry->pEnhancedTextureAlts[pEntry->iCurrentAltTexIndex]:pEntry->pTexture,
-							pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
-						}
-					}
-					// /CODE MODIFICATION
 				}
 				else
 				{

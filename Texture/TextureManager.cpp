@@ -252,19 +252,6 @@ void CTextureManager::RecycleTexture(TxtrCacheEntry *pEntry)
 
 		SAFE_DELETE(pEntry->pEnhancedTexture);
 
-		// CODE MODIFICATION
-		for (int i = 0 ; i < pEntry->iAltCount ; i++)
-			SAFE_DELETE(pEntry->pEnhancedTextureAlts[i]);
-		SAFE_DELETE(pEntry->pEnhancedTextureAlts);
-
-		pEntry->iAltCount = 0;
-		pEntry->bAltShuffle = false;
-		pEntry->iAltperiod = 0;
-		pEntry->bAltSynchronized = false;
-		pEntry->iCurrentAltTexIndex = 0;
-		pEntry->lAltLastModified = 0;
-		// /CODE MODIFCATION
-
 		m_pHead = pEntry;
 	}
 }

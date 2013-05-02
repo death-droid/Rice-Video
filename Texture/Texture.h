@@ -52,7 +52,6 @@ class CTexture
 {
 public:
 	virtual ~CTexture();
-
 	uint32		m_dwWidth;			// The requested Texture w/h
 	uint32		m_dwHeight;
 

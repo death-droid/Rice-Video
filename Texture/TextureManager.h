@@ -119,18 +119,12 @@ public:
 
 typedef struct TxtrCacheEntry
 {
-	TxtrCacheEntry(): pTexture(NULL),pEnhancedTexture(NULL),pEnhancedTextureAlts(NULL),txtrBufIdx(0) {}
+	TxtrCacheEntry(): pTexture(NULL),pEnhancedTexture(NULL),txtrBufIdx(0) {}
 
 	~TxtrCacheEntry()
 	{
 		SAFE_DELETE(pTexture);
 		SAFE_DELETE(pEnhancedTexture);
-
-		for (int i = 0 ; i < iAltCount ; i++)
-		{
-			SAFE_DELETE(pEnhancedTextureAlts[i]);
-			SAFE_DELETE(pEnhancedTextureAlts);
-		}
 	}
 	
 	struct TxtrCacheEntry *pNext;		// Must be first element!
@@ -147,17 +141,6 @@ typedef struct TxtrCacheEntry
 
 	CTexture	*pTexture;
 	CTexture	*pEnhancedTexture;
-
-	// CODE MODIFICATION
-	CTexture	**pEnhancedTextureAlts;
-	int iAltCount;
-	bool bAltShuffle;
-	int iAltperiod;
-	bool bAltSynchronized;
-	bool bAltTex;
-	int iCurrentAltTexIndex;
-	long lAltLastModified;
-	// /CODE MODIFICATION
 
 	uint32		dwEnhancementFlag;
 	int			txtrBufIdx;

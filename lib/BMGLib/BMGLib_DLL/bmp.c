@@ -82,14 +82,14 @@ BMGError ReadBMP( const char *filename,
             fclose( file );
         if ( rawbits != NULL )
             free( rawbits );
-        FreeBMGImage( img );
+		if( img != NULL)
+			FreeBMGImage( img );
 		SetLastBMGError( (BMGError)error );
         return (BMGError)error;
     }
 
     if ( img == NULL )
         longjmp( err_jmp, (int)errInvalidBMGImage );
-
 
     file = fopen( filename, "rb" );
     if  ( file == NULL )
@@ -218,7 +218,8 @@ BMGError ReadBMPInfo( const char *filename,
     {
         if ( file != NULL )
             fclose( file );
-        FreeBMGImage( img );
+		if ( img != NULL)
+			FreeBMGImage( img );
 		SetLastBMGError( (BMGError)error );
         return (BMGError)error;
     }
