@@ -383,11 +383,6 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 		// detect the texture type by it's extention
 		else if( _stricmp(right(libaa.cFileName,8), "_rgb.png") == 0)
 		{
-			// indentify type
-			if( imgInfo.Format != D3DFMT_X8R8G8B8 )
-				// type is not supported, go on with next one
-				continue;
-
 			// store type to the record
 			type = RGB_PNG;
 
