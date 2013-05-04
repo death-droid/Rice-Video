@@ -24,6 +24,8 @@ class D3DRender;
 class CDirectXBlender : public CBlender
 {
 public:
+	CDirectXBlender(CRender *pRender);
+	~CDirectXBlender() {};
 	void NormalAlphaBlender(void);
 	void DisableAlphaBlender(void);
 	void BlendFunc(uint32 srcFunc, uint32 desFunc);
@@ -32,8 +34,6 @@ public:
 
 protected:
 	friend class DirectXDeviceBuilder;
-	CDirectXBlender(CRender *pRender);
-	~CDirectXBlender() {};
 
 	D3DRender *m_pD3DRender;
 };

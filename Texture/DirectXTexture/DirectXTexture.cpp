@@ -93,7 +93,6 @@ void CDirectXTexture::EndUpdate(DrawInfo *di)
 	m_pTexture->UnlockRect( 0 );
 }
 
-
 LPDIRECT3DTEXTURE9 CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage)
 {
 	HRESULT hr;

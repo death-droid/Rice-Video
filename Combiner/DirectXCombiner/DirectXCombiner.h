@@ -173,13 +173,15 @@ class D3DRender;
 class CDirectXPixelShaderCombiner : public CColorCombiner
 {
 public:
+
+	CDirectXPixelShaderCombiner(CRender *pRender);
+	~CDirectXPixelShaderCombiner();
 	bool Initialize(void);
 	void InitCombinerBlenderForSimpleTextureDraw(uint32 tile=0);
 
 protected:
 	friend class DirectXDeviceBuilder;
-	CDirectXPixelShaderCombiner(CRender *pRender);
-	~CDirectXPixelShaderCombiner();
+
 
 	void CleanUp(void);
 	void DisableCombiner(void);

@@ -107,6 +107,7 @@ struct TxtrCacheEntry;
 class CDXGraphicsContext : public CGraphicsContext
 {
 public:
+	CDXGraphicsContext();
 	virtual ~CDXGraphicsContext();
 	
 	
@@ -127,7 +128,6 @@ public:
 
 protected:
 	friend class DirectXDeviceBuilder;
-	CDXGraphicsContext();
 
 	HRESULT BuildDeviceList();
 	int		FindCurrentDisplayModeIndex();

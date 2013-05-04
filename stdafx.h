@@ -78,7 +78,6 @@
 
 #include "./Device/GraphicsContext.h"
 #include "./Device/DirectXDevice/DXGraphicsContext.h"
-#include "./Device/DeviceBuilder.h"
 
 #include "./Render/RenderBase.h"
 #include "./Render/ExtendedRender.h"

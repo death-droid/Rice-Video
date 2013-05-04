@@ -379,7 +379,7 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 			return NULL;
 		}
 
-		pEntry->pTexture = CDeviceBuilder::GetBuilder()->CreateTexture(dwWidth, dwHeight);
+		pEntry->pTexture = new CDirectXTexture(dwWidth, dwHeight);
 		if (pEntry->pTexture == NULL || pEntry->pTexture->GetTexture() == NULL)
 			TRACE2("Warning, unable to create %d x %d texture!", dwWidth, dwHeight);
 	}
@@ -1002,7 +1002,7 @@ TxtrCacheEntry * CTextureManager::GetBlackTexture(void)
 {
 	if( m_blackTextureEntry.pTexture == NULL )
 	{
-		m_blackTextureEntry.pTexture = CDeviceBuilder::GetBuilder()->CreateTexture(4, 4);
+		m_blackTextureEntry.pTexture = new CDirectXTexture(4, 4);
 		m_blackTextureEntry.ti.WidthToCreate = 4;
 		m_blackTextureEntry.ti.HeightToCreate = 4;
 		updateColorTexture(m_blackTextureEntry.pTexture,0x00000000);
@@ -1014,7 +1014,7 @@ TxtrCacheEntry * CTextureManager::GetPrimColorTexture(uint32 color)
 	static uint32 mcolor = 0;
 	if( m_PrimColorTextureEntry.pTexture == NULL )
 	{
-		m_PrimColorTextureEntry.pTexture = CDeviceBuilder::GetBuilder()->CreateTexture(4, 4);
+		m_PrimColorTextureEntry.pTexture = new CDirectXTexture(4, 4);
 		m_PrimColorTextureEntry.ti.WidthToCreate = 4;
 		m_PrimColorTextureEntry.ti.HeightToCreate = 4;
 		updateColorTexture(m_PrimColorTextureEntry.pTexture,color);
@@ -1034,7 +1034,7 @@ TxtrCacheEntry * CTextureManager::GetEnvColorTexture(uint32 color)
 	static uint32 mcolor = 0;
 	if( m_EnvColorTextureEntry.pTexture == NULL )
 	{
-		m_EnvColorTextureEntry.pTexture = CDeviceBuilder::GetBuilder()->CreateTexture(4, 4);
+		m_EnvColorTextureEntry.pTexture = new CDirectXTexture(4, 4);
 		m_EnvColorTextureEntry.ti.WidthToCreate = 4;
 		m_EnvColorTextureEntry.ti.HeightToCreate = 4;
 		gRDP.texturesAreReloaded = true;
@@ -1055,7 +1055,7 @@ TxtrCacheEntry * CTextureManager::GetLODFracTexture(uint8 fac)
 	static uint8 mfac = 0;
 	if( m_LODFracTextureEntry.pTexture == NULL )
 	{
-		m_LODFracTextureEntry.pTexture = CDeviceBuilder::GetBuilder()->CreateTexture(4, 4);
+		m_LODFracTextureEntry.pTexture = new CDirectXTexture(4, 4);
 		m_LODFracTextureEntry.ti.WidthToCreate = 4;
 		m_LODFracTextureEntry.ti.HeightToCreate = 4;
 		uint32 factor = fac;
@@ -1084,7 +1084,7 @@ TxtrCacheEntry * CTextureManager::GetPrimLODFracTexture(uint8 fac)
 	static uint8 mfac = 0;
 	if( m_PrimLODFracTextureEntry.pTexture == NULL )
 	{
-		m_PrimLODFracTextureEntry.pTexture = CDeviceBuilder::GetBuilder()->CreateTexture(4, 4);
+		m_PrimLODFracTextureEntry.pTexture = new CDirectXTexture(4, 4);
 		m_PrimLODFracTextureEntry.ti.WidthToCreate = 4;
 		m_PrimLODFracTextureEntry.ti.HeightToCreate = 4;
 		uint32 factor = fac;

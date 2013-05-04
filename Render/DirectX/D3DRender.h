@@ -33,16 +33,16 @@ extern LPDIRECT3DVERTEXSHADER9 gVertexShader;
 
 class D3DRender : public CRender
 {
+
 	friend class DirectXDeviceBuilder;
 	friend class CDeviceBuilder;
 	friend class CDirectXPixelShaderCombiner;
 	friend class CDirectXBlender;
-	
-protected:
+
+public:
 	D3DRender();
 	~D3DRender();
 
-public:
 	void BeginRendering(void); 
 	void EndRendering(void) 
 	{

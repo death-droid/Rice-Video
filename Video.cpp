@@ -258,7 +258,8 @@ bool StartVideo(void)
 	ChangeWinSize();
 		
 	try {
-		CDeviceBuilder::GetBuilder()->CreateGraphicsContext();
+		CGraphicsContext::g_pGraphicsContext = new CDXGraphicsContext();
+		g_pFrameBufferManager = new DXFrameBufferManager;
 		CGraphicsContext::InitWindowInfo();
 		
 		windowSetting.bDisplayFullscreen = FALSE;
@@ -270,7 +271,7 @@ bool StartVideo(void)
 			return false;
 		}
 
-		CDeviceBuilder::GetBuilder()->CreateRender();
+		CRender::g_pRender = new D3DRender();
 		CRender::GetRender()->Initialize();
 		
 		DLParser_Init();
@@ -309,9 +310,12 @@ void StopVideo()
 
 		CloseExternalTextures();
 
-		CDeviceBuilder::GetBuilder()->DeleteRender();
+		SAFE_DELETE(CRender::g_pRender);
+		CRender::g_pRender = NULL;
+
 		CGraphicsContext::Get()->CleanUp();
-		CDeviceBuilder::GetBuilder()->DeleteGraphicsContext();
+		SAFE_DELETE(CGraphicsContext::g_pGraphicsContext);
+		SAFE_DELETE(g_pFrameBufferManager);
 	}
 	catch(...)
 	{

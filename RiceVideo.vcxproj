@@ -177,7 +177,6 @@
     <ClInclude Include="Render\shaderdx9_include.h" />
     <ClInclude Include="Render\VertexShaderConstantDef.h" />
     <ClInclude Include="Render\DirectX\D3DRender.h" />
-    <ClInclude Include="Device\DeviceBuilder.h" />
     <ClInclude Include="Device\FrameBuffer.h" />
     <ClInclude Include="Device\GraphicsContext.h" />
     <ClInclude Include="Device\RenderTexture.h" />
@@ -235,10 +234,6 @@
     <ClCompile Include="Render\VertexShader.cpp" />
     <ClCompile Include="Render\DirectX\D3DRender.cpp" />
     <ClCompile Include="Render\DirectX\D3DRenderExt.cpp" />
-    <ClCompile Include="Device\DeviceBuilder.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="Device\FrameBuffer.cpp" />
     <ClCompile Include="Device\FrameBufferDX.cpp" />
     <ClCompile Include="Device\GraphicsContext.cpp" />

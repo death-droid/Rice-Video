@@ -122,9 +122,6 @@
     <ClInclude Include="Render\DirectX\D3DRender.h">
       <Filter>Graphics\Render\DirectX</Filter>
     </ClInclude>
-    <ClInclude Include="Device\DeviceBuilder.h">
-      <Filter>Graphics\Device</Filter>
-    </ClInclude>
     <ClInclude Include="Device\FrameBuffer.h">
       <Filter>Graphics\Device</Filter>
     </ClInclude>
@@ -273,9 +270,6 @@
     </ClCompile>
     <ClCompile Include="Render\DirectX\D3DRenderExt.cpp">
       <Filter>Graphics\Render\DirectX</Filter>
-    </ClCompile>
-    <ClCompile Include="Device\DeviceBuilder.cpp">
-      <Filter>Graphics\Device</Filter>
     </ClCompile>
     <ClCompile Include="Device\FrameBuffer.cpp">
       <Filter>Graphics\Device</Filter>

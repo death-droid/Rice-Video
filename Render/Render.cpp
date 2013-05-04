@@ -82,11 +82,14 @@ CRender::CRender() :
 	//{
 	//	g_dwVtxFlags[i] = 0;
 	//}
-	
-	m_pColorCombiner = CDeviceBuilder::GetBuilder()->CreateColorCombiner(this);
+
+	//Create the pixel shader, where going to assume the user has support for this
+	m_pColorCombiner = new CDirectXPixelShaderCombiner(this);
+	//Inititalize the pixel shader combiner
 	m_pColorCombiner->Initialize();
 
-	m_pAlphaBlender = CDeviceBuilder::GetBuilder()->CreateAlphaBlender(this);
+	//Create the alpha belnder
+	m_pAlphaBlender = new CDirectXBlender(this);
 
 }
 
@@ -94,13 +97,13 @@ CRender::~CRender()
 {
 	if( m_pColorCombiner != NULL )
 	{
-		CDeviceBuilder::GetBuilder()->DeleteColorCombiner();
+		SAFE_DELETE(m_pColorCombiner);
 		m_pColorCombiner = NULL;
 	}
 	
 	if( m_pAlphaBlender != NULL )
 	{
-		CDeviceBuilder::GetBuilder()->DeleteAlphaBlender();
+		SAFE_DELETE(m_pAlphaBlender);
 		m_pAlphaBlender = NULL;
 	}
 }

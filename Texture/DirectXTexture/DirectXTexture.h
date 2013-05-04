@@ -26,12 +26,11 @@ public:
 
 	bool StartUpdate(DrawInfo *di);
 	void EndUpdate(DrawInfo *di);
-
+	CDirectXTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
 protected:
 	friend class DirectXDeviceBuilder;
 	friend class CDXRenderTexture;
 	friend class CDXGraphicsContext;
-	CDirectXTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
 	LPDIRECT3DTEXTURE9	CreateTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage);
 };
 

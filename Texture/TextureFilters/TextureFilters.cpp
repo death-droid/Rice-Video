@@ -67,7 +67,7 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	CTexture* pSurfaceHandler = NULL;
 
 	//Create the surface for the texture
-	pSurfaceHandler = CDeviceBuilder::GetBuilder()->CreateTexture(srcInfo.dwCreatedWidth*2, srcInfo.dwCreatedHeight*2);
+	pSurfaceHandler = new CDirectXTexture(srcInfo.dwCreatedWidth*2, srcInfo.dwCreatedHeight*2);
 
 	DrawInfo destInfo;
 	if(pSurfaceHandler)
@@ -1266,7 +1266,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 	gHiresTxtrInfos[idx].width = entry.ti.WidthToLoad * scale;
 	gHiresTxtrInfos[idx].height = entry.ti.HeightToLoad * scale;
 
-	entry.pEnhancedTexture = CDeviceBuilder::GetBuilder()->CreateTexture(entry.ti.WidthToCreate*scale, entry.ti.HeightToCreate*scale);
+	entry.pEnhancedTexture = new CDirectXTexture(entry.ti.WidthToCreate*scale, entry.ti.HeightToCreate*scale);
 	DrawInfo info;
 
 	if( entry.pEnhancedTexture && entry.pEnhancedTexture->StartUpdate(&info) )

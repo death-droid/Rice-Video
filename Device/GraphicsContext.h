@@ -52,6 +52,10 @@ class CGraphicsContext : public CCritSect
 	friend class CDeviceBuilder;
 	
 public:
+
+	virtual ~CGraphicsContext();
+	CGraphicsContext();
+
 	bool Ready() { return m_bReady; }
 	bool IsWindowed() {return m_bWindowed;}
 
@@ -93,9 +97,6 @@ protected:
 	DEVMODEA			m_DMsaved;
 	
     char				m_strDeviceStats[256];
-
-	virtual ~CGraphicsContext();
-	CGraphicsContext();
 	
 public:
 	static CGraphicsContext *g_pGraphicsContext;
