@@ -164,6 +164,7 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
     {
 		//If we couldn't read the first 8 bytes then send spit out an error
 		TRACE1("GetImageInfoFromFile() error: couldn't read first 8 bytes of file '%s'", pSrcFile);
+		fclose(f);// We failed to read the first 8 bytes, so ensure that we have flosed the file read stream
 		return 1;
     }
 	//Close the file stream
@@ -238,7 +239,6 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
         TRACE2("Couldn't read PNG file '%s'; error = %i", pSrcFile, code);
         return 1;
     }
-	
 	//If we get here it means the image where checking is not a known format
 	TRACE1("GetImageInfoFromFile : unknown file format (%s)", pSrcFile);
     return 1;
@@ -304,7 +304,8 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 	}
 
 	// we are in the main folder ==> reset counter (I love it)
-	if (bMainFolder) count = 0;
+	if (bMainFolder) 
+		count = 0;
 
 	// vars for: DRAM-crc, texture format, texture size (in bit), and the palette-crc
 	uint32 crc, fmt, siz, palcrc32;
@@ -355,7 +356,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			continue;
 
 		// now we've got a file. Let's check if it is a supported texture format
-		if( GetImageInfoFromFile(texturefilename, &imgInfo) != S_OK )
+		if( GetImageInfoFromFile(texturefilename, &imgInfo) != 0 )
 		{
 			// ehmm, wait a second... no!
 			TRACE1("Cannot get image info for file: %s", libaa.cFileName);
@@ -415,7 +416,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			if( PathFileExists(filename2) )
 			{
 				// check if the file with this name is actually a texture (well an alpha channel one)
-				if( GetImageInfoFromFile(filename2, &imgInfo2) != S_OK )
+				if( GetImageInfoFromFile(filename2, &imgInfo2) != 0 )
 				{
 					// nope, it isn't => go on with next file
 					TRACE1("Cannot get image info for file: %s", filename2);
@@ -429,20 +430,13 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					continue;
 				}
 
-				
-				// check if we've got a texture with separated alpha channel
-				if( imgInfo.Format == D3DFMT_X8R8G8B8 )
-					// Indicate that the file has a sperated alpha channel
-					bSeparatedAlpha = true; 
+				// Indicate that the file has a sperated alpha channel
+				bSeparatedAlpha = true; 
 			}
 		}
 		// detect the texture type by it's extention
 		else if( _stricmp(right(libaa.cFileName,8), "_all.png") == 0)
 		{
-			//Check if texture is of expected type
-			if( imgInfo.Format != D3DFMT_A8R8G8B8 )
-				// nope, continue with next file
-				continue;
 			// indicate file type
 			type = RGB_WITH_ALPHA_TOGETHER_PNG;
 		}
@@ -1446,6 +1440,7 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	default:
 		return;
 	}
+
 	// remember dimensions
 	ExtTexInfo.width = width;
 	ExtTexInfo.height = height;
