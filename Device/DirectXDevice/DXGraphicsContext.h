@@ -18,8 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifndef _DX_GRAPHICS_CONTEXT_H_
 #define _DX_GRAPHICS_CONTEXT_H_
-
-
 //-----------------------------------------------------------------------------
 // Error codes
 //-----------------------------------------------------------------------------
@@ -36,9 +34,6 @@ enum APPMSGTYPE { MSG_NONE, MSGERR_APPMUSTEXIT, MSGWARN_SWITCHEDTOREF };
 #define D3DAPPERR_NONZEROREFCOUNT     0x8200000a
 #define D3DAPPERR_RESIZEFAILED        0x8200000c
 
-
-
-
 //-----------------------------------------------------------------------------
 // Name: struct D3DModeInfo
 // Desc: Structure for holding information about a display mode
@@ -51,9 +46,6 @@ struct D3DModeInfo //BACKTOME
     uint32	   RefreshRate;     // Pixel format in this mode
     D3DFORMAT  DepthStencilFormat; // Which depth/stencil format to use with this mode
 };
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: struct D3DDeviceInfo
@@ -76,9 +68,6 @@ struct D3DDeviceInfo
     bool		bWindowed;
     D3DMULTISAMPLE_TYPE MultiSampleType;
 };
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: struct D3DAdapterInfo

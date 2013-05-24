@@ -95,9 +95,10 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>.\tiff-v3.5.7\libtiff;..\jpeg;..\lpng125;..\zlib114;..\libungif_v4_1_0b1\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
-      <OutputFile>.\Debug\BMGLIBSTAT.lib</OutputFile>
+      <OutputFile>../BMGlib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <ResourceCompile>

@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <fstream>
 #include <iostream>
 #include "TextureFilters.h"
+#include "..\..\SimpleIni.h"
 #include "BMGDll.h"
 
 void EnhanceTexture(TxtrCacheEntry *pEntry)
@@ -263,6 +264,47 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
  ********************************************************************************************************************/
 void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo> &infos, bool extraCheck, bool bRecursive, bool bCacheTextures = false, bool bMainFolder = true)
 {
+		//				char* inifilename;
+		//				strcpy(g_curRomInfo.szGameName, inifilename);
+		//				strcat(inifilename,".ini");
+	//If we have already loaded this pack in then dont bother trying to get all the infomration again
+	if (PathFileExists("THE_TEST_TEST.ini"))
+	{
+		CSimpleIniA ini;
+		ini.LoadFile("THE_TEST_TEST.ini");
+		CSimpleIniA::TNamesDepend sections;
+		ini.GetAllSections(sections); // Store all our sections
+		ExtTxtrInfo *newinfo;
+		CSimpleIniA::TNamesDepend::const_iterator i;
+
+		//Since where just looping through
+		for (i = sections.begin(); i != sections.end(); ++i)
+		{
+			
+			//Where creating a new newinfo everytime we loop
+			
+			newinfo = new ExtTxtrInfo;
+			newinfo->width		= ini.GetLongValue(i->pItem,     "width", 0);
+			newinfo->height		= ini.GetLongValue(i->pItem,    "height", 0);
+			newinfo->fmt		= ini.GetLongValue(i->pItem,    "format", 0);
+			newinfo->siz		= ini.GetLongValue(i->pItem,  "bit-size", 0);
+			newinfo->crc32		= ini.GetLongValue(i->pItem,     "crc32", 0);
+			newinfo->pal_crc32  = ini.GetLongValue(i->pItem, "pal_crc32", 0);
+			newinfo->type		= (TextureType)ini.GetLongValue(i->pItem,	  "type", 0);
+			newinfo->bSeparatedAlpha = ini.GetBoolValue(i->pItem, "seperated-alpha", 0);
+			newinfo->foldername = new char[strlen(foldername)+1];
+			strcpy(newinfo->foldername,foldername);
+			newinfo->filename   =   (char *)ini.GetValue(i->pItem,    "filename", "");
+			newinfo->filename_a   = (char *)ini.GetValue(i->pItem,  "filename_alpha", "");
+			uint64 crc64 = newinfo->crc32;
+			crc64 <<= 32;
+			crc64 |= newinfo->pal_crc32&0xFFFFFFFF;
+			infos.add(crc64,*newinfo);
+		}
+		return;
+	}
+
+
 	// check if folder actually exists
 	if(!PathIsDirectory(foldername) )
 		return;
@@ -530,7 +572,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					// otherwise create a new one
 					newinfo = new ExtTxtrInfo;
 
-				// store the width
+					// store the width
 				newinfo->width = imgInfo.Width;
 				// store the height
 				newinfo->height = imgInfo.Height;
@@ -690,6 +732,7 @@ void FindAllDumpedTextures(void)
  ********************************************************************************************************************/
 void FindAllHiResTextures(char* WIPFolderName = NULL)
 {
+	CSimpleIniA ini;
 	char	foldername[256];
 	// get the path of the plugin directory
 	GetPluginDir(foldername);
@@ -791,6 +834,7 @@ void CloseExternalTextures(void)
 
 void InitHiresTextures(bool bWIPFolder)
 {
+	CSimpleIniA ini;
 	if( options.bLoadHiResTextures )
 	{
 		// create a box for displaying the message on screen
@@ -817,8 +861,31 @@ void InitHiresTextures(bool bWIPFolder)
 		}
 		// check if all textures should be updated or just the ones located in the WIP folder
 		if(!bWIPFolder)
+		{
 		// scan folder for actual textures
+			
 			FindAllHiResTextures();
+			
+			if(!PathFileExists("THE_TEST_TEST.ini"))
+			{
+				for( int i=0; i<gHiresTxtrInfos.size(); i++)
+				{
+					ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "width", gHiresTxtrInfos[i].width);
+					ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "height", gHiresTxtrInfos[i].height);
+					ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "format", gHiresTxtrInfos[i].fmt);
+					ini.SetLongValue(gHiresTxtrInfos[i].filename,		   "bit-size", gHiresTxtrInfos[i].siz);
+					ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "crc32", gHiresTxtrInfos[i].crc32);
+					ini.SetLongValue(gHiresTxtrInfos[i].filename,		  "pal_crc32", gHiresTxtrInfos[i].pal_crc32);
+					//ini.SetLongValue(newinfo->filename,			  "crc64", crc64);
+					ini.SetLongValue(gHiresTxtrInfos[i].filename,	           "type", gHiresTxtrInfos[i].type);
+					ini.SetBoolValue(gHiresTxtrInfos[i].filename, "seperated-alpha", gHiresTxtrInfos[i].bSeparatedAlpha);
+					ini.SetValue(gHiresTxtrInfos[i].filename,        "filename", gHiresTxtrInfos[i].filename);
+					ini.SetValue(gHiresTxtrInfos[i].filename,  "filename_alpha",gHiresTxtrInfos[i].filename_a);
+				
+				}
+				ini.SaveFile("THE_TEST_TEST.ini");
+			}
+		}
 		else
 		{
 			// just update the textures found in the WIP folder

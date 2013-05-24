@@ -137,7 +137,8 @@ public:
 	virtual void RenderReset();
 	virtual void SetCombinerAndBlender();
 	virtual void SetMux(uint32 dwMux0, uint32 dwMux1);
-	virtual void SetCullMode(bool bCullFront, bool bCullBack) { gRSP.bCullFront = bCullFront; gRSP.bCullBack = bCullBack; }
+	virtual void SetCullMode(bool bCullFront, bool bCullBack)
+	{ gRSP.bCullFront = bCullFront; gRSP.bCullBack = bCullBack; }
 
 	virtual void BeginRendering(void) {CRender::gRenderReferenceCount++;}		// For DirectX only
 	virtual void EndRendering(void) 

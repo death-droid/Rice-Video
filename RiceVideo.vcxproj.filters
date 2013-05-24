@@ -221,6 +221,9 @@
     <ClInclude Include="Parser\RSP_S2DEX.h">
       <Filter>Graphics\Parser\Ucodes</Filter>
     </ClInclude>
+    <ClInclude Include="SimpleIni.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">

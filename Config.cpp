@@ -346,9 +346,6 @@ void WriteConfiguration(void)
 	fprintf(f, "CacheHiResTextures ");
 	fprintf(f, "%d\n", (uint32)options.bCacheHiResTextures);
 
-	fprintf(f, "FulScreenHeight ");
-	fprintf(f, "%d\n", windowSetting.uFullScreenDisplayHeight);
-
 	fprintf(f, "ForceTextureFilter ");
 	fprintf(f, "%d\n", (uint32)options.forceTextureFilter);
 

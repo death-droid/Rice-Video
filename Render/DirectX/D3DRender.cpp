@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+
 #include "..\..\stdafx.h"
 
 #define RICEFVF_TEXRECTFVERTEX ( D3DFVF_XYZRHW | /*D3DFVF_DIFFUSE |*/ D3DFVF_TEX2 )
@@ -397,7 +398,6 @@ void D3DRender::SetZUpdate(BOOL bZUpdate)
 
 void D3DRender::ApplyTextureFilter()
 {
-
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
 		D3DSetMinFilter( 0, m_dwMinFilter );
@@ -415,8 +415,10 @@ void D3DRender::ApplyTextureFilter()
 
 void D3DRender::SetShadeMode(RenderShadeMode mode)
 {
+	//If this wasnt our last mode then continue
 	if (gRSP.shadeMode != mode)
 	{
+		//Store our new value
 		gRSP.shadeMode = mode;
 		if( mode == SHADE_DISABLED || mode == SHADE_FLAT )	//Shade is disabled, use Primitive color for flat shade
 		{
@@ -429,16 +431,18 @@ void D3DRender::SetShadeMode(RenderShadeMode mode)
 
 void D3DRender::SetAlphaRef(uint32 dwAlpha)
 {
+	//If the alpha value is not the same value as the last one we set, then continue
 	if (m_dwAlpha != dwAlpha)
 	{
+		//Store our new value
 		m_dwAlpha = dwAlpha;
+		//Set our alpharef state to our new alpha value
 		gD3DDevWrapper.SetRenderState(D3DRS_ALPHAREF,dwAlpha);
 	}
 }
 
 void D3DRender::ForceAlphaRef(uint32 dwAlpha)
 {
-	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHAREF,dwAlpha);
 	gD3DDevWrapper.SetRenderState( D3DRS_ALPHAREF, dwAlpha );	
 }
 
@@ -483,6 +487,7 @@ bool D3DRender::SetCurrentTexture(int tile, CTexture *handler, uint32 dwTileWidt
 
 bool D3DRender::SetCurrentTexture(int tile, TxtrCacheEntry *pEntry)
 {
+	//If the entry isnt null, and the texture is not null then continue
 	if (pEntry != NULL && pEntry->pTexture != NULL)
 	{	
 		// if a hires-texture is available
@@ -498,6 +503,7 @@ bool D3DRender::SetCurrentTexture(int tile, TxtrCacheEntry *pEntry)
 	}
 	else
 	{
+		//No texture exists, set us to an empty non existatn one
 		SetCurrentTexture( tile, NULL, 64, 64, NULL );
 		return false;
 	}
@@ -509,9 +515,11 @@ void D3DRender::SetFillMode(FillMode mode)
 	switch( mode )
 	{
 	case RICE_FILLMODE_WINFRAME:
+		//Draw all tri's without any fill, hence wireframe
 		gD3DDevWrapper.SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME );
 		break;
 	case RICE_FILLMODE_SOLID:
+		//Draw all tri's with fill
 		gD3DDevWrapper.SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID );
 		break;
 	}

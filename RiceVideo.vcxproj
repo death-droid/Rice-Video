@@ -91,7 +91,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /FIXED:NO %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3dx9.lib;d3d9.lib;dxguid.lib;BMGLib.lib;dxerr.lib;shlwapi.lib;winmm.lib;opengl32.lib;comctl32.lib;Glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;d3dx9.lib;d3d9.lib;dxguid.lib;BMGLib.lib;dxerr.lib;shlwapi.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\bin\RiceVideo.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>libci.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -100,7 +100,7 @@
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>../obj/1964Video/Release/1964Video.map</MapFileName>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention />
+      <DataExecutionPrevention>true</DataExecutionPrevention>
       <ImportLibrary />
       <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86;.\lib\BMGLib</AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
@@ -123,7 +123,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>16Bytes</StructMemberAlignment>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>../obj/1964Video/Debug/1964Video.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>../obj/1964Video/Debug/</AssemblerListingLocation>
@@ -134,7 +134,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
-      <AdditionalIncludeDirectories>%DXSDK_DIR%\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%DXSDK_DIR%\include;.\lib\BMGLib\BMGLib_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -142,7 +142,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>d3dx9.lib;d3d9.lib;dxerr.lib;dxguid.lib;shlwapi.lib;winmm.lib;odbc32.lib;odbccp32.lib;opengl32.lib;comctl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3dx9.lib;d3d9.lib;dxerr.lib;dxguid.lib;shlwapi.lib;winmm.lib;odbc32.lib;odbccp32.lib;comctl32.lib;BMGLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\bin\RiceVideo.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>libci.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -151,11 +151,12 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <ImportLibrary>../obj/1964Video/Debug/1964Video-Debug.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86;.\lib\BMGLib</AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="SimpleIni.h" />
     <ClInclude Include="_BldNum.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Video.h" />
