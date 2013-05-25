@@ -821,14 +821,15 @@ void InitHiresTextures(bool bWIPFolder)
 		// check if all textures should be updated or just the ones located in the WIP folder
 		if(!bWIPFolder)
 		{
-			//Create the folder if it doesnt exist
-			CheckAndCreateFolder("./cache");
-
 			// Generate our cache directory filename that where after
 			char	inifilename[1024];
-			strcat(inifilename, "./cache/");
+			// get the path of the plugin directory
+			GetPluginDir(inifilename);
+			// add the relative path to the hires folder
+			strcat(inifilename,"hires_texture\\");
+			//Grab our proper folder name
 			strcat(inifilename, g_curRomInfo.szGameName);
-			strcat(inifilename,".ini");
+			strcat(inifilename, "\\Cache.ini");
 
 			//If we have already loaded this pack in then dont bother trying to get all the infomration again
 			if (PathFileExists(inifilename))
@@ -867,9 +868,7 @@ void InitHiresTextures(bool bWIPFolder)
 					gHiresTxtrInfos.add(crc64,*newinfo);
 				}
 			}			
-			
-			//If our cached version doesnt exist
-			if(!PathFileExists(inifilename))
+			else
 			{
 				//Than find all hires textures
 				FindAllHiResTextures();
