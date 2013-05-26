@@ -113,8 +113,14 @@ LPDIRECT3DTEXTURE9 CDirectXTexture::CreateTexture(uint32 dwWidth, uint32 dwHeigh
 		break;
 	}
 
-	m_dwCreatedTextureWidth = dwWidth;
-	m_dwCreatedTextureHeight = dwHeight;
+	//Ensure that texture height and widths are of a power of two.
+	uint32 w;
+	for (w = 1; w < dwWidth; w <<= 1);
+	uint32 h;
+	for (h = 1; h < dwHeight; h <<= 1);
+	
+	m_dwCreatedTextureWidth = w;
+	m_dwCreatedTextureHeight = h;
 
 	m_dwWidth = dwWidth;
 	m_dwHeight = dwHeight;
