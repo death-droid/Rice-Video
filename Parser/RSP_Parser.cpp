@@ -1146,6 +1146,20 @@ void DLParser_FillRect(MicroCodeCommand command)
 	if( status.bN64IsDrawingTextureBuffer && frameBufferOptions.bIgnore )
 		return;
 
+	// Removes annoying rect that appears in Conker and fillrects that cover screen in banjo tooie
+	if (g_CI.dwFormat != 0)
+	{
+		TRACE0("	Ignoring Fillrect	");
+		return;
+	}
+
+	//Always clear zBuffer if depth buffer has been selected
+	if(g_ZI.dwAddr == g_CI.dwAddr)
+	{
+		CRender::g_pRender->ClearBuffer(false,true);
+		return;
+	}
+
 	if( options.enableHackForGames == HACK_FOR_MARIO_TENNIS )
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
@@ -1180,12 +1194,6 @@ void DLParser_FillRect(MicroCodeCommand command)
 	}
 
 	//TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor););
-
-	if( status.bHandleN64RenderTexture && options.enableHackForGames == HACK_FOR_BANJO_TOOIE )
-	{
-		// Skip this
-		return;
-	}
 
 	if (IsUsedAsDI(g_CI.dwAddr))
 	{
