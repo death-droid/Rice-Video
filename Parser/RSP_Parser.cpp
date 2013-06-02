@@ -1154,9 +1154,10 @@ void DLParser_FillRect(MicroCodeCommand command)
 	}
 
 	//Always clear zBuffer if depth buffer has been selected
+	//Fixes various problems in games
 	if(g_ZI.dwAddr == g_CI.dwAddr)
 	{
-		CRender::g_pRender->ClearBuffer(false,true);
+		CRender::g_pRender->ClearBuffer(true,true);
 		return;
 	}
 
@@ -1195,7 +1196,8 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 	//TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor););
 
-	if (IsUsedAsDI(g_CI.dwAddr))
+	//Is this needed anymore since where clearing the whole  scren anyway?
+	/*if (IsUsedAsDI(g_CI.dwAddr))
 	{
 		// Clear the Z Buffer
 		if( x0!=0 || y0!=0 || windowSetting.uViWidth-x1>1 || windowSetting.uViHeight-y1>1)
@@ -1251,7 +1253,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 			}
 		}
 	}
-	else if( status.bHandleN64RenderTexture )
+	else*/ if( status.bHandleN64RenderTexture )
 	{
 		if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
