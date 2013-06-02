@@ -859,9 +859,11 @@ void InitHiresTextures(bool bWIPFolder)
 					newinfo->pal_crc32  = ini.GetLongValue(i->pItem, "pal_crc32", 0);
 					newinfo->type		= (TextureType)ini.GetLongValue(i->pItem,	  "type", 0);
 					newinfo->bSeparatedAlpha = ini.GetBoolValue(i->pItem, "seperated-alpha", 0);
-					newinfo->foldername = (char *)ini.GetValue(i->pItem, "foldername", "");
-					newinfo->filename   =   (char *)ini.GetValue(i->pItem,    "filename", "");
-					newinfo->filename_a   = (char *)ini.GetValue(i->pItem,  "filename_alpha", "");
+					newinfo->foldername = _strdup((char *)ini.GetValue(i->pItem, "foldername", ""));
+					newinfo->filename   = _strdup((char *)ini.GetValue(i->pItem,    "filename", ""));
+					newinfo->filename_a   =  _strdup((char *)ini.GetValue(i->pItem,  "filename_alpha", "NULL"));
+					if(newinfo->filename_a == "NULL")
+						newinfo->filename_a = NULL;
 					uint64 crc64 = newinfo->crc32;
 					crc64 <<= 32;
 					crc64 |= newinfo->pal_crc32&0xFFFFFFFF;

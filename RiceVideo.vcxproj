@@ -104,6 +104,7 @@
       <ImportLibrary />
       <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86;.\lib\BMGLib</AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <FixedBaseAddress>false</FixedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -149,10 +150,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>../obj/1964Video/Debug/1964-Debug.pdb</ProgramDatabaseFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention />
+      <DataExecutionPrevention>true</DataExecutionPrevention>
       <ImportLibrary>../obj/1964Video/Debug/1964Video-Debug.lib</ImportLibrary>
       <AdditionalLibraryDirectories>%DXSDK_DIR%\lib\x86;.\lib\BMGLib</AdditionalLibraryDirectories>
-      <LargeAddressAware>true</LargeAddressAware>
+      <FixedBaseAddress>false</FixedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
