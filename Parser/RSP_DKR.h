@@ -146,11 +146,9 @@ void RSP_DL_In_MEM_DKR(MicroCodeCommand command)
 //*****************************************************************************
 void RSP_Mtx_DKR(MicroCodeCommand command)
 {	
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwAddr = (command.inst.cmd1)+RSPSegmentAddr(gDKRMatrixAddr);
 	uint32 dwCommand = ((command.inst.cmd0)>>16)&0xFF;
 	uint32 dwLength  = ((command.inst.cmd0))    &0xFFFF;
-
-	dwAddr = (command.inst.cmd1)+RSPSegmentAddr(gDKRMatrixAddr);
 
 	bool mul=false;
 	int index;

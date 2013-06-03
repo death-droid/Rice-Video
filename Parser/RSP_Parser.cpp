@@ -1196,7 +1196,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 	//TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor););
 
-	//Is this needed anymore since where clearing the whole  scren anyway?
+	//Is this needed anymore since where clearing the whole  scren anyway? FIXME TODO CHECKME
 	/*if (IsUsedAsDI(g_CI.dwAddr))
 	{
 		// Clear the Z Buffer
