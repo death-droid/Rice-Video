@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "..\stdafx.h"
+#include <utility>
 
 // header for loading hires textures
 void LoadHiresTexture( TxtrCacheEntry &entry );
@@ -340,36 +341,16 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 
 	int x0, y0, x1, y1;
 	float t0, s0, t1, s1;
-
+	x0 = info.px;
+    y0 = info.py;
+	x1 = info.px + int(info.spritePtr->width*info.scaleX);
+	y1 = info.py + int(info.spritePtr->height*info.scaleY);
+	
 	if( info.flipX )
-	{
-		//x0 = info.px*info.scaleX + info.spritePtr->SubImageWidth*info.scaleX;
-		//x1 = info.px*info.scaleX;
-		x0 = info.px + int(info.spritePtr->width*info.scaleX);
-		x1 = info.px;
-	}
-	else
-	{
-		//x0 = info.px*info.scaleX;
-		//x1 = info.px*info.scaleX + info.spritePtr->SubImageWidth*info.scaleX;
-		x0 = info.px;
-		x1 = info.px + int(info.spritePtr->width*info.scaleX);
-	}
-
+		std::swap<int>(x0, x1);
+	
 	if( info.flipY )
-	{
-		//y0 = info.py*info.scaleY + info.spritePtr->SubImageHeight*info.scaleY;
-		//y1 = info.py*info.scaleY;
-		y0 = info.py + int(info.spritePtr->height*info.scaleY);
-		y1 = info.py;
-	}
-	else
-	{
-		//y0 = info.py*info.scaleY;
-		//y1 = info.py*info.scaleY + info.spritePtr->SubImageHeight*info.scaleY;
-		y0 = info.py;
-		y1 = info.py + int(info.spritePtr->height*info.scaleY);
-	}
+		std::swap<int>(y0, y1);
 
 	t0 = s0 = 0;
 	if( options.enableHackForGames == HACK_FOR_NITRO )
@@ -383,7 +364,6 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 		s1 = info.spritePtr->height/g_textures[0].m_fTexHeight;
 	}
 
-	//InitCombinerBlenderForSimpleTextureDraw();
 	SetCombinerAndBlender();
 	SetAddressUAllStages( 0, D3DTADDRESS_CLAMP );
 	SetAddressVAllStages( 0, D3DTADDRESS_CLAMP );
