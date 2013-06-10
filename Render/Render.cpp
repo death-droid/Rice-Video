@@ -401,7 +401,8 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 	if( m_line3DVtx[0].z != m_line3DVtx[1].z )  
 		return false;
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	status.bFrameBufferIsDrawn = true;
+	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	
+		status.bFrameBufferIsDrawn = true;
 	if( status.bHandleN64RenderTexture ) 
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;

@@ -534,6 +534,7 @@ static const char * sc_szBlClr[4] = { "In", "Mem", "Bl", "Fog" };
 static const char * sc_szBlA1[4] = { "AIn", "AFog", "AShade", "0" };
 static const char * sc_szBlA2[4] = { "1-A", "AMem", "1", "?" };
 
+//TODO CLEAN OTHERMODEL and OTHERMODEH
 void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 {
 	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
