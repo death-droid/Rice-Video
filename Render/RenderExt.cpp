@@ -266,28 +266,28 @@ void CRender::LoadSprite2D(Sprite2DInfo &info, uint32 ucode)
 {
 	TxtrInfo gti;
 
-	gti.Format	= info.spritePtr->SourceImageType;
-	gti.Size	= info.spritePtr->SourceImageBitSize;
+	gti.Format	= info.spritePtr->format;
+	gti.Size	= info.spritePtr->size;
 
-	gti.Address	= RSPSegmentAddr(info.spritePtr->SourceImagePointer);
+	gti.Address	= RSPSegmentAddr(info.spritePtr->address);
 	gti.Palette	= 0;
-	gti.PalAddress = (uint32)(g_pRDRAMu8+RSPSegmentAddr(info.spritePtr->TlutPointer));
+	gti.PalAddress = (uint32)(g_pRDRAMu8+RSPSegmentAddr(info.spritePtr->tlut));
 
 	if( options.enableHackForGames == HACK_FOR_NITRO )
 	{
-		gti.WidthToCreate	= uint32(info.spritePtr->SubImageWidth/info.scaleX);
-		gti.HeightToCreate	= uint32(info.spritePtr->SubImageHeight/info.scaleY);
-		gti.LeftToLoad		= uint32(info.spritePtr->SourceImageOffsetS/info.scaleX);
-		gti.TopToLoad		= uint32(info.spritePtr->SourceImageOffsetT/info.scaleY);
+		gti.WidthToCreate	= uint32(info.spritePtr->width/info.scaleX);
+		gti.HeightToCreate	= uint32(info.spritePtr->height/info.scaleY);
+		gti.LeftToLoad		= uint32(info.spritePtr->imageX/info.scaleX);
+		gti.TopToLoad		= uint32(info.spritePtr->imageY/info.scaleY);
 		gti.Pitch	= info.spritePtr->Stride << gti.Size >> 1;
 		gti.Pitch	= uint32(gti.Pitch*info.scaleY);
 	}
 	else
 	{
-		gti.WidthToCreate	= info.spritePtr->SubImageWidth;
-		gti.HeightToCreate	= info.spritePtr->SubImageHeight;
-		gti.LeftToLoad		= info.spritePtr->SourceImageOffsetS;
-		gti.TopToLoad		= info.spritePtr->SourceImageOffsetT;
+		gti.WidthToCreate	= info.spritePtr->width;
+		gti.HeightToCreate	= info.spritePtr->height;
+		gti.LeftToLoad		= info.spritePtr->imageX;
+		gti.TopToLoad		= info.spritePtr->imageY;
 		gti.Pitch	= info.spritePtr->Stride << gti.Size >> 1;
 	}
 
@@ -345,7 +345,7 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 	{
 		//x0 = info.px*info.scaleX + info.spritePtr->SubImageWidth*info.scaleX;
 		//x1 = info.px*info.scaleX;
-		x0 = info.px + int(info.spritePtr->SubImageWidth*info.scaleX);
+		x0 = info.px + int(info.spritePtr->width*info.scaleX);
 		x1 = info.px;
 	}
 	else
@@ -353,14 +353,14 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 		//x0 = info.px*info.scaleX;
 		//x1 = info.px*info.scaleX + info.spritePtr->SubImageWidth*info.scaleX;
 		x0 = info.px;
-		x1 = info.px + int(info.spritePtr->SubImageWidth*info.scaleX);
+		x1 = info.px + int(info.spritePtr->width*info.scaleX);
 	}
 
 	if( info.flipY )
 	{
 		//y0 = info.py*info.scaleY + info.spritePtr->SubImageHeight*info.scaleY;
 		//y1 = info.py*info.scaleY;
-		y0 = info.py + int(info.spritePtr->SubImageHeight*info.scaleY);
+		y0 = info.py + int(info.spritePtr->height*info.scaleY);
 		y1 = info.py;
 	}
 	else
@@ -368,19 +368,19 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 		//y0 = info.py*info.scaleY;
 		//y1 = info.py*info.scaleY + info.spritePtr->SubImageHeight*info.scaleY;
 		y0 = info.py;
-		y1 = info.py + int(info.spritePtr->SubImageHeight*info.scaleY);
+		y1 = info.py + int(info.spritePtr->height*info.scaleY);
 	}
 
 	t0 = s0 = 0;
 	if( options.enableHackForGames == HACK_FOR_NITRO )
 	{
-		t1 = info.spritePtr->SubImageWidth*info.scaleX/g_textures[0].m_fTexWidth;
-		s1 = info.spritePtr->SubImageHeight*info.scaleY/g_textures[0].m_fTexHeight;
+		t1 = info.spritePtr->width*info.scaleX/g_textures[0].m_fTexWidth;
+		s1 = info.spritePtr->height*info.scaleY/g_textures[0].m_fTexHeight;
 	}
 	else
 	{
-		t1 = info.spritePtr->SubImageWidth/g_textures[0].m_fTexWidth;
-		s1 = info.spritePtr->SubImageHeight/g_textures[0].m_fTexHeight;
+		t1 = info.spritePtr->width/g_textures[0].m_fTexWidth;
+		s1 = info.spritePtr->height/g_textures[0].m_fTexHeight;
 	}
 
 	//InitCombinerBlenderForSimpleTextureDraw();

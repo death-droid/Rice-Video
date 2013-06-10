@@ -68,24 +68,24 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 }
 
 typedef struct{
-	uint32 SourceImagePointer;
-	uint32 TlutPointer;
+	uint32 address; 
+	uint32 tlut;
 
-	short SubImageWidth;
+	short width;
 	short Stride;
 
-	char  SourceImageBitSize;
-	char  SourceImageType;
-	short SubImageHeight;
+	char  size;
+	char  format;
+	short height;
 
 	short scaleY;
 	short scaleX;
 
-	short SourceImageOffsetS;
+	short imageX;
 	char  dummy1[2]; 
 
 	short px;
-	short SourceImageOffsetT;
+	short imageY;
 
 	char  dummy2[2]; 
 	short py;
@@ -113,9 +113,8 @@ void RSP_GBI_Sprite2D_PuzzleMaster64(MicroCodeCommand command)
 	g_Sprite2DInfo.py = info.py>>2;
 	g_Sprite2DInfo.scaleX = info.scaleX / 1024.0f;
 	g_Sprite2DInfo.scaleY = info.scaleY / 1024.0f;
-
-	tempInfo.SourceImageOffsetS = info.SourceImageOffsetS;
-	tempInfo.SourceImageOffsetT = info.SourceImageOffsetT;
+	tempInfo.imageX = info.imageX;
+	tempInfo.imageY = info.imageY;
 	g_Sprite2DInfo.spritePtr = &tempInfo;
 
 	CRender::g_pRender->DrawSprite2D(g_Sprite2DInfo, 1);
@@ -172,19 +171,16 @@ void RSP_GBI1_Sprite2DScaleFlip(MicroCodeCommand command)
 }
 
 
-
+//remove us
 void RSP_GBI1_Sprite2DBase(MicroCodeCommand command)
 {
 	RSP_GBI_Sprite2DBase(command);
 }
 
 
-
+//remove us
 void RSP_GBI0_Sprite2DBase(MicroCodeCommand command)
 {
-	
-	
-
 	//Weired, this ucode 0 game is using ucode 1, but sprite2D cmd is working differently from
 	//normal ucode1 sprite2D game
 

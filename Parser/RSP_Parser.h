@@ -443,18 +443,18 @@ struct LoadCmdInfo
 };
 
 typedef struct {	// This is in Intel format
-  uint32 SourceImagePointer;
-  uint32 TlutPointer;
+  uint32 address; 
+  uint32 tlut;
 
-  short SubImageWidth;
+  short width;
   short Stride;
 
-  char  SourceImageBitSize;
-  char  SourceImageType;
-  short SubImageHeight;
+  char  size;
+  char  format;
+  short height;
 
-  short SourceImageOffsetT;
-  short SourceImageOffsetS;
+  short imageY;
+  short imageX;
 
   char	dummy[4]; 
 } SpriteStruct;			//Converted Sprint struct in Intel format
