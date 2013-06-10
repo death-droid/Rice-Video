@@ -124,8 +124,8 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 		ProcessVertexDataDKR(address, v0_idx, num_verts);
 
 #ifdef _DEBUG
-		status.dwNumVertices += dwN;
-		RDP_GFX_DumpVtxInfoDKR(dwAddr, dwV0, dwN);
+		status.dwNumVertices += num_verts;
+		RDP_GFX_DumpVtxInfoDKR(address, v0_idx, num_verts);
 #endif
 	}
 }
