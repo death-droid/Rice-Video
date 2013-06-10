@@ -968,8 +968,10 @@ void RSP_GFX_InitGeometryMode()
 	
 	BOOL bShade			= (gRDP.geometryMode & G_SHADE) ? TRUE : FALSE;
 	BOOL bShadeSmooth	= (gRDP.geometryMode & G_SHADING_SMOOTH) ? TRUE : FALSE;
-	if (bShade && bShadeSmooth)		CRender::g_pRender->SetShadeMode( SHADE_SMOOTH );
-	else							CRender::g_pRender->SetShadeMode( SHADE_FLAT );
+	if (bShade && bShadeSmooth)		
+		CRender::g_pRender->SetShadeMode( SHADE_SMOOTH );
+	else							
+		CRender::g_pRender->SetShadeMode( SHADE_FLAT );
 	
 	CRender::g_pRender->SetFogEnable( gRDP.geometryMode & G_FOG ? true : false );
 	SetTextureGen((gRDP.geometryMode & G_TEXTURE_GEN) ? true : false );

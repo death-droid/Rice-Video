@@ -78,8 +78,7 @@ UcodeFunc(RSP_GBI1_RDPHalf_Cont);
 UcodeFunc(RSP_GBI1_RDPHalf_2);
 UcodeFunc(RSP_GBI1_RDPHalf_1);
 UcodeFunc(RSP_GBI1_Line3D);
-UcodeFunc(RSP_GBI1_ClearGeometryMode);
-UcodeFunc(RSP_GBI1_SetGeometryMode);
+UcodeFunc(RSP_GBI1_GeometryMode);
 UcodeFunc(RSP_GBI1_EndDL);
 UcodeFunc(RSP_GBI1_SetOtherModeL);
 UcodeFunc(RSP_GBI1_SetOtherModeH);
@@ -234,7 +233,7 @@ UcodeMap ucodeMap0=
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 //b0
 	RSP_RDP_Nothing,	RSP_GBI0_Tri4,			RSP_GBI1_RDPHalf_Cont,		RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,  RSP_GBI1_PopMtx,		RSP_GBI1_CullDL,			RSP_GBI1_Tri1,
 
@@ -323,7 +322,7 @@ UcodeMap ucodeMap1 =
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_GBI1_LoadUCode,
 //b0
 	RSP_GBI1_BranchZ,	RSP_GBI1_Tri2,			RSP_GBI1_ModifyVtx,			RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,  RSP_GBI1_PopMtx,		RSP_GBI1_CullDL,			RSP_GBI1_Tri1,
 
@@ -410,7 +409,7 @@ UcodeMap ucodeMap2 =
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 	//b0
 	RSP_RDP_Nothing,		     RSP_GBI0_Tri4, 		 RSP_GBI1_RDPHalf_Cont, 	 RSP_GBI1_RDPHalf_2,
-	DLParser_RDPHalf1_GoldenEye, RSP_GBI1_Line3D, 		 RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	DLParser_RDPHalf1_GoldenEye, RSP_GBI1_Line3D, 		 RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL, 			 RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,	 RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord, 			 RSP_GBI1_PopMtx, 		 RSP_GBI1_CullDL, 			 RSP_GBI1_Tri1,
 
@@ -495,7 +494,7 @@ UcodeMap ucodeMap3=
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_GBI1_LoadUCode,
 	//b0
 	RSP_GBI1_BranchZ,	RSP_GBI0_Tri4,			RSP_GBI1_ModifyVtx,			RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,  RSP_GBI1_PopMtx,		RSP_GBI1_CullDL,			RSP_GBI1_Tri1,
 	//c0
@@ -580,7 +579,7 @@ UcodeMap ucodeMap4=
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
 	//b0
 	RSP_RDP_Nothing,	RSP_GBI1_Tri2,			RSP_GBI1_RDPHalf_Cont,		RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode, // RSP_GBI1_Line3D == Quad3d
+	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode, // RSP_GBI1_Line3D == Quad3d
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,	RSP_GBI1_PopMtx,		RSP_GBI1_CullDL,			RSP_GBI1_Tri1,
 	//c0
@@ -667,7 +666,7 @@ UcodeMap ucodeMap5=
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_GBI1_LoadUCode,
 //b0
 	RSP_GBI1_BranchZ,	RSP_GBI0_Tri4,			RSP_GBI1_ModifyVtx,			RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,  RSP_GBI1_PopMtx,		RSP_GBI1_CullDL,			RSP_GBI1_Tri1,
 
@@ -753,7 +752,7 @@ UcodeMap ucodeMap6 =
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
 	//b0
 	RSP_RDP_Nothing,	RSP_GBI0_Tri4,			RSP_GBI1_RDPHalf_Cont,		RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_MoveWord_DKR,	RSP_GBI1_PopMtx,		RSP_GBI1_CullDL,			DLParser_Set_Addr_DKR,
 	//c0
@@ -841,7 +840,7 @@ UcodeMap ucodeMap7 =
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_GBI1_LoadUCode,
 //b0
 	RSP_S2DEX_SELECT_DL, RSP_S2DEX_OBJ_RENDERMODE_2, RSP_S2DEX_OBJ_RECTANGLE_R,  RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1,  RSP_GBI1_Line3D,			 RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1,  RSP_GBI1_Line3D,			 RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		 RSP_GBI1_SetOtherModeL,	 RSP_GBI1_SetOtherModeH,	 RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,	 RSP_GBI1_PopMtx,			 RSP_GBI1_CullDL,			 RSP_GBI1_Tri1,
 
@@ -928,7 +927,7 @@ UcodeMap ucodeMap9 =
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 	//b0
 	RSP_RDP_Nothing,				   RSP_Tri4_PD,			   RSP_GBI1_RDPHalf_Cont,	   RSP_GBI1_RDPHalf_2,
-	DLParser_RDPHalf1_GoldenEye, RSP_GBI1_RDPHalf_2,	   RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	DLParser_RDPHalf1_GoldenEye, RSP_GBI1_RDPHalf_2,	   RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,					   RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,	   RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,				   RSP_GBI1_PopMtx,		   RSP_GBI1_CullDL,			   RSP_GBI1_Tri1,
 	//c0
@@ -1101,7 +1100,7 @@ UcodeMap ucodeMap11 =
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
 	//b0
 	RSP_RDP_Nothing,	RSP_GBI0_Tri4,			RSP_GBI1_RDPHalf_Cont,		RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_ClearGeometryMode, RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1, RSP_GBI1_Line3D,		RSP_GBI1_GeometryMode, RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL, RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_MoveWord_DKR,	RSP_GBI1_PopMtx,		RSP_GBI1_CullDL,			DLParser_Set_Addr_DKR,//<<uc5_dma_offsets
 	//c0
@@ -1186,7 +1185,7 @@ UcodeMap ucodeMap16 = {
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
 	//b0
 	RSP_RDP_Nothing,	RSP_GBI0_Tri4,			   RSP_GBI1_RDPHalf_Cont,		RSP_GBI1_RDPHalf_2,
-	RSP_GBI1_RDPHalf_1, RSP_Quad3d_ShadowOfEmpire, RSP_GBI1_ClearGeometryMode,  RSP_GBI1_SetGeometryMode,
+	RSP_GBI1_RDPHalf_1, RSP_Quad3d_ShadowOfEmpire, RSP_GBI1_GeometryMode,  RSP_GBI1_GeometryMode,
 	RSP_GBI1_EndDL,		RSP_GBI1_SetOtherModeL,	   RSP_GBI1_SetOtherModeH,		RSP_GBI1_Texture,
 	RSP_GBI1_MoveWord,	RSP_GBI1_PopMtx,		   RSP_GBI1_CullDL,				RSP_Tri1_ShadowOfEmpire,
 	//c0

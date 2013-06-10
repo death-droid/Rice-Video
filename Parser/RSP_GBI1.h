@@ -493,36 +493,24 @@ void RSP_GBI1_Line3D(MicroCodeCommand command)
 	}
 }
 
-
-void RSP_GBI1_ClearGeometryMode(MicroCodeCommand command)
+void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 {
-	uint32 dwMask = ((command.inst.cmd1));
-
-#ifdef _DEBUG
-	LOG_UCODE("    Mask=0x%08x", dwMask);
-	if (dwMask & G_ZBUFFER)						LOG_UCODE("  Disabling ZBuffer");
-	if (dwMask & G_TEXTURE_ENABLE)				LOG_UCODE("  Disabling Texture");
-	if (dwMask & G_SHADE)						LOG_UCODE("  Disabling Shade");
-	if (dwMask & G_SHADING_SMOOTH)				LOG_UCODE("  Disabling Smooth Shading");
-	if (dwMask & G_CULL_FRONT)					LOG_UCODE("  Disabling Front Culling");
-	if (dwMask & G_CULL_BACK)					LOG_UCODE("  Disabling Back Culling");
-	if (dwMask & G_FOG)							LOG_UCODE("  Disabling Fog");
-	if (dwMask & G_LIGHTING)					LOG_UCODE("  Disabling Lighting");
-	if (dwMask & G_TEXTURE_GEN)					LOG_UCODE("  Disabling Texture Gen");
-	if (dwMask & G_TEXTURE_GEN_LINEAR)			LOG_UCODE("  Disabling Texture Gen Linear");
-	if (dwMask & G_LOD)							LOG_UCODE("  Disabling LOD (no impl)");
-#endif
-
-	gRDP.geometryMode &= ~dwMask;
+	uint32 dwMask = (command.inst.cmd1);
+	if(command.inst.cmd & 1)
+	{
+		gRDP.geometryMode |= dwMask;
+		LOG_UCODE("Setting mask -> 0x%08x", dwMask);
+	}
+	else
+	{
+		gRDP.geometryMode &= ~dwMask;
+		LOG_UCODE("Clearing mask -> 0x%08x", dwMask);
+	}
+	
 	RSP_GFX_InitGeometryMode();
-}
-
-void RSP_GBI1_SetGeometryMode(MicroCodeCommand command)
-{
-	uint32 dwMask = ((command.inst.cmd1));
 
 #ifdef _DEBUG
-	LOG_UCODE("    Mask=0x%08x", dwMask);
+	
 	if (dwMask & G_ZBUFFER)						LOG_UCODE("  Enabling ZBuffer");
 	if (dwMask & G_TEXTURE_ENABLE)				LOG_UCODE("  Enabling Texture");
 	if (dwMask & G_SHADE)						LOG_UCODE("  Enabling Shade");
@@ -535,8 +523,6 @@ void RSP_GBI1_SetGeometryMode(MicroCodeCommand command)
 	if (dwMask & G_TEXTURE_GEN_LINEAR)			LOG_UCODE("  Enabling Texture Gen Linear");
 	if (dwMask & G_LOD)							LOG_UCODE("  Enabling LOD (no impl)");
 #endif // _DEBUG
-	gRDP.geometryMode |= dwMask;
-	RSP_GFX_InitGeometryMode();
 }
 
 void RSP_GBI1_EndDL(MicroCodeCommand command)
