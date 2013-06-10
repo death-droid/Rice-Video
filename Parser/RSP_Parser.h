@@ -116,8 +116,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define RDP_TEXRECT_FLIP	0xe5
 #define RDP_TEXRECT			0xe4
 
-
-
+// Overloaded for sprite microcode
+#define G_GBI1_SPRITE2D_SCALEFLIP    0xbe
+#define G_GBI1_SPRITE2D_DRAW         0xbd
+#define G_GBI1_SPRITE2D_BASE	9
 
 #define RSP_ZELDA_MTX_MODELVIEW		0x00
 #define RSP_ZELDA_MTX_PROJECTION	0x04
