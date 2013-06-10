@@ -18,8 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "..\stdafx.h"
-#include <utility>
-
 // header for loading hires textures
 void LoadHiresTexture( TxtrCacheEntry &entry );
 
@@ -347,10 +345,10 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 	y1 = info.py + int(info.spritePtr->height*info.scaleY);
 	
 	if( info.flipX )
-		std::swap<int>(x0, x1);
-	
+		std::swap(x0, x1);
+
 	if( info.flipY )
-		std::swap<int>(y0, y1);
+		std::swap(y0, y1);
 
 	t0 = s0 = 0;
 	if( options.enableHackForGames == HACK_FOR_NITRO )
@@ -915,4 +913,3 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
 	SetCurrentTexture(0,pEntry);
 }
-

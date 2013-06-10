@@ -63,9 +63,8 @@ UcodeFunc(RSP_Quad_Conker);
 
 UcodeFunc(RSP_Vtx_Gemini);
 
-UcodeFunc(RSP_GBI0_Sprite2DBase);
+UcodeFunc(RSP_GBI_Sprite2DBase);
 UcodeFunc(RSP_GBI0_Sprite2DDraw);
-UcodeFunc(RSP_GBI1_Sprite2DBase);
 UcodeFunc(RSP_GBI1_Sprite2DScaleFlip);
 UcodeFunc(RSP_GBI1_Sprite2DDraw);
 UcodeFunc(RSP_GBI_Sprite2DBase);
@@ -180,7 +179,7 @@ UcodeMap ucodeMap0=
 {
 	RSP_GBI1_SpNoop,   RSP_GBI0_Mtx,		  RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 	RSP_GBI0_Vtx,	   RSP_GBI1_Reserved,	  RSP_GBI0_DL,		 RSP_GBI1_Reserved,
-	RSP_GBI1_Reserved, RSP_GBI0_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
+	RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 	RSP_RDP_Nothing,   RSP_RDP_Nothing,		  RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 //10
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -269,7 +268,7 @@ UcodeMap ucodeMap1 =
 {
 	RSP_GBI1_SpNoop,   RSP_GBI0_Mtx,		  RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 	RSP_GBI1_Vtx,	   RSP_GBI1_Reserved,	  RSP_GBI0_DL,		 RSP_GBI1_Reserved,
-	RSP_GBI1_Reserved, RSP_GBI1_Sprite2DBase, RSP_RDP_Nothing,   RSP_RDP_Nothing,
+	RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing,   RSP_RDP_Nothing,
 	RSP_RDP_Nothing,   RSP_RDP_Nothing,		  RSP_RDP_Nothing,   RSP_RDP_Nothing,
 //10
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -356,7 +355,7 @@ UcodeMap ucodeMap2 =
 {
 	RSP_GBI1_SpNoop,   RSP_GBI0_Mtx, 	      RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 	RSP_GBI0_Vtx,	   RSP_GBI1_Reserved,     RSP_GBI0_DL, 	     RSP_GBI1_Reserved,
-	RSP_GBI1_Reserved, RSP_GBI1_Sprite2DBase, RSP_RDP_Nothing,   RSP_RDP_Nothing,
+	RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing,   RSP_RDP_Nothing,
 	RSP_RDP_Nothing,   RSP_RDP_Nothing, 	  RSP_RDP_Nothing, 	 RSP_RDP_Nothing,
 	//10
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -527,7 +526,7 @@ UcodeMap ucodeMap4=
 {
 	RSP_GBI1_SpNoop,   RSP_GBI0_Mtx,		  RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 	RSP_Vtx_WRUS,	   RSP_GBI1_Reserved,	  RSP_GBI0_DL,		 RSP_GBI1_Reserved,
-	RSP_GBI1_Reserved, RSP_GBI1_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
+	RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 	RSP_RDP_Nothing,   RSP_RDP_Nothing,		  RSP_RDP_Nothing,	 RSP_RDP_Nothing,     
 	//10
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,        
@@ -700,7 +699,7 @@ UcodeMap ucodeMap6 =
 {
 	RSP_GBI1_SpNoop,   RSP_Mtx_DKR,			  RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 	RSP_Vtx_DKR,	   RSP_DMA_Tri_DKR,		  RSP_GBI0_DL,		 RSP_DL_In_MEM_DKR,
-	RSP_GBI1_Reserved, RSP_GBI0_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
+	RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 	RSP_RDP_Nothing,   RSP_RDP_Nothing,		  RSP_RDP_Nothing,	 RSP_RDP_Nothing, 
 	//10
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
@@ -1048,7 +1047,7 @@ UcodeMap ucodeMap11 =
 {
 	RSP_GBI1_SpNoop,   RSP_Mtx_DKR,			  RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 	RSP_Vtx_Gemini,	   RSP_DMA_Tri_DKR,		  RSP_GBI0_DL,		 RSP_DL_In_MEM_DKR,
-	RSP_GBI1_Reserved, RSP_GBI0_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
+	RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 	RSP_RDP_Nothing,   RSP_RDP_Nothing,		  RSP_RDP_Nothing,	 RSP_RDP_Nothing, 
 	//10
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
@@ -1133,7 +1132,7 @@ UcodeMap ucodeMap11 =
 UcodeMap ucodeMap16 = {
 	RSP_GBI1_SpNoop,		RSP_GBI0_Mtx,		   RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 	RSP_Vtx_ShadowOfEmpire, RSP_GBI1_Reserved,	   RSP_GBI0_DL,		  RSP_GBI1_Reserved,
-	RSP_GBI1_Reserved,		RSP_GBI1_Sprite2DBase, RSP_RDP_Nothing,	  RSP_RDP_Nothing,
+	RSP_GBI1_Reserved,		RSP_GBI_Sprite2DBase, RSP_RDP_Nothing,	  RSP_RDP_Nothing,
 	RSP_RDP_Nothing,		RSP_RDP_Nothing,	   RSP_RDP_Nothing,	  RSP_RDP_Nothing, 
 	//10
 	RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, 
