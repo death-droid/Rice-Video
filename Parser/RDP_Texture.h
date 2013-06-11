@@ -1414,8 +1414,6 @@ void DLParser_TexRect(MicroCodeCommand command)
 	MicroCodeCommand command2;
 	MicroCodeCommand command3;
 
-	Gtexrect *gtextrect;
-
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
@@ -1496,17 +1494,15 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 	uint32 cycletype = gRDP.otherMode.cycle_type;
 
-	if (cycletype == CYCLE_TYPE_COPY)
+	if (cycletype >= CYCLE_TYPE_COPY)
 	{
-		fDSDX /= 4.0f;	// In copy mode 4 pixels are copied at once.
+		// In copy mode 4 pixels are copied at once.
+		if (cycletype == CYCLE_TYPE_COPY)
+			fDSDX /= 4.0f;	
 		dwXH++;
 		dwYH++;
 	}
-	else if (cycletype == CYCLE_TYPE_FILL)
-	{
-		dwXH++;
-		dwYH++;
-	}
+
 
 	if( fDSDX == 0 )	fDSDX = 1;
 	if( fDTDY == 0 )	fDTDY = 1;
@@ -1581,6 +1577,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 void DLParser_TexRectFlip(MicroCodeCommand command)
 { 
+
 	status.bCIBufferIsRendered = true;
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
@@ -1613,14 +1610,13 @@ void DLParser_TexRectFlip(MicroCodeCommand command)
 
 	uint32 cycletype = gRDP.otherMode.cycle_type;
 
-	if (cycletype == CYCLE_TYPE_COPY)
+	// In Fill/Copy mode the coordinates are inclusive (i.e. add 1<<2 to the w/h)
+	if (cycletype >= CYCLE_TYPE_COPY)
 	{
-		fDSDX /= 4.0f;	// In copy mode 4 pixels are copied at once.
-		dwXH++;
-		dwYH++;
-	}
-	else if (cycletype == CYCLE_TYPE_FILL)
-	{
+		// In copy mode 4 pixels are copied at once
+		if( cycletype == CYCLE_TYPE_COPY)
+			fDSDX /= 4.0f;	// In copy mode 4 pixels are copied at once.
+
 		dwXH++;
 		dwYH++;
 	}
