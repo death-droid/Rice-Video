@@ -432,29 +432,41 @@ union MicroCodeCommand
 	__int64	force_structure_alignment;
 };
 
-typedef union {
-	struct {
-		u32	w0;
-		u32	w1;
-		u32	w2;
-		u32	w3;
+struct RDP_TexRect
+{
+	union
+	{
+		struct
+		{
+			u32 cmd3;
+			u32 cmd2;
+			u32 cmd1;
+			u32 cmd0;
+		};
+
+		struct
+		{
+			// cmd3
+			s32		dtdy : 16;
+			s32		dsdx : 16;
+
+			// cmd2
+			s32		t : 16;
+			s32		s : 16;
+
+			// cmd1
+			u32		y0 : 12;
+			u32		x0 : 12;
+			u32		tile_idx : 3;
+			s32		pad1 : 5;
+
+			// cmd0
+			u32		y1 : 12;
+			u32		x1 : 12;
+
+			u32		cmd : 8;
+		};
 	};
-	struct {
-		u32	yl:12;	/* Y coordinate of upper left	*/
-		u32	xl:12;	/* X coordinate of upper left	*/
-		u32	cmd:8;	/* command			*/
-
-		u32	yh:12;	/* Y coordinate of lower right	*/
-		u32	xh:12;	/* X coordinate of lower right	*/
-		u32	tile:3;	/* Tile descriptor index	*/
-		u32	pad1:5;	/* Padding			*/
-
-		u32	t:16;	/* T texture coord at top left	*/
-		u32	s:16;	/* S texture coord at top left	*/
-
-		u32	dtdy:16;/* Change in T per change in Y	*/
-		u32	dsdx:16;/* Change in S per change in X	*/
-	};
-} Gtexrect;
+};
 
 #endif
