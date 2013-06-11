@@ -114,7 +114,7 @@ public:
 			TRACE0("Popping past projection stack limits");
 	}
 
-	void PopWorldView();
+	void PopWorldView(u32 num = 1);
 	Matrix & GetWorldProjectMatrix(void);
 	void SetWorldProjectMatrix(Matrix &mtx);
 	

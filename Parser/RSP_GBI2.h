@@ -457,21 +457,13 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 
 void RSP_GBI2_PopMtx(MicroCodeCommand command)
 {
-	uint8 nCommand = (uint8)(command.inst.cmd0 & 0xFF);
+	LOG_UCODE("    Command: (%s)",	command.inst.cmd1 ? "Projection" : "ModelView");
 
-	LOG_UCODE("        PopMtx: 0x%02x (%s)",
-		nCommand, 
-		(nCommand & RSP_ZELDA_MTX_PROJECTION) ? "Projection" : "ModelView");
+	// Banjo Tooie, pops more than one matrix
+	u32 num = command.inst.cmd1>>6;
 
-
-/*	if (nCommand & RSP_ZELDA_MTX_PROJECTION)
-	{
-		CRender::g_pRender->PopProjection();
-	}
-	else*/
-	{
-		CRender::g_pRender->PopWorldView();
-	}
+	CRender::g_pRender->PopWorldView(num);
+	
 #ifdef _DEBUG
 	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
 	{
