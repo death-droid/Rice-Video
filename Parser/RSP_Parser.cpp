@@ -1195,14 +1195,8 @@ void DLParser_FillRect(MicroCodeCommand command)
 		}
 	}
 
-	uint32 x0   = (((command.inst.cmd1)>>12)&0xFFF)/4;
-	uint32 y0   = (((command.inst.cmd1)>>0 )&0xFFF)/4;
-	uint32 x1   = (((command.inst.cmd0)>>12)&0xFFF)/4;
-	uint32 y1   = (((command.inst.cmd0)>>0 )&0xFFF)/4;
 
 	// Note, in some modes, the right/bottom lines aren't drawn
-
-	LOG_UCODE("    (%d,%d) (%d,%d)", x0, y0, x1, y1);
 
 	if( gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY )
 	{
@@ -1214,23 +1208,23 @@ void DLParser_FillRect(MicroCodeCommand command)
 	{
 		if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-		status.leftRendered = status.leftRendered<0 ? x0 : min((int)x0,status.leftRendered);
-		status.topRendered = status.topRendered<0 ? y0 : min((int)y0,status.topRendered);
-		status.rightRendered = status.rightRendered<0 ? x1 : max((int)x1,status.rightRendered);
-		status.bottomRendered = status.bottomRendered<0 ? y1 : max((int)y1,status.bottomRendered);
+		status.leftRendered = status.leftRendered<0 ? command.fillrect.x0 : min((int)command.fillrect.x0,status.leftRendered);
+		status.topRendered = status.topRendered<0 ? command.fillrect.y0 : min((int)command.fillrect.y0,status.topRendered);
+		status.rightRendered = status.rightRendered<0 ? command.fillrect.x1 : max((int)command.fillrect.x1,status.rightRendered);
+		status.bottomRendered = status.bottomRendered<0 ? command.fillrect.y1 : max((int)command.fillrect.y1,status.bottomRendered);
 
-		g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,(int)y1);
+		g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,(int)command.fillrect.y1);
 
-		if( status.bDirectWriteIntoRDRAM || ( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) ) )
+		if( status.bDirectWriteIntoRDRAM || ( command.fillrect.x0==0 && command.fillrect.y0==0 && (command.fillrect.x1 == g_pRenderTextureInfo->N64Width || command.fillrect.x1 == g_pRenderTextureInfo->N64Width-1 ) ) )
 		{
 			if( g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_16b )
 			{
 				uint16 color = (uint16)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width<<1;
 				uint32 base = (uint32)(g_pRDRAMu8 + g_pRenderTextureInfo->CI_Info.dwAddr);
-				for( uint32 i =y0; i<y1; i++ )
+				for( uint32 i =command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
-					for( uint32 j=x0; j<x1; j++ )
+					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )
 					{
 						*(uint16*)((base+pitch*i+j)^2) = color;
 					}
@@ -1241,9 +1235,9 @@ void DLParser_FillRect(MicroCodeCommand command)
 				uint8 color = (uint8)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width;
 				uint32 base = (uint32)(g_pRDRAMu8 + g_pRenderTextureInfo->CI_Info.dwAddr);
-				for( uint32 i=y0; i<y1; i++ )
+				for( uint32 i=command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
-					for( uint32 j=x0; j<x1; j++ )
+					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )
 					{
 						*(uint8*)((base+pitch*i+j)^3) = color;
 					}
@@ -1270,18 +1264,18 @@ void DLParser_FillRect(MicroCodeCommand command)
 			{
 				if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 				{
-					CRender::g_pRender->FillRect(x0, y0, x1, y1, gRDP.fillColor);
+					CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
 				}
 				else
 				{
 					D3DCOLOR primColor = GetPrimitiveColor();
-					CRender::g_pRender->FillRect(x0, y0, x1, y1, primColor);
+					CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
 				}
 			}
 		}
 
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect\n");});
-		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor);
+		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.originalFillColor);
 		DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", gRDP.originalFillColor);});
 	}
 	else
@@ -1291,17 +1285,17 @@ void DLParser_FillRect(MicroCodeCommand command)
 		{
 			if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-			status.leftRendered = status.leftRendered<0 ? x0 : min((int)x0,status.leftRendered);
-			status.topRendered = status.topRendered<0 ? y0 : min((int)y0,status.topRendered);
-			status.rightRendered = status.rightRendered<0 ? x1 : max((int)x1,status.rightRendered);
-			status.bottomRendered = status.bottomRendered<0 ? y1 : max((int)y1,status.bottomRendered);
+			status.leftRendered = status.leftRendered<0 ? command.fillrect.x0 : min((int)command.fillrect.x0,status.leftRendered);
+			status.topRendered = status.topRendered<0 ? command.fillrect.y0 : min((int)command.fillrect.y0,status.topRendered);
+			status.rightRendered = status.rightRendered<0 ? command.fillrect.x1 : max((int)command.fillrect.x1,status.rightRendered);
+			status.bottomRendered = status.bottomRendered<0 ? command.fillrect.y1 : max((int)command.fillrect.y1,status.bottomRendered);
 		}
 
 		if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 		{
 			if( !status.bHandleN64RenderTexture || g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_16b )
 			{
-				CRender::g_pRender->FillRect(x0, y0, x1, y1, gRDP.fillColor);
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
 			}
 		}
 		else
@@ -1309,11 +1303,11 @@ void DLParser_FillRect(MicroCodeCommand command)
 			D3DCOLOR primColor = GetPrimitiveColor();
 			//if( RGBA_GETALPHA(primColor) != 0 )
 			{
-				CRender::g_pRender->FillRect(x0, y0, x1, y1, primColor);
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
 			}
 		}
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect\n");});
-		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor);
+		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.originalFillColor);
 		DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", gRDP.originalFillColor);});
 	}
 }
