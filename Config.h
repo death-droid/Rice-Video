@@ -160,7 +160,6 @@ typedef struct {
 	BOOL	bLoadHiResTextures;
 	BOOL	bCacheHiResTextures;
 
-	int		DirectXDepthBufferSetting;
 	uint32	DirectXAntiAliasingValue;
 	uint32	DirectXAnisotropyValue;
 

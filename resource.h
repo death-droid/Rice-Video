@@ -61,7 +61,6 @@
 #define IDC_SMART_SCREEN_UPDATE         1053
 #define IDC_BUFFER_TYPE                 1054
 #define IDC_ALPHA_BLENDER               1055
-#define IDC_DEPTH_BUFFER                1056
 #define IDC_ENABLE_BG                   1057
 #define IDC_LOG_SETTING                 1058
 #define IDC_FRAME_BUFFER_SETTING        1059

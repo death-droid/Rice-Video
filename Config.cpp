@@ -105,12 +105,6 @@ const char*	strDXDeviceDescs[] = { "HAL", "REF" };
 /*
 *	Constants
 */
-BufferSettingInfo DirectXDepthBufferSetting[] =
-{
-	"16-bit (def)",				D3DFMT_D16,				D3DFMT_D16,
-	"32-bit signed",			D3DFMT_D24S8,			D3DFMT_D24S8,
-};
-
 const SettingInfo OnScreenDisplaySettings[] =
 {
 	"Display Nothing",							ONSCREEN_DISPLAY_NOTHING,
@@ -122,8 +116,6 @@ const SettingInfo OnScreenDisplaySettings[] =
 	"Display Frame Per Second With Core Msgs",	ONSCREEN_DISPLAY_FRAME_PER_SECOND_WITH_CORE_MSG,
 	"Display Debug Information With Core Msgs",	ONSCREEN_DISPLAY_DEBUG_INFORMATION_WITH_CORE_MSG,
 };
-
-int numberOfDirectXDepthBufferSettings = sizeof(DirectXDepthBufferSetting)/sizeof(BufferSettingInfo);
 
 void WriteConfiguration(void);
 void GenerateCurrentRomOptions();
@@ -325,9 +317,6 @@ void WriteConfiguration(void)
 	fprintf(f, "DisplayOnscreenFPS ");
 	fprintf(f, "%d\n", options.bDisplayOnscreenFPS);
 
-	fprintf(f, "DirectXDepthBufferSetting ");
-	fprintf(f, "%d\n", (uint32)options.DirectXDepthBufferSetting);
-
 	fprintf(f, "DirectXAntiAliasingValue ");
 	fprintf(f, "%d\n", (uint32)options.DirectXAntiAliasingValue);
 
@@ -485,7 +474,6 @@ void ReadConfiguration(void)
 		// set caching by default to "off"
 		options.bCacheHiResTextures = FALSE;
 		options.bDumpTexturesToFiles = FALSE;
-		options.DirectXDepthBufferSetting = 0;
 		options.textureEnhancement = 0;
 		options.textureEnhancementControl = 0;
 		options.bSkipFrame = FALSE;
@@ -565,7 +553,6 @@ void ReadConfiguration(void)
 		options.bDumpTexturesToFiles = ReadRegistryDwordVal("DumpTexturesToFiles");
 		options.bDumpTexturesToFiles = FALSE;	// Never starting the plugin with this option on
 		options.DirectXDevice = ReadRegistryDwordVal("DirectXDevice");
-		options.DirectXDepthBufferSetting = ReadRegistryDwordVal("DirectXDepthBufferSetting");
 		options.DirectXAntiAliasingValue = ReadRegistryDwordVal("DirectXAntiAliasingValue");
 		options.DirectXAnisotropyValue = ReadRegistryDwordVal("DirectXAnisotropyValue");
 		options.DirectXMaxFSAA = ReadRegistryDwordVal("DirectXMaxFSAA");
@@ -974,11 +961,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_SLIDER_ANISO,
 			"DirectX Anisotropy Filtering Setting",
 			"Use this to set the amount of anisotropic filtering."
-	},
-	{ 
-		IDC_DEPTH_BUFFER,
-			"Depth buffer setting",
-			"You don't need to modify this setting.\n"
 	},
 	{ 
 		IDC_RESOLUTION_WINDOW_MODE,
@@ -2241,20 +2223,11 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_SETCURSEL, i, 0);
 		}
 
-		SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_RESETCONTENT, 0, 0);
 		item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
 		EnableWindow(item, TRUE);
 
-		for( i=0; i<numberOfDirectXDepthBufferSettings; i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_INSERTSTRING, i, (LPARAM) DirectXDepthBufferSetting[i].description);
-		}
-		SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_SETCURSEL, options.DirectXDepthBufferSetting, 0);
-
 		if( status.bGameIsRunning )
 		{
-			item = GetDlgItem(hDlg, IDC_DEPTH_BUFFER );
-			EnableWindow(item, FALSE);
 			item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
 			EnableWindow(item, FALSE);
 		}
@@ -2340,7 +2313,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			case PSN_SETACTIVE :
 				if( options.bHideAdvancedOptions )
 				{
-					ShowItem(hDlg, IDC_DEPTH_BUFFER, FALSE);
 					ShowItem(hDlg, IDC_SHOW_FPS, FALSE);
 					ShowItem(hDlg, IDC_FPS_COLOR, FALSE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, FALSE);
@@ -2352,7 +2324,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				}
 				else
 				{
-					ShowItem(hDlg, IDC_DEPTH_BUFFER, TRUE);
 					ShowItem(hDlg, IDC_SHOW_FPS, TRUE);
 					ShowItem(hDlg, IDC_FPS_COLOR, TRUE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, TRUE);
@@ -2420,8 +2391,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			options.bDisplayOnscreenFPS = OnScreenDisplaySettings[i].setting;
 
 			options.DirectXDevice = SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_GETCURSEL, 0, 0);
-
-			options.DirectXDepthBufferSetting = SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_GETCURSEL, 0, 0);
 
 			item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
 			options.DirectXAntiAliasingValue = SendMessage(item, TBM_GETPOS, 0, 0);
