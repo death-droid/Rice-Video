@@ -318,7 +318,8 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 	if( g_CI.dwSize != TXT_SIZE_16b && frameBufferOptions.bIgnore )
 		return true;
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	status.bFrameBufferIsDrawn = true;
+	if( status.bHandleN64RenderTexture)	
+		status.bFrameBufferIsDrawn = true;
 
 	if( status.bVIOriginIsUpdated == true && currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_1ST_PRIMITIVE )
 	{
@@ -401,16 +402,11 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 	if( m_line3DVtx[0].z != m_line3DVtx[1].z )  
 		return false;
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	
-		status.bFrameBufferIsDrawn = true;
 	if( status.bHandleN64RenderTexture ) 
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 
 	m_line3DVtx[0].x = ViewPortTranslatef_x(g_vecProjected[dwV0].x);
@@ -569,7 +565,8 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		status.bFrameBufferIsDrawn = true;
 	}
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	status.bFrameBufferIsDrawn = true;
+	if( status.bHandleN64RenderTexture)
+		status.bFrameBufferIsDrawn = true;
 
 	LOG_UCODE("TexRect: X0=%d, Y0=%d, X1=%d, Y1=%d,\n\t\tfS0=%f, fT0=%f, ScaleS=%f, ScaleT=%f ",
 		nX0, nY0, nX1, nY1, fS0, fT0, fScaleS, fScaleT);
@@ -823,7 +820,7 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 	LOG_UCODE("TexRectFlip: X0=%d, Y0=%d, X1=%d, Y1=%d,\n\t\tfS0=%f, fT0=%f, fS1=%f, fT1=%f ",
 			nX0, nY0, nX1, nY1, fS0, fT0, fS1, fT1);
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	
+	if( status.bHandleN64RenderTexture)	
 	{
 		status.bFrameBufferIsDrawn = true;
 		status.bFrameBufferDrawnByTriangles = true;
@@ -1177,15 +1174,13 @@ bool CRender::DrawTriangles()
 	}
 	*/
 
-	if (gRSP.numVertices == 0)	return true;
+	if (gRSP.numVertices == 0)
+		return true;
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 
 	if( !gRDP.bFogEnableInBlender && gRSP.bFogEnabled )

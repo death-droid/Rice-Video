@@ -1374,35 +1374,30 @@ void FrameBufferManager::CloseRenderTexture(bool toSave)
 	if( m_curRenderTextureIndex < 0 )	return;
 
 	status.bHandleN64RenderTexture = false;
-	if( status.bDirectWriteIntoRDRAM )
+
+	RestoreNormalBackBuffer();
+	if( !toSave || !status.bFrameBufferIsDrawn || !status.bFrameBufferDrawnByTriangles )
 	{
+		TXTRBUF_DUMP(TRACE0("Closing render_texture without save"););
+		SAFE_DELETE(gRenderTextureInfos[m_curRenderTextureIndex].pRenderTexture);
+		gRenderTextureInfos[m_curRenderTextureIndex].isUsed = false;
+		TXTRBUF_DUMP(TRACE1("Delete render_texture %d",m_curRenderTextureIndex););
 	}
 	else
 	{
-		RestoreNormalBackBuffer();
-		if( !toSave || !status.bFrameBufferIsDrawn || !status.bFrameBufferDrawnByTriangles )
+		TXTRBUF_DUMP(TRACE1("Closing render_texture %d", m_curRenderTextureIndex););
+		StoreRenderTextureToRDRAM();
+
+		if( frameBufferOptions.bRenderTextureWriteBack )
 		{
-			TXTRBUF_DUMP(TRACE0("Closing render_texture without save"););
 			SAFE_DELETE(gRenderTextureInfos[m_curRenderTextureIndex].pRenderTexture);
 			gRenderTextureInfos[m_curRenderTextureIndex].isUsed = false;
-			TXTRBUF_DUMP(TRACE1("Delete render_texture %d",m_curRenderTextureIndex););
+			TXTRBUF_DUMP(TRACE1("Delete render_texture %d after writing back to RDRAM",m_curRenderTextureIndex););
 		}
 		else
 		{
-			TXTRBUF_DUMP(TRACE1("Closing render_texture %d", m_curRenderTextureIndex););
-			StoreRenderTextureToRDRAM();
-
-			if( frameBufferOptions.bRenderTextureWriteBack )
-			{
-				SAFE_DELETE(gRenderTextureInfos[m_curRenderTextureIndex].pRenderTexture);
-				gRenderTextureInfos[m_curRenderTextureIndex].isUsed = false;
-				TXTRBUF_DUMP(TRACE1("Delete render_texture %d after writing back to RDRAM",m_curRenderTextureIndex););
-			}
-			else
-			{
-				g_pRenderTextureInfo->crcInRDRAM = ComputeRenderTextureCRCInRDRAM(m_curRenderTextureIndex);
-				g_pRenderTextureInfo->crcCheckedAtFrame = status.gDlistCount;
-			}
+			g_pRenderTextureInfo->crcInRDRAM = ComputeRenderTextureCRCInRDRAM(m_curRenderTextureIndex);
+			g_pRenderTextureInfo->crcCheckedAtFrame = status.gDlistCount;
 		}
 	}
 
@@ -1632,8 +1627,6 @@ void FrameBufferManager::ActiveTextureBuffer(void)
 			}
 
 			m_curRenderTextureIndex = idxToUse;
-
-			status.bDirectWriteIntoRDRAM = false;
 
 			//SetScreenMult(1, 1);
 			SetScreenMult(gRenderTextureInfos[m_curRenderTextureIndex].scaleX, gRenderTextureInfos[m_curRenderTextureIndex].scaleY);

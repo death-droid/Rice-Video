@@ -326,11 +326,8 @@ void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 	LoadSprite2D(info, ucode);
 
@@ -381,11 +378,8 @@ void CRender::DrawSpriteR(uObjTxSprite &sprite, bool initCombiner, uint32 tile, 
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 	SetCombinerAndBlender();
 
@@ -500,11 +494,8 @@ void CRender::DrawObjBGCopy(uObjBg &info)
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 	SetCombinerAndBlender();
 
@@ -613,11 +604,8 @@ void CRender::DrawObjBG1CYC(uObjScaleBg &bg, bool scaled)	//Without Ratation
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 
 	SetCombinerAndBlender();
@@ -712,11 +700,8 @@ void CRender::DrawSprite(uObjTxSprite &sprite, bool rectR)	//Without Ratation
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 	SetCombinerAndBlender();
 	D3DCOLOR speColor = PostProcessSpecularColor();

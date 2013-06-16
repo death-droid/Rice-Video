@@ -286,7 +286,6 @@ void DLParser_Init()
 	status.frameReadByCPU = FALSE;
 	status.frameWriteByCPU = FALSE;
 	status.bN64IsDrawingTextureBuffer = false;
-	status.bDirectWriteIntoRDRAM = false;
 	status.bHandleN64RenderTexture = false;
 
 	status.bUcodeIsKnown = FALSE;
@@ -1162,6 +1161,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 	{
 		CRender::g_pRender->ClearBuffer(false,true);
 		
+		//Clear framebuffer, fixes jumpy camera in DK64, also the sun and flames glare in Zelda
 		u32 * dst = (u32*)(g_pRDRAMu8 + g_CI.dwAddr);
 		u32 * end = (u32*)(dst + (command.fillrect.y1*(g_CI.dwWidth >> 1)));
 
@@ -1215,7 +1215,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 		g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,(int)command.fillrect.y1);
 
-		if( status.bDirectWriteIntoRDRAM || ( command.fillrect.x0==0 && command.fillrect.y0==0 && (command.fillrect.x1 == g_pRenderTextureInfo->N64Width || command.fillrect.x1 == g_pRenderTextureInfo->N64Width-1 ) ) )
+		if(command.fillrect.x0==0 && command.fillrect.y0==0 && (command.fillrect.x1 == g_pRenderTextureInfo->N64Width || command.fillrect.x1 == g_pRenderTextureInfo->N64Width-1 ))
 		{
 			if( g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_16b )
 			{
@@ -1243,7 +1243,6 @@ void DLParser_FillRect(MicroCodeCommand command)
 					}
 				}
 			}
-
 			status.bFrameBufferDrawnByTriangles = false;
 		}
 		else
@@ -1252,25 +1251,23 @@ void DLParser_FillRect(MicroCodeCommand command)
 		}
 		status.bFrameBufferDrawnByTriangles = true;
 
-		if( !status.bDirectWriteIntoRDRAM )
-		{
-			status.bFrameBufferIsDrawn = true;
 
-			//if( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) && gRDP.fillColor == 0)
-			//{
-			//	CRender::g_pRender->ClearBuffer(true,false);
-			//}
-			//else
+		status.bFrameBufferIsDrawn = true;
+
+		//if( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) && gRDP.fillColor == 0)
+		//{
+		//	CRender::g_pRender->ClearBuffer(true,false);
+		//}
+		//else
+		{
+			if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 			{
-				if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
-				{
-					CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
-				}
-				else
-				{
-					D3DCOLOR primColor = GetPrimitiveColor();
-					CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
-				}
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
+			}
+			else
+			{
+				D3DCOLOR primColor = GetPrimitiveColor();
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
 			}
 		}
 

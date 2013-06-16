@@ -169,7 +169,7 @@ void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 	}
 	else
 	{
-		if( status.bHandleN64RenderTexture && //status.bDirectWriteIntoRDRAM && 
+		if( status.bHandleN64RenderTexture &&
 			g_pRenderTextureInfo->CI_Info.dwFormat == gRDP.tiles[tileno].dwFormat && 
 			g_pRenderTextureInfo->CI_Info.dwSize == gRDP.tiles[tileno].dwSize && 
 			gRDP.tiles[tileno].dwFormat == TXT_FMT_CI && gRDP.tiles[tileno].dwSize == TXT_SIZE_8b )
@@ -194,12 +194,9 @@ void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 					TexRectToFrameBuffer_8b(dwXL, dwYL, dwXH, dwYH, t0u0, t0v0, t0u1, t0v1, tileno);
 				}
 
-				if( !status.bDirectWriteIntoRDRAM )
-				{
-					CRender::g_pRender->TexRect(dwXL, dwYL, dwXH, dwYH, fS0, fT0, fDSDX, fDTDY);
+				CRender::g_pRender->TexRect(dwXL, dwYL, dwXH, dwYH, fS0, fT0, fDSDX, fDTDY);
 
-					status.dwNumTrisRendered += 2;
-				}
+				status.dwNumTrisRendered += 2;
 			}
 		}
 		else
