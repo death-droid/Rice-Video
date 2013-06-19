@@ -499,12 +499,11 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			for( int k=0; k<infos.size(); k++)
 			{
 				//Ensure that we are not loading in any duplicate textures
-				if(_stricmp(infos[k].filename,_strdup(libaa.cFileName)) ==0 || _stricmp(infos[k].filename_a ,_strdup(libaa.cFileName)) ==0 )
+				if(_stricmp(infos[k].filename,_strdup(libaa.cFileName)) ==0 )
 				{
 #ifdef _DEBUG
 					ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName));
 					//Save our cache file
-					ini.SaveFile("duplicates.ini");
 #endif
 					break;
 				}
