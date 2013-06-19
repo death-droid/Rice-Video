@@ -125,7 +125,6 @@ Possible Blending Factors:
 	uint32 blendmode_1 = uint32( gRDP.otherMode.blender & 0xcccc );
 	uint32 blendmode_2 = uint32( gRDP.otherMode.blender & 0x3333 );
 	uint32 cycletype = gRDP.otherMode.cycle_type;
-
 	switch( cycletype )
 	{
 	case CYCLE_TYPE_FILL:
@@ -264,7 +263,7 @@ Possible Blending Factors:
 			break;
 		default:
 #ifdef _DEBUG
-			if( pauseAtNext )
+		//	if( pauseAtNext )
 			{
 				uint32 dwM1A_1 = (gRDP.otherMode.blender>>14) & 0x3;
 				uint32 dwM1B_1 = (gRDP.otherMode.blender>>10) & 0x3;
@@ -375,9 +374,18 @@ Possible Blending Factors:
 			BlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
 			Enable();
 			break;
+		case 0x8c40: //Lens of truth OOT, FIXME this is just producing a washed out effect, not making object transparent
+			//Not sure if we can do this with blend modes in DirectX
+			BlendFunc(D3DBLEND_INVSRCALPHA, D3DBLEND_ZERO);
+			Enable();
+			break;
+		case 0xc84: // OOT menu
+			BlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+			Enable();
+			break;
 		default:
 #ifdef _DEBUG
-			if( pauseAtNext )
+		//	if( pauseAtNext )
 			{
 				uint32 dwM1A_1 = (gRDP.otherMode.blender>>14) & 0x3;
 				uint32 dwM1B_1 = (gRDP.otherMode.blender>>10) & 0x3;
