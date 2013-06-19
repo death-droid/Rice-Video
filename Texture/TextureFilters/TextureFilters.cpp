@@ -282,6 +282,8 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 	IMAGE_INFO	imgInfo;
 	//
 	IMAGE_INFO	imgInfo2;
+	// simple ini
+	CSimpleIniA ini;
 
 	// prepare message
 	sprintf(generalText,"Processing folder: %s", foldername);
@@ -496,6 +498,16 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			// loop through the list of records of already fetched hires textures
 			for( int k=0; k<infos.size(); k++)
 			{
+				//Ensure that we are not loading in any duplicate textures
+				if(_stricmp(infos[k].filename,_strdup(libaa.cFileName)) ==0 || _stricmp(infos[k].filename_a ,_strdup(libaa.cFileName)) ==0 )
+				{
+#ifdef _DEBUG
+					ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName));
+					//Save our cache file
+					ini.SaveFile("duplicates.ini");
+#endif
+					break;
+				}
 				// check if texture already exists in the list
 				// microdev: that's why I somehow love documenting code: that makes the implementation of a WIP folder check
 				// fucking easy :-)
@@ -511,6 +523,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					else
 						break;
 				}
+
 			}
 
 			// if the texture is not yet in the list or if it exists with another type or the current folder is the WIP folder
@@ -527,7 +540,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					SAFE_DELETE(newinfo->pHiresTextureRGB);
 					SAFE_DELETE(newinfo->pHiresTextureAlpha);
 				}
-				else
+				//else
 					// otherwise create a new one
 					newinfo = new ExtTxtrInfo;
 

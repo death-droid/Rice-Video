@@ -244,10 +244,7 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 	g_pD3DDev->GetDeviceCaps(&g_D3DDeviceCaps);
 
 	// Force to use Software T&L
-	if( options.bForceSoftwareTnL )
-		g_pD3DDev->SetSoftwareVertexProcessing(TRUE);
-	else
-		g_pD3DDev->SetSoftwareVertexProcessing(FALSE);
+	g_pD3DDev->SetSoftwareVertexProcessing(options.bForceSoftwareTnL ? TRUE : FALSE);
 
 	if( g_GraphicsInfo.hStatusBar )
 	{
