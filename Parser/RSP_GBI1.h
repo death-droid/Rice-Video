@@ -16,6 +16,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+//Clean me
+struct N64Light
+{
+    u8 pad0, b, g, r;		// Colour
+    u8 pad1, b2, g2, r2;	// Unused..
+    s8 pad2, z, y, x;		// Direction
+};
+
+struct N64LightMM
+{
+    u8 pad0, b, g, r;
+    u8 pad1, b2, g2, r2;
+    s16 y, x, range, z;		// What to do with range?
+};
 
 void RSP_GBI1_Vtx(MicroCodeCommand command)
 {
@@ -237,45 +251,43 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 		return;
 	}
 
-	s8 * pcBase = g_pRDRAMs8 + dwAddr;
-	uint32 * pdwBase = (uint32 *)pcBase;
+	u8 * base = g_pRDRAMu8 + dwAddr;
+	u8 r, g, b;
+	s16 x, y, z;
 
-	float range = 0, x, y, z;
-	if( options.enableHackForGames == HACK_FOR_ZELDA_MM && (pdwBase[0]&0xFF) == 0x08 && (pdwBase[1]&0xFF) == 0xFF )
+	if( options.enableHackForGames == HACK_FOR_ZELDA_MM && (base[0] == 0x08) && (base[4] == 0xFF ))
 	{
-		gRSPn64lights[dwLight].dwRGBA		= pdwBase[0];
-		gRSPn64lights[dwLight].dwRGBACopy	= pdwBase[1];
-		short* pdwBase16 = (short*)pcBase;
-		x		= pdwBase16[5];
-		y		= pdwBase16[4];
-		z		= pdwBase16[7];
-		range	= pdwBase16[6];
+		N64LightMM *light = (N64LightMM*)base;
+
+		r = light->r;
+		g = light->g;
+		b = light->b;
+
+		x = light->x;
+		y = light->y;
+		z = light->z;
 	}
 	else
 	{
-		gRSPn64lights[dwLight].dwRGBA		= pdwBase[0];
-		gRSPn64lights[dwLight].dwRGBACopy	= pdwBase[1];
-		x		= pcBase[8 ^ 0x3];
-		y		= pcBase[9 ^ 0x3];
-		z		= pcBase[10 ^ 0x3];
+		N64Light *light = (N64Light*)base;
+		r = light->r;
+		g = light->g;
+		b = light->b;
+
+		x = light->x;
+		y = light->y;
+		z = light->z;
 	}
 
-					
-	LOG_UCODE("       RGBA: 0x%08x, RGBACopy: 0x%08x, x: %d, y: %d, z: %d", 
-		gRSPn64lights[dwLight].dwRGBA,
-		gRSPn64lights[dwLight].dwRGBACopy,
-		x, y, z);
+	bool valid = (x | y | z) != 0;
 
-	LIGHT_DUMP(TRACE3("Move Light: %08X, %08X, %08X", pdwBase[0], pdwBase[1], pdwBase[2]));
-
+	LIGHT_DUMP(TRACE4("  Light[%d] RGB[%d, %d, %d]", dwLight, r, g, b));
+	LIGHT_DUMP(TRACE4("  x[%d] y[%d] z[%d] %s direction", x, y, z, valid ? "Valid" : "Invalid"));
+	uint32 dwCol = D3DCOLOR_RGBA(r,g,b,0xff);
 
 	if (dwLight == gRSP.ambientLightIndex)
 	{
 		LOG_UCODE("      (Ambient Light)");
-
-		uint32 dwCol = COLOR_RGBA( (gRSPn64lights[dwLight].dwRGBA >> 24)&0xFF,
-					  (gRSPn64lights[dwLight].dwRGBA >> 16)&0xFF,
-					  (gRSPn64lights[dwLight].dwRGBA >>  8)&0xFF, 0xff);
 
 		SetAmbientLight( dwCol );
 	}
@@ -284,12 +296,10 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 		
 		LOG_UCODE("      (Normal Light)");
 
-		SetLightCol(dwLight, gRSPn64lights[dwLight].dwRGBA);
-		if (pdwBase[2] == 0)	// Direction is 0!
-		{
-			LOG_UCODE("      Light is invalid");
-		}
-		SetLightDirection(dwLight, x, y, z, range);
+		SetLightCol(dwLight, r, g, b);
+
+		if(valid != 0)
+			SetLightDirection(dwLight, x, y, z);
 	}
 }
 
@@ -716,29 +726,20 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_LIGHTCOL:
 		{
 			uint32 dwLight = command.mw1.offset / 0x20;
-			uint32 dwField = (command.mw1.offset & 0x7);
+			uint32 field_offset = (command.mw1.offset & 0x7);
 
-			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw1.offset, command.inst.cmd1);
-
-			switch (dwField)
+			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw1.offset, command.mw1.value);
+			
+			if(field_offset == 0)
 			{
-			case 0:
 				if (dwLight == gRSP.ambientLightIndex)
 				{
 					SetAmbientLight( ((command.mw1.value)>>8) );
 				}
 				else
 				{
-					SetLightCol(dwLight, command.mw1.value);
+					SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF));
 				}
-				break;
-
-			case 4:
-				break;
-
-			default:
-				TRACE1("RSP_MOVE_WORD_LIGHTCOL with unknown offset 0x%08x", dwField);
-				break;
 			}
 		}
 		break;

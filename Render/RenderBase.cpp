@@ -160,7 +160,6 @@ Matrix	gRSPmodelViewTop;
 Matrix	gRSPmodelViewTopTranspose;
 Matrix	dkrMatrixTransposed;
 #endif
-N64Light		gRSPn64lights[16];
 
 
 void (*ProcessVertexData)(uint32 dwAddr, uint32 dwV0, uint32 dwNum)=NULL;
@@ -635,7 +634,6 @@ void InitRenderBase()
 	for( i=0; i<MAX_VERTS; i++ )
 		g_vtxNonTransformed[i].w = 1;
 
-	memset(gRSPn64lights, 0, sizeof(N64Light)*16);
 }
 
 void SetFogMinMax(float fMin, float fMax, float fMul, float fOffset)
@@ -2066,11 +2064,11 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_VERTEX_CMD,{TRACE0("Paused at Vertex Cmd");});
 }
 
-void SetLightCol(uint32 dwLight, uint32 dwCol)
+void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 {
-	gRSPlights[dwLight].r = (uint8)((dwCol >> 24)&0xFF);
-	gRSPlights[dwLight].g = (uint8)((dwCol >> 16)&0xFF);
-	gRSPlights[dwLight].b = (uint8)((dwCol >>  8)&0xFF);
+	gRSPlights[dwLight].r = r;
+	gRSPlights[dwLight].g = g;
+	gRSPlights[dwLight].b = b;
 	gRSPlights[dwLight].a = 255;	// Ignore light alpha
 	gRSPlights[dwLight].fr = (float)gRSPlights[dwLight].r;
 	gRSPlights[dwLight].fg = (float)gRSPlights[dwLight].g;
@@ -2082,33 +2080,32 @@ void SetLightCol(uint32 dwLight, uint32 dwCol)
 	if( status.isVertexShaderEnabled )
 	{
 		float c[4] = {gRSPlights[dwLight].r/255.0f, gRSPlights[dwLight].g/255.0f, gRSPlights[dwLight].b/255.0f, gRSPlights[dwLight].a/255.0f};
-		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT0_AMBIENT+dwLight, &c[0], 1 );
+		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT0_AMBIENT+dwLight, (float*)&c, 1 );
 	}
 
 	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
 }
 
-void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)
+void SetLightDirection(uint32 dwLight, float x, float y, float z)
 {
 	//gRSP.bLightIsUpdated = true;
 
 	//gRSPlights[dwLight].ox = x;
 	//gRSPlights[dwLight].oy = y;
 	//gRSPlights[dwLight].oz = z;
-
-	register float w = range == 0 ? (float)sqrt(x*x+y*y+z*z) : 1;
+	float w = sqrt(x*x+y*y+z*z);
 
 	gRSPlights[dwLight].x = x/w;
 	gRSPlights[dwLight].y = y/w;
 	gRSPlights[dwLight].z = z/w;
-	gRSPlights[dwLight].range = range;
-	
+	gRSPlights[dwLight].range = 0;
+
 	if( status.isVertexShaderEnabled && dwLight>0 )
 	{
 		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT1_DIRECTION+dwLight, &(gRSPlights[dwLight].x), 1 );
 	}
 
-	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE5("Set Light %d dir: %.4f, %.4f, %.4f, %.4f", dwLight, x, y, z, range));
+	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f", dwLight, x, y, z));
 }
 
 static float maxS0, maxT0;

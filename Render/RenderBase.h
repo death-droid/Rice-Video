@@ -76,7 +76,6 @@ extern uint32	gRSPnumLights;
 extern Light	gRSPlights[16];
 extern Matrix	gRSPworldProjectTransported;
 extern Matrix	gRSPworldProject;
-extern N64Light	gRSPn64lights[16];
 extern Matrix	gRSPmodelViewTop;
 extern Matrix	gRSPmodelViewTopTranspose;
 extern float	gRSPfFogMin;
@@ -244,8 +243,8 @@ void SetPrimitiveDepth(uint32 z, uint32 dwDZ);
 void SetVertexXYZ(uint32 vertex, float x, float y, float z);
 void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val);
 void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
-void SetLightCol(uint32 dwLight, uint32 dwCol);
-void SetLightDirection(uint32 dwLight, float x, float y, float z, float range);
+void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b);
+void SetLightDirection(uint32 dwLight, float x, float y, float z);
 void ForceMainTextureIndex(int dwTile); 
 void UpdateCombinedMatrix();
 

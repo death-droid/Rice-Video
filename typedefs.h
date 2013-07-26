@@ -46,13 +46,6 @@ typedef D3DLOCKED_RECT LockRectType;
 
 #define COLOR_RGBA D3DCOLOR_RGBA
 
-typedef struct 
-{
-	uint32 dwRGBA, dwRGBACopy;
-	char x,y,z;			// Direction
-	uint8 pad;
-} N64Light;
-
 
 typedef struct
 {

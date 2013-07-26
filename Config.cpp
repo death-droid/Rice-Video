@@ -197,12 +197,13 @@ void GenerateFrameBufferOptions(void)
 		break;
 	}
 
+	///comebacktome
 	switch( currentRomOptions.N64RenderToTextureEmuType )
 	{
 	case TXT_BUF_NONE:
 		frameBufferOptions.bSupportRenderTextures			= false;
 		break;
-	case TXT_BUF_WRITE_BACK_AND_RELOAD:
+	case TXT_BUF_WRITE_BACK_AND_RELOAD://checkme does nothing
 		frameBufferOptions.bLoadRDRAMIntoRenderTexture		= true;
 	case TXT_BUF_WRITE_BACK:
 		frameBufferOptions.bRenderTextureWriteBack			= true;
@@ -566,13 +567,9 @@ void ReadConfiguration(void)
 
 	status.isSSEEnabled = status.isSSESupported && options.bEnableSSE;
 	if( status.isSSEEnabled )
-	{
 		ProcessVertexData = ProcessVertexDataSSE;
-	}
 	else
-	{
 		ProcessVertexData = ProcessVertexDataNoSSE;
-	}
 
 	status.isVertexShaderEnabled = status.isVertexShaderSupported && options.bEnableVertexShader;
 	status.bUseHW_T_L = false;

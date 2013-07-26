@@ -105,6 +105,7 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_MATRIX:
 		RSP_RDP_InsertMatrix(command);
 		break;
+
 	case RSP_MOVE_WORD_NUMLIGHT:
 		{
 			uint32 dwNumLights = command.mw2.value/24;
@@ -131,22 +132,13 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 
 	case RSP_MOVE_WORD_SEGMENT:
 		{
-			uint32 dwSeg     = command.mw2.offset / 4;
+			uint32 dwSeg     = command.mw2.offset >> 2;
 			uint32 dwAddr = command.mw2.value & 0x00FFFFFF;			// Hack - convert to physical
 
 			LOG_UCODE("      RSP_MOVE_WORD_SEGMENT Segment[%d] = 0x%08x",	dwSeg, dwAddr);
-			if( dwAddr > g_dwRamSize )
-			{
-				gRSP.segments[dwSeg] = dwAddr;
-#ifdef _DEBUG
-				if( pauseAtNext )
-					DebuggerAppendMsg("warning: Segment %d addr is %8X", dwSeg, dwAddr);
-#endif
-			}
-			else
-			{
-				gRSP.segments[dwSeg] = dwAddr;
-			}
+
+			gRSP.segments[dwSeg] = dwAddr;
+
 		}
 		break;
 	case RSP_MOVE_WORD_FOG:
@@ -179,29 +171,21 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_LIGHTCOL:
 		{
 			uint32 dwLight = command.mw2.offset / 0x18;
-			uint32 dwField = (command.mw2.offset & 0x7);
+			uint32 field_offset = (command.mw2.offset & 0x7);
 
-			switch (dwField)
+			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw2.offset, command.mw2.value);
+
+			if (field_offset == 0)
 			{
-			case 0:
 				if (dwLight == gRSP.ambientLightIndex)
 				{
-					SetAmbientLight( (command.mw2.value>>8) );
+					SetAmbientLight( (command.mw2.value>>8) );//Must really check on how this ambient shiz is working
 				}
 				else
 				{
-					SetLightCol(dwLight, command.mw2.value);
+					SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF) );
 				}
-				break;
-
-			case 4:
-				break;
-
-			default:
-				DebuggerAppendMsg("RSP_MOVE_WORD_LIGHTCOL with unknown offset 0x%08x", dwField);
-				break;
 			}
-
 
 		}
 		break;

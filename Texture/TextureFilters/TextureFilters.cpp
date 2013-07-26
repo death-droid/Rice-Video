@@ -502,8 +502,8 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				if(_stricmp(infos[k].filename,_strdup(libaa.cFileName)) ==0 )
 				{
 #ifdef _DEBUG
+					//Lets save a list of duplicate textures
 					ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName));
-					//Save our cache file
 #endif
 					break;
 				}
@@ -1188,6 +1188,8 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 		newinfo.foldername = NULL;
 		newinfo.filename = NULL;
 		newinfo.filename_a = NULL;
+		newinfo.type = NO_TEXTURE;
+		newinfo.bSeparatedAlpha = false;
 
 		uint64 crc64 = newinfo.crc32;
 		crc64 <<= 32;

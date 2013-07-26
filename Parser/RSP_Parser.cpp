@@ -1148,7 +1148,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 		return;
 
 	// Removes annoying rect that appears in Conker and fillrects that cover screen in banjo tooie
-	if (g_CI.dwFormat != 0)
+	if (g_CI.dwFormat != TXT_FMT_RGBA)
 	{
 		TRACE0("	Ignoring Fillrect	");
 		return;

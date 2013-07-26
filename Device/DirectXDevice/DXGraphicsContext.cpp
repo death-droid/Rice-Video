@@ -869,6 +869,7 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
     // Pick a default device that can render into a window
     // (This code assumes that the HAL device comes before the REF
     // device in the device array).
+	m_bWindowed = true;
     for( int a=0; a<m_dwNumAdapters; a++ )
     {
         for( int d=0; d < m_Adapters[a].dwNumDevices; d++ )

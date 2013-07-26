@@ -430,7 +430,7 @@ void DumpInfo(int thingToDump)
 		DebuggerAppendMsg("----Light Colors----\nNumber of Lights: %d\n",GetNumLights());
 		for( i=0; i<GetNumLights()+2; i++)
 		{
-			DebuggerAppendMsg("Light %d:\t%08X, (%d,%d,%d)\n", i, gRSPn64lights[i].dwRGBA,gRSPn64lights[i].x,gRSPn64lights[i].y,gRSPn64lights[i].z );
+		//	DebuggerAppendMsg("Light %d:\t%08X, (%d,%d,%d)\n", i, gRSPn64lights[i].dwRGBA,gRSPn64lights[i].x,gRSPn64lights[i].y,gRSPn64lights[i].z );
 		}
 		break;
 	case DUMP_TEXTURE_AT:

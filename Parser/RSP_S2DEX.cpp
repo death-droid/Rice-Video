@@ -496,16 +496,11 @@ void RSP_S2DEX_BG_1CYC_2(MicroCodeCommand command)
 // YoshiStory uses this - 0xb2
 void RSP_S2DEX_OBJ_RECTANGLE_R(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjSprite *ptr = (uObjSprite*)(g_pRDRAMu8+dwAddr);
+	uObjSprite *ptr = (uObjSprite*)(g_pRDRAMu8+RSPSegmentAddr(command.inst.cmd1));
 
 	uObjTxSprite objtx;
 	memcpy(&objtx.sprite,ptr,sizeof(uObjSprite));
 
-
-	//uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
-	//gObjTxtr = (uObjTxtr*)ptr;
-	
 	//Now draw the sprite
 	if( g_TxtLoadBy == CMD_LOAD_OBJ_TXTR )
 	{
@@ -516,7 +511,6 @@ void RSP_S2DEX_OBJ_RECTANGLE_R(MicroCodeCommand command)
 	{
 		PrepareTextures();
 	}
-	//CRender::g_pRender->DrawSprite(*ptr, true);
 	CRender::g_pRender->DrawSprite(objtx, true);
 
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((eventToPause == NEXT_OBJ_TXT_CMD||eventToPause == NEXT_FLUSH_TRI),
