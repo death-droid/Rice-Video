@@ -1383,6 +1383,7 @@ void DLParser_SetTileSize(MicroCodeCommand command)
 
 extern char *pszImgFormat[8];// = {"RGBA", "YUV", "CI", "IA", "I", "?1", "?2", "?3"};
 extern char *pszImgSize[4];// = {"4", "8", "16", "32"};
+
 void DLParser_SetTImg(MicroCodeCommand command)
 {
 	gRDP.textureIsChanged = true;
@@ -1393,28 +1394,18 @@ void DLParser_SetTImg(MicroCodeCommand command)
 	g_TI.dwAddr   	= RSPSegmentAddr(command.img.addr);
 	g_TI.bpl		= g_TI.dwWidth << g_TI.dwSize >> 1;
 
-#ifdef _DEBUG
-	if( g_TI.dwAddr == 0x00ffffff)
-	{
-		TRACE0("Check me here in setTimg");
-	}
-
-	LOG_TEXTURE(TRACE4("SetTImage: 0x%08x Fmt: %s/%s Width in Pixel: %d\n", g_TI.dwAddr,
-			pszImgFormat[g_TI.dwFormat], pszImgSize[g_TI.dwSize], g_TI.dwWidth));
-
-	DEBUGGER_PAUSE_COUNT_N(NEXT_TEXTURE_CMD);
-
-	LOG_UCODE("Image: 0x%08x Fmt: %s/%s Width in Pixel: %d", g_TI.dwAddr,
-		pszImgFormat[g_TI.dwFormat], pszImgSize[g_TI.dwSize], g_TI.dwWidth);
-#endif
+	LOG_UCODE("TImg Adr[0x%08x] Format[%s/%s] Width[%d] Bytes/line[%d]", 
+		g_TI.dwAddr, pszImgFormat[g_TI.dwFormat], pszImgSize[g_TI.dwSize], g_TI.dwWidth, g_TI.bpl);
 }
 
+//Clean me up now
 void DLParser_TexRect(MicroCodeCommand command)
 {
 	MicroCodeCommand command2;
 	MicroCodeCommand command3;
 
-	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
+	if( !status.bCIBufferIsRendered ) 
+		g_pFrameBufferManager->ActiveTextureBuffer();
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.

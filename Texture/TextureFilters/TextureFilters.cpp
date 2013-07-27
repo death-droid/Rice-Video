@@ -498,15 +498,6 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			// loop through the list of records of already fetched hires textures
 			for( int k=0; k<infos.size(); k++)
 			{
-				//Ensure that we are not loading in any duplicate textures
-				if(_stricmp(infos[k].filename,_strdup(libaa.cFileName)) ==0 )
-				{
-#ifdef _DEBUG
-					//Lets save a list of duplicate textures
-					ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName));
-#endif
-					break;
-				}
 				// check if texture already exists in the list
 				// microdev: that's why I somehow love documenting code: that makes the implementation of a WIP folder check
 				// fucking easy :-)
@@ -514,12 +505,15 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				{
 					// indeeed, the texture already exists
 					// microdev: MAYBE ADD CODE TO MOVE IT TO A 'DUBLICATE' FOLDER TO EASE WORK OF RETEXTURERS
-					foundIdx = k;
 					// check if the WIP folder is currently treated
-					if(strstr(foldername, '\\'+WIP_FOLDER) == 0)
+					if(strstr(foldername, '\\'+ WIP_FOLDER) != 0)
+					{
+						foundIdx = k;
 						// indeed! => indicate that
 						bWIPFolder = true;
+					}
 					else
+						//ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName)); //Todo, finish me
 						break;
 				}
 

@@ -2098,7 +2098,7 @@ void SetLightDirection(uint32 dwLight, float x, float y, float z)
 	gRSPlights[dwLight].x = x/w;
 	gRSPlights[dwLight].y = y/w;
 	gRSPlights[dwLight].z = z/w;
-	gRSPlights[dwLight].range = 0;
+	gRSPlights[dwLight].range = 0; //was range ever needed? Check majors mask
 
 	if( status.isVertexShaderEnabled && dwLight>0 )
 	{
