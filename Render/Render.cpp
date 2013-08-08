@@ -225,7 +225,7 @@ void CRender::SetWorldView(const Matrix & mat, bool bPush, bool bReplace)
 
 void CRender::PopWorldView(u32 num)
 {
-	if (gRSP.modelViewMtxTop > (num-1))
+	if (gRSP.modelViewMtxTop > (num-=1))
 	{
 		gRSP.modelViewMtxTop--;
 		gRSPmodelViewTop = gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
