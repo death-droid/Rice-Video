@@ -566,8 +566,7 @@ void InitRenderBase()
 	gRDP.scissor.right=gRDP.scissor.bottom=640;
 	
 	gRSP.bLightingEnable = gRSP.bTextureGen = false;
-	gRSP.curTile=gRSPnumLights=gRSP.ambientLightColor=gRSP.ambientLightIndex= 0;
-	gRSP.fAmbientLightR=gRSP.fAmbientLightG=gRSP.fAmbientLightB=0;
+	gRSP.curTile=gRSPnumLights=gRSP.ambientLightIndex= 0;
 	gRSP.projectionMtxTop = gRSP.modelViewMtxTop = 0;
 	gRDP.fogColor = gRDP.primitiveColor = gRDP.envColor = gRDP.primitiveDepth = gRDP.primLODMin = gRDP.primLODFrac = gRDP.LODFrac = 0;
 	gRDP.fPrimitiveDepth = 0;
@@ -875,13 +874,13 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 	float fCosT;
 
 	// Do ambient
-	register float r = gRSP.fAmbientLightR;
-	register float g = gRSP.fAmbientLightG;
-	register float b = gRSP.fAmbientLightB;
+	float r = gRSPlights[gRSP.ambientLightIndex].r;
+	float g = gRSPlights[gRSP.ambientLightIndex].g;
+	float b = gRSPlights[gRSP.ambientLightIndex].b;
 
 	if( options.enableHackForGames != HACK_FOR_ZELDA_MM )
 	{
-		for (register unsigned int l=0; l < gRSPnumLights; l++)
+		for (unsigned int l=0; l < gRSPnumLights; l++)
 		{
 			fCosT = norm.x*gRSPlights[l].x + norm.y*gRSPlights[l].y + norm.z*gRSPlights[l].z; 
 
@@ -898,7 +897,7 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 		D3DXVECTOR4 v;
 		bool transformed = false;
 
-		for (register unsigned int l=0; l < gRSPnumLights; l++)
+		for (unsigned int l=0; l < gRSPnumLights; l++)
 		{
 			if( gRSPlights[l].range == 0 )
 			{
@@ -957,9 +956,9 @@ uint32 LightVertNew(D3DXVECTOR4 & norm)
 	float fCosT;
 
 	// Do ambient
-	register float r = gRSP.fAmbientLightR;
-	register float g = gRSP.fAmbientLightG;
-	register float b = gRSP.fAmbientLightB;
+	float r = gRSPlights[gRSP.ambientLightIndex].r;
+	float g = gRSPlights[gRSP.ambientLightIndex].g;
+	float b = gRSPlights[gRSP.ambientLightIndex].b;
 
 
 	for (register unsigned int l=0; l < gRSPnumLights; l++)
@@ -1848,6 +1847,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		}
 
 		g_fFogCoord[i] = g_vecProjected[i].z;
+
 		if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
 			g_fFogCoord[i] = gRSPfFogMin;
 
@@ -1866,18 +1866,22 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		if( gRSP.bLightingEnable )
 		{
 			{
-				uint32 r= ((gRSP.ambientLightColor>>16)&0xFF);
-				uint32 g= ((gRSP.ambientLightColor>> 8)&0xFF);
-				uint32 b= ((gRSP.ambientLightColor    )&0xFF);
+				uint32 r= gRSPlights[gRSP.ambientLightIndex].r;
+				uint32 g= gRSPlights[gRSP.ambientLightIndex].g;
+				uint32 b= gRSPlights[gRSP.ambientLightIndex].b;
+
 				for( uint32 k=1; k<=gRSPnumLights; k++)
 				{
 					r += gRSPlights[k].r;
 					g += gRSPlights[k].g;
 					b += gRSPlights[k].b;
 				}
-				if( r>255 ) r=255;
-				if( g>255 ) g=255;
-				if( b>255 ) b=255;
+				if( r>255 ) 
+					r=255;
+				if( g>255 ) 
+					g=255;
+				if( b>255 )
+					b=255;
 				r *= vert.rgba.r ;
 				g *= vert.rgba.g ;
 				b *= vert.rgba.b ;
@@ -1891,6 +1895,10 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			}
 
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = vert.rgba.a;	// still use alpha from the vertex
+//TEXTURE
+				g_vtxTransformed[i].x = (float)vert.tu;
+				g_vtxTransformed[i].y = (float)vert.tv;
+
 		}
 		else
 		{
@@ -2086,26 +2094,21 @@ void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
 }
 
-void SetLightDirection(uint32 dwLight, float x, float y, float z)
+void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)
 {
-	//gRSP.bLightIsUpdated = true;
-
-	//gRSPlights[dwLight].ox = x;
-	//gRSPlights[dwLight].oy = y;
-	//gRSPlights[dwLight].oz = z;
-	float w = sqrt(x*x+y*y+z*z);
+	float w = range == 0 ? sqrt(x*x+y*y+z*z) : 1;
 
 	gRSPlights[dwLight].x = x/w;
 	gRSPlights[dwLight].y = y/w;
 	gRSPlights[dwLight].z = z/w;
-	gRSPlights[dwLight].range = 0; //was range ever needed? Check majors mask
+	gRSPlights[dwLight].range = range; 
 
 	if( status.isVertexShaderEnabled && dwLight>0 )
 	{
 		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT1_DIRECTION+dwLight, &(gRSPlights[dwLight].x), 1 );
 	}
 
-	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f", dwLight, x, y, z));
+	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f, %.4f", dwLight, x, y, z, range));
 }
 
 static float maxS0, maxT0;
@@ -2113,6 +2116,7 @@ static float maxS1, maxT1;
 static bool validS0, validT0;
 static bool validS1, validT1;
 
+//Checkme
 void LogTextureCoords(float fTex0S, float fTex0T, float fTex1S, float fTex1T)
 {
 	if( validS0 )

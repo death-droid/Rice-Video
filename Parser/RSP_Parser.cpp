@@ -798,6 +798,7 @@ void DLParser_Process(OSTask * pTask)
 	gDlistStackPointer=0;
 	gDlistStack[gDlistStackPointer].pc = (uint32)pTask->t.data_ptr;
 	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((gDlistStack[gDlistStackPointer].pc == 0 && pauseAtNext && eventToPause==NEXT_UNKNOWN_OP),
 			{DebuggerAppendMsg("Start Task without DLIST: ucode=%08X, data=%08X", (uint32)pTask->t.ucode, (uint32)pTask->t.ucode_data);});
 
@@ -852,10 +853,7 @@ void DLParser_Process(OSTask * pTask)
 			status.gUcodeCount++;
 
 			MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
-#ifdef _DEBUG
-	//		LOG_UCODE("0x%08x: %08x %08x %-10s", 
-//				gDlistStack[gDlistStackPointer].pc, p_command.inst.cmd0, p_command.inst.cmd1, (gRSP.ucode!=5&&gRSP.ucode!=10)?ucodeNames_GBI1[(p_command.inst.cmd0>>24)]:ucodeNames_GBI2[(p_command.inst.cmd0>>24)]);
-#endif
+
 			gDlistStack[gDlistStackPointer].pc += 8;
 			currentUcodeMap[p_command->inst.cmd0 >>24](*p_command);
 

@@ -177,14 +177,7 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 
 			if (field_offset == 0)
 			{
-				if (dwLight == gRSP.ambientLightIndex)
-				{
-					SetAmbientLight( (command.mw2.value>>8) );//Must really check on how this ambient shiz is working
-				}
-				else
-				{
-					SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF) );
-				}
+				SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF) );
 			}
 
 		}

@@ -253,7 +253,7 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 
 	u8 * base = g_pRDRAMu8 + dwAddr;
 	u8 r, g, b;
-	s16 x, y, z;
+	s16 x, y, z, range;
 
 	if( options.enableHackForGames == HACK_FOR_ZELDA_MM && (base[0] == 0x08) && (base[4] == 0xFF ))
 	{
@@ -266,6 +266,7 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 		x = light->x;
 		y = light->y;
 		z = light->z;
+		range = light->range;
 	}
 	else
 	{
@@ -277,30 +278,18 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 		x = light->x;
 		y = light->y;
 		z = light->z;
+		range = 0;
 	}
 
 	bool valid = (x | y | z) != 0;
 
 	LIGHT_DUMP(TRACE4("  Light[%d] RGB[%d, %d, %d]", dwLight, r, g, b));
 	LIGHT_DUMP(TRACE4("  x[%d] y[%d] z[%d] %s direction", x, y, z, valid ? "Valid" : "Invalid"));
-	uint32 dwCol = D3DCOLOR_RGBA(r,g,b,0xff);
+	
+	SetLightCol(dwLight, r, g, b);
 
-	if (dwLight == gRSP.ambientLightIndex)
-	{
-		LOG_UCODE("      (Ambient Light)");
-
-		SetAmbientLight( dwCol );
-	}
-	else
-	{
-		
-		LOG_UCODE("      (Normal Light)");
-
-		SetLightCol(dwLight, r, g, b);
-
-		if(valid != 0)
-			SetLightDirection(dwLight, x, y, z);
-	}
+	if(valid != 0)
+		SetLightDirection(dwLight, x, y, z, range);
 }
 
 void RSP_MoveMemViewport(uint32 dwAddr)
@@ -732,14 +721,7 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 			
 			if(field_offset == 0)
 			{
-				if (dwLight == gRSP.ambientLightIndex)
-				{
-					SetAmbientLight( ((command.mw1.value)>>8) );
-				}
-				else
-				{
-					SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF));
-				}
+				SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF));
 			}
 		}
 		break;
