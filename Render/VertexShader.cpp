@@ -32,7 +32,7 @@ extern void TexGen(float &s, float &t);
 
 void ProcessVertexDataExternal(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
-	FiddledVtx * g_pVtxBase = (FiddledVtx*)(g_pRDRAMu8 + dwAddr);
+	FiddledVtx * g_pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	uint32 i;
 	for (i = dwV0; i < dwV0 + dwNum; i++)
 	{

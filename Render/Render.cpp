@@ -39,6 +39,7 @@ CRender * CRender::GetRender(void)
 	else
 		return CRender::g_pRender;
 }
+
 bool CRender::IsAvailable()
 {
 	return CRender::g_pRender != NULL;
@@ -76,12 +77,6 @@ CRender::CRender() :
 
 		TileUFlags[i] = TileVFlags[i] = D3DTADDRESS_CLAMP;
 	}
-
-
-	//for( i=0; i<MAX_VERTS; i++)
-	//{
-	//	g_dwVtxFlags[i] = 0;
-	//}
 
 	//Create the pixel shader, where going to assume the user has support for this
 	m_pColorCombiner = new CDirectXPixelShaderCombiner(this);
@@ -1104,7 +1099,6 @@ void CRender::SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ
 	gRSP.nVPHeightN = nBottom - nTop + 1;
 
 	UpdateClipRectangle();
-	SetViewportRender();
 
 	LOG_UCODE("SetViewport (%d,%d - %d,%d)",gRSP.nVPLeftN, gRSP.nVPTopN, gRSP.nVPRightN, gRSP.nVPBottomN);
 }
@@ -1164,15 +1158,6 @@ bool CRender::DrawTriangles()
 	{
 		status.bFrameBufferIsDrawn = true;
 	}
-
-	/*
-	if( status.bHandleN64RenderTexture && g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_8b )	
-	{
-		gRSP.numVertices = 0;
-		gRSP.maxVertexID = 0;
-		return true;
-	}
-	*/
 
 	if (gRSP.numVertices == 0)
 		return true;

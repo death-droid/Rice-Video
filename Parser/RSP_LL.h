@@ -50,8 +50,8 @@ void DLParser_RSP_Last_Legion_0x00(MicroCodeCommand command)
 			return;
 		}
 
-		uint32 pc1 = *(uint32 *)(g_pRDRAMu8 + newaddr+8*1+4);
-		uint32 pc2 = *(uint32 *)(g_pRDRAMu8 + newaddr+8*4+4);
+		uint32 pc1 = *(uint32 *)(g_pu8RamBase + newaddr+8*1+4);
+		uint32 pc2 = *(uint32 *)(g_pu8RamBase + newaddr+8*4+4);
 		pc1 = RSPSegmentAddr(pc1);
 		pc2 = RSPSegmentAddr(pc2);
 
@@ -92,13 +92,13 @@ void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-	uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC);
-	uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC);
+	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 
 	gDlistStack[gDlistStackPointer].pc += 8;
 
 
-	LOG_UCODE("0x%08x: %08x %08x", dwPC, *(uint32 *)(g_pRDRAMu8 + dwPC+0), *(uint32 *)(g_pRDRAMu8 + dwPC+4));
+	LOG_UCODE("0x%08x: %08x %08x", dwPC, *(uint32 *)(g_pu8RamBase + dwPC+0), *(uint32 *)(g_pu8RamBase + dwPC+4));
 
 	uint32 dwXH		= (((command.inst.cmd0)>>12)&0x0FFF)/4;
 	uint32 dwYH		= (((command.inst.cmd0)    )&0x0FFF)/4;

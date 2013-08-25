@@ -146,7 +146,6 @@ typedef struct {
 	BOOL	bForceSoftwareTnL;
 	BOOL	bEnableSSE;
 	BOOL	bEnableVertexShader;
-	BOOL	bSkipFrame;
 	BOOL	bDisplayTooltip;
 	BOOL	bHideAdvancedOptions;
 

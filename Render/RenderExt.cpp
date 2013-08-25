@@ -115,7 +115,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
 
-	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false, false);
 	if( pEntry ) SetCurrentTexture( 0, pEntry->pTexture, pEntry->ti.WidthToCreate, pEntry->ti.HeightToCreate, pEntry);
@@ -207,7 +207,7 @@ void CRender::LoadObjBGCopy(uObjBg &info)
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = -1;
 	// get the original texture
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
@@ -255,7 +255,7 @@ void CRender::LoadTxtrBufIntoTexture(void)
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
 	SetCurrentTexture(0,pEntry);
@@ -270,7 +270,7 @@ void CRender::LoadSprite2D(Sprite2DInfo &info, uint32 ucode)
 
 	gti.Address	= RSPSegmentAddr(info.spritePtr->address);
 	gti.Palette	= 0;
-	gti.PalAddress = (uint32)(g_pRDRAMu8+RSPSegmentAddr(info.spritePtr->tlut));
+	gti.PalAddress = (uint32)(g_pu8RamBase+RSPSegmentAddr(info.spritePtr->tlut));
 
 	if( options.enableHackForGames == HACK_FOR_NITRO )
 	{
@@ -302,7 +302,7 @@ void CRender::LoadSprite2D(Sprite2DInfo &info, uint32 ucode)
 	gti.TLutFmt		= TLUT_FMT_RGBA16;	//RGBA16
 	gti.bSwapped	= FALSE;
 
-	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
 	SetCurrentTexture(0,pEntry);
@@ -773,7 +773,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 	gti.Format	= bg.imageFmt;
 	gti.Size		= bg.imageSiz;
 
-	uint8* img = (uint8*)(g_pRDRAMu8+RSPSegmentAddr(bg.imagePtr));
+	uint8* img = (uint8*)(g_pu8RamBase+RSPSegmentAddr(bg.imagePtr));
 	
 	uint32 palAddr = (uint32)(&g_wRDPTlut[0]);
 	gti.Address	= RSPSegmentAddr(bg.imagePtr);
@@ -804,7 +804,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false,false);
 	// check if a hires has been enabled and not yet loaded
@@ -837,10 +837,10 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 	uint8* img;
 	if( useTIAddr )
 	{
-		img = (uint8*)(g_pRDRAMu8+RSPSegmentAddr(g_TI.dwAddr));
+		img = (uint8*)(g_pu8RamBase+RSPSegmentAddr(g_TI.dwAddr));
 	}
 	else
-		img = (uint8*)(g_pRDRAMu8+RSPSegmentAddr(sprite.txtr.block.image));
+		img = (uint8*)(g_pu8RamBase+RSPSegmentAddr(sprite.txtr.block.image));
 	uint32 palAddr = (uint32)(&g_wRDPTlut[0]);
 
 	gti.Address	= RSPSegmentAddr(sprite.txtr.block.image);
@@ -893,7 +893,7 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
 	SetCurrentTexture(0,pEntry);

@@ -662,14 +662,14 @@ uint32 DLParser_CheckUcode(uint32 ucStart, uint32 ucDStart, uint32 ucSize, uint3
 		for ( uint32 i = 0; i < 0x1000; i++ )
 		{
 
-			if ( g_pRDRAMs8[ base + ((i+0) ^ 3) ] == 'R' &&
-				g_pRDRAMs8[ base + ((i+1) ^ 3) ] == 'S' &&
-				g_pRDRAMs8[ base + ((i+2) ^ 3) ] == 'P' )
+			if ( g_ps8RamBase[ base + ((i+0) ^ 3) ] == 'R' &&
+				g_ps8RamBase[ base + ((i+1) ^ 3) ] == 'S' &&
+				g_ps8RamBase[ base + ((i+2) ^ 3) ] == 'P' )
 			{
 				CHAR * p = str;
-				while ( g_pRDRAMs8[ base + (i ^ 3) ] >= ' ')
+				while ( g_ps8RamBase[ base + (i ^ 3) ] >= ' ')
 				{
-					*p++ = g_pRDRAMs8[ base + (i ^ 3) ];
+					*p++ = g_ps8RamBase[ base + (i ^ 3) ];
 					i++;
 				}
 				*p++ = 0;
@@ -683,8 +683,8 @@ uint32 DLParser_CheckUcode(uint32 ucStart, uint32 ucDStart, uint32 ucSize, uint3
 		uint32 size = ucDSize;
 		base = ucStart & 0x1fffffff;
 
-		uint32 crc_size = ComputeCRC32( 0, &g_pRDRAMu8[ base ], 8);//size );
-		uint32 crc_800 = ComputeCRC32( 0, &g_pRDRAMu8[ base ], 0x800 );
+		uint32 crc_size = ComputeCRC32( 0, &g_pu8RamBase[ base ], 8);//size );
+		uint32 crc_800 = ComputeCRC32( 0, &g_pu8RamBase[ base ], 0x800 );
 		uint32 ucode;
 		ucode = DLParser_IdentifyUcode( crc_size, crc_800, str );
 		if ( ucode == ~0 )
@@ -756,32 +756,19 @@ extern bool bHalfTxtScale;
 
 void DLParser_Process(OSTask * pTask)
 {
-	static int skipframe=0;
-
 	dlistMtxCount = 0;
 	bHalfTxtScale = false;
 
 	if ( CRender::g_pRender == NULL)
 	{
 		TriggerDPInterrupt();
-		TriggerSPInterrupt();
 		return;
 	}
 
 	status.bScreenIsDrawn = true;
-	if( options.bSkipFrame )
-	{
-		skipframe++;
-		if(skipframe%2)
-		{
-			TriggerDPInterrupt();
-			TriggerSPInterrupt();
-			return;
-		}
-	}
 
 	g_pOSTask = pTask;
-	
+
 	DebuggerPauseCountN( NEXT_DLIST );
 	status.gRDPTime = timeGetTime();
 	status.gDlistCount++;
@@ -852,7 +839,7 @@ void DLParser_Process(OSTask * pTask)
 
 			status.gUcodeCount++;
 
-			MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
+			MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
 
 			gDlistStack[gDlistStackPointer].pc += 8;
 			currentUcodeMap[p_command->inst.cmd0 >>24](*p_command);
@@ -872,11 +859,7 @@ void DLParser_Process(OSTask * pTask)
 	}
 
 	CRender::g_pRender->EndRendering();
-
-	if( gRSP.ucode >= 17)
-		TriggerDPInterrupt();
-	TriggerSPInterrupt();
-
+		
 }
 
 //*****************************************************************************
@@ -885,7 +868,7 @@ void DLParser_Process(OSTask * pTask)
 inline void DLParser_FetchNextCommand(MicroCodeCommand * p_command)
 {
 	// Current PC is the last value on the stack
-	*p_command = *(MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
+	*p_command = *(MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
 
 	gDlistStack[gDlistStackPointer].pc += 8;
 
@@ -1127,7 +1110,6 @@ void DLParser_SetScissor(MicroCodeCommand command)
 
 		CRender::g_pRender->UpdateClipRectangle();
 		CRender::g_pRender->UpdateScissor();
-		CRender::g_pRender->SetViewportRender();
 	}
 
 	LOG_UCODE("SetScissor: x0=%d y0=%d x1=%d y1=%d mode=%d",
@@ -1160,7 +1142,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 		CRender::g_pRender->ClearBuffer(false,true);
 		
 		//Clear framebuffer, fixes jumpy camera in DK64, also the sun and flames glare in Zelda
-		u32 * dst = (u32*)(g_pRDRAMu8 + g_CI.dwAddr);
+		u32 * dst = (u32*)(g_pu8RamBase + g_CI.dwAddr);
 		u32 * end = (u32*)(dst + (command.fillrect.y1*(g_CI.dwWidth >> 1)));
 
 		do
@@ -1178,14 +1160,14 @@ void DLParser_FillRect(MicroCodeCommand command)
 	if( options.enableHackForGames == HACK_FOR_MARIO_TENNIS )
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-		uint32 w2 = *(uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 		if( (w2>>24) == RDP_FILLRECT )
 		{
 			// Mario Tennis, a lot of FillRect ucodes, skip all of them
 			while( (w2>>24) == RDP_FILLRECT )
 			{
 				dwPC += 8;
-				w2 = *(uint32 *)(g_pRDRAMu8 + dwPC);
+				w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 			}
 
 			gDlistStack[gDlistStackPointer].pc = dwPC;
@@ -1219,7 +1201,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 			{
 				uint16 color = (uint16)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width<<1;
-				uint32 base = (uint32)(g_pRDRAMu8 + g_pRenderTextureInfo->CI_Info.dwAddr);
+				uint32 base = (uint32)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
 				for( uint32 i =command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
 					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )
@@ -1232,7 +1214,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 			{
 				uint8 color = (uint8)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width;
-				uint32 base = (uint32)(g_pRDRAMu8 + g_pRenderTextureInfo->CI_Info.dwAddr);
+				uint32 base = (uint32)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
 				for( uint32 i=command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
 					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )
@@ -1332,7 +1314,9 @@ void RSP_RDP_Nothing(MicroCodeCommand command)
 		
 	if( options.bEnableHacks )
 		return;
-	
+
+	TriggerDPInterrupt();
+
 	gDlistStackPointer=-1;
 }
 
@@ -1618,7 +1602,7 @@ void RDP_DLParser_Process(void)
 
 	while( gDlistStack[gDlistStackPointer].pc < end )
 	{
-		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
+		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
 		gDlistStack[gDlistStackPointer].pc += 8;
 		currentUcodeMap[p_command->inst.cmd0 >>24](*p_command);
 	}
@@ -1700,8 +1684,8 @@ void LoadMatrix(uint32 addr)
 	{
 		for (j = 0; j < 4; j++) 
 		{
-			int     hi = *(short *)(g_pRDRAMu8 + ((addr+(i<<3)+(j<<1)     )^0x2));
-			uint16  lo = *(uint16  *)(g_pRDRAMu8 + ((addr+(i<<3)+(j<<1) + 32)^0x2));
+			int     hi = *(short *)(g_pu8RamBase + ((addr+(i<<3)+(j<<1)     )^0x2));
+			uint16  lo = *(uint16  *)(g_pu8RamBase + ((addr+(i<<3)+(j<<1) + 32)^0x2));
 			matToLoad.m[i][j] = (float)((hi<<16) | (lo))/ 65536.0f;
 		}
 	}

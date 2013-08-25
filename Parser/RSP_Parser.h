@@ -571,18 +571,18 @@ typedef struct
 
 // Mask down to 0x003FFFFF?
 #define RSPSegmentAddr(seg) ( gRSP.segments[((seg)>>24)&0x0F] + ((seg)&0x00FFFFFF) )
-#define RDRAM_UWORD(addr)	(*(uint32 *)((addr)+g_pRDRAMu8))
-#define RDRAM_SWORD(addr)	(*(s32 *)((addr)+g_pRDRAMu8))
-#define RDRAM_UHALF(addr)	(*(uint16 *)(((addr)^2)+g_pRDRAMu8))
-#define RDRAM_SHALF(addr)	(*(short *)(((addr)^2)+g_pRDRAMu8))
-#define RDRAM_UBYTE(addr)	(*(uint8 *)(((addr)^3)+g_pRDRAMu8))
-#define RDRAM_SBYTE(addr)	(*(s8 *)(((addr)^3)+g_pRDRAMu8))
-#define pRDRAM_UWORD(addr)	((uint32 *)((addr)+g_pRDRAMu8))
-#define pRDRAM_SWORD(addr)	((s32 *)((addr)+g_pRDRAMu8))
-#define pRDRAM_UHALF(addr)	((uint16 *)(((addr)^2)+g_pRDRAMu8))
-#define pRDRAM_SHALF(addr)	((short *)(((addr)^2)+g_pRDRAMu8))
-#define pRDRAM_UBYTE(addr)	((uint8 *)(((addr)^3)+g_pRDRAMu8))
-#define pRDRAM_SBYTE(addr)	((s8 *)(((addr)^3)+g_pRDRAMu8))
+#define RDRAM_UWORD(addr)	(*(uint32 *)((addr)+g_pu8RamBase))
+#define RDRAM_SWORD(addr)	(*(s32 *)((addr)+g_pu8RamBase))
+#define RDRAM_UHALF(addr)	(*(uint16 *)(((addr)^2)+g_pu8RamBase))
+#define RDRAM_SHALF(addr)	(*(short *)(((addr)^2)+g_pu8RamBase))
+#define RDRAM_UBYTE(addr)	(*(uint8 *)(((addr)^3)+g_pu8RamBase))
+#define RDRAM_SBYTE(addr)	(*(s8 *)(((addr)^3)+g_pu8RamBase))
+#define pRDRAM_UWORD(addr)	((uint32 *)((addr)+g_pu8RamBase))
+#define pRDRAM_SWORD(addr)	((s32 *)((addr)+g_pu8RamBase))
+#define pRDRAM_UHALF(addr)	((uint16 *)(((addr)^2)+g_pu8RamBase))
+#define pRDRAM_SHALF(addr)	((short *)(((addr)^2)+g_pu8RamBase))
+#define pRDRAM_UBYTE(addr)	((uint8 *)(((addr)^3)+g_pu8RamBase))
+#define pRDRAM_SBYTE(addr)	((s8 *)(((addr)^3)+g_pu8RamBase))
 
 extern uint16 g_wRDPTlut[];
 extern const char *textluttype[4];
@@ -626,7 +626,6 @@ void LoadMatrix(uint32 addr);
 ULONG ComputeCRC32(ULONG crc, const uint8 *buf, UINT len);
 
 void TriggerDPInterrupt();
-void TriggerSPInterrupt();
 uint32 DLParser_CheckUcode(uint32 ucStart, uint32 ucDStart, uint32 ucSize, uint32 ucDSize);
 
 bool IsUsedAsDI(uint32 addr);

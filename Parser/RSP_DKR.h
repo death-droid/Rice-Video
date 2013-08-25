@@ -36,7 +36,7 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 		uint32 dwV;
 		LONG i;
 
-		short * psSrc = (short *)(g_pRDRAMu8 + dwAddr);
+		short * psSrc = (short *)(g_pu8RamBase + dwAddr);
 
 		i = 0;
 		for (dwV = dwV0; dwV < dwV0 + dwN; dwV++)
@@ -65,7 +65,7 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 		}
 
 
-		uint16 * pwSrc = (uint16 *)(g_pRDRAMu8 + dwAddr);
+		uint16 * pwSrc = (uint16 *)(g_pu8RamBase + dwAddr);
 		i = 0;
 		for (dwV = dwV0; dwV < dwV0 + dwN; dwV++)
 		{
@@ -267,7 +267,7 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 	u32 dwNum = (((command.inst.cmd0) &  0xFFF0) >>4 );
 
 	//Unlike normal tri ucodes, this has the tri's stored in rdram
-	TriDKR *tri = (TriDKR*)&g_pRDRAMu32[ dwAddr >> 2];
+	TriDKR *tri = (TriDKR*)&g_pu32RamBase[ dwAddr >> 2];
 
 	if( dwAddr+16*dwNum >= g_dwRamSize )
 	{

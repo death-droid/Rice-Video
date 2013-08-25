@@ -59,7 +59,7 @@ void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	do {
 		uint32 dwV0 = ((command.inst.cmd1 >> 24) & 0xFF) / 5;
@@ -105,7 +105,7 @@ void RSP_Tri1_ShadowOfEmpire(MicroCodeCommand command)
 
 	// While the next command pair is Tri1, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 	
 	do
 	{

@@ -700,7 +700,6 @@ HRESULT CDXGraphicsContext::AdjustWindowForChange()
     {
         // Set windowed-mode style - but disable resizing
         SetWindowLong( m_hWnd, GWL_STYLE, m_dwWindowStyle & (~(WS_THICKFRAME|WS_MAXIMIZEBOX)) );
-
 		if ( IsWindow(m_hWndStatus) )
 		{
 			SetWindowLong( m_hWndStatus, GWL_STYLE, m_dwStatusWindowStyle & (~SBARS_SIZEGRIP));
@@ -891,7 +890,6 @@ int	CDXGraphicsContext::FindCurrentDisplayModeIndex()
 {
 	D3DDISPLAYMODE dMode;
 	D3DAdapterInfo &adapter = m_Adapters[m_dwAdapter];
-	//D3DDeviceInfo &device = adapter.devices[adapter.dwCurrentDevice];
 	D3DDeviceInfo &device = adapter.devices[options.DirectXDevice];
 	int m;
 
@@ -1150,7 +1148,7 @@ void CDXGraphicsContext::SaveSurfaceToFile(char *filenametosave, LPDIRECT3DSURFA
 
 	D3DSURFACE_DESC desc;
 	surf->GetDesc(&desc);
-	CDirectXTexture *dsttxtr = new CDirectXTexture(desc.Width, desc.Height, AS_NORMAL);
+	CTexture *dsttxtr = new CTexture(desc.Width, desc.Height, AS_NORMAL);
 
 	LPDIRECT3DSURFACE9 pDst;
 	dsttxtr->GetTexture()->GetSurfaceLevel(0,&pDst);

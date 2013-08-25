@@ -306,9 +306,6 @@ void WriteConfiguration(void)
 	fprintf(f, "EnableVertexShader ");
 	fprintf(f, "%d\n", options.bEnableVertexShader);
 
-	fprintf(f, "SkipFrame ");
-	fprintf(f, "%d\n", options.bSkipFrame);
-
 	fprintf(f, "DisplayTooltip ");
 	fprintf(f, "%d\n", options.bDisplayTooltip);
 
@@ -477,7 +474,6 @@ void ReadConfiguration(void)
 		options.bDumpTexturesToFiles = FALSE;
 		options.textureEnhancement = 0;
 		options.textureEnhancementControl = 0;
-		options.bSkipFrame = FALSE;
 		options.bDisplayTooltip = FALSE;
 		options.bHideAdvancedOptions = TRUE;
 		options.bDisplayOnscreenFPS = FALSE;
@@ -541,7 +537,6 @@ void ReadConfiguration(void)
 		options.bEnableSSE = ReadRegistryDwordVal("EnableSSE");
 		options.bEnableVertexShader = ReadRegistryDwordVal("EnableVertexShader");
 		options.bEnableVertexShader = FALSE;
-		options.bSkipFrame = ReadRegistryDwordVal("SkipFrame");
 		options.bDisplayTooltip = ReadRegistryDwordVal("DisplayTooltip");
 		options.bHideAdvancedOptions = ReadRegistryDwordVal("HideAdvancedOptions");
 		options.bDisplayOnscreenFPS = ReadRegistryDwordVal("DisplayOnscreenFPS");
@@ -1979,7 +1974,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			EnableWindow(item, FALSE);
 		}
 
-		SendDlgItemMessage(hDlg, IDC_SKIP_FRAME, BM_SETCHECK, options.bSkipFrame ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_SETCHECK, options.bDisplayTooltip ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_SETCHECK, options.bHideAdvancedOptions ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -2125,7 +2119,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		case IDOK:
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bSkipFrame = (SendDlgItemMessage(hDlg, IDC_SKIP_FRAME, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bDisplayTooltip = (SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);

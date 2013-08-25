@@ -768,7 +768,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	//	gti.PalAddress += 16  * 2 * tile.dwPalette; BACKTOME
 
 	gti.Address = (info->dwLoadAddress+(tile.dwTMem-infoTmemAddr)*8) & (g_dwRamSize-1) ;
-	gti.pPhysicalAddress = ((uint8*)g_pRDRAMu32)+gti.Address;
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = tileno;
 
 	if( g_curRomInfo.bTxtSizeMethod2 )
@@ -921,7 +921,7 @@ void DLParser_LoadTLut(MicroCodeCommand command)
 	uint32 dwPalAddress = g_TI.dwAddr + dwRDRAMOffset;
 
 	//Copy PAL to the PAL memory
-	uint16 *srcPal = (uint16*)(g_pRDRAMu8 + (dwPalAddress& (g_dwRamSize-1)) );
+	uint16 *srcPal = (uint16*)(g_pu8RamBase + (dwPalAddress& (g_dwRamSize-1)) );
 	for (uint32 i=0; i<dwCount && i<0x100; i++)
 	{
 		g_wRDPTlut[(i+dwTMEMOffset)^1] = srcPal[i^1];
@@ -1042,7 +1042,7 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 	{
 		return;
 	}
-	uint64* src = (uint64*)(g_pRDRAMu8+address);
+	uint64* src = (uint64*)(g_pu8RamBase+address);
 	uint64* dest = &g_Tmem.g_Tmem64bit[tile.dwTMem];
 
 	if( dxt > 0)
@@ -1136,7 +1136,7 @@ void DLParser_LoadTile(MicroCodeCommand command)
 	if( tile.sh < tile.sl )	swap(tile.sh, tile.sl);
 	bpl = (tile.sh - tile.sl + 1) << tile.dwSize >> 1;
 	height = tile.th - tile.tl + 1;
-	src = &g_pRDRAMu8[address];
+	src = &g_pu8RamBase[address];
 
 	if (((address + height * bpl) > g_dwRamSize) || (((tile.dwTMem << 3) + bpl * height) > 4096)) // Stay within TMEM
 	{
@@ -1410,10 +1410,10 @@ void DLParser_TexRect(MicroCodeCommand command)
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-	uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
-	uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwPC+4+8);
-	uint32 dwHalf1 = *(uint32 *)(g_pRDRAMu8 + dwPC);
-	uint32 dwHalf2 = *(uint32 *)(g_pRDRAMu8 + dwPC+8);
+	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC+4);
+	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4+8);
+	uint32 dwHalf1 = *(uint32 *)(g_pu8RamBase + dwPC);
+	uint32 dwHalf2 = *(uint32 *)(g_pu8RamBase + dwPC+8);
 
 	if( options.enableHackForGames == HACK_FOR_ALL_STAR_BASEBALL || options.enableHackForGames == HACK_FOR_MLB )
 	{
@@ -1448,8 +1448,8 @@ void DLParser_TexRect(MicroCodeCommand command)
 	}
 
 
-	LOG_UCODE("0x%08x: %08x %08x", dwPC, *(uint32 *)(g_pRDRAMu8 + dwPC+0), *(uint32 *)(g_pRDRAMu8 + dwPC+4));
-	LOG_UCODE("0x%08x: %08x %08x", dwPC+8, *(uint32 *)(g_pRDRAMu8 + dwPC+8), *(uint32 *)(g_pRDRAMu8 + dwPC+8+4));
+	LOG_UCODE("0x%08x: %08x %08x", dwPC, *(uint32 *)(g_pu8RamBase + dwPC+0), *(uint32 *)(g_pu8RamBase + dwPC+4));
+	LOG_UCODE("0x%08x: %08x %08x", dwPC+8, *(uint32 *)(g_pu8RamBase + dwPC+8), *(uint32 *)(g_pu8RamBase + dwPC+8+4));
 
 	uint32 dwXH		= (((command.inst.cmd0)>>12)&0x0FFF)/4;
 	uint32 dwYH		= (((command.inst.cmd0)    )&0x0FFF)/4;
@@ -1571,8 +1571,8 @@ void DLParser_TexRectFlip(MicroCodeCommand command)
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-	uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
-	uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwPC+4+8);
+	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC+4);
+	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4+8);
 
 	// Increment PC so that it points to the right place
 	gDlistStack[gDlistStackPointer].pc += 16;

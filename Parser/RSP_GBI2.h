@@ -216,7 +216,7 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 
 		// While the next command pair is Tri1, add vertices
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 		do
 		{
@@ -264,7 +264,7 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 
 		// While the next command pair is Tri2, add vertices
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 		bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
@@ -318,7 +318,7 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 	else
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 		bool bTrisAdded = false;
 
@@ -640,7 +640,7 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 		{
 		case 0x00:
 			{
-				s8 * pcBase = g_pRDRAMs8 + addr;
+				s8 * pcBase = g_ps8RamBase + addr;
 				LOG_UCODE("    RSP_GBI1_MV_MEM_LOOKATX %f %f %f",
 					(float)pcBase[8 ^ 0x3],
 					(float)pcBase[9 ^ 0x3],
@@ -650,7 +650,7 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 			break;
 		case 0x18:
 			{
-				s8 * pcBase = g_pRDRAMs8 + addr;
+				s8 * pcBase = g_ps8RamBase + addr;
 				LOG_UCODE("    RSP_GBI1_MV_MEM_LOOKATY %f %f %f",
 					(float)pcBase[8 ^ 0x3],
 					(float)pcBase[9 ^ 0x3],

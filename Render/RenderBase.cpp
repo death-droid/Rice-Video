@@ -1150,7 +1150,7 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	//			- g_dwVtxDifColor[i]			-> vertex color
 	//			- g_fVtxTxtCoords[i]				-> vertex texture cooridinates
 
-	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pRDRAMu8 + dwAddr);
+	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = pVtxBase;
 
 	uint32 i;
@@ -1256,7 +1256,7 @@ void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	//			- g_dwVtxDifColor[i]			-> vertex color
 	//			- g_fVtxTxtCoords[i]				-> vertex texture cooridinates
 
-	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pRDRAMu8 + dwAddr);
+	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = pVtxBase;
 
 	uint32 i;
@@ -1596,7 +1596,7 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 	UpdateCombinedMatrix();
 
-	uint32 pVtxBase = uint32(g_pRDRAMu8 + dwAddr);
+	uint32 pVtxBase = uint32(g_pu8RamBase + dwAddr);
 	g_pVtxBase = (FiddledVtx*)pVtxBase;
 
 	Matrix &matWorldProject(gRSP.DKRMatrixes[gDKRCMatrixIndex]);
@@ -1715,7 +1715,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 	UpdateCombinedMatrix();
 
-	N64VtxPD * pVtxBase = (N64VtxPD*)(g_pRDRAMu8 + dwAddr);
+	N64VtxPD * pVtxBase = (N64VtxPD*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = (FiddledVtx*)pVtxBase;	// Fix me
 
 	for (uint32 i = dwV0; i < dwV0 + dwNum; i++)
@@ -1743,7 +1743,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		RSP_Vtx_Clipping(i);
 
-		uint8 *addr = g_pRDRAMu8+dwPDCIAddr+ (vert.cidx&0xFF);
+		uint8 *addr = g_pu8RamBase+dwPDCIAddr+ (vert.cidx&0xFF);
 		uint32 a = addr[0];
 		uint32 r = addr[3];
 		uint32 g = addr[2];
@@ -1822,9 +1822,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 	UpdateCombinedMatrix();
 
-	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pRDRAMu8 + dwAddr);
+	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = pVtxBase;
-	short *vertexColoraddr = (short*)(g_pRDRAMu8+dwConkerVtxZAddr);
+	short *vertexColoraddr = (short*)(g_pu8RamBase+dwConkerVtxZAddr);
 
 	uint32 i;
 	for (i = dwV0; i < dwV0 + dwNum; i++)
@@ -1927,9 +1927,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		// can't generate tex coord)
 		if (gRSP.bTextureGen && gRSP.bLightingEnable )
 		{
-				g_normal.x = (float)*(char*)(g_pRDRAMu8+ (((i<<1)+0)^3)+dwConkerVtxZAddr);
-				g_normal.y = (float)*(char*)(g_pRDRAMu8+ (((i<<1)+1)^3)+dwConkerVtxZAddr);
-				g_normal.z = (float)*(char*)(g_pRDRAMu8+ (((i<<1)+2)^3)+dwConkerVtxZAddr);
+				g_normal.x = (float)*(char*)(g_pu8RamBase+ (((i<<1)+0)^3)+dwConkerVtxZAddr);
+				g_normal.y = (float)*(char*)(g_pu8RamBase+ (((i<<1)+1)^3)+dwConkerVtxZAddr);
+				g_normal.z = (float)*(char*)(g_pu8RamBase+ (((i<<1)+2)^3)+dwConkerVtxZAddr);
 				Vec3TransformNormal(g_normal, gRSPmodelViewTop);
 				TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
 		}
@@ -1975,8 +1975,8 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 	uint32 dwV0 = 0;
 	uint32 dwNum = (dwXYZCmd&0xFF00)>>10;
 
-	RS_Vtx_XYZ * pVtxXYZBase = (RS_Vtx_XYZ*)(g_pRDRAMu8 + dwXYZAddr);
-	RS_Vtx_Color * pVtxColorBase = (RS_Vtx_Color*)(g_pRDRAMu8 + dwColorAddr);
+	RS_Vtx_XYZ * pVtxXYZBase = (RS_Vtx_XYZ*)(g_pu8RamBase + dwXYZAddr);
+	RS_Vtx_Color * pVtxColorBase = (RS_Vtx_Color*)(g_pu8RamBase + dwColorAddr);
 
 	uint32 i;
 	for (i = dwV0; i < dwV0 + dwNum; i++)

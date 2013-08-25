@@ -72,7 +72,6 @@ public:
 	inline RenderTexture& GetCurrentTexture() { return g_textures[gRSP.curTile]; }
 	inline RenderTexture& GetTexture(uint32 dwTile) { return g_textures[dwTile]; }
 	void SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ);
-	virtual void SetViewportRender() {}
 	virtual void SetClipRatio(uint32 type, uint32 value);
 	virtual void UpdateScissor() {}
 	virtual void ApplyRDPScissor(bool force=false) {}

@@ -32,18 +32,18 @@ void DLParser_RDPHalf1_GoldenEye(MicroCodeCommand command)
 
 	//PD_LoadMatrix_0xb4(dwPC + 8*16 - 8);
 
-	uint32 dw1 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*0+4);
+	uint32 dw1 = *(uint32 *)(g_pu8RamBase + dwPC+8*0+4);
 
-	uint32 dw3 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*2+4);
-	uint32 dw8 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*7+4);
-	uint32 dw9 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*8+4);
+	uint32 dw3 = *(uint32 *)(g_pu8RamBase + dwPC+8*2+4);
+	uint32 dw8 = *(uint32 *)(g_pu8RamBase + dwPC+8*7+4);
+	uint32 dw9 = *(uint32 *)(g_pu8RamBase + dwPC+8*8+4);
 
 	//Unused for now
-	//uint32 dw2 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*1+4);
-	//uint32 dw4 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*3+4);
-	//uint32 dw5 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*4+4);
-	//uint32 dw6 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*5+4);
-	//uint32 dw7 = *(uint32 *)(g_pRDRAMu8 + dwPC+8*6+4);
+	//uint32 dw2 = *(uint32 *)(g_pu8RamBase + dwPC+8*1+4);
+	//uint32 dw4 = *(uint32 *)(g_pu8RamBase + dwPC+8*3+4);
+	//uint32 dw5 = *(uint32 *)(g_pu8RamBase + dwPC+8*4+4);
+	//uint32 dw6 = *(uint32 *)(g_pu8RamBase + dwPC+8*5+4);
+	//uint32 dw7 = *(uint32 *)(g_pu8RamBase + dwPC+8*6+4);
 
 	uint32 r = (dw8>>16)&0xFF;
 	uint32 g = (dw8    )&0xFF;
@@ -73,7 +73,7 @@ void DLParser_RDPHalf1_GoldenEye(MicroCodeCommand command)
 	{
 		dwPC -= 8;
 		LOG_UCODE("GoldenEye Sky at PC=%08X: 0x%08x 0x%08x", dwPC, (command.inst.cmd0), (command.inst.cmd1));
-		uint32 *ptr = (uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 *ptr = (uint32 *)(g_pu8RamBase + dwPC);
 		for( int i=0; i<21; i++, dwPC+=16,ptr+=4 )
 		{
 			LOG_UCODE("%08X: %08X %08X %08X %08X", dwPC, ptr[0], ptr[1], ptr[2], ptr[3]);

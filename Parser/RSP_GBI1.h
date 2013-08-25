@@ -97,7 +97,7 @@ void RSP_GBI1_Tri2(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = false;
 
@@ -150,7 +150,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 #endif
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-		uint32 dwDL = *(uint32 *)(g_pRDRAMu8 + dwPC-12);
+		uint32 dwDL = *(uint32 *)(g_pu8RamBase + dwPC-12);
 		uint32 dwAddr = RSPSegmentAddr(dwDL);
 
 		dwAddr = RSPSegmentAddr(dwDL);
@@ -179,7 +179,7 @@ void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 dwUcStart = RSPSegmentAddr(command.inst.cmd1);
 	uint32 dwSize = ((command.inst.cmd0)&0xFFFF)+1;
-	uint32 dwUcDStart = RSPSegmentAddr(*(uint32 *)(g_pRDRAMu8 + dwPC-12));
+	uint32 dwUcDStart = RSPSegmentAddr(*(uint32 *)(g_pu8RamBase + dwPC-12));
 
 	uint32 ucode = DLParser_CheckUcode(dwUcStart, dwUcDStart, dwSize, 8);
 	RSP_SetUcode(ucode, dwUcStart, dwUcDStart, dwSize);
@@ -207,8 +207,8 @@ void RSP_GFX_Force_Matrix(uint32 dwAddr)
 void DisplayVertexInfo(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 {
 #ifdef _DEBUG
-		s8 *pcSrc = (s8 *)(g_pRDRAMu8 + dwAddr);
-		short *psSrc = (short *)(g_pRDRAMu8 + dwAddr);
+		s8 *pcSrc = (s8 *)(g_pu8RamBase + dwAddr);
+		short *psSrc = (short *)(g_pu8RamBase + dwAddr);
 
 		for (uint32 dwV = dwV0; dwV < dwV0 + dwN; dwV++)
 		{
@@ -251,7 +251,7 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 		return;
 	}
 
-	u8 * base = g_pRDRAMu8 + dwAddr;
+	u8 * base = g_pu8RamBase + dwAddr;
 	u8 r, g, b;
 	s16 x, y, z, range;
 
@@ -304,15 +304,15 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 	short trans[4];
 
 	// dwAddr is offset into RD_RAM of 8 x 16bits of data...
-	scale[0] = *(short *)(g_pRDRAMu8 + ((dwAddr+(0*2))^0x2));
-	scale[1] = *(short *)(g_pRDRAMu8 + ((dwAddr+(1*2))^0x2));
-//	scale[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(2*2))^0x2));
-//	scale[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(3*2))^0x2));
+	scale[0] = *(short *)(g_pu8RamBase + ((dwAddr+(0*2))^0x2));
+	scale[1] = *(short *)(g_pu8RamBase + ((dwAddr+(1*2))^0x2));
+//	scale[2] = *(short *)(g_pu8RamBase + ((dwAddr+(2*2))^0x2));
+//	scale[3] = *(short *)(g_pu8RamBase + ((dwAddr+(3*2))^0x2));
 
-	trans[0] = *(short *)(g_pRDRAMu8 + ((dwAddr+(4*2))^0x2));
-	trans[1] = *(short *)(g_pRDRAMu8 + ((dwAddr+(5*2))^0x2));
-//	trans[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(6*2))^0x2));
-//	trans[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(7*2))^0x2));
+	trans[0] = *(short *)(g_pu8RamBase + ((dwAddr+(4*2))^0x2));
+	trans[1] = *(short *)(g_pu8RamBase + ((dwAddr+(5*2))^0x2));
+//	trans[2] = *(short *)(g_pu8RamBase + ((dwAddr+(6*2))^0x2));
+//	trans[3] = *(short *)(g_pu8RamBase + ((dwAddr+(7*2))^0x2));
 
 
 	int nCenterX = trans[0]/4;
@@ -443,7 +443,7 @@ void RSP_GBI1_RDPHalf_1(MicroCodeCommand command)
 void RSP_GBI1_Line3D(MicroCodeCommand command)
 {
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = FALSE;
 
@@ -825,7 +825,7 @@ void RSP_GBI1_Tri1(MicroCodeCommand command)
 
 	// While the next command pair is Tri1, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8+  dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase+  dwPC);
 	
 	do
 	{

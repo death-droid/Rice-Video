@@ -42,9 +42,6 @@
     <Filter Include="Graphics\Texture">
       <UniqueIdentifier>{ea6f7774-37cb-4d68-b9bb-ccd6b7d909be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graphics\Texture\DirectXTexture">
-      <UniqueIdentifier>{60f1a280-aa7c-428d-a22c-a4138a7c311a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphics\Texture\Texture Filters">
       <UniqueIdentifier>{aa964cc8-abac-4ad7-9594-848723a44491}</UniqueIdentifier>
     </Filter>
@@ -78,9 +75,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Debugger\Debugger.h">
-      <Filter>Debugger</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\OGLDebug.h">
       <Filter>Debugger</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -151,9 +145,6 @@
     </ClInclude>
     <ClInclude Include="Texture\TextureManager.h">
       <Filter>Graphics\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture\DirectXTexture\DirectXTexture.h">
-      <Filter>Graphics\Texture\DirectXTexture</Filter>
     </ClInclude>
     <ClInclude Include="Texture\TextureFilters\TextureFilters.h">
       <Filter>Graphics\Texture\Texture Filters</Filter>
@@ -297,9 +288,6 @@
     </ClCompile>
     <ClCompile Include="Texture\TextureManager.cpp">
       <Filter>Graphics\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture\DirectXTexture\DirectXTexture.cpp">
-      <Filter>Graphics\Texture\DirectXTexture</Filter>
     </ClCompile>
     <ClCompile Include="Texture\TextureFilters\TextureFilters.cpp">
       <Filter>Graphics\Texture\Texture Filters</Filter>

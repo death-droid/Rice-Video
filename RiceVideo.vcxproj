@@ -165,7 +165,6 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="Debugger\Debugger.h" />
-    <ClInclude Include="Debugger\OGLDebug.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Combiner\blender.h" />
     <ClInclude Include="Combiner\Combiner.h" />
@@ -189,7 +188,6 @@
     <ClInclude Include="Texture\ConvertImage.h" />
     <ClInclude Include="Texture\Texture.h" />
     <ClInclude Include="Texture\TextureManager.h" />
-    <ClInclude Include="Texture\DirectXTexture\DirectXTexture.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters_2xsai.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters_hq2x.h" />
@@ -244,7 +242,6 @@
     <ClCompile Include="Texture\ConvertImage.cpp" />
     <ClCompile Include="Texture\Texture.cpp" />
     <ClCompile Include="Texture\TextureManager.cpp" />
-    <ClCompile Include="Texture\DirectXTexture\DirectXTexture.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters_2xsai.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters_hq2x.cpp" />

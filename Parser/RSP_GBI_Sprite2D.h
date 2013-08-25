@@ -28,14 +28,14 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 	u32 address;
 
 	u32 pc = gDlistStack[gDlistStackPointer].pc;
-	u32 * pCmdBase = (u32 *)(g_pRDRAMu8 + pc);
+	u32 * pCmdBase = (u32 *)(g_pu8RamBase + pc);
 
 	// Try to execute as many sprite2d ucodes as possible, I seen chains over 200! in FB
 	// NB Glover calls RDP Sync before draw for the sky.. so checks were added
 	do
 	{
 		address = RSPSegmentAddr(command.inst.cmd1) & (g_dwRamSize-1);
-		g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_pRDRAMs8 + address);
+		g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_ps8RamBase + address);
 
 		// Fetch Sprite2D Flip
 		command.inst.cmd0= *pCmdBase++;
@@ -97,7 +97,7 @@ void RSP_GBI_Sprite2D_PuzzleMaster64(MicroCodeCommand command)
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	dwAddr &= (g_dwRamSize-1);
 
-	g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_pRDRAMs8+dwAddr);
+	g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_ps8RamBase+dwAddr);
 
 	g_Sprite2DInfo.flipX = 0;
 	g_Sprite2DInfo.flipY = 0;
