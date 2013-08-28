@@ -231,9 +231,6 @@ typedef struct
 			float range;		// Range == 0  for directional light
 								// Range != 0  for point light, Zelda MM
 		};
-#if _MSC_VER > 1200
-		__m64 dir64[2];
-#endif
 	};
 
 	union {
@@ -254,9 +251,6 @@ typedef struct
 			float fa;
 		};
 		float fcolors[4];
-#if _MSC_VER > 1200
-		__m64 fcolor64[2];
-#endif
 	};
 
 	union {
@@ -269,9 +263,6 @@ typedef struct
 		struct {
 			D3DXVECTOR3 td;
 		};
-#if _MSC_VER > 1200
-		__m64 tdir64[2];
-#endif
 	};
 
 	union {
@@ -284,9 +275,6 @@ typedef struct
 		struct {
 			D3DXVECTOR3 od;
 		};
-#if _MSC_VER > 1200
-		__m64 odir64[2];
-#endif
 	};
 } Light;
 

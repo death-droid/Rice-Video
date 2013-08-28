@@ -337,10 +337,6 @@ uint32 ReadRegistryDwordValFromFile(char *Field, char FileName[1024]);
 #define TV_SYSTEM_PAL		0
 uint32 CountryCodeToTVSystem(uint32 countryCode);
 
-
-//#define COMPLETE_N64_TMEM
-
-
 enum {
     PSH_OPTIONS,
     PSH_DIRECTX,

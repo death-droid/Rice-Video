@@ -22,6 +22,36 @@ const char * sc_szBlClr[4]		= { "In", "Mem", "Bl", "Fog" };
 const char * sc_szBlA1[4]		= { "AIn", "AFog", "AShade", "0" };
 const char * sc_szBlA2[4]		= { "1-A", "AMem", "1", "0" };
 
+void CBlender::NormalAlphaBlender(void)
+{
+	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
+}
+
+void CBlender::DisableAlphaBlender(void)
+{
+	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
+}
+
+void CBlender::BlendFunc(uint32 srcFunc, uint32 desFunc)
+{
+	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, srcFunc);
+	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, desFunc);
+}
+
+void CBlender::Enable()
+{
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
+}
+
+void CBlender::Disable()
+{
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,FALSE );
+}
+
 //========================================================================
 void CBlender::InitBlenderMode(void)					// Set Alpha Blender mode
 {

@@ -106,22 +106,14 @@ inline void RSP_Vtx_Clipping(int i) {}
 RSP_Options gRSP;
 RDP_Options gRDP;
 
-#if _MSC_VER > 1200
 __declspec(align(16)) static D3DXVECTOR4 g_normal;
-#else
-static D3DXVECTOR4 g_normal;
-#endif
+
 static int norms[3];
 
-#if _MSC_VER > 1200
 __declspec(align(16)) D3DXVECTOR4	g_vtxNonTransformed[MAX_VERTS];
 __declspec(align(16)) D3DXVECTOR4	g_vecProjected[MAX_VERTS];
 __declspec(align(16)) D3DXVECTOR4	g_vtxTransformed[MAX_VERTS];
-#else
-D3DXVECTOR4	g_vtxNonTransformed[MAX_VERTS];
-D3DXVECTOR4	g_vecProjected[MAX_VERTS];
-D3DXVECTOR4	g_vtxTransformed[MAX_VERTS];
-#endif
+
 float		g_vtxProjected5[1000][5];
 float		g_vtxProjected5Clipped[2000][5];
 //uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
@@ -147,20 +139,12 @@ float				gRSPfFogDivider;
 
 uint32			gRSPnumLights;
 Light	gRSPlights[16];
-#if _MSC_VER > 1200
+
 __declspec(align(16)) Matrix	gRSPworldProjectTransported;
 __declspec(align(16)) Matrix	gRSPworldProject;
 __declspec(align(16)) Matrix	gRSPmodelViewTop;
 __declspec(align(16)) Matrix	gRSPmodelViewTopTranspose;
 __declspec(align(16)) Matrix	dkrMatrixTransposed;
-#else
-Matrix	gRSPworldProjectTransported;
-Matrix	gRSPworldProject;
-Matrix	gRSPmodelViewTop;
-Matrix	gRSPmodelViewTopTranspose;
-Matrix	dkrMatrixTransposed;
-#endif
-
 
 void (*ProcessVertexData)(uint32 dwAddr, uint32 dwV0, uint32 dwNum)=NULL;
 
@@ -316,7 +300,6 @@ __asm l3:	\
 
 __declspec( naked ) void  __fastcall SSEVec3Transform(int i)
 {
-#if _MSC_VER > 1200
 	//SSEVec3Transform(g_vtxTransformed[i], g_vtxNonTransformed[i]);
 	__asm
 	{
@@ -383,13 +366,11 @@ __declspec( naked ) void  __fastcall SSEVec3Transform(int i)
 		emms;
 		ret;
 	}
-#endif
 }
 
 // Only used by DKR
 __declspec( naked ) void  __fastcall SSEVec3TransformDKR(D3DXVECTOR4 &pOut, const D3DXVECTOR4 &pV)
 {
-#if _MSC_VER > 1200
 	__asm
 	{
 		movaps	xmm1,	DWORD PTR [edx];		// xmm1 as original vector
@@ -443,7 +424,6 @@ __declspec( naked ) void  __fastcall SSEVec3TransformDKR(D3DXVECTOR4 &pOut, cons
 		emms;
 		ret;
 	}
-#endif
 }
 
 float real255 = 255.0f;
@@ -451,7 +431,6 @@ float real128 = 128.0f;
 
 __declspec( naked ) void  __fastcall SSEVec3TransformNormal()
 {
-#if _MSC_VER > 1200
 	__asm
 	{
 		mov		DWORD PTR [g_normal][12], 0;
@@ -524,7 +503,6 @@ l2:
 		emms;
 		ret;
 	}
-#endif
 }
 
 void NormalizeNormalVec()
@@ -983,15 +961,9 @@ uint32 LightVertNew(D3DXVECTOR4 & norm)
 float zero = 0.0f;
 float onef = 1.0f;
 float fcosT;
-#if _MSC_VER > 1200
-__m128 cosT128;
-__m64 icolor64;
-__m128 icolor128;
-#endif
 
 __declspec( naked ) uint32  __fastcall SSELightVert()
 {
-#if _MSC_VER > 1200
 	__asm
 	{
 		movaps		xmm3, DWORD PTR gRSP;	// loading Ambient colors, xmm3 is the result color
@@ -1042,15 +1014,11 @@ breakout:
 
 		ret;
 	}
-#else
-	__asm ret;
-#endif
 }
 
 
 __declspec( naked ) uint32  __fastcall SSELightVertNew()
 {
-#if _MSC_VER > 1200
 	__asm
 	{
 		movaps		xmm3, DWORD PTR gRSP;	// loading Ambient colors, xmm3 is the result color
@@ -1101,9 +1069,6 @@ breakout:
 
 		ret;
 	}
-#else
-	__asm ret;
-#endif
 }
 
 inline void ReplaceAlphaWithFogFactor(int i)

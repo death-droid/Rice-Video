@@ -83,9 +83,6 @@ CRender::CRender() :
 	//Inititalize the pixel shader combiner
 	m_pColorCombiner->Initialize();
 
-	//Create the alpha belnder
-	m_pAlphaBlender = new CDirectXBlender(this);
-
 }
 
 CRender::~CRender()
@@ -94,13 +91,7 @@ CRender::~CRender()
 	{
 		SAFE_DELETE(m_pColorCombiner);
 		m_pColorCombiner = NULL;
-	}
-	
-	if( m_pAlphaBlender != NULL )
-	{
-		SAFE_DELETE(m_pAlphaBlender);
-		m_pAlphaBlender = NULL;
-	}
+	}	
 }
 
 void CRender::ResetMatrices()
@@ -283,13 +274,13 @@ void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)
 void CRender::SetCombinerAndBlender()
 {
 	InitOtherModes();
-
+	
 	if( g_curRomInfo.bDisableBlender )
-		m_pAlphaBlender->DisableAlphaBlender();
+		CBlender::DisableAlphaBlender();
 	else if( currentRomOptions.bNormalBlender )
-		m_pAlphaBlender->NormalAlphaBlender();
+		CBlender::NormalAlphaBlender();
 	else
-		m_pAlphaBlender->InitBlenderMode();
+		CBlender::InitBlenderMode();
 
 	m_pColorCombiner->InitCombinerMode();
 }

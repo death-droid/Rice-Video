@@ -92,9 +92,6 @@
     <ClInclude Include="Combiner\DecodedMux.h">
       <Filter>Graphics\Combiner</Filter>
     </ClInclude>
-    <ClInclude Include="Combiner\DirectXCombiner\DirectXBlender.h">
-      <Filter>Graphics\Combiner\DirectXCombiner</Filter>
-    </ClInclude>
     <ClInclude Include="Combiner\DirectXCombiner\DirectXCombiner.h">
       <Filter>Graphics\Combiner\DirectXCombiner</Filter>
     </ClInclude>
@@ -237,9 +234,6 @@
     </ClCompile>
     <ClCompile Include="Combiner\DecodedMux.cpp">
       <Filter>Graphics\Combiner</Filter>
-    </ClCompile>
-    <ClCompile Include="Combiner\DirectXCombiner\DirectXBlender.cpp">
-      <Filter>Graphics\Combiner\DirectXCombiner</Filter>
     </ClCompile>
     <ClCompile Include="Combiner\DirectXCombiner\DirectXCombiner.cpp">
       <Filter>Graphics\Combiner\DirectXCombiner</Filter>

@@ -170,7 +170,6 @@
     <ClInclude Include="Combiner\Combiner.h" />
     <ClInclude Include="Combiner\CombinerDefs.h" />
     <ClInclude Include="Combiner\DecodedMux.h" />
-    <ClInclude Include="Combiner\DirectXCombiner\DirectXBlender.h" />
     <ClInclude Include="Combiner\DirectXCombiner\DirectXCombiner.h" />
     <ClInclude Include="Render\ExtendedRender.h" />
     <ClInclude Include="Render\Render.h" />
@@ -225,7 +224,6 @@
     <ClCompile Include="Combiner\blender.cpp" />
     <ClCompile Include="Combiner\Combiner.cpp" />
     <ClCompile Include="Combiner\DecodedMux.cpp" />
-    <ClCompile Include="Combiner\DirectXCombiner\DirectXBlender.cpp" />
     <ClCompile Include="Combiner\DirectXCombiner\DirectXCombiner.cpp" />
     <ClCompile Include="Render\Render.cpp" />
     <ClCompile Include="Render\RenderBase.cpp" />

@@ -634,13 +634,6 @@ bool IsUsedAsDI(uint32 addr);
 void __cdecl LOG_UCODE(LPCTSTR szFormat, ...);
 #else
 // VC7
-#if _MSC_VER >= 1300
 #define LOG_UCODE __noop
-#else
-inline void DL_PF_Noop() {}
-#define LOG_UCODE(x) DL_PF_Noop()
-#pragma warning(disable : 4002) 
 #endif
-#endif
-
 #endif	// __RICE_RDP_GFX_H__

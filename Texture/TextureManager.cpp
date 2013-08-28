@@ -786,18 +786,12 @@ void CTextureManager::ExpandTexture(TxtrCacheEntry * pEntry, uint32 sizeToLoad, 
 	{
 		uint32 tempwidth = clamp ? sizeToCreate : sizeCreated;
 		if( mirror )
-		{
 			Mirror((uint32*)di.lpSurface, sizeToLoad, mask, tempwidth, arrayWidth, otherSize, flag);
-		}
 		else
-		{
 			Wrap((uint32*)di.lpSurface, sizeToLoad, mask, tempwidth, arrayWidth, otherSize, flag);
-		}
 
 		if( tempwidth < sizeCreated )
-		{
 			Clamp((uint32*)di.lpSurface, tempwidth, sizeCreated, arrayWidth, otherSize, flag);
-		}
 
 		pEntry->pTexture->EndUpdate(&di);
 		return;
@@ -843,8 +837,7 @@ void CTextureManager::ExpandTextureS(TxtrCacheEntry * pEntry)
 {
 	TxtrInfo &ti =  pEntry->ti;
 	uint32 textureWidth = pEntry->pTexture->m_dwCreatedTextureWidth;
-	ExpandTexture(pEntry, ti.WidthToLoad, ti.WidthToCreate, textureWidth, 
-		textureWidth, S_FLAG, ti.maskS, ti.mirrorS, ti.clampS, ti.HeightToLoad);
+	ExpandTexture(pEntry, ti.WidthToLoad, ti.WidthToCreate, textureWidth, textureWidth, S_FLAG, ti.maskS, ti.mirrorS, ti.clampS, ti.HeightToLoad);
 }
 
 void CTextureManager::ExpandTextureT(TxtrCacheEntry * pEntry)
@@ -852,8 +845,7 @@ void CTextureManager::ExpandTextureT(TxtrCacheEntry * pEntry)
 	TxtrInfo &ti =  pEntry->ti;
 	uint32 textureHeight = pEntry->pTexture->m_dwCreatedTextureHeight;
 	uint32 textureWidth = pEntry->pTexture->m_dwCreatedTextureWidth;
-	ExpandTexture(pEntry, ti.HeightToLoad, ti.HeightToCreate, textureHeight,
-		textureWidth, T_FLAG, ti.maskT, ti.mirrorT, ti.clampT, ti.WidthToLoad);
+	ExpandTexture(pEntry, ti.HeightToLoad, ti.HeightToCreate, textureHeight, textureWidth, T_FLAG, ti.maskT, ti.mirrorT, ti.clampT, ti.WidthToLoad);
 }
 
 void CTextureManager::Clamp(uint32 *array, uint32 size, uint32 tosize, uint32 arraySize, uint32 rows, int flag)

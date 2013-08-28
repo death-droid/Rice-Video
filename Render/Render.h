@@ -60,8 +60,6 @@ public:
 	BOOL	m_bBlendModeValid;
 
 	CColorCombiner *m_pColorCombiner;
-	CBlender *m_pAlphaBlender;
-	
 	
 	virtual ~CRender();
 	
@@ -181,8 +179,8 @@ public:
 	bool FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor);
 	bool Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth);
 
-	virtual void SetAddressUAllStages(uint32 dwTile, int dwFlag);	// For DirectX only, fix me
-	virtual void SetAddressVAllStages(uint32 dwTile, int dwFlag);	// For DirectX only, fix me
+	virtual void SetAddressUAllStages(uint32 dwTile, int dwFlag);
+	virtual void SetAddressVAllStages(uint32 dwTile, int dwFlag);
 	virtual void SetTextureUFlag(int dwFlag, uint32 tile)=0;
 	virtual void SetTextureVFlag(int dwFlag, uint32 tile)=0;
 	virtual void SetTexelRepeatFlags(uint32 dwTile);

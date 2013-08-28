@@ -37,7 +37,6 @@ class D3DRender : public CRender
 	friend class DirectXDeviceBuilder;
 	friend class CDeviceBuilder;
 	friend class CDirectXPixelShaderCombiner;
-	friend class CDirectXBlender;
 
 public:
 	D3DRender();

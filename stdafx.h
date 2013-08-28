@@ -8,9 +8,7 @@
 
 #define _CRT_SECURE_NO_DEPRECATE
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #define EXPORT				__declspec(dllexport)
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
@@ -67,7 +65,6 @@
 #include "./Combiner/DecodedMux.h"
 
 #include "./Combiner/blender.h"
-#include "./Combiner/DirectXCombiner/DirectXBlender.h"
 
 #include "./Combiner/combiner.h"
 #include "./Combiner/DirectXCombiner/DirectXCombiner.h"

@@ -85,11 +85,7 @@ extern float	gRSPfFogDivider;
 /************************************************************************/
 /*      Don't move                                                      */
 /************************************************************************/
-#if _MSC_VER > 1200
 typedef __declspec(align(16)) struct 
-#else
-typedef struct 
-#endif
 {
 	/************************************************************************/
 	/*      Don't move above                                                */
@@ -164,11 +160,7 @@ typedef struct
 
 extern RSP_Options gRSP;
 
-#if _MSC_VER > 1200
 typedef __declspec(align(16)) struct {
-#else
-typedef struct {
-#endif
 	uint32	keyR;
 	uint32	keyG;
 	uint32	keyB;
