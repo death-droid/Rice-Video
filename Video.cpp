@@ -58,12 +58,7 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
 	case DLL_THREAD_DETACH: 
 		break; 
 	case DLL_PROCESS_DETACH:
-		//Process has been detached, write anything that needs to be back to the ini 
-		if (bIniIsChanged)
-		{
-			WriteIniFile();
-			TRACE0("Write back INI file");
-		}
+		//Process has been detached
 		break; 
 	} 
 	return TRUE; 
@@ -679,12 +674,6 @@ FUNC_TYPE(void) NAME_DEFINE(CloseDLL) (void)
 	if( status.bGameIsRunning )
 	{
 		RomClosed();
-	}
-
-	if (bIniIsChanged)
-	{
-		WriteIniFile();
-		TRACE0("Write back INI file");
 	}
 
 #ifdef _DEBUG
