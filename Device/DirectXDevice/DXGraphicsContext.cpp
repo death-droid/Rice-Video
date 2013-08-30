@@ -1293,7 +1293,27 @@ HRESULT CD3DDevWrapper::SetViewport(D3DVIEWPORT9* pViewport)
 		m_savedViewport.Height	= pViewport->Height;
 		m_savedViewport.MinZ	= pViewport->MinZ;
 		m_savedViewport.MaxZ	= pViewport->MaxZ;
-	
+
+		//Preliminary support for pillarboxing
+		if(windowSetting.uScreenScaleMode == 1)
+		{
+			float scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
+			int offset = (windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3) / 2;
+
+			pViewport->X = pViewport->X * scaleFactor + offset;
+			pViewport->Width = pViewport->Width * scaleFactor;
+		}
+		else if(windowSetting.uScreenScaleMode == 2)
+		{
+			if (pViewport->Width < windowSetting.uDisplayWidth * 0.9)
+			{
+				float scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
+                int offset = (windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3 - pViewport->Width * scaleFactor / 2) / 2 ;
+
+				pViewport->X = pViewport->X * scaleFactor + offset;
+			}
+		}
+
 		try
 		{
 			return m_pD3DDev->SetViewport(pViewport);

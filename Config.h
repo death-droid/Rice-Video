@@ -211,8 +211,6 @@ typedef struct {
 extern RomOptions defaultRomOptions;
 extern RomOptions currentRomOptions;
 
-
-extern bool bIniIsChanged;
 extern char	szIniFileName[300];
 void OutputSectionDetails(uint32 i, FILE * fh);
 int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName); 

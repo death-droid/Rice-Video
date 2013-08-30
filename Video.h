@@ -31,7 +31,7 @@ typedef struct {
 	
 	BOOL	bDisplayFullscreen;
 	int		uFullScreenRefreshRate;
-
+	int		uScreenScaleMode;
 	float	fMultX, fMultY;
 	int		vpLeftW, vpTopW, vpRightW, vpBottomW, vpWidthW, vpHeightW;
 

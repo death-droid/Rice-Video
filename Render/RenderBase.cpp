@@ -39,54 +39,13 @@ inline void RSP_Vtx_Clipping(int i)
 	g_clipFlag2[i] = 0;
 	if( g_vecProjected[i].w > 0 )
 	{
-		/*
-		if( gRSP.bRejectVtx )
 		{
-			if( g_vecProjected[i].x > 1 )	
-			{
-				g_clipFlag2[i] |= X_CLIP_MAX;
-				if( g_vecProjected[i].x > gRSP.real_clip_ratio_posx )	
-					g_clipFlag[i] |= X_CLIP_MAX;
-			}
+			float scaleFactor = 1.0f;
+			if(windowSetting.uScreenScaleMode == 1)
+				scaleFactor = (3.0 * windowSetting.uDisplayWidth) / (4.0 * windowSetting.uDisplayHeight);
 
-			if( g_vecProjected[i].x < -1 )	
-			{
-				g_clipFlag2[i] |= X_CLIP_MIN;
-				if( g_vecProjected[i].x < gRSP.real_clip_ratio_negx )	
-					g_clipFlag[i] |= X_CLIP_MIN;
-			}
-
-			if( g_vecProjected[i].y > 1 )	
-			{
-				g_clipFlag2[i] |= Y_CLIP_MAX;
-				if( g_vecProjected[i].y > gRSP.real_clip_ratio_posy )	
-					g_clipFlag[i] |= Y_CLIP_MAX;
-			}
-
-			if( g_vecProjected[i].y < -1 )	
-			{
-				g_clipFlag2[i] |= Y_CLIP_MIN;
-				if( g_vecProjected[i].y < gRSP.real_clip_ratio_negy )	
-					g_clipFlag[i] |= Y_CLIP_MIN;
-			}
-
-			//if( g_vecProjected[i].z > 1.0f )	
-			//{
-			//	g_clipFlag2[i] |= Z_CLIP_MAX;
-			//	g_clipFlag[i] |= Z_CLIP_MAX;
-			//}
-
-			//if( gRSP.bNearClip && g_vecProjected[i].z < -1.0f )	
-			//{
-			//	g_clipFlag2[i] |= Z_CLIP_MIN;
-			//	g_clipFlag[i] |= Z_CLIP_MIN;
-			//}
-		}
-		else
-		*/
-		{
-			if( g_vecProjected[i].x > 1 )	g_clipFlag2[i] |= X_CLIP_MAX;
-			if( g_vecProjected[i].x < -1 )	g_clipFlag2[i] |= X_CLIP_MIN;
+			if( g_vecProjected[i].x > scaleFactor )   g_clipFlag2[i] |= X_CLIP_MAX;
+			if( g_vecProjected[i].x < -scaleFactor )  g_clipFlag2[i] |= X_CLIP_MIN;
 			if( g_vecProjected[i].y > 1 )	g_clipFlag2[i] |= Y_CLIP_MAX;
 			if( g_vecProjected[i].y < -1 )	g_clipFlag2[i] |= Y_CLIP_MIN;
 			//if( g_vecProjected[i].z > 1.0f )	g_clipFlag2[i] |= Z_CLIP_MAX;
@@ -114,8 +73,6 @@ __declspec(align(16)) D3DXVECTOR4	g_vtxNonTransformed[MAX_VERTS];
 __declspec(align(16)) D3DXVECTOR4	g_vecProjected[MAX_VERTS];
 __declspec(align(16)) D3DXVECTOR4	g_vtxTransformed[MAX_VERTS];
 
-float		g_vtxProjected5[1000][5];
-float		g_vtxProjected5Clipped[2000][5];
 //uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
 VECTOR2		g_fVtxTxtCoords[MAX_VERTS];
 uint32		g_dwVtxDifColor[MAX_VERTS];
@@ -724,11 +681,12 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	TLITVERTEX &v = g_vtxBuffer[vtxIndex];
 
 	VTX_DUMP(TRACE4("  Trans: x=%f, y=%f, z=%f, w=%f",  g_vtxTransformed[dwV].x,g_vtxTransformed[dwV].y,g_vtxTransformed[dwV].z,g_vtxTransformed[dwV].w));
-
-	v.x = g_vecProjected[dwV].x*gRSP.vtxXMul+gRSP.vtxXAdd;
+	float scaleFactor = 1.0f;
+	if(windowSetting.uScreenScaleMode == 2)
+		scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
+	v.x = g_vecProjected[dwV].x*gRSP.vtxXMul+gRSP.vtxXAdd*scaleFactor;
 	v.y = g_vecProjected[dwV].y*gRSP.vtxYMul+gRSP.vtxYAdd;
 	v.z = (g_vecProjected[dwV].z + 1.0f) * 0.5f;	// DirectX minZ=0, maxZ=1
-	//v.z = g_vecProjected[dwV].z;	// DirectX minZ=0, maxZ=1
 	v.rhw = g_vecProjected[dwV].w;
 	VTX_DUMP(TRACE4("  Proj : x=%f, y=%f, z=%f, rhw=%f",  v.x,v.y,v.z,v.rhw));
 

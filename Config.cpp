@@ -242,6 +242,7 @@ void WriteConfiguration(void)
 		windowSetting.uWindowDisplayHeight=480;
 		windowSetting.uFullScreenDisplayWidth=640;
 		windowSetting.uFullScreenDisplayHeight=480;
+		windowSetting.uScreenScaleMode = 0;
 	}
 	else
 		fclose(f);
@@ -252,6 +253,7 @@ void WriteConfiguration(void)
 	ini.SetLongValue("WindowSetting", "FullscreenWidth", windowSetting.uFullScreenDisplayWidth);
 	ini.SetLongValue("WindowSetting", "FullscreenHeight", windowSetting.uFullScreenDisplayHeight);
 	ini.SetLongValue("WindowSetting", "FullScreenFrequency", (uint32)windowSetting.uFullScreenRefreshRate);
+	ini.SetLongValue("WindowSetting", "ScreenScaleMode", (uint32)windowSetting.uScreenScaleMode);
 
 	//Now rendering modes
 	ini.SetLongValue("RenderSetting", "DirectXDevice", (uint32)options.DirectXDevice);
@@ -383,6 +385,7 @@ void ReadConfiguration(void)
 		defaultRomOptions.bNormalCombiner = FALSE;
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
 		windowSetting.uFullScreenRefreshRate = 0;	// 0 is the default value, means to use Window default frequency
+		windowSetting.uScreenScaleMode = 0;
 
 		WriteConfiguration();
 		return;
@@ -399,6 +402,7 @@ void ReadConfiguration(void)
 		windowSetting.uFullScreenDisplayWidth = (uint16)ini.GetLongValue("WindowSetting", "FullscreenWidth", 640);
 		windowSetting.uFullScreenDisplayHeight = (uint16)ini.GetLongValue("WindowSetting", "FullScreenHeight", 480);
 		windowSetting.uFullScreenRefreshRate = ini.GetLongValue("WindowSetting", "FullScreenFrequency");
+		windowSetting.uScreenScaleMode = ini.GetLongValue("WindowSetting", "ScreenScaleMode", 0);
 
 		defaultRomOptions.N64FrameBufferEmuType = ini.GetLongValue("FrameBufferSettings", "FrameBufferSetting");
 		defaultRomOptions.N64FrameBufferWriteBackControl = ini.GetLongValue("FrameBufferSettings", "FrameBufferWriteBackControl");
@@ -1180,8 +1184,6 @@ VOID OnWMNotify(LPARAM lParam)
 	} 
 	return;
 }
-std::ifstream& getline( std::ifstream &is, char *str );
-
 
 ///////////////////////////////////////////////
 //// Constructors / Deconstructors
@@ -1392,10 +1394,18 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_SETCURSEL, i+1, 0);
 			}
 		}
+
 		if( windowSetting.uFullScreenRefreshRate == 0 )
 		{
 			SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_SETCURSEL, 0, 0);
 		}
+
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_RESETCONTENT, 0, 0);
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 0, (LPARAM) "Stretch (Default)");
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 1, (LPARAM) "Pillarbox");
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 2, (LPARAM) "Extend");
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_SETCURSEL, windowSetting.uScreenScaleMode, 0);
+
 
 		if( status.bGameIsRunning )
 		{
@@ -1517,6 +1527,8 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			{
 				windowSetting.uFullScreenRefreshRate = CGraphicsContext::m_FullScreenRefreshRates[i-1];
 			}
+
+			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
 
 			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_GETCURSEL, 0, 0);
 			windowSetting.uWindowDisplayWidth = CGraphicsContext::m_FullScreenResolutions[i][0];
