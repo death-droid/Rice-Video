@@ -82,8 +82,8 @@ void TexRectToN64FrameBuffer_YUV_16b(uint32 x0, uint32 y0, uint32 width, uint32 
 
 	for (uint32 y = 0; y < height; y++)
 	{
-		uint32* pN64Src = (uint32*)(g_pRDRAMu8+(g_TI.dwAddr&(g_dwRamSize-1)))+y*(g_TI.dwWidth>>1);
-		uint16* pN64Dst = (uint16*)(g_pRDRAMu8+(n64CIaddr&(g_dwRamSize-1)))+(y+y0)*n64CIwidth;
+		uint32* pN64Src = (uint32*)(g_pu8RamBase+(g_TI.dwAddr&(g_dwRamSize-1)))+y*(g_TI.dwWidth>>1);
+		uint16* pN64Dst = (uint16*)(g_pu8RamBase+(n64CIaddr&(g_dwRamSize-1)))+(y+y0)*n64CIwidth;
 
 		for (uint32 x = 0; x < width; x+=2)
 		{
@@ -103,7 +103,7 @@ extern uObjMtxReal gObjMtxReal;
 void DLParser_OgreBatter64BG(MicroCodeCommand command)
 {
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjTxSprite *ptr = (uObjTxSprite*)(g_pRDRAMu8+dwAddr);
+	uObjTxSprite *ptr = (uObjTxSprite*)(g_pu8RamBase+dwAddr);
 	//CRender::g_pRender->LoadObjSprite(*ptr,true);
 	PrepareTextures();
 
@@ -134,7 +134,7 @@ void DLParser_Bomberman2TextRect(MicroCodeCommand command)
 	}
 
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjSprite *info = (uObjSprite*)(g_pRDRAMu8+dwAddr);
+	uObjSprite *info = (uObjSprite*)(g_pu8RamBase+dwAddr);
 
 	uint32 dwTile	= gRSP.curTile;
 
@@ -204,8 +204,8 @@ void DLParser_Ucode8_DL(MicroCodeCommand command)	// DL Function Call
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
 
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwAddr);
-	uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwAddr+4);
+	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwAddr);
+	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwAddr+4);
 
 	if( dwAddr > g_dwRamSize )
 	{
@@ -266,8 +266,8 @@ void DLParser_Ucode8_JUMP(MicroCodeCommand command)	// DL Function Call
 			dwAddr = (command.inst.cmd1)&(g_dwRamSize-1);
 		}
 
-		uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwAddr);
-		uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwAddr+4);
+		uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwAddr);
+		uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwAddr+4);
 
 		gDlistStack[gDlistStackPointer].pc = dwAddr+8;		// Jump to new address
 		DEBUGGER_PAUSE_AND_DUMP(NEXT_DLIST, 
@@ -292,7 +292,7 @@ void DLParser_Ucode8_Unknown(MicroCodeCommand command)
 void DLParser_Unknown_Skip1(MicroCodeCommand command)
 {
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	LOG_UCODE("ucode %02X, skip 1", ((command.inst.cmd0)>>24));
 	command.inst.cmd0 = *pCmdBase++;
@@ -308,7 +308,7 @@ void DLParser_Unknown_Skip1(MicroCodeCommand command)
 void DLParser_Unknown_Skip2(MicroCodeCommand command)
 {
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	LOG_UCODE("ucode %02X, skip 2", ((command.inst.cmd0)>>24));
 	command.inst.cmd0 = *pCmdBase++;
@@ -328,7 +328,7 @@ void DLParser_Unknown_Skip2(MicroCodeCommand command)
 void DLParser_Unknown_Skip3(MicroCodeCommand command)
 {
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	LOG_UCODE("ucode %02X, skip 3", ((command.inst.cmd0)>>24));
 	command.inst.cmd0 = *pCmdBase++;
@@ -352,7 +352,7 @@ void DLParser_Unknown_Skip3(MicroCodeCommand command)
 void DLParser_Unknown_Skip4(MicroCodeCommand command)
 {
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	LOG_UCODE("ucode %02X, skip 4", ((command.inst.cmd0)>>24));
 	command.inst.cmd0 = *pCmdBase++;
@@ -431,8 +431,8 @@ void DLParser_Ucode8_0xb5(MicroCodeCommand command)
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
 	LOG_UCODE("ucode 0xB5 at PC=%08X: 0x%08x 0x%08x\n", dwPC-8, (command.inst.cmd0), (command.inst.cmd1));
 
-	uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC+8);
-	uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwPC+12);
+	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC+8);
+	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+12);
 	LOG_UCODE("		: 0x%08x 0x%08x\n", dwCmd2, dwCmd3);
 
 	//if( dwCmd2 == 0 && dwCmd3 == 0 )
@@ -497,10 +497,10 @@ void DLParser_Ucode8_0xb5(MicroCodeCommand command)
 			return;
 		}
 
-		uint32 dwCmd4 = *(uint32 *)(g_pRDRAMu8 + (dwCmd2&0x00FFFFFF));
-		uint32 dwCmd5 = *(uint32 *)(g_pRDRAMu8 + (dwCmd2&0x00FFFFFF)+4);
-		uint32 dwCmd6 = *(uint32 *)(g_pRDRAMu8 + (dwCmd3&0x00FFFFFF));
-		uint32 dwCmd7 = *(uint32 *)(g_pRDRAMu8 + (dwCmd3&0x00FFFFFF)+4);
+		uint32 dwCmd4 = *(uint32 *)(g_pu8RamBase + (dwCmd2&0x00FFFFFF));
+		uint32 dwCmd5 = *(uint32 *)(g_pu8RamBase + (dwCmd2&0x00FFFFFF)+4);
+		uint32 dwCmd6 = *(uint32 *)(g_pu8RamBase + (dwCmd3&0x00FFFFFF));
+		uint32 dwCmd7 = *(uint32 *)(g_pu8RamBase + (dwCmd3&0x00FFFFFF)+4);
 		if( (dwCmd4>>24) != 0x80 || (dwCmd5>>24) != 0x80 || (dwCmd6>>24) != 0x80 || (dwCmd7>>24) != 0x80 || dwCmd4 < dwCmd5 || dwCmd6 < dwCmd7 )
 		{
 			// All right, the next block is not ucode, but data
@@ -534,8 +534,8 @@ void DLParser_Ucode8_0xb5(MicroCodeCommand command)
 	}
 	else if( (dwCmd2>>24)==0x00 && (dwCmd3>>24)==0x00 )
 	{
-		dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC+16);
-		dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwPC+20);
+		dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC+16);
+		dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+20);
 		if( (dwCmd2>>24)==0x80 && (dwCmd3>>24)==0x80 && dwCmd2 < dwCmd3 )
 		{
 			// All right, the next block is not ucode, but data
@@ -633,25 +633,25 @@ void PD_LoadMatrix_0xb4(uint32 addr)
 	int i, j;
 
 	uint32 data[16];
-	data[0] =  *(uint32*)(g_pRDRAMu8+addr+4+ 0);
-	data[1] =  *(uint32*)(g_pRDRAMu8+addr+4+ 8);
-	data[2] =  *(uint32*)(g_pRDRAMu8+addr+4+16);
-	data[3] =  *(uint32*)(g_pRDRAMu8+addr+4+24);
+	data[0] =  *(uint32*)(g_pu8RamBase+addr+4+ 0);
+	data[1] =  *(uint32*)(g_pu8RamBase+addr+4+ 8);
+	data[2] =  *(uint32*)(g_pu8RamBase+addr+4+16);
+	data[3] =  *(uint32*)(g_pu8RamBase+addr+4+24);
 
-	data[8] =  *(uint32*)(g_pRDRAMu8+addr+4+32);
-	data[9] =  *(uint32*)(g_pRDRAMu8+addr+4+40);
-	data[10] = *(uint32*)(g_pRDRAMu8+addr+4+48);
-	data[11] = *(uint32*)(g_pRDRAMu8+addr+4+56);
+	data[8] =  *(uint32*)(g_pu8RamBase+addr+4+32);
+	data[9] =  *(uint32*)(g_pu8RamBase+addr+4+40);
+	data[10] = *(uint32*)(g_pu8RamBase+addr+4+48);
+	data[11] = *(uint32*)(g_pu8RamBase+addr+4+56);
 
-	data[4] =  *(uint32*)(g_pRDRAMu8+addr+4+ 0+64);
-	data[5] =  *(uint32*)(g_pRDRAMu8+addr+4+ 8+64);
-	data[6] =  *(uint32*)(g_pRDRAMu8+addr+4+16+64);
-	data[7] =  *(uint32*)(g_pRDRAMu8+addr+4+24+64);
+	data[4] =  *(uint32*)(g_pu8RamBase+addr+4+ 0+64);
+	data[5] =  *(uint32*)(g_pu8RamBase+addr+4+ 8+64);
+	data[6] =  *(uint32*)(g_pu8RamBase+addr+4+16+64);
+	data[7] =  *(uint32*)(g_pu8RamBase+addr+4+24+64);
 
-	data[12] = *(uint32*)(g_pRDRAMu8+addr+4+32+64);
-	data[13] = *(uint32*)(g_pRDRAMu8+addr+4+40+64);
-	data[14] = *(uint32*)(g_pRDRAMu8+addr+4+48+64);
-	data[15] = *(uint32*)(g_pRDRAMu8+addr+4+56+64);
+	data[12] = *(uint32*)(g_pu8RamBase+addr+4+32+64);
+	data[13] = *(uint32*)(g_pu8RamBase+addr+4+40+64);
+	data[14] = *(uint32*)(g_pu8RamBase+addr+4+48+64);
+	data[15] = *(uint32*)(g_pu8RamBase+addr+4+56+64);
 
 
 	for (i = 0; i < 4; i++)

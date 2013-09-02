@@ -68,7 +68,7 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	CTexture* pSurfaceHandler = NULL;
 
 	//Create the surface for the texture
-	pSurfaceHandler = new CDirectXTexture(srcInfo.dwCreatedWidth*2, srcInfo.dwCreatedHeight*2);
+	pSurfaceHandler = new CTexture(srcInfo.dwCreatedWidth*2, srcInfo.dwCreatedHeight*2);
 
 	DrawInfo destInfo;
 	if(pSurfaceHandler)
@@ -282,6 +282,8 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 	IMAGE_INFO	imgInfo;
 	//
 	IMAGE_INFO	imgInfo2;
+	// simple ini
+	CSimpleIniA ini;
 
 	// prepare message
 	sprintf(generalText,"Processing folder: %s", foldername);
@@ -503,14 +505,18 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				{
 					// indeeed, the texture already exists
 					// microdev: MAYBE ADD CODE TO MOVE IT TO A 'DUBLICATE' FOLDER TO EASE WORK OF RETEXTURERS
-					foundIdx = k;
 					// check if the WIP folder is currently treated
-					if(strstr(foldername, '\\'+WIP_FOLDER) == 0)
+					if(strstr(foldername, '\\'+ WIP_FOLDER) != 0)
+					{
+						foundIdx = k;
 						// indeed! => indicate that
 						bWIPFolder = true;
+					}
 					else
+						//ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName)); //Todo, finish me
 						break;
 				}
+
 			}
 
 			// if the texture is not yet in the list or if it exists with another type or the current folder is the WIP folder
@@ -527,7 +533,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					SAFE_DELETE(newinfo->pHiresTextureRGB);
 					SAFE_DELETE(newinfo->pHiresTextureAlpha);
 				}
-				else
+				//else
 					// otherwise create a new one
 					newinfo = new ExtTxtrInfo;
 
@@ -1176,6 +1182,8 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 		newinfo.foldername = NULL;
 		newinfo.filename = NULL;
 		newinfo.filename_a = NULL;
+		newinfo.type = NO_TEXTURE;
+		newinfo.bSeparatedAlpha = false;
 
 		uint64 crc64 = newinfo.crc32;
 		crc64 <<= 32;
@@ -1343,7 +1351,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 	gHiresTxtrInfos[idx].width = entry.ti.WidthToLoad * scale;
 	gHiresTxtrInfos[idx].height = entry.ti.HeightToLoad * scale;
 
-	entry.pEnhancedTexture = new CDirectXTexture(entry.ti.WidthToCreate*scale, entry.ti.HeightToCreate*scale);
+	entry.pEnhancedTexture = new CTexture(entry.ti.WidthToCreate*scale, entry.ti.HeightToCreate*scale);
 	DrawInfo info;
 
 	if( entry.pEnhancedTexture && entry.pEnhancedTexture->StartUpdate(&info) )

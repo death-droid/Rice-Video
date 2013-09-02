@@ -24,7 +24,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v110_xp</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -165,13 +165,11 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="typedefs.h" />
     <ClInclude Include="Debugger\Debugger.h" />
-    <ClInclude Include="Debugger\OGLDebug.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Combiner\blender.h" />
     <ClInclude Include="Combiner\Combiner.h" />
     <ClInclude Include="Combiner\CombinerDefs.h" />
     <ClInclude Include="Combiner\DecodedMux.h" />
-    <ClInclude Include="Combiner\DirectXCombiner\DirectXBlender.h" />
     <ClInclude Include="Combiner\DirectXCombiner\DirectXCombiner.h" />
     <ClInclude Include="Render\ExtendedRender.h" />
     <ClInclude Include="Render\Render.h" />
@@ -189,7 +187,6 @@
     <ClInclude Include="Texture\ConvertImage.h" />
     <ClInclude Include="Texture\Texture.h" />
     <ClInclude Include="Texture\TextureManager.h" />
-    <ClInclude Include="Texture\DirectXTexture\DirectXTexture.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters_2xsai.h" />
     <ClInclude Include="Texture\TextureFilters\TextureFilters_hq2x.h" />
@@ -227,7 +224,6 @@
     <ClCompile Include="Combiner\blender.cpp" />
     <ClCompile Include="Combiner\Combiner.cpp" />
     <ClCompile Include="Combiner\DecodedMux.cpp" />
-    <ClCompile Include="Combiner\DirectXCombiner\DirectXBlender.cpp" />
     <ClCompile Include="Combiner\DirectXCombiner\DirectXCombiner.cpp" />
     <ClCompile Include="Render\Render.cpp" />
     <ClCompile Include="Render\RenderBase.cpp" />
@@ -244,7 +240,6 @@
     <ClCompile Include="Texture\ConvertImage.cpp" />
     <ClCompile Include="Texture\Texture.cpp" />
     <ClCompile Include="Texture\TextureManager.cpp" />
-    <ClCompile Include="Texture\DirectXTexture\DirectXTexture.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters_2xsai.cpp" />
     <ClCompile Include="Texture\TextureFilters\TextureFilters_hq2x.cpp" />

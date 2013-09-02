@@ -282,7 +282,6 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleCopy(void)
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,FALSE);
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE);
 	
-	//SetNumStages(0);
 	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = true;
 	m_pD3DRender->m_curCombineInfo.nStages = 1;
 

@@ -27,6 +27,7 @@
 #define IDC_UNKNOWN_MUX                 1018
 #define IDC_PAUSE                       1019
 #define IDC_GO                          1020
+#define IDC_F                           1020
 #define IDC_VI_REGS                     1021
 #define IDC_COLORS                      1022
 #define IDC_DUMP_VERTEX                 1023
@@ -40,6 +41,7 @@
 #define IDC_LOG_MATRIX                  1031
 #define IDC_WINFRAME                    1032
 #define IDC_CULLFACE                    1033
+#define IDC_SCALE_MODE                  1033
 #define IDC_ZBUFFER                     1034
 #define IDC_ENABLE_TEXTURE              1035
 #define IDC_TEST_TRIS                   1036
@@ -61,7 +63,6 @@
 #define IDC_SMART_SCREEN_UPDATE         1053
 #define IDC_BUFFER_TYPE                 1054
 #define IDC_ALPHA_BLENDER               1055
-#define IDC_DEPTH_BUFFER                1056
 #define IDC_ENABLE_BG                   1057
 #define IDC_LOG_SETTING                 1058
 #define IDC_FRAME_BUFFER_SETTING        1059
@@ -150,9 +151,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        113
+#define _APS_NEXT_RESOURCE_VALUE        114
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1142
+#define _APS_NEXT_CONTROL_VALUE         1144
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

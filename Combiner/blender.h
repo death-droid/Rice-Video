@@ -24,16 +24,15 @@ class CRender;
 class CBlender
 {
 public:
-	virtual ~CBlender() {}
 	
-	virtual void InitBlenderMode(void);
-	virtual void NormalAlphaBlender(void)=0;
-	virtual void DisableAlphaBlender(void)=0;
+	static void InitBlenderMode(void);
+	static void NormalAlphaBlender(void);
+	static void DisableAlphaBlender(void);
 	
-	virtual void BlendFunc(uint32 srcFunc, uint32 desFunc)=0;
+	static void BlendFunc(uint32 srcFunc, uint32 desFunc);
 
-	virtual void Enable()=0;
-	virtual void Disable()=0;
+	static void Enable();
+	static void Disable();
 protected:
 	CBlender(CRender *pRender) : m_pRender(pRender) {}
 	CRender *m_pRender;

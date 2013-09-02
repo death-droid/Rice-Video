@@ -8,9 +8,7 @@
 
 #define _CRT_SECURE_NO_DEPRECATE
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #define EXPORT				__declspec(dllexport)
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
@@ -62,13 +60,11 @@
 #include "./Texture/TextureManager.h"
 #include "./Texture/ConvertImage.h"
 #include "./Texture/Texture.h"
-#include "./Texture/DirectXTexture/DirectXTexture.h"
 
 #include "./Combiner/CombinerDefs.h"
 #include "./Combiner/DecodedMux.h"
 
 #include "./Combiner/blender.h"
-#include "./Combiner/DirectXCombiner/DirectXBlender.h"
 
 #include "./Combiner/combiner.h"
 #include "./Combiner/DirectXCombiner/DirectXCombiner.h"
@@ -99,9 +95,9 @@ void __cdecl ErrorMsg (char * Message, ...);
 
 extern uint32 g_dwRamSize;
 
-extern uint32 * g_pRDRAMu32;
-extern signed char* g_pRDRAMs8;
-extern unsigned char *g_pRDRAMu8;
+extern uint32 * g_pu32RamBase;
+extern signed char* g_ps8RamBase;
+extern unsigned char *g_pu8RamBase;
 
 extern GFX_INFO g_GraphicsInfo;
 

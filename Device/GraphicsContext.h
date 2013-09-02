@@ -57,7 +57,9 @@ public:
 	CGraphicsContext();
 
 	bool Ready() { return m_bReady; }
-	bool IsWindowed() {return m_bWindowed;}
+	bool IsWindowed() {
+		return m_bWindowed;
+	}
 
 	virtual bool Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, uint32 dwHeight, BOOL bWindowed );
 	virtual void CleanUp();

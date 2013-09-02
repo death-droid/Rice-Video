@@ -39,8 +39,6 @@ enum { MAX_VERTS = 80 };		// F3DLP.Rej supports up to 80 verts!
 // All these arrays are moved out of the class CRender
 // to be accessed in faster speed
 extern D3DXVECTOR4	g_vecProjected[MAX_VERTS];
-extern FLOAT		g_vtxProjected5[1000][5];
-extern float		g_vtxProjected5Clipped[2000][5];
 extern VECTOR2		g_fVtxTxtCoords[MAX_VERTS];
 extern uint32		g_dwVtxDifColor[MAX_VERTS];
 //extern uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
@@ -76,7 +74,6 @@ extern uint32	gRSPnumLights;
 extern Light	gRSPlights[16];
 extern Matrix	gRSPworldProjectTransported;
 extern Matrix	gRSPworldProject;
-extern N64Light	gRSPn64lights[16];
 extern Matrix	gRSPmodelViewTop;
 extern Matrix	gRSPmodelViewTopTranspose;
 extern float	gRSPfFogMin;
@@ -86,27 +83,8 @@ extern float	gRSPfFogDivider;
 /************************************************************************/
 /*      Don't move                                                      */
 /************************************************************************/
-#if _MSC_VER > 1200
 typedef __declspec(align(16)) struct 
-#else
-typedef struct 
-#endif
 {
-	/************************************************************************/
-	/*      Don't move                                                      */
-	/************************************************************************/
-	union {		
-		struct {
-			float	fAmbientLightR;
-			float   fAmbientLightG;
-			float	fAmbientLightB;
-			float	fAmbientLightA;
-		};
-		float fAmbientColors[4];
-#if _MSC_VER > 1200
-		__m64 fAmbientLightColor64[2];
-#endif
-	};
 	/************************************************************************/
 	/*      Don't move above                                                */
 	/************************************************************************/
@@ -123,7 +101,6 @@ typedef struct
 	bool	bFogEnabled;
 	BOOL	bZBufferEnabled;
 
-	uint32	ambientLightColor;
 	uint32	ambientLightIndex;
 
 	uint32	projectionMtxTop;
@@ -181,11 +158,7 @@ typedef struct
 
 extern RSP_Options gRSP;
 
-#if _MSC_VER > 1200
 typedef __declspec(align(16)) struct {
-#else
-typedef struct {
-#endif
 	uint32	keyR;
 	uint32	keyG;
 	uint32	keyB;
@@ -244,7 +217,7 @@ void SetPrimitiveDepth(uint32 z, uint32 dwDZ);
 void SetVertexXYZ(uint32 vertex, float x, float y, float z);
 void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val);
 void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
-void SetLightCol(uint32 dwLight, uint32 dwCol);
+void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b);
 void SetLightDirection(uint32 dwLight, float x, float y, float z, float range);
 void ForceMainTextureIndex(int dwTile); 
 void UpdateCombinedMatrix();
@@ -278,15 +251,6 @@ inline void SetEnvColor(uint32 dwCol)
 }
 inline uint32 GetEnvColor() { return gRDP.envColor; }
 inline float* GetEnvColorfv() { return gRDP.fvEnvColor; }
-
-inline void SetAmbientLight(uint32 color) 
-{ 
-	gRSP.ambientLightColor = color; 
-	gRSP.fAmbientLightR = (float)RGBA_GETRED(gRSP.ambientLightColor);
-	gRSP.fAmbientLightG = (float)RGBA_GETGREEN(gRSP.ambientLightColor);
-	gRSP.fAmbientLightB = (float)RGBA_GETBLUE(gRSP.ambientLightColor);
-	LIGHT_DUMP(TRACE1("Set Ambient Light: %08X", color));
-}
 
 inline void SetLighting(bool bLighting) { gRSP.bLightingEnable = bLighting; }
 

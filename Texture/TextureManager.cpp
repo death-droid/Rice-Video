@@ -379,7 +379,7 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 			return NULL;
 		}
 
-		pEntry->pTexture = new CDirectXTexture(dwWidth, dwHeight);
+		pEntry->pTexture = new CTexture(dwWidth, dwHeight);
 		if (pEntry->pTexture == NULL || pEntry->pTexture->GetTexture() == NULL)
 			TRACE2("Warning, unable to create %d x %d texture!", dwWidth, dwHeight);
 	}
@@ -786,18 +786,12 @@ void CTextureManager::ExpandTexture(TxtrCacheEntry * pEntry, uint32 sizeToLoad, 
 	{
 		uint32 tempwidth = clamp ? sizeToCreate : sizeCreated;
 		if( mirror )
-		{
 			Mirror((uint32*)di.lpSurface, sizeToLoad, mask, tempwidth, arrayWidth, otherSize, flag);
-		}
 		else
-		{
 			Wrap((uint32*)di.lpSurface, sizeToLoad, mask, tempwidth, arrayWidth, otherSize, flag);
-		}
 
 		if( tempwidth < sizeCreated )
-		{
 			Clamp((uint32*)di.lpSurface, tempwidth, sizeCreated, arrayWidth, otherSize, flag);
-		}
 
 		pEntry->pTexture->EndUpdate(&di);
 		return;
@@ -843,8 +837,7 @@ void CTextureManager::ExpandTextureS(TxtrCacheEntry * pEntry)
 {
 	TxtrInfo &ti =  pEntry->ti;
 	uint32 textureWidth = pEntry->pTexture->m_dwCreatedTextureWidth;
-	ExpandTexture(pEntry, ti.WidthToLoad, ti.WidthToCreate, textureWidth, 
-		textureWidth, S_FLAG, ti.maskS, ti.mirrorS, ti.clampS, ti.HeightToLoad);
+	ExpandTexture(pEntry, ti.WidthToLoad, ti.WidthToCreate, textureWidth, textureWidth, S_FLAG, ti.maskS, ti.mirrorS, ti.clampS, ti.HeightToLoad);
 }
 
 void CTextureManager::ExpandTextureT(TxtrCacheEntry * pEntry)
@@ -852,8 +845,7 @@ void CTextureManager::ExpandTextureT(TxtrCacheEntry * pEntry)
 	TxtrInfo &ti =  pEntry->ti;
 	uint32 textureHeight = pEntry->pTexture->m_dwCreatedTextureHeight;
 	uint32 textureWidth = pEntry->pTexture->m_dwCreatedTextureWidth;
-	ExpandTexture(pEntry, ti.HeightToLoad, ti.HeightToCreate, textureHeight,
-		textureWidth, T_FLAG, ti.maskT, ti.mirrorT, ti.clampT, ti.WidthToLoad);
+	ExpandTexture(pEntry, ti.HeightToLoad, ti.HeightToCreate, textureHeight, textureWidth, T_FLAG, ti.maskT, ti.mirrorT, ti.clampT, ti.WidthToLoad);
 }
 
 void CTextureManager::Clamp(uint32 *array, uint32 size, uint32 tosize, uint32 arraySize, uint32 rows, int flag)
@@ -1002,7 +994,7 @@ TxtrCacheEntry * CTextureManager::GetBlackTexture(void)
 {
 	if( m_blackTextureEntry.pTexture == NULL )
 	{
-		m_blackTextureEntry.pTexture = new CDirectXTexture(4, 4);
+		m_blackTextureEntry.pTexture = new CTexture(4, 4);
 		m_blackTextureEntry.ti.WidthToCreate = 4;
 		m_blackTextureEntry.ti.HeightToCreate = 4;
 		updateColorTexture(m_blackTextureEntry.pTexture,0x00000000);
@@ -1014,7 +1006,7 @@ TxtrCacheEntry * CTextureManager::GetPrimColorTexture(uint32 color)
 	static uint32 mcolor = 0;
 	if( m_PrimColorTextureEntry.pTexture == NULL )
 	{
-		m_PrimColorTextureEntry.pTexture = new CDirectXTexture(4, 4);
+		m_PrimColorTextureEntry.pTexture = new CTexture(4, 4);
 		m_PrimColorTextureEntry.ti.WidthToCreate = 4;
 		m_PrimColorTextureEntry.ti.HeightToCreate = 4;
 		updateColorTexture(m_PrimColorTextureEntry.pTexture,color);
@@ -1034,7 +1026,7 @@ TxtrCacheEntry * CTextureManager::GetEnvColorTexture(uint32 color)
 	static uint32 mcolor = 0;
 	if( m_EnvColorTextureEntry.pTexture == NULL )
 	{
-		m_EnvColorTextureEntry.pTexture = new CDirectXTexture(4, 4);
+		m_EnvColorTextureEntry.pTexture = new CTexture(4, 4);
 		m_EnvColorTextureEntry.ti.WidthToCreate = 4;
 		m_EnvColorTextureEntry.ti.HeightToCreate = 4;
 		gRDP.texturesAreReloaded = true;
@@ -1055,7 +1047,7 @@ TxtrCacheEntry * CTextureManager::GetLODFracTexture(uint8 fac)
 	static uint8 mfac = 0;
 	if( m_LODFracTextureEntry.pTexture == NULL )
 	{
-		m_LODFracTextureEntry.pTexture = new CDirectXTexture(4, 4);
+		m_LODFracTextureEntry.pTexture = new CTexture(4, 4);
 		m_LODFracTextureEntry.ti.WidthToCreate = 4;
 		m_LODFracTextureEntry.ti.HeightToCreate = 4;
 		uint32 factor = fac;
@@ -1084,7 +1076,7 @@ TxtrCacheEntry * CTextureManager::GetPrimLODFracTexture(uint8 fac)
 	static uint8 mfac = 0;
 	if( m_PrimLODFracTextureEntry.pTexture == NULL )
 	{
-		m_PrimLODFracTextureEntry.pTexture = new CDirectXTexture(4, 4);
+		m_PrimLODFracTextureEntry.pTexture = new CTexture(4, 4);
 		m_PrimLODFracTextureEntry.ti.WidthToCreate = 4;
 		m_PrimLODFracTextureEntry.ti.HeightToCreate = 4;
 		uint32 factor = fac;

@@ -453,8 +453,11 @@ bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3
 	}
 
 
-	if( out.z > 1 )	
+	if( out.z > 1 )
+	{
 		RDP_NOIMPL_WARN("Warning: z>1");
+		return false;
+	}
 
 	out.dcSpecular = v2.dcSpecular; //fix me here
 	if( gRSP.bFogEnabled )

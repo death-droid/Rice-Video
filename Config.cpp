@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "stdafx.h"
 #include "_BldNum.h"
+#include "SimpleIni.h"
 
 #define INI_FILE		"RiceVideo.ini"
 #define CONFIG_FILE     "RiceVideo.cfg"
@@ -78,10 +79,12 @@ GlobalOptions options;
 RomOptions defaultRomOptions;
 RomOptions currentRomOptions;
 FrameBufferOptions frameBufferOptions;
-std::vector<IniSection> IniSections;
-bool	bIniIsChanged = false;
+
 char	szIniFileName[300];
 char	szIniSettingsFileName[300];
+
+CSimpleIniA ini;
+CSimpleIniA perRomIni;
 
 //=======================================================
 const SettingInfo ForceTextureFilterSettings[] =
@@ -105,12 +108,6 @@ const char*	strDXDeviceDescs[] = { "HAL", "REF" };
 /*
 *	Constants
 */
-BufferSettingInfo DirectXDepthBufferSetting[] =
-{
-	"16-bit (def)",				D3DFMT_D16,				D3DFMT_D16,
-	"32-bit signed",			D3DFMT_D24S8,			D3DFMT_D24S8,
-};
-
 const SettingInfo OnScreenDisplaySettings[] =
 {
 	"Display Nothing",							ONSCREEN_DISPLAY_NOTHING,
@@ -123,8 +120,6 @@ const SettingInfo OnScreenDisplaySettings[] =
 	"Display Debug Information With Core Msgs",	ONSCREEN_DISPLAY_DEBUG_INFORMATION_WITH_CORE_MSG,
 };
 
-int numberOfDirectXDepthBufferSettings = sizeof(DirectXDepthBufferSetting)/sizeof(BufferSettingInfo);
-
 void WriteConfiguration(void);
 void GenerateCurrentRomOptions();
 
@@ -136,17 +131,18 @@ int DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
 int DialogToStartRomIsNotRunning = PSH_OPTIONS;
 HWND hPropSheetHwnd = NULL;
 
-extern "C" BOOL __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam);
+extern "C" bool __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam);
 LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam);
 VOID OnWMNotify(LPARAM lParam);
-BOOL CreateDialogTooltip(void);
-BOOL EnumChildWndTooltip(void);
+bool CreateDialogTooltip(void);
+bool EnumChildWndTooltip(void);
 
-inline void ShowItem(HWND hDlg, UINT item, BOOL flag)
+inline void ShowItem(HWND hDlg, UINT item, bool flag)
 {
 	HWND itemwnd = GetDlgItem(hDlg, item);
 	ShowWindow(itemwnd,flag?SW_SHOW:SW_HIDE);
 }
+
 //////////////////////////////////////////////////////////////////////////
 void GenerateFrameBufferOptions(void)
 {
@@ -205,12 +201,13 @@ void GenerateFrameBufferOptions(void)
 		break;
 	}
 
+	///comebacktome
 	switch( currentRomOptions.N64RenderToTextureEmuType )
 	{
 	case TXT_BUF_NONE:
 		frameBufferOptions.bSupportRenderTextures			= false;
 		break;
-	case TXT_BUF_WRITE_BACK_AND_RELOAD:
+	case TXT_BUF_WRITE_BACK_AND_RELOAD://checkme does nothing
 		frameBufferOptions.bLoadRDRAMIntoRenderTexture		= true;
 	case TXT_BUF_WRITE_BACK:
 		frameBufferOptions.bRenderTextureWriteBack			= true;
@@ -233,18 +230,6 @@ void GenerateFrameBufferOptions(void)
 //========================================================================
 extern void GetPluginDir( char * Directory );
 
-BOOL TestRegistry(void)
-{
-   FILE *f;
-   char name[1024];
-   GetPluginDir(name);
-   strcat(name, CONFIG_FILE);
-   f = fopen(name, "rb");
-   if (!f) return FALSE;
-   fclose(f);
-   return TRUE;
-}
-
 void WriteConfiguration(void)
 {
 	char name[1024];
@@ -257,169 +242,59 @@ void WriteConfiguration(void)
 		windowSetting.uWindowDisplayHeight=480;
 		windowSetting.uFullScreenDisplayWidth=640;
 		windowSetting.uFullScreenDisplayHeight=480;
+		windowSetting.uScreenScaleMode = 0;
 	}
 	else
 		fclose(f);
    
-	f = fopen(name, "wb");
-	fprintf(f, "WinModeWidth ");
-	fprintf(f, "%d\n", windowSetting.uWindowDisplayWidth);
+	//Lets set window settings
+	ini.SetLongValue("WindowSetting", "WindowedWidth", windowSetting.uWindowDisplayWidth);
+	ini.SetLongValue("WindowSetting", "WindowedHeight", windowSetting.uWindowDisplayHeight);
+	ini.SetLongValue("WindowSetting", "FullscreenWidth", windowSetting.uFullScreenDisplayWidth);
+	ini.SetLongValue("WindowSetting", "FullscreenHeight", windowSetting.uFullScreenDisplayHeight);
+	ini.SetLongValue("WindowSetting", "FullScreenFrequency", (uint32)windowSetting.uFullScreenRefreshRate);
+	ini.SetLongValue("WindowSetting", "ScreenScaleMode", (uint32)windowSetting.uScreenScaleMode);
 
-	fprintf(f, "WinModeHeight ");
-	fprintf(f, "%d\n", windowSetting.uWindowDisplayHeight);
+	//Now rendering modes
+	ini.SetLongValue("RenderSetting", "DirectXDevice", (uint32)options.DirectXDevice);
+	ini.SetLongValue("RenderSetting", "DirectXAntiAliasingValue", (uint32)options.DirectXAntiAliasingValue);
+	ini.SetLongValue("RenderSetting", "DirectXMaxFSAA", (uint32)options.DirectXMaxFSAA);
+	ini.SetLongValue("RenderSetting", "DirectXMaxAnisotropy", (uint32)options.DirectXMaxAnisotropy);
+	ini.SetLongValue("RenderSetting", "DirectXAnisotropyValue", (uint32)options.DirectXAnisotropyValue);
+	ini.SetLongValue("RenderSetting", "NormalAlphaBlender", defaultRomOptions.bNormalBlender);
+	ini.SetLongValue("RenderSetting", "EnableFog", options.bEnableFog);
+	ini.SetLongValue("RenderSetting", "WinFrameMode", options.bWinFrameMode);
+	ini.SetLongValue("RenderSetting", "MipMaps", options.bMipMaps);
+	ini.SetLongValue("RenderSetting", "EnableVertexShader", options.bEnableVertexShader);
+	ini.SetLongValue("RenderSetting", "ForceSoftwareTnL", options.bForceSoftwareTnL);
 
-	fprintf(f, "FulScreenWidth ");
-	fprintf(f, "%d\n", windowSetting.uFullScreenDisplayWidth);
+	//Now texture settings
+	ini.SetLongValue("Texture Settings", "CacheHiResTextures" , (uint32)options.bCacheHiResTextures);
+	ini.SetLongValue("Texture Settings", "ForceTextureFilter", (uint32)options.forceTextureFilter);
+	ini.SetLongValue("Texture Settings", "LoadHiResTextures", (uint32)options.bLoadHiResTextures);
+	ini.SetLongValue("Texture Settings", "DumpTexturesToFiles", (uint32)options.bDumpTexturesToFiles);
+	ini.SetLongValue("Texture Settings", "TextureEnhancement", (uint32)options.textureEnhancement);
+	ini.SetLongValue("Texture Settings", "TextureEnhancementControl", (uint32)options.textureEnhancementControl);
+	ini.SetLongValue("Texture Settings", "DoubleSizeForSmallTxtrBuf", (uint32)defaultRomOptions.bDoubleSizeForSmallTxtrBuf);
 
-	fprintf(f, "FulScreenHeight ");
-	fprintf(f, "%d\n", windowSetting.uFullScreenDisplayHeight);
+	//Now framebuffer Settings
+	ini.SetLongValue("FrameBufferSettings", "FrameBufferType", defaultRomOptions.N64FrameBufferEmuType);
+	ini.SetLongValue("FrameBufferSettings", "FrameBufferWriteBackControl", defaultRomOptions.N64FrameBufferWriteBackControl);
+	ini.SetLongValue("FrameBufferSettings", "RenderToTexture", defaultRomOptions.N64RenderToTextureEmuType);
+	
+	//Now just some misc settings
+	ini.SetLongValue("MiscSettings", "EnableHacks", options.bEnableHacks);
+	ini.SetLongValue("MiscSettings", "ScreenUpdateSetting", defaultRomOptions.screenUpdateSetting);
+	ini.SetLongValue("MiscSettings", "FPSColor", options.FPSColor);
+	ini.SetLongValue("MiscSettings","EnableSSE", options.bEnableSSE);
+	ini.SetLongValue("MiscSettings","DisplayTooltip", options.bDisplayTooltip);
+	ini.SetLongValue("MiscSettings","HideAdvancedOptions", options.bHideAdvancedOptions);
+	ini.SetLongValue("MiscSettings","DisplayOnscreenFPS", options.bDisplayOnscreenFPS);
 
-	fprintf(f, "EnableHacks ");
-	fprintf(f, "%d\n", options.bEnableHacks);
-
-	fprintf(f, "FrameBufferSetting ");
-	fprintf(f, "%d\n", defaultRomOptions.N64FrameBufferEmuType);
-
-	fprintf(f, "FrameBufferWriteBackControl ");
-	fprintf(f, "%d\n", defaultRomOptions.N64FrameBufferWriteBackControl);
-	   
-	fprintf(f, "RenderToTexture ");
-	fprintf(f, "%d\n", defaultRomOptions.N64RenderToTextureEmuType);
-
-	fprintf(f, "ScreenUpdateSetting ");
-	fprintf(f, "%d\n", defaultRomOptions.screenUpdateSetting);
-
-	fprintf(f, "FPSColor ");
-	fprintf(f, "%d\n", options.FPSColor);
-
-	fprintf(f, "NormalAlphaBlender ");
-	fprintf(f, "%d\n", defaultRomOptions.bNormalBlender);
-
-	fprintf(f, "EnableFog ");
-	fprintf(f, "%d\n", options.bEnableFog);
-
-	fprintf(f, "WinFrameMode ");
-	fprintf(f, "%d\n", options.bWinFrameMode);
-
-	fprintf(f, "MipMaps ");
-	fprintf(f, "%d\n", options.bMipMaps);
-
-	fprintf(f, "ForceSoftwareTnL ");
-	fprintf(f, "%d\n", options.bForceSoftwareTnL);
-
-	fprintf(f, "EnableSSE ");
-	fprintf(f, "%d\n", options.bEnableSSE);
-
-	fprintf(f, "EnableVertexShader ");
-	fprintf(f, "%d\n", options.bEnableVertexShader);
-
-	fprintf(f, "SkipFrame ");
-	fprintf(f, "%d\n", options.bSkipFrame);
-
-	fprintf(f, "DisplayTooltip ");
-	fprintf(f, "%d\n", options.bDisplayTooltip);
-
-	fprintf(f, "HideAdvancedOptions ");
-	fprintf(f, "%d\n", options.bHideAdvancedOptions);
-
-	fprintf(f, "DisplayOnscreenFPS ");
-	fprintf(f, "%d\n", options.bDisplayOnscreenFPS);
-
-	fprintf(f, "DirectXDepthBufferSetting ");
-	fprintf(f, "%d\n", (uint32)options.DirectXDepthBufferSetting);
-
-	fprintf(f, "DirectXAntiAliasingValue ");
-	fprintf(f, "%d\n", (uint32)options.DirectXAntiAliasingValue);
-
-	fprintf(f, "DirectXMaxFSAA ");
-	fprintf(f, "%d\n", (uint32)options.DirectXMaxFSAA);
-
-	fprintf(f, "DirectXMaxAnisotropy ");
-	fprintf(f, "%d\n", (uint32)options.DirectXMaxAnisotropy);
-
-	fprintf(f, "DirectXAnisotropyValue ");
-	fprintf(f, "%d\n", (uint32)options.DirectXAnisotropyValue);
-
-	fprintf(f, "DirectXDevice ");
-	fprintf(f, "%d\n", (uint32)options.DirectXDevice);
-
-	fprintf(f, "CacheHiResTextures ");
-	fprintf(f, "%d\n", (uint32)options.bCacheHiResTextures);
-
-	fprintf(f, "ForceTextureFilter ");
-	fprintf(f, "%d\n", (uint32)options.forceTextureFilter);
-
-	fprintf(f, "LoadHiResTextures ");
-	fprintf(f, "%d\n", (uint32)options.bLoadHiResTextures);
-
-	fprintf(f, "DumpTexturesToFiles ");
-	fprintf(f, "%d\n", (uint32)options.bDumpTexturesToFiles);
-
-	fprintf(f, "TextureEnhancement ");
-	fprintf(f, "%d\n", (uint32)options.textureEnhancement);
-
-	fprintf(f, "TextureEnhancementControl ");
-	fprintf(f, "%d\n", (uint32)options.textureEnhancementControl);
-
-	fprintf(f, "FullScreenFrequency ");
-	fprintf(f, "%d\n", (uint32)windowSetting.uFullScreenRefreshRate);
-
-	fprintf(f, "OverlapAutoWriteBack ");
-	fprintf(f, "%d\n", (uint32)defaultRomOptions.bOverlapAutoWriteBack);
-
-	fprintf(f, "DoubleSizeForSmallTxtrBuf ");
-	fprintf(f, "%d\n", (uint32)defaultRomOptions.bDoubleSizeForSmallTxtrBuf);
-
-	fclose(f);
+	//Ok lets save the settings
+	ini.SaveFile(name);
+	ini.Reset();
 }
-
-uint32 ReadRegistryDwordVal(char *Field)
-{
-	char name[1024];
-	GetPluginDir(name);
-	strcat(name, CONFIG_FILE);
-	FILE *f = fopen(name, "rb");
-	if(!f) return 0;
-	char buf[0x1000];
-	while(fscanf(f, "%s", buf) == 1)
-	{
-		int dword;
-		int n = fscanf(f, "%d", &dword);
-		if (n==1)
-		{
-			if (!strcmp(buf, Field))
-			{
-				fclose(f);
-				return dword;
-			}
-		}
-	}
-   fclose(f);
-   return 0;
-}
-
-uint32 ReadRegistryDwordValFromFile(char *Field, char FileName[1024])
-{
-	FILE *f = fopen(FileName, "rb");
-	if(!f) return 0;
-	char buf[0x1000];
-	while(fscanf(f, "%s", buf) == 1)
-	{
-		int dword;
-		int n = fscanf(f, "%d", &dword);
-		if (n==1)
-		{
-			if (!strcmp(buf, Field))
-			{
-				fclose(f);
-				return dword;
-			}
-		}
-	}
-   fclose(f);
-   return 0;
-}
-
 
 bool isMMXSupported() 
 { 
@@ -457,6 +332,11 @@ bool isSSESupported()
 
 void ReadConfiguration(void)
 {
+
+	char name[1024];
+	GetPluginDir(name);
+	strcat(name, CONFIG_FILE);
+
 	options.bEnableHacks = TRUE;
 	options.bEnableSSE = TRUE;
 	options.bEnableVertexShader = FALSE;
@@ -471,8 +351,8 @@ void ReadConfiguration(void)
 	defaultRomOptions.N64FrameBufferEmuType = FRM_BUF_NONE;
 	defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
 	defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
-
-	if(TestRegistry() == FALSE)
+	FILE *f = fopen(name, "rb");
+	if(!f)
 	{
 		options.bEnableFog = TRUE;
 		options.bWinFrameMode = FALSE;
@@ -485,10 +365,8 @@ void ReadConfiguration(void)
 		// set caching by default to "off"
 		options.bCacheHiResTextures = FALSE;
 		options.bDumpTexturesToFiles = FALSE;
-		options.DirectXDepthBufferSetting = 0;
 		options.textureEnhancement = 0;
 		options.textureEnhancementControl = 0;
-		options.bSkipFrame = FALSE;
 		options.bDisplayTooltip = FALSE;
 		options.bHideAdvancedOptions = TRUE;
 		options.bDisplayOnscreenFPS = FALSE;
@@ -505,87 +383,67 @@ void ReadConfiguration(void)
 
 		defaultRomOptions.bNormalBlender = FALSE;
 		defaultRomOptions.bNormalCombiner = FALSE;
-		defaultRomOptions.bOverlapAutoWriteBack = FALSE;
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
 		windowSetting.uFullScreenRefreshRate = 0;	// 0 is the default value, means to use Window default frequency
+		windowSetting.uScreenScaleMode = 0;
 
 		WriteConfiguration();
 		return;
 	}
 	else
 	{
-		windowSetting.uWindowDisplayWidth = (uint16)ReadRegistryDwordVal("WinModeWidth");
-		//if( windowSetting.uWindowDisplayWidth == 0 )
-		//{
-		//	windowSetting.uWindowDisplayWidth = 640;
-		//}
-
-		windowSetting.uWindowDisplayHeight = (uint16)ReadRegistryDwordVal("WinModeHeight");
-		//if( windowSetting.uWindowDisplayHeight == 0 )
-		//{
-		//	windowSetting.uWindowDisplayHeight = 480;
-		//}
+		fclose(f);
+		ini.LoadFile(name);
 		
+		windowSetting.uWindowDisplayWidth = (uint16)ini.GetLongValue("WindowSetting", "WindowedWidth", 640);
+		windowSetting.uWindowDisplayHeight = (uint16)ini.GetLongValue("WindowSetting", "WindowedHeight", 480);
 		windowSetting.uDisplayWidth = windowSetting.uWindowDisplayWidth;
 		windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
+		windowSetting.uFullScreenDisplayWidth = (uint16)ini.GetLongValue("WindowSetting", "FullscreenWidth", 640);
+		windowSetting.uFullScreenDisplayHeight = (uint16)ini.GetLongValue("WindowSetting", "FullScreenHeight", 480);
+		windowSetting.uFullScreenRefreshRate = ini.GetLongValue("WindowSetting", "FullScreenFrequency");
+		windowSetting.uScreenScaleMode = ini.GetLongValue("WindowSetting", "ScreenScaleMode", 0);
 
-		windowSetting.uFullScreenDisplayWidth = (uint16)ReadRegistryDwordVal("FulScreenWidth");
-		if( windowSetting.uFullScreenDisplayWidth == 0 )
-		{
-			windowSetting.uFullScreenDisplayWidth = 640;
-		}
-		windowSetting.uFullScreenDisplayHeight = (uint16)ReadRegistryDwordVal("FulScreenHeight");
-		if( windowSetting.uFullScreenDisplayHeight == 0 )
-		{
-			windowSetting.uFullScreenDisplayHeight = 480;
-		}
+		defaultRomOptions.N64FrameBufferEmuType = ini.GetLongValue("FrameBufferSettings", "FrameBufferSetting");
+		defaultRomOptions.N64FrameBufferWriteBackControl = ini.GetLongValue("FrameBufferSettings", "FrameBufferWriteBackControl");
+		defaultRomOptions.N64RenderToTextureEmuType = ini.GetLongValue("FrameBufferSettings", "RenderToTexture");
+		
 
-		defaultRomOptions.N64FrameBufferEmuType = ReadRegistryDwordVal("FrameBufferSetting");
-		defaultRomOptions.N64FrameBufferWriteBackControl = ReadRegistryDwordVal("FrameBufferWriteBackControl");
-		defaultRomOptions.N64RenderToTextureEmuType = ReadRegistryDwordVal("RenderToTexture");
-		defaultRomOptions.bNormalBlender = ReadRegistryDwordVal("NormalAlphaBlender");
+		options.textureEnhancement = ini.GetLongValue("Texture Settings","TextureEnhancement");
+		options.textureEnhancementControl = ini.GetLongValue("Texture Settings","TextureEnhancementControl");
+		options.forceTextureFilter = ini.GetLongValue("Texture Settings","ForceTextureFilter");
+		options.bLoadHiResTextures = ini.GetBoolValue("Texture Settings","LoadHiResTextures");
+		options.bCacheHiResTextures = ini.GetBoolValue("Texture Settings","CacheHiResTextures");
+		options.bDumpTexturesToFiles = ini.GetBoolValue("Texture Settings","DumpTexturesToFiles");
+		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = ini.GetBoolValue("Texture Settings", "DoubleSizeForSmallTxtrBuf");
 
-		options.bEnableFog = ReadRegistryDwordVal("EnableFog");
-		options.bWinFrameMode = ReadRegistryDwordVal("WinFrameMode");
-		options.bMipMaps = ReadRegistryDwordVal("MipMaps");
-		options.bForceSoftwareTnL = ReadRegistryDwordVal("ForceSoftwareTnL");
-		options.bEnableSSE = ReadRegistryDwordVal("EnableSSE");
-		options.bEnableVertexShader = ReadRegistryDwordVal("EnableVertexShader");
+		options.DirectXDevice = ini.GetLongValue("RenderSetting", "DirectXDevice");
+		options.DirectXAntiAliasingValue = ini.GetLongValue("RenderSetting", "DirectXAntiAliasingValue");
+		options.DirectXAnisotropyValue = ini.GetLongValue("RenderSetting", "DirectXAnisotropyValue");
+		options.DirectXMaxFSAA = ini.GetLongValue("RenderSetting", "DirectXMaxFSAA");
+		options.DirectXMaxAnisotropy = ini.GetLongValue("RenderSetting", "DirectXMaxAnisotropy");
+		defaultRomOptions.bNormalBlender = ini.GetBoolValue("RenderSetting", "NormalAlphaBlender");
+		options.bEnableFog = ini.GetBoolValue("RenderSetting", "EnableFog");
+		options.bWinFrameMode = ini.GetBoolValue("RenderSetting", "WinFrameMode");
+		options.bMipMaps = ini.GetBoolValue("RenderSetting", "MipMaps");
+		options.bForceSoftwareTnL = ini.GetLongValue("RenderSetting", "ForceSoftwareTnL");
+		
+		options.bEnableVertexShader = ini.GetBoolValue("RenderSetting", "EnableVertexShader");
 		options.bEnableVertexShader = FALSE;
-		options.bSkipFrame = ReadRegistryDwordVal("SkipFrame");
-		options.bDisplayTooltip = ReadRegistryDwordVal("DisplayTooltip");
-		options.bHideAdvancedOptions = ReadRegistryDwordVal("HideAdvancedOptions");
-		options.bDisplayOnscreenFPS = ReadRegistryDwordVal("DisplayOnscreenFPS");
-		options.textureEnhancement = ReadRegistryDwordVal("TextureEnhancement");
-		options.textureEnhancementControl = ReadRegistryDwordVal("TextureEnhancementControl");
-		options.forceTextureFilter = ReadRegistryDwordVal("ForceTextureFilter");
-		options.bLoadHiResTextures = ReadRegistryDwordVal("LoadHiResTextures");
-		// load key value for hires caching from registry
-		options.bCacheHiResTextures = ReadRegistryDwordVal("CacheHiResTextures");
-		options.bDumpTexturesToFiles = ReadRegistryDwordVal("DumpTexturesToFiles");
-		options.bDumpTexturesToFiles = FALSE;	// Never starting the plugin with this option on
-		options.DirectXDevice = ReadRegistryDwordVal("DirectXDevice");
-		options.DirectXDepthBufferSetting = ReadRegistryDwordVal("DirectXDepthBufferSetting");
-		options.DirectXAntiAliasingValue = ReadRegistryDwordVal("DirectXAntiAliasingValue");
-		options.DirectXAnisotropyValue = ReadRegistryDwordVal("DirectXAnisotropyValue");
-		options.DirectXMaxFSAA = ReadRegistryDwordVal("DirectXMaxFSAA");
-		options.FPSColor = ReadRegistryDwordVal("FPSColor");
-		options.DirectXMaxAnisotropy = ReadRegistryDwordVal("DirectXMaxAnisotropy");
-		defaultRomOptions.bOverlapAutoWriteBack = ReadRegistryDwordVal("OverlapAutoWriteBack");
-		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = ReadRegistryDwordVal("DoubleSizeForSmallTxtrBuf");
-		windowSetting.uFullScreenRefreshRate = ReadRegistryDwordVal("FullScreenFrequency");
 
+		options.bDisplayTooltip = ini.GetBoolValue("MiscSettings", "DisplayTooltip");
+		options.bHideAdvancedOptions = ini.GetBoolValue("MiscSettings", "HideAdvancedOptions");
+		options.bDisplayOnscreenFPS = ini.GetBoolValue("MiscSettings", "DisplayOnscreenFPS");
+		options.bEnableSSE = ini.GetBoolValue("MiscSettings", "EnableSSE");		
+		options.FPSColor = ini.GetLongValue("MiscSettings", "FPSColor");
+		ini.Reset();
 	}
 
 	status.isSSEEnabled = status.isSSESupported && options.bEnableSSE;
 	if( status.isSSEEnabled )
-	{
 		ProcessVertexData = ProcessVertexDataSSE;
-	}
 	else
-	{
 		ProcessVertexData = ProcessVertexDataNoSSE;
-	}
 
 	status.isVertexShaderEnabled = status.isVertexShaderSupported && options.bEnableVertexShader;
 	status.bUseHW_T_L = false;
@@ -595,17 +453,11 @@ void ReadConfiguration(void)
 BOOL InitConfiguration(void)
 {
 	//Initialize this DLL
+	GetPluginDir(szIniFileName);
+	strcat(szIniFileName, INI_FILE);
 
-	IniSections.clear();
-	bIniIsChanged = false;
-	strcpy(szIniFileName, INI_FILE);
-
-	if (!ReadIniFile())
-	{
-		ErrorMsg("Unable to read ini file from disk");
-		WriteIniFile();
-		return FALSE;
-	}
+	//Load the per rom configs into memory
+	perRomIni.LoadFile(szIniFileName);
 
 	ReadConfiguration();
 	return TRUE;
@@ -784,170 +636,72 @@ void GenerateCurrentRomOptions()
 
 void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 {
-	int i;
+	CHAR szCRC[50+1];
+	// Generate the CRC-ID for this rom:
+	wsprintf(szCRC, "%08x%08x-%02x", pGameSetting->romheader.dwCRC1,  pGameSetting->romheader.dwCRC2, pGameSetting->romheader.nCountryID);
 
-	i = FindIniEntry(pGameSetting->romheader.dwCRC1,
-							  pGameSetting->romheader.dwCRC2,
-							  pGameSetting->romheader.nCountryID,
-							  pGameSetting->szGameName);
+	pGameSetting->bDisableCulling		= perRomIni.GetBoolValue(szCRC, "bDisableCulling", false);
+	pGameSetting->bIncTexRectEdge		= perRomIni.GetBoolValue(szCRC, "bIncTexRectEdge", false);
+	pGameSetting->bZHack				= perRomIni.GetBoolValue(szCRC, "bZHack", false);
+	pGameSetting->bTextureScaleHack		= perRomIni.GetBoolValue(szCRC, "bTextureScaleHack", false);
+	pGameSetting->bPrimaryDepthHack		= perRomIni.GetBoolValue(szCRC, "bPrimaryDepthHack", false);
+	pGameSetting->bTexture1Hack			= perRomIni.GetBoolValue(szCRC, "bTexture1Hack", false);
+	pGameSetting->bFastLoadTile			= perRomIni.GetBoolValue(szCRC, "bFastLoadTile", false);
+	
+	pGameSetting->VIWidth				= perRomIni.GetLongValue(szCRC, "VIWidth", -1);
+	pGameSetting->VIHeight				= perRomIni.GetLongValue(szCRC, "VIHeight", -1);
+	pGameSetting->UseCIWidthAndRatio	= perRomIni.GetLongValue(szCRC, "UseCIWidthAndRatio", NOT_USE_CI_WIDTH_AND_RATIO);
+	pGameSetting->bTxtSizeMethod2		= perRomIni.GetBoolValue(szCRC, "bTxtSizeMethod2", false);
+	pGameSetting->bEnableTxtLOD			= perRomIni.GetBoolValue(szCRC, "bEnableTxtLOD", false);
 
-	//lstrcpyn(pGameSetting->szGameName, IniSections[i].name, 50);
+	pGameSetting->bEmulateClear			= perRomIni.GetBoolValue(szCRC, "bEmulateClear", false);
+	pGameSetting->bForceScreenClear		= perRomIni.GetBoolValue(szCRC, "bForceScreenClear", false);
 
-	pGameSetting->bDisableCulling		= IniSections[i].bDisableCulling;
-	pGameSetting->bIncTexRectEdge		= IniSections[i].bIncTexRectEdge;
-	pGameSetting->bZHack				= IniSections[i].bZHack;
-	pGameSetting->bTextureScaleHack		= IniSections[i].bTextureScaleHack;
-	pGameSetting->bPrimaryDepthHack		= IniSections[i].bPrimaryDepthHack;
-	pGameSetting->bTexture1Hack			= IniSections[i].bTexture1Hack;
-	pGameSetting->bFastLoadTile			= IniSections[i].bFastLoadTile;
+	pGameSetting->bDisableBlender		= perRomIni.GetBoolValue(szCRC, "bDisableBlender", false);
+	pGameSetting->bForceDepthBuffer		= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
+	pGameSetting->bDisableObjBG			= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
 
-	pGameSetting->VIWidth				= IniSections[i].VIWidth;
-	pGameSetting->VIHeight				= IniSections[i].VIHeight;
-	pGameSetting->UseCIWidthAndRatio	= IniSections[i].UseCIWidthAndRatio;
-	pGameSetting->bTxtSizeMethod2		= IniSections[i].bTxtSizeMethod2;
-	pGameSetting->bEnableTxtLOD			= IniSections[i].bEnableTxtLOD;
-
-	pGameSetting->bEmulateClear			= IniSections[i].bEmulateClear;
-	pGameSetting->bForceScreenClear		= IniSections[i].bForceScreenClear;
-	pGameSetting->dwNormalBlender		= IniSections[i].dwNormalBlender;
-	pGameSetting->bDisableBlender		= IniSections[i].bDisableBlender;
-	pGameSetting->dwNormalCombiner		= IniSections[i].dwNormalCombiner;
-	pGameSetting->bForceDepthBuffer		= IniSections[i].bForceDepthBuffer;
-	pGameSetting->bDisableObjBG			= IniSections[i].bDisableObjBG;
-	pGameSetting->dwFrameBufferOption	= IniSections[i].dwFrameBufferOption;
-	pGameSetting->dwRenderToTextureOption	= IniSections[i].dwRenderToTextureOption;
-	pGameSetting->dwScreenUpdateSetting	= IniSections[i].dwScreenUpdateSetting;
+	pGameSetting->dwNormalCombiner		= perRomIni.GetLongValue(szCRC, "dwNormalCombiner", 0);
+	pGameSetting->dwNormalBlender		= perRomIni.GetLongValue(szCRC, "dwNormalBlender", 0);
+	pGameSetting->dwFrameBufferOption	= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
+	pGameSetting->dwRenderToTextureOption	= perRomIni.GetLongValue(szCRC, "dwRenderToTextureOption", 0);
+	pGameSetting->dwScreenUpdateSetting	= perRomIni.GetLongValue(szCRC, "dwScreenUpdateSetting", 0);
 }
 
 void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 {
-	int i;
+	CHAR szCRC[50+1];
+	// Generate the CRC-ID for this rom:
+	wsprintf(szCRC, "%08x%08x-%02x", pGameSetting->romheader.dwCRC1,  pGameSetting->romheader.dwCRC2, pGameSetting->romheader.nCountryID);
 
-	i = FindIniEntry(pGameSetting->romheader.dwCRC1,
-		pGameSetting->romheader.dwCRC2,
-		pGameSetting->romheader.nCountryID,
-		pGameSetting->szGameName);
+	perRomIni.SetLongValue(szCRC, "bDisableCulling", pGameSetting->bDisableCulling);
+	perRomIni.SetLongValue(szCRC, "bEmulateClear", pGameSetting->bEmulateClear);
+	perRomIni.SetLongValue(szCRC, "dwNormalBlender", pGameSetting->dwNormalBlender);
+	perRomIni.SetLongValue(szCRC, "bDisableBlender", pGameSetting->bDisableBlender);
+	perRomIni.SetLongValue(szCRC, "bForceScreenClear", pGameSetting->bForceScreenClear);
+	perRomIni.SetLongValue(szCRC, "dwNormalCombiner", pGameSetting->dwNormalCombiner);
+	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer", pGameSetting->bForceDepthBuffer);
+	perRomIni.SetLongValue(szCRC, "bDisableObjBG", pGameSetting->bDisableObjBG);
+	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption", pGameSetting->dwFrameBufferOption);
+	perRomIni.SetLongValue(szCRC, "dwRenderToTextureOption", pGameSetting->dwRenderToTextureOption);
+	perRomIni.SetLongValue(szCRC, "dwScreenUpdateSetting", pGameSetting->dwScreenUpdateSetting);
+	perRomIni.SetLongValue(szCRC, "bIncTexRectEdge", pGameSetting->bIncTexRectEdge);
+	perRomIni.SetLongValue(szCRC, "bZHack", pGameSetting->bZHack);
+	perRomIni.SetLongValue(szCRC, "bTextureScaleHack", pGameSetting->bTextureScaleHack);
+	perRomIni.SetLongValue(szCRC, "bPrimaryDepthHack", pGameSetting->bPrimaryDepthHack);
+	perRomIni.SetLongValue(szCRC, "bTexture1Hack", pGameSetting->bTexture1Hack);
+	perRomIni.SetLongValue(szCRC, "bFastLoadTile", pGameSetting->bFastLoadTile);
+	perRomIni.SetLongValue(szCRC, "VIWidth", pGameSetting->VIWidth);
+	perRomIni.SetLongValue(szCRC, "VIHeight", pGameSetting->VIHeight);
+	perRomIni.SetLongValue(szCRC, "UseCIWidthAndRatio", pGameSetting->UseCIWidthAndRatio);
+	perRomIni.SetLongValue(szCRC, "bTxtSizeMethod2", pGameSetting->bTxtSizeMethod2);
+	perRomIni.SetLongValue(szCRC, "bEnableTxtLOD", pGameSetting->bEnableTxtLOD);
+	perRomIni.SaveFile(szIniFileName);
 
-	if( IniSections[i].bDisableCulling	!=pGameSetting->bDisableCulling )
-	{
-		IniSections[i].bDisableCulling	=pGameSetting->bDisableCulling	 ;
-		bIniIsChanged=true;
-	}
-
-	if( IniSections[i].bEmulateClear !=pGameSetting->bEmulateClear )
-	{
-		IniSections[i].bEmulateClear	=pGameSetting->bEmulateClear		 ;
-		bIniIsChanged=true;
-	}
-
-	if( IniSections[i].dwNormalBlender	!=pGameSetting->dwNormalBlender )
-	{
-		IniSections[i].dwNormalBlender		=pGameSetting->dwNormalBlender		 ;
-		bIniIsChanged=true;
-	}
-
-	if( IniSections[i].bDisableBlender	!=pGameSetting->bDisableBlender )
-	{
-		IniSections[i].bDisableBlender	=pGameSetting->bDisableBlender		 ;
-		bIniIsChanged=true;
-	}
-
-	if( IniSections[i].bForceScreenClear	!=pGameSetting->bForceScreenClear )
-	{
-		IniSections[i].bForceScreenClear	=pGameSetting->bForceScreenClear		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].dwNormalCombiner	!=pGameSetting->dwNormalCombiner )
-	{
-		IniSections[i].dwNormalCombiner	=pGameSetting->dwNormalCombiner		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bForceDepthBuffer	!=pGameSetting->bForceDepthBuffer )
-	{
-		IniSections[i].bForceDepthBuffer	=pGameSetting->bForceDepthBuffer		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bDisableObjBG	!=pGameSetting->bDisableObjBG )
-	{
-		IniSections[i].bDisableObjBG	=pGameSetting->bDisableObjBG		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].dwFrameBufferOption	!=pGameSetting->dwFrameBufferOption )
-	{
-		IniSections[i].dwFrameBufferOption	=pGameSetting->dwFrameBufferOption		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].dwRenderToTextureOption	!=pGameSetting->dwRenderToTextureOption )
-	{
-		IniSections[i].dwRenderToTextureOption	=pGameSetting->dwRenderToTextureOption		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].dwScreenUpdateSetting	!=pGameSetting->dwScreenUpdateSetting )
-	{
-		IniSections[i].dwScreenUpdateSetting	=pGameSetting->dwScreenUpdateSetting		 ;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bIncTexRectEdge	!= pGameSetting->bIncTexRectEdge )
-	{
-		IniSections[i].bIncTexRectEdge		=pGameSetting->bIncTexRectEdge;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bZHack	!= pGameSetting->bZHack )
-	{
-		IniSections[i].bZHack		=pGameSetting->bZHack;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bTextureScaleHack	!= pGameSetting->bTextureScaleHack )
-	{
-		IniSections[i].bTextureScaleHack		=pGameSetting->bTextureScaleHack;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bPrimaryDepthHack	!= pGameSetting->bPrimaryDepthHack )
-	{
-		IniSections[i].bPrimaryDepthHack		=pGameSetting->bPrimaryDepthHack;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bTexture1Hack	!= pGameSetting->bTexture1Hack )
-	{
-		IniSections[i].bTexture1Hack		=pGameSetting->bTexture1Hack;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bFastLoadTile	!= pGameSetting->bFastLoadTile )
-	{
-		IniSections[i].bFastLoadTile	=pGameSetting->bFastLoadTile;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].VIWidth	!= pGameSetting->VIWidth )
-	{
-		IniSections[i].VIWidth	=pGameSetting->VIWidth;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].VIHeight	!= pGameSetting->VIHeight )
-	{
-		IniSections[i].VIHeight	=pGameSetting->VIHeight;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].UseCIWidthAndRatio	!= pGameSetting->UseCIWidthAndRatio )
-	{
-		IniSections[i].UseCIWidthAndRatio	=pGameSetting->UseCIWidthAndRatio;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bTxtSizeMethod2	!= pGameSetting->bTxtSizeMethod2 )
-	{
-		IniSections[i].bTxtSizeMethod2	=pGameSetting->bTxtSizeMethod2;
-		bIniIsChanged=true;
-	}
-	if( IniSections[i].bEnableTxtLOD	!= pGameSetting->bEnableTxtLOD )
-	{
-		IniSections[i].bEnableTxtLOD	=pGameSetting->bEnableTxtLOD;
-		bIniIsChanged=true;
-	}
-
-	if( bIniIsChanged )
-	{
-		WriteIniFile();
-		TRACE0("Rom option is changed and saved");
-	}
+	//Ensure that we now have the up to date settings stored in memory by flushing out the current ones and reloading the file
+	perRomIni.Reset();
+	perRomIni.LoadFile(szIniFileName);
+	TRACE0("Rom option is changed and saved");
 }
 
 
@@ -974,11 +728,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_SLIDER_ANISO,
 			"DirectX Anisotropy Filtering Setting",
 			"Use this to set the amount of anisotropic filtering."
-	},
-	{ 
-		IDC_DEPTH_BUFFER,
-			"Depth buffer setting",
-			"You don't need to modify this setting.\n"
 	},
 	{ 
 		IDC_RESOLUTION_WINDOW_MODE,
@@ -1308,7 +1057,7 @@ int numOfTTMsgs = sizeof(ttmsg)/sizeof(ToolTipMsg);
 // g_hwndDlg - handle to the dialog box. 
 // g_hhk - handle to the hook procedure. 
 
-BOOL CreateDialogTooltip(void) 
+bool CreateDialogTooltip(void) 
 {
 #ifdef ENABLE_CONFIG_DIALOG
     // Ensure that the common control DLL is loaded, and create
@@ -1331,7 +1080,7 @@ BOOL CreateDialogTooltip(void)
     return TRUE;
 } 
 
-BOOL EnumChildWndTooltip(void)
+bool EnumChildWndTooltip(void)
 {
 	return (!EnumChildWindows(g_hwndDlg, (WNDENUMPROC) EnumChildProc, 0));
 }
@@ -1342,7 +1091,7 @@ BOOL EnumChildWndTooltip(void)
 // Returns TRUE if successful, or FALSE otherwise. 
 // hwndCtrl - handle of a control window. 
 // lParam - application-defined value (not used). 
-extern "C"  BOOL __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam) 
+extern "C"  bool __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam) 
 { 
     TOOLINFO ti; 
 	
@@ -1435,8 +1184,6 @@ VOID OnWMNotify(LPARAM lParam)
 	} 
 	return;
 }
-std::ifstream& getline( std::ifstream &is, char *str );
-
 
 ///////////////////////////////////////////////
 //// Constructors / Deconstructors
@@ -1468,413 +1215,11 @@ char * right(char *src, int nchars)
 	return dst;
 }
 
-char * tidy(char * s)
-{
-	char * p = s + lstrlen(s);
-
-	p--;
-	while (p >= s && (*p == ' ' || *p == 0xa || *p == '\n') )
-	{
-		*p = 0;
-		p--;
-	}
-	return s;
-
-}
-
-
-
-BOOL ReadIniFile()
-{
-	std::ifstream inifile;
-	char readinfo[100];
-	char trim[]="{}"; //remove first and last character
-
-	char filename[256];
-	GetPluginDir(filename);
-	strcat(filename,szIniFileName);
-	inifile.open(filename);
-
-	if (inifile.fail())
-	{
-		return FALSE;
-	}
-
-	while (getline(inifile,readinfo)/*&&sectionno<999*/)
-	{
-		tidy(readinfo);
-
-		if (readinfo[0] == '/')
-			continue;
-
-		if (!lstrcmpi(readinfo,"")==0)
-		{
-			if (readinfo[0] == '{') //if a section heading
-			{
-				section newsection;
-
-				//StrTrim(readinfo,trim);		// Fix me
-				readinfo[strlen(readinfo)-1]='\0';
-				strcpy(newsection.crccheck, readinfo+1);
-
-				newsection.bDisableCulling = FALSE;
-				newsection.bIncTexRectEdge = FALSE;
-				newsection.bZHack = FALSE;
-				newsection.bTextureScaleHack = FALSE;
-				newsection.bFastLoadTile = FALSE;
-				newsection.bPrimaryDepthHack = FALSE;
-				newsection.bTexture1Hack = FALSE;
-				newsection.bDisableObjBG = FALSE;
-				newsection.VIWidth = -1;
-				newsection.VIHeight = -1;
-				newsection.UseCIWidthAndRatio = NOT_USE_CI_WIDTH_AND_RATIO;
-				newsection.bTxtSizeMethod2 = FALSE;
-				newsection.bEnableTxtLOD = FALSE;
-
-				newsection.bEmulateClear = FALSE;
-				newsection.bForceScreenClear = FALSE;
-				newsection.bDisableBlender = FALSE;
-				newsection.bForceDepthBuffer = FALSE;
-				newsection.dwNormalBlender = 0;
-				newsection.dwNormalCombiner = 0;
-				newsection.dwFrameBufferOption = 0;
-				newsection.dwRenderToTextureOption = 0;
-				newsection.dwScreenUpdateSetting = 0;
-
-				IniSections.push_back(newsection);
-
-			}
-			else
-			{		
-				int sectionno = IniSections.size() - 1;
-
-				if (lstrcmpi(left(readinfo,4), "Name")==0)
-					strcpy(IniSections[sectionno].name,right(readinfo,strlen(readinfo)-5));
-
-				if (lstrcmpi(left(readinfo,14), "DisableCulling")==0)
-					IniSections[sectionno].bDisableCulling=true;
-
-				if (lstrcmpi(left(readinfo,16), "PrimaryDepthHack")==0)
-					IniSections[sectionno].bPrimaryDepthHack=true;
-
-				if (lstrcmpi(left(readinfo,12), "Texture1Hack")==0)
-					IniSections[sectionno].bTexture1Hack=true;
-
-				if (lstrcmpi(left(readinfo,12), "FastLoadTile")==0)
-					IniSections[sectionno].bFastLoadTile=true;
-
-				if (lstrcmpi(left(readinfo,14), "IncTexRectEdge")==0)
-					IniSections[sectionno].bIncTexRectEdge=true;
-
-				if (lstrcmpi(left(readinfo,5), "ZHack")==0)
-					IniSections[sectionno].bZHack=true;
-
-				if (lstrcmpi(left(readinfo,16), "TexRectScaleHack")==0)
-					IniSections[sectionno].bTextureScaleHack=true;
-
-				if (lstrcmpi(left(readinfo,7), "VIWidth")==0)
-					IniSections[sectionno].VIWidth = strtol(right(readinfo,3),NULL,10);
-
-				if (lstrcmpi(left(readinfo,8), "VIHeight")==0)
-					IniSections[sectionno].VIHeight = strtol(right(readinfo,3),NULL,10);
-
-				if (lstrcmpi(left(readinfo,18), "UseCIWidthAndRatio")==0)
-					IniSections[sectionno].UseCIWidthAndRatio = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,24), "AlternativeTxtSizeMethod")==0)
-					IniSections[sectionno].bTxtSizeMethod2 = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,12), "EnableTxtLOD")==0)
-					IniSections[sectionno].bEnableTxtLOD = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,12), "DisableObjBG")==0)
-					IniSections[sectionno].bDisableObjBG = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,16), "ForceScreenClear")==0)
-					IniSections[sectionno].bForceScreenClear = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,12), "EmulateClear")==0)
-					IniSections[sectionno].bEmulateClear = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,18), "NormalAlphaBlender")==0)
-					IniSections[sectionno].dwNormalBlender = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,19), "DisableAlphaBlender")==0)
-					IniSections[sectionno].bDisableBlender = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,19), "NormalColorCombiner")==0)
-					IniSections[sectionno].dwNormalCombiner = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,16), "ForceDepthBuffer")==0)
-					IniSections[sectionno].bForceDepthBuffer = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,20), "FrameBufferEmulation")==0)
-					IniSections[sectionno].dwFrameBufferOption = strtol(readinfo+21,NULL,10);
-
-				if (lstrcmpi(left(readinfo,15), "RenderToTexture")==0)
-					IniSections[sectionno].dwRenderToTextureOption = strtol(right(readinfo,1),NULL,10);
-
-				if (lstrcmpi(left(readinfo,19), "ScreenUpdateSetting")==0)
-					IniSections[sectionno].dwScreenUpdateSetting = strtol(right(readinfo,1),NULL,10);
-			}
-		}
-	}
-	inifile.close();
-
-	return TRUE;
-}
-
-//read a line from the ini file
-std::ifstream & getline(std::ifstream & is, char *str)
-{
-	char buf[100];
-
-	is.getline(buf,100);
-	strcpy( str,buf);
-	return is;
-}
-
-void WriteIniFile()
-{
-	TCHAR szFileNameOut[MAX_PATH+1];
-	TCHAR szFileNameDelete[MAX_PATH+1];
-	TCHAR filename[MAX_PATH+1];
-	uint32 i;
-	FILE * fhIn;
-	FILE * fhOut;
-	TCHAR szBuf[1024+1];
-	char trim[]="{}\n\r"; //remove first and last character
-
-	GetPluginDir(szFileNameOut);
-	GetPluginDir(szFileNameDelete);
-	wsprintf(filename, "%s.tmp", szIniFileName);
-	strcat(szFileNameOut, filename);
-	wsprintf(filename, "%s.del", szIniFileName);
-	strcat(szFileNameDelete, filename);
-
-	GetPluginDir(filename);
-	strcat(filename,szIniFileName);
-	fhIn = fopen(filename, "r");
-	if (fhIn == NULL)
-	{
-		// Create a new file
-		fhOut = fopen(filename,"w");
-		fclose(fhOut);
-		return;
-	}
-
-	fhOut = fopen(szFileNameOut, "w");
-	if (fhOut == NULL)
-	{
-		fclose(fhIn);
-		return;
-	}
-
-	// Mark all sections and needing to be written
-	for (i = 0; i < IniSections.size(); i++)
-	{
-		IniSections[i].bOutput = false;
-	}
-
-
-	while (fgets(szBuf, 1024, fhIn))
-	{
-		if (szBuf[0] == '{')
-		{
-			BOOL bFound = FALSE;
-			tidy(szBuf);
-			szBuf[strlen(szBuf)-1]='\0';
-
-			for (i = 0; i < IniSections.size(); i++)
-			{
-				if (IniSections[i].bOutput)
-					continue;
-
-				if (lstrcmpi(szBuf+1, IniSections[i].crccheck) == 0)
-				{
-					// Output this CRC
-					OutputSectionDetails(i, fhOut);
-					IniSections[i].bOutput = true;
-					bFound = TRUE;
-					break;
-				}
-			}
-			if (!bFound)
-			{
-				// Do what? This should never happen, unless the user
-				// replaces the inifile while game is running!
-			}
-		}
-		else if (szBuf[0] == '/')
-		{
-			// Comment
-			fputs(szBuf, fhOut);
-			continue;
-		}
-
-	}
-
-	// Input buffer done-  process any new entries!
-	for (i = 0; i < IniSections.size(); i++)
-	{
-		// Skip any that have not been done.
-		if (IniSections[i].bOutput)
-			continue;
-		// Output this CRC
-		// Removed at request of Genueix :)
-		//fprintf(fhOut, "// Automatically generated entry - may need editing\n");
-		OutputSectionDetails(i, fhOut);
-		IniSections[i].bOutput = true;
-	}
-
-	fclose(fhOut);
-	fclose(fhIn);
-
-	// Create the new file
-	DeleteFile(filename);
-	MoveFile(szFileNameOut, filename);
-
-	bIniIsChanged = false;
-}
-
-
-void OutputSectionDetails(uint32 i, FILE * fh)
-{
-	fprintf(fh, "{%s}\n", IniSections[i].crccheck);
-
-	fprintf(fh, "Name=%s\n", IniSections[i].name);
-	//fprintf(fh, "UCode=%d\n", IniSections[i].ucode);
-
-	// Tri-state variables
-	if (IniSections[i].dwNormalBlender != 0)
-		fprintf(fh, "NormalAlphaBlender=%d\n", IniSections[i].dwNormalBlender);
-
-	if (IniSections[i].dwNormalCombiner != 0)
-		fprintf(fh, "NormalColorCombiner=%d\n", IniSections[i].dwNormalCombiner);
-
-
-	// Normal bi-state variables
-
-	if (IniSections[i].bDisableCulling)
-		fprintf(fh, "DisableCulling\n");
-
-	if (IniSections[i].bPrimaryDepthHack)
-		fprintf(fh, "PrimaryDepthHack\n");
-
-	if (IniSections[i].bTexture1Hack)
-		fprintf(fh, "Texture1Hack\n");
-
-	if (IniSections[i].bFastLoadTile)
-		fprintf(fh, "FastLoadTile\n");
-
-	if (IniSections[i].bIncTexRectEdge)
-		fprintf(fh, "IncTexRectEdge\n");
-
-	if (IniSections[i].bZHack)
-		fprintf(fh, "ZHack\n");
-
-	if (IniSections[i].bTextureScaleHack)
-		fprintf(fh, "TexRectScaleHack\n");
-
-	if (IniSections[i].VIWidth > 0)
-		fprintf(fh, "VIWidth=%d\n", IniSections[i].VIWidth);
-
-	if (IniSections[i].VIHeight > 0)
-		fprintf(fh, "VIHeight=%d\n", IniSections[i].VIHeight);
-
-	if (IniSections[i].UseCIWidthAndRatio > 0)
-		fprintf(fh, "UseCIWidthAndRatio=%d\n", IniSections[i].UseCIWidthAndRatio);
-
-	if (IniSections[i].bTxtSizeMethod2 != FALSE )
-		fprintf(fh, "AlternativeTxtSizeMethod=%d\n", IniSections[i].bTxtSizeMethod2);
-
-	if (IniSections[i].bEnableTxtLOD != FALSE )
-		fprintf(fh, "EnableTxtLOD=%d\n", IniSections[i].bEnableTxtLOD);
-
-	if (IniSections[i].bDisableObjBG != 0 )
-		fprintf(fh, "DisableObjBG=%d\n", IniSections[i].bDisableObjBG);
-
-	if (IniSections[i].bForceScreenClear != 0)
-		fprintf(fh, "ForceScreenClear=%d\n", IniSections[i].bForceScreenClear);
-
-	if (IniSections[i].bEmulateClear != 0)
-		fprintf(fh, "EmulateClear=%d\n", IniSections[i].bEmulateClear);
-
-	if (IniSections[i].bDisableBlender != 0)
-		fprintf(fh, "DisableAlphaBlender=%d\n", IniSections[i].bDisableBlender);
-
-	if (IniSections[i].bForceDepthBuffer != 0)
-		fprintf(fh, "ForceDepthBuffer=%d\n", IniSections[i].bForceDepthBuffer);
-
-	if (IniSections[i].dwFrameBufferOption != 0)
-		fprintf(fh, "FrameBufferEmulation=%d\n", IniSections[i].dwFrameBufferOption);
-
-	if (IniSections[i].dwRenderToTextureOption != 0)
-		fprintf(fh, "RenderToTexture=%d\n", IniSections[i].dwRenderToTextureOption);
-
-	if (IniSections[i].dwScreenUpdateSetting != 0)
-		fprintf(fh, "ScreenUpdateSetting=%d\n", IniSections[i].dwScreenUpdateSetting);
-
-	fprintf(fh, "\n");			// Spacer
-}
-
 
 // Find the entry corresponding to the specified rom. 
 // If the rom is not found, a new entry is created
 // The resulting value is returned
 void __cdecl DebuggerAppendMsg (const char * Message, ...);
-int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName)
-{
-	uint32 i;
-	CHAR szCRC[50+1];
-
-	// Generate the CRC-ID for this rom:
-	wsprintf(szCRC, "%08x%08x-%02x", dwCRC1, dwCRC2, nCountryID);
-
-	for (i = 0; i < IniSections.size(); i++)
-	{
-		if (lstrcmpi(szCRC, IniSections[i].crccheck) == 0)
-		{
-			return i;
-		}
-	}
-
-	// Add new entry!!!
-	section newsection;
-
-	strcpy(newsection.crccheck, szCRC);
-
-	lstrcpyn(newsection.name, szName, 50);
-	newsection.bDisableCulling = FALSE;
-	newsection.bIncTexRectEdge = FALSE;
-	newsection.bZHack = FALSE;
-	newsection.bTextureScaleHack = FALSE;
-	newsection.bFastLoadTile = FALSE;
-	newsection.bPrimaryDepthHack = FALSE;
-	newsection.bTexture1Hack = FALSE;
-	newsection.bDisableObjBG = FALSE;
-	newsection.VIWidth = -1;
-	newsection.VIHeight = -1;
-	newsection.UseCIWidthAndRatio = NOT_USE_CI_WIDTH_AND_RATIO;
-	newsection.bTxtSizeMethod2 = FALSE;
-	newsection.bEnableTxtLOD = FALSE;
-
-	newsection.bEmulateClear = FALSE;
-	newsection.bForceScreenClear = FALSE;
-	newsection.bDisableBlender = FALSE;
-	newsection.bForceDepthBuffer = FALSE;
-	newsection.dwNormalBlender = 0;
-	newsection.dwNormalCombiner = 0;
-	newsection.dwFrameBufferOption = 0;
-	newsection.dwRenderToTextureOption = 0;
-	newsection.dwScreenUpdateSetting = 0;
-
-	IniSections.push_back(newsection);
-
-	bIniIsChanged = true;				// Flag to indicate we should be updated
-	return IniSections.size()-1;			// -1 takes into account increment
-}
-
 
 GameSetting g_curRomInfo;
 
@@ -2000,7 +1345,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			EnableWindow(item, FALSE);
 		}
 
-		SendDlgItemMessage(hDlg, IDC_SKIP_FRAME, BM_SETCHECK, options.bSkipFrame ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_SETCHECK, options.bDisplayTooltip ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_SETCHECK, options.bHideAdvancedOptions ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -2050,10 +1394,18 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_SETCURSEL, i+1, 0);
 			}
 		}
+
 		if( windowSetting.uFullScreenRefreshRate == 0 )
 		{
 			SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_SETCURSEL, 0, 0);
 		}
+
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_RESETCONTENT, 0, 0);
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 0, (LPARAM) "Stretch (Default)");
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 1, (LPARAM) "Pillarbox");
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 2, (LPARAM) "Extend");
+		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_SETCURSEL, windowSetting.uScreenScaleMode, 0);
+
 
 		if( status.bGameIsRunning )
 		{
@@ -2146,7 +1498,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		case IDOK:
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bSkipFrame = (SendDlgItemMessage(hDlg, IDC_SKIP_FRAME, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bDisplayTooltip = (SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -2176,6 +1527,8 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			{
 				windowSetting.uFullScreenRefreshRate = CGraphicsContext::m_FullScreenRefreshRates[i-1];
 			}
+
+			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
 
 			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_GETCURSEL, 0, 0);
 			windowSetting.uWindowDisplayWidth = CGraphicsContext::m_FullScreenResolutions[i][0];
@@ -2241,20 +1594,11 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_SETCURSEL, i, 0);
 		}
 
-		SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_RESETCONTENT, 0, 0);
 		item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
 		EnableWindow(item, TRUE);
 
-		for( i=0; i<numberOfDirectXDepthBufferSettings; i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_INSERTSTRING, i, (LPARAM) DirectXDepthBufferSetting[i].description);
-		}
-		SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_SETCURSEL, options.DirectXDepthBufferSetting, 0);
-
 		if( status.bGameIsRunning )
 		{
-			item = GetDlgItem(hDlg, IDC_DEPTH_BUFFER );
-			EnableWindow(item, FALSE);
 			item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
 			EnableWindow(item, FALSE);
 		}
@@ -2340,7 +1684,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			case PSN_SETACTIVE :
 				if( options.bHideAdvancedOptions )
 				{
-					ShowItem(hDlg, IDC_DEPTH_BUFFER, FALSE);
 					ShowItem(hDlg, IDC_SHOW_FPS, FALSE);
 					ShowItem(hDlg, IDC_FPS_COLOR, FALSE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, FALSE);
@@ -2352,7 +1695,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				}
 				else
 				{
-					ShowItem(hDlg, IDC_DEPTH_BUFFER, TRUE);
 					ShowItem(hDlg, IDC_SHOW_FPS, TRUE);
 					ShowItem(hDlg, IDC_FPS_COLOR, TRUE);
 					ShowItem(hDlg, IDC_SETTING_LABEL2, TRUE);
@@ -2420,8 +1762,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			options.bDisplayOnscreenFPS = OnScreenDisplaySettings[i].setting;
 
 			options.DirectXDevice = SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_GETCURSEL, 0, 0);
-
-			options.DirectXDepthBufferSetting = SendDlgItemMessage(hDlg, IDC_DEPTH_BUFFER, CB_GETCURSEL, 0, 0);
 
 			item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
 			options.DirectXAntiAliasingValue = SendMessage(item, TBM_GETPOS, 0, 0);
@@ -2603,7 +1943,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, defaultRomOptions.bNormalCombiner ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_AUTO_WRITE_BACK, BM_SETCHECK, defaultRomOptions.bOverlapAutoWriteBack ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_SETCHECK, defaultRomOptions.bDoubleSizeForSmallTxtrBuf ? BST_CHECKED : BST_UNCHECKED, 0);
 
 		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_RESETCONTENT, 0, 0);
@@ -2666,7 +2005,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.bOverlapAutoWriteBack = (SendDlgItemMessage(hDlg, IDC_AUTO_WRITE_BACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.bDoubleSizeForSmallTxtrBuf = (SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			WriteConfiguration();

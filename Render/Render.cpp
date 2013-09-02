@@ -39,6 +39,7 @@ CRender * CRender::GetRender(void)
 	else
 		return CRender::g_pRender;
 }
+
 bool CRender::IsAvailable()
 {
 	return CRender::g_pRender != NULL;
@@ -77,19 +78,10 @@ CRender::CRender() :
 		TileUFlags[i] = TileVFlags[i] = D3DTADDRESS_CLAMP;
 	}
 
-
-	//for( i=0; i<MAX_VERTS; i++)
-	//{
-	//	g_dwVtxFlags[i] = 0;
-	//}
-
 	//Create the pixel shader, where going to assume the user has support for this
 	m_pColorCombiner = new CDirectXPixelShaderCombiner(this);
 	//Inititalize the pixel shader combiner
 	m_pColorCombiner->Initialize();
-
-	//Create the alpha belnder
-	m_pAlphaBlender = new CDirectXBlender(this);
 
 }
 
@@ -99,13 +91,7 @@ CRender::~CRender()
 	{
 		SAFE_DELETE(m_pColorCombiner);
 		m_pColorCombiner = NULL;
-	}
-	
-	if( m_pAlphaBlender != NULL )
-	{
-		SAFE_DELETE(m_pAlphaBlender);
-		m_pAlphaBlender = NULL;
-	}
+	}	
 }
 
 void CRender::ResetMatrices()
@@ -223,11 +209,11 @@ void CRender::SetWorldView(const Matrix & mat, bool bPush, bool bReplace)
 }
 
 
-void CRender::PopWorldView()
+void CRender::PopWorldView(u32 num)
 {
-	if (gRSP.modelViewMtxTop > 0)
+	if (gRSP.modelViewMtxTop > (num-1))
 	{
-		gRSP.modelViewMtxTop--;
+		gRSP.modelViewMtxTop-=num;
 		gRSPmodelViewTop = gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
 		if( options.enableHackForGames == HACK_REVERSE_XY_COOR )
 		{
@@ -288,13 +274,13 @@ void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)
 void CRender::SetCombinerAndBlender()
 {
 	InitOtherModes();
-
+	
 	if( g_curRomInfo.bDisableBlender )
-		m_pAlphaBlender->DisableAlphaBlender();
+		CBlender::DisableAlphaBlender();
 	else if( currentRomOptions.bNormalBlender )
-		m_pAlphaBlender->NormalAlphaBlender();
+		CBlender::NormalAlphaBlender();
 	else
-		m_pAlphaBlender->InitBlenderMode();
+		CBlender::InitBlenderMode();
 
 	m_pColorCombiner->InitCombinerMode();
 }
@@ -318,7 +304,8 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 	if( g_CI.dwSize != TXT_SIZE_16b && frameBufferOptions.bIgnore )
 		return true;
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	status.bFrameBufferIsDrawn = true;
+	if( status.bHandleN64RenderTexture)	
+		status.bFrameBufferIsDrawn = true;
 
 	if( status.bVIOriginIsUpdated == true && currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_1ST_PRIMITIVE )
 	{
@@ -401,15 +388,11 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 	if( m_line3DVtx[0].z != m_line3DVtx[1].z )  
 		return false;
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	status.bFrameBufferIsDrawn = true;
 	if( status.bHandleN64RenderTexture ) 
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 
 	m_line3DVtx[0].x = ViewPortTranslatef_x(g_vecProjected[dwV0].x);
@@ -568,7 +551,8 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		status.bFrameBufferIsDrawn = true;
 	}
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	status.bFrameBufferIsDrawn = true;
+	if( status.bHandleN64RenderTexture)
+		status.bFrameBufferIsDrawn = true;
 
 	LOG_UCODE("TexRect: X0=%d, Y0=%d, X1=%d, Y1=%d,\n\t\tfS0=%f, fT0=%f, ScaleS=%f, ScaleT=%f ",
 		nX0, nY0, nX1, nY1, fS0, fT0, fScaleS, fScaleT);
@@ -822,7 +806,7 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 	LOG_UCODE("TexRectFlip: X0=%d, Y0=%d, X1=%d, Y1=%d,\n\t\tfS0=%f, fT0=%f, fS1=%f, fT1=%f ",
 			nX0, nY0, nX1, nY1, fS0, fT0, fS1, fT1);
 
-	if( status.bHandleN64RenderTexture && !status.bDirectWriteIntoRDRAM )	
+	if( status.bHandleN64RenderTexture)	
 	{
 		status.bFrameBufferIsDrawn = true;
 		status.bFrameBufferDrawnByTriangles = true;
@@ -1106,7 +1090,6 @@ void CRender::SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ
 	gRSP.nVPHeightN = nBottom - nTop + 1;
 
 	UpdateClipRectangle();
-	SetViewportRender();
 
 	LOG_UCODE("SetViewport (%d,%d - %d,%d)",gRSP.nVPLeftN, gRSP.nVPTopN, gRSP.nVPRightN, gRSP.nVPBottomN);
 }
@@ -1167,24 +1150,13 @@ bool CRender::DrawTriangles()
 		status.bFrameBufferIsDrawn = true;
 	}
 
-	/*
-	if( status.bHandleN64RenderTexture && g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_8b )	
-	{
-		gRSP.numVertices = 0;
-		gRSP.maxVertexID = 0;
+	if (gRSP.numVertices == 0)
 		return true;
-	}
-	*/
-
-	if (gRSP.numVertices == 0)	return true;
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		if( !status.bDirectWriteIntoRDRAM )	
-		{
-			status.bFrameBufferIsDrawn = true;
-			status.bFrameBufferDrawnByTriangles = true;
-		}
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
 	}
 
 	if( !gRDP.bFogEnableInBlender && gRSP.bFogEnabled )

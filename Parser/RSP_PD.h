@@ -89,8 +89,8 @@ void RSP_Tri4_PD(MicroCodeCommand command)
 			}
 		}
 
-		w0			= *(uint32 *)(g_pRDRAMu8 + dwPC+0);
-		w1			= *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+		w0			= *(uint32 *)(g_pu8RamBase + dwPC+0);
+		w1			= *(uint32 *)(g_pu8RamBase + dwPC+4);
 		dwPC += 8;
 
 #ifdef _DEBUG
