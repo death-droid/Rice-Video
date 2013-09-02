@@ -167,8 +167,8 @@ void RSP_GBI0_Tri4(MicroCodeCommand command)
 
 		bTrisAdded |= AddTri(v9, v10, v11, true);
 
-		command.inst.cmd0 = *(u32 *)(g_pRDRAMu8 + dwPC+0);
-		command.inst.cmd1 = *(u32 *)(g_pRDRAMu8 + dwPC+4);
+		command.inst.cmd0 = *(u32 *)(g_pu8RamBase + dwPC+0);
+		command.inst.cmd1 = *(u32 *)(g_pu8RamBase + dwPC+4);
 		dwPC += 8;
 
 #ifdef _DEBUG

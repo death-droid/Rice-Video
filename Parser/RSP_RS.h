@@ -97,12 +97,12 @@ void DLParser_RS_MoveMem(MicroCodeCommand command)
 	LOG_UCODE("RS_MoveMem", ((command.inst.cmd0)>>24));
 	LOG_UCODE("\tPC=%08X: 0x%08x 0x%08x", dwPC, (command.inst.cmd0), (command.inst.cmd1));
 	dwPC+=8;
-	uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC);
-	uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC);
+	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 	LOG_UCODE("\tPC=%08X: 0x%08x 0x%08x", dwPC, dwCmd2, dwCmd3);
 	dwPC+=8;
-	uint32 dwCmd4 = *(uint32 *)(g_pRDRAMu8 + dwPC);
-	uint32 dwCmd5 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+	uint32 dwCmd4 = *(uint32 *)(g_pu8RamBase + dwPC);
+	uint32 dwCmd5 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 	LOG_UCODE("\tPC=%08X: 0x%08x 0x%08x\n", dwPC, dwCmd4, dwCmd5);
 	*/
 	gDlistStack[gDlistStackPointer].pc += 16;
@@ -119,8 +119,8 @@ void DLParser_RS_0xbe(MicroCodeCommand command)
 	LOG_UCODE("ucode %02X, skip 1", ((command.inst.cmd0)>>24));
 	LOG_UCODE("\tPC=%08X: 0x%08x 0x%08x", dwPC, (command.inst.cmd0), (command.inst.cmd1));
 	dwPC+=8;
-	uint32 dwCmd2 = *(uint32 *)(g_pRDRAMu8 + dwPC);
-	uint32 dwCmd3 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC);
+	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 	LOG_UCODE("\tPC=%08X: 0x%08x 0x%08x\n", dwPC, dwCmd2, dwCmd3);
 	gDlistStack[gDlistStackPointer].pc += 8;
 

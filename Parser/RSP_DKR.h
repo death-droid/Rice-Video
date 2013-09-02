@@ -36,7 +36,7 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 		uint32 dwV;
 		LONG i;
 
-		short * psSrc = (short *)(g_pRDRAMu8 + dwAddr);
+		short * psSrc = (short *)(g_pu8RamBase + dwAddr);
 
 		i = 0;
 		for (dwV = dwV0; dwV < dwV0 + dwN; dwV++)
@@ -65,7 +65,7 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 		}
 
 
-		uint16 * pwSrc = (uint16 *)(g_pRDRAMu8 + dwAddr);
+		uint16 * pwSrc = (uint16 *)(g_pu8RamBase + dwAddr);
 		i = 0;
 		for (dwV = dwV0; dwV < dwV0 + dwN; dwV++)
 		{
@@ -87,9 +87,9 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 //*****************************************************************************
 void RSP_Vtx_DKR(MicroCodeCommand command)
 {
-	uint32 dwAddr = (command.inst.cmd1) + gDKRVtxAddr;
-	uint32 dwV0 = (((command.inst.cmd0) >> 9 )&0x1F);
-	uint32 dwN  = (((command.inst.cmd0) >>19 )&0x1F)+1;
+	uint32 address = command.inst.cmd1 + gDKRVtxAddr;
+	uint32 num_verts  = ((command.inst.cmd0 >>19 )&0x1F)+1;
+	uint32 v0_idx = 0;
 
 	if( command.inst.cmd0 & 0x00010000 )
 	{
@@ -101,31 +101,31 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 		gDKRVtxCount = 0;
 	}
 
-	dwV0 += gDKRVtxCount;
+	v0_idx = ((command.inst.cmd0 >> 9) & 0x1F) + gDKRVtxCount;
 
-	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d", dwAddr, dwV0, dwN);
+	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d", address, v0_idx, num_verts);
 	DEBUGGER_ONLY_IF( (pauseAtNext && (eventToPause==NEXT_VERTEX_CMD||eventToPause==NEXT_MATRIX_CMD)), {DebuggerAppendMsg("DKR Vtx: Cmd0=%08X, Cmd1=%08X", (command.inst.cmd0), (command.inst.cmd1));});
 
-	if (dwV0 >= 32)		dwV0 = 31;
+	if (v0_idx >= 32)		v0_idx = 31;
 	
-	if ((dwV0 + dwN) > 32)
+	if ((v0_idx + num_verts) > 32)
 	{
 		WARNING(TRACE0("Warning, attempting to load into invalid vertex positions"));
-		dwN = 32 - dwV0;
+		num_verts = 32 - v0_idx;
 	}
 
 	// Check that address is valid...
-	if ((dwAddr + (dwN*16)) > g_dwRamSize)
+	if ((address + (num_verts*16)) > g_dwRamSize)
 	{
-		WARNING(TRACE1("ProcessVertexData: Address out of range (0x%08x)", dwAddr));
+		WARNING(TRACE1("ProcessVertexData: Address out of range (0x%08x)", address));
 	}
 	else
 	{
-		ProcessVertexDataDKR(dwAddr, dwV0, dwN);
+		ProcessVertexDataDKR(address, v0_idx, num_verts);
 
 #ifdef _DEBUG
-		status.dwNumVertices += dwN;
-		RDP_GFX_DumpVtxInfoDKR(dwAddr, dwV0, dwN);
+		status.dwNumVertices += num_verts;
+		RDP_GFX_DumpVtxInfoDKR(address, v0_idx, num_verts);
 #endif
 	}
 }
@@ -138,7 +138,7 @@ void RSP_DL_In_MEM_DKR(MicroCodeCommand command)
 	// This cmd is likely to execute number of ucode at the given address
 	gDlistStackPointer++;
 	gDlistStack[gDlistStackPointer].pc = command.inst.cmd1;
-	gDlistStack[gDlistStackPointer].countdown = (((command.inst.cmd0)>>16)&0xFF);
+	gDlistStack[gDlistStackPointer].countdown = (command.inst.cmd0 >> 16) & 0xFF;
 }
 
 //*****************************************************************************
@@ -146,11 +146,9 @@ void RSP_DL_In_MEM_DKR(MicroCodeCommand command)
 //*****************************************************************************
 void RSP_Mtx_DKR(MicroCodeCommand command)
 {	
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwAddr = (command.inst.cmd1)+RSPSegmentAddr(gDKRMatrixAddr);
 	uint32 dwCommand = ((command.inst.cmd0)>>16)&0xFF;
 	uint32 dwLength  = ((command.inst.cmd0))    &0xFFFF;
-
-	dwAddr = (command.inst.cmd1)+RSPSegmentAddr(gDKRMatrixAddr);
 
 	bool mul=false;
 	int index;
@@ -269,7 +267,7 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 	u32 dwNum = (((command.inst.cmd0) &  0xFFF0) >>4 );
 
 	//Unlike normal tri ucodes, this has the tri's stored in rdram
-	TriDKR *tri = (TriDKR*)&g_pRDRAMu32[ dwAddr >> 2];
+	TriDKR *tri = (TriDKR*)&g_pu32RamBase[ dwAddr >> 2];
 
 	if( dwAddr+16*dwNum >= g_dwRamSize )
 	{

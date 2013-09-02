@@ -146,7 +146,6 @@ typedef struct {
 	BOOL	bForceSoftwareTnL;
 	BOOL	bEnableSSE;
 	BOOL	bEnableVertexShader;
-	BOOL	bSkipFrame;
 	BOOL	bDisplayTooltip;
 	BOOL	bHideAdvancedOptions;
 
@@ -160,7 +159,6 @@ typedef struct {
 	BOOL	bLoadHiResTextures;
 	BOOL	bCacheHiResTextures;
 
-	int		DirectXDepthBufferSetting;
 	uint32	DirectXAntiAliasingValue;
 	uint32	DirectXAnisotropyValue;
 
@@ -208,57 +206,14 @@ typedef struct {
 	BOOL 	bNormalCombiner;
 	BOOL 	bNormalBlender;
 	BOOL 	bDoubleSizeForSmallTxtrBuf;
-	BOOL 	bOverlapAutoWriteBack;
 } RomOptions;
 
 extern RomOptions defaultRomOptions;
 extern RomOptions currentRomOptions;
 
-typedef struct IniSection
-{
-	bool    bOutput;
-	char	crccheck[50];
-	char	name[50];
-
-	// Options with changeable default values
-	uint32	dwNormalCombiner;
-	uint32	dwNormalBlender;
-	uint32	dwFrameBufferOption;
-	uint32	dwRenderToTextureOption;
-	uint32	dwScreenUpdateSetting;
-
-	// Options with FALSE as default values
-	BOOL	bDisableBlender;
-	BOOL	bForceScreenClear;
-	BOOL	bEmulateClear;
-	BOOL	bForceDepthBuffer;
-
-	// Less useful options
-	BOOL	bDisableObjBG;
-	BOOL 	bDisableTextureCRC;
-	BOOL 	bIncTexRectEdge;
-	BOOL 	bZHack;
-	BOOL 	bTextureScaleHack;
-	BOOL 	bFastLoadTile;
-	BOOL 	bPrimaryDepthHack;
-	BOOL 	bTexture1Hack;
-	BOOL	bDisableCulling;
-
-	int		VIWidth;
-	int		VIHeight;
-	uint32	UseCIWidthAndRatio;
-
-	BOOL	bTxtSizeMethod2;
-	BOOL	bEnableTxtLOD;
-} section;
-
-extern bool bIniIsChanged;
 extern char	szIniFileName[300];
-void WriteIniFile();
-BOOL ReadIniFile();
 void OutputSectionDetails(uint32 i, FILE * fh);
 int FindIniEntry(uint32 dwCRC1, uint32 dwCRC2, uint8 nCountryID, LPCTSTR szName); 
-
 
 struct ROMHeader
 {
@@ -333,15 +288,10 @@ extern GameSetting g_curRomInfo;
 
 void ROM_GetRomNameFromHeader(TCHAR * szName, ROMHeader * pHdr);
 void ROM_ByteSwap_3210(void *v, uint32 dwLen);
-uint32 ReadRegistryDwordValFromFile(char *Field, char FileName[1024]);
 
 #define TV_SYSTEM_NTSC		1
 #define TV_SYSTEM_PAL		0
 uint32 CountryCodeToTVSystem(uint32 countryCode);
-
-
-//#define COMPLETE_N64_TMEM
-
 
 enum {
     PSH_OPTIONS,

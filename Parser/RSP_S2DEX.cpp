@@ -38,7 +38,7 @@ uint32 g_TxtLoadBy = CMD_LOAD_OBJ_TXTR;
 void RSP_S2DEX_BG_COPY(MicroCodeCommand command)
 {
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjBg *sbgPtr = (uObjBg*)(g_pRDRAMu8+dwAddr);
+	uObjBg *sbgPtr = (uObjBg*)(g_pu8RamBase+dwAddr);
 	CRender::g_pRender->LoadObjBGCopy(*sbgPtr);
 	CRender::g_pRender->DrawObjBGCopy(*sbgPtr);
 }
@@ -47,7 +47,7 @@ void RSP_S2DEX_BG_COPY(MicroCodeCommand command)
 void RSP_S2DEX_OBJ_RECTANGLE(MicroCodeCommand command)
 {
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjSprite *ptr = (uObjSprite*)(g_pRDRAMu8+dwAddr);
+	uObjSprite *ptr = (uObjSprite*)(g_pu8RamBase+dwAddr);
 
 	uObjTxSprite objtx;
 	memcpy(&objtx.sprite,ptr,sizeof(uObjSprite));
@@ -84,7 +84,7 @@ void RSP_S2DEX_OBJ_RECTANGLE(MicroCodeCommand command)
 void RSP_S2DEX_OBJ_SPRITE(MicroCodeCommand command)
 {
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjSprite *info = (uObjSprite*)(g_pRDRAMu8+dwAddr);
+	uObjSprite *info = (uObjSprite*)(g_pu8RamBase+dwAddr);
 
 	uint32 dwTile	= gRSP.curTile;
 	status.bAllowLoadFromTMEM = false;	// Because we need to use TLUT loaded by ObjTlut cmd
@@ -162,7 +162,7 @@ void DumpBlockParameters(uObjTxtrBlock &ptr)
 	} uObjTxtrBlock;		// 24 bytes
 	*/
 
-	DebuggerAppendMsg("uObjTxtrBlock Header in RDRAM: 0x%08X", (uint32)&ptr-(uint32)g_pRDRAMu8);
+	DebuggerAppendMsg("uObjTxtrBlock Header in RDRAM: 0x%08X", (uint32)&ptr-(uint32)g_pu8RamBase);
 	DebuggerAppendMsg("ImgAddr=0x%08X(0x%08X), tsize=0x%X, \nTMEM=0x%X, sid=%d, tline=%d, flag=0x%X, mask=0x%X\n\n",
 		RSPSegmentAddr(ptr.image), ptr.image, ptr.tsize, ptr.tmem, ptr.sid/4, ptr.tline, ptr.flag, ptr.mask);
 }
@@ -195,7 +195,7 @@ void DumpSpriteParameters(uObjSprite &ptr)
 
 	if( logTextures || (pauseAtNext && eventToPause == NEXT_OBJ_TXT_CMD) )
 	{
-		DebuggerAppendMsg("uObjSprite Header in RDRAM: 0x%08X", (uint32)&ptr-(uint32)g_pRDRAMu8);
+		DebuggerAppendMsg("uObjSprite Header in RDRAM: 0x%08X", (uint32)&ptr-(uint32)g_pu8RamBase);
 		DebuggerAppendMsg("X=%d, Y=%d, W=%d, H=%d, scaleW=%f, scaleH=%f\n"
 			"TAddr=0x%X, Stride=%d, Flag=0x%X, Pal=%d, Fmt=%s-%db\n\n", 
 			ptr.objX/4, ptr.objY/4, ptr.imageW/32, ptr.imageH/32, ptr.scaleW/1024.0f, ptr.scaleH/1024.0f,
@@ -233,7 +233,7 @@ void DumpTxtrInfo(uObjTxtr *ptr)
 {
 	if( logTextures || (pauseAtNext && eventToPause == NEXT_OBJ_TXT_CMD) )
 	{
-		DebuggerAppendMsg("uObjTxtr Header in RDRAM: 0x%08X", (uint32)ptr-(uint32)g_pRDRAMu8);
+		DebuggerAppendMsg("uObjTxtr Header in RDRAM: 0x%08X", (uint32)ptr-(uint32)g_pu8RamBase);
 		switch( ptr->block.type )
 		{
 		case S2DEX_OBJLT_TXTRBLOCK:
@@ -280,7 +280,7 @@ void ObjMtxTranslate(float &x, float &y)
 
 void RSP_S2DEX_SPObjLoadTxtr(MicroCodeCommand command)
 {
-	gObjTxtr = (uObjTxtr*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
+	gObjTxtr = (uObjTxtr*)(g_pu8RamBase+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	if( gObjTxtr->block.type == S2DEX_OBJLT_TLUT )
 	{
 		gObjTlut = (uObjTxtrTLUT*)gObjTxtr;
@@ -294,7 +294,7 @@ void RSP_S2DEX_SPObjLoadTxtr(MicroCodeCommand command)
 			size = 0x100 - offset;
 
 		uint32 addr = (gObjTlutAddr);
-		uint16 *srcPal = (uint16*)(g_pRDRAMu8 + (addr& (g_dwRamSize-1)) );
+		uint16 *srcPal = (uint16*)(g_pu8RamBase + (addr& (g_dwRamSize-1)) );
 
 		for( int i=offset; i<offset+size; i++ )
 		{
@@ -319,7 +319,7 @@ void RSP_S2DEX_SPObjLoadTxtr(MicroCodeCommand command)
 // YoshiStory uses this - 0xc2
 void RSP_S2DEX_SPObjLoadTxSprite(MicroCodeCommand command)
 {
-	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
+	uObjTxSprite* ptr = (uObjTxSprite*)(g_pu8RamBase+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	gObjTxtr = (uObjTxtr*)ptr;
 	//Now draw the sprite
 	CRender::g_pRender->LoadObjSprite(*ptr);
@@ -338,7 +338,7 @@ void RSP_S2DEX_SPObjLoadTxSprite(MicroCodeCommand command)
 // YoshiStory uses this - 0xc3
 void RSP_S2DEX_SPObjLoadTxRect(MicroCodeCommand command)
 {
-	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
+	uObjTxSprite* ptr = (uObjTxSprite*)(g_pu8RamBase+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	gObjTxtr = (uObjTxtr*)ptr;
 	
 	//Now draw the sprite
@@ -357,7 +357,7 @@ void RSP_S2DEX_SPObjLoadTxRect(MicroCodeCommand command)
 // YoshiStory uses this - 0xc4
 void RSP_S2DEX_SPObjLoadTxRectR(MicroCodeCommand command)
 {
-	uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
+	uObjTxSprite* ptr = (uObjTxSprite*)(g_pu8RamBase+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
 	gObjTxtr = (uObjTxtr*)ptr;
 	
 	//Now draw the sprite
@@ -378,7 +378,7 @@ void DLParser_TexRect(MicroCodeCommand command);
 void RSP_S2DEX_RDPHALF_0(MicroCodeCommand command)
 {
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-	uint32 dwNextUcode = *(uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 dwNextUcode = *(uint32 *)(g_pu8RamBase + dwPC);
 
 	if( (dwNextUcode>>24) != S2DEX_SELECT_DL )
 	{
@@ -413,7 +413,7 @@ void RSP_S2DEX_OBJ_MOVEMEM(MicroCodeCommand command)
 
 	if( dwLength == 0 && dwCommand == 23 )
 	{
-		gObjMtx = (uObjMtx *)(dwAddr+g_pRDRAMu8);
+		gObjMtx = (uObjMtx *)(dwAddr+g_pu8RamBase);
 		gObjMtxReal.A = gObjMtx->A/65536.0f;
 		gObjMtxReal.B = gObjMtx->B/65536.0f;
 		gObjMtxReal.C = gObjMtx->C/65536.0f;
@@ -429,7 +429,7 @@ void RSP_S2DEX_OBJ_MOVEMEM(MicroCodeCommand command)
 	}
 	else if( dwLength == 2 && dwCommand == 7 )
 	{
-		gSubObjMtx = (uObjSubMtx*)(dwAddr+g_pRDRAMu8);
+		gSubObjMtx = (uObjSubMtx*)(dwAddr+g_pu8RamBase);
 		gObjMtxReal.X = float(gSubObjMtx->X>>2);
 		gObjMtxReal.Y = float(gSubObjMtx->Y>>2);
 		gObjMtxReal.BaseScaleX = gSubObjMtx->BaseScaleX/1024.0f;
@@ -469,7 +469,7 @@ extern void RSP_GBI0_Mtx(MicroCodeCommand command);
 void RSP_S2DEX_BG_1CYC(MicroCodeCommand command)
 {
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjScaleBg *sbgPtr = (uObjScaleBg *)(dwAddr+g_pRDRAMu8);
+	uObjScaleBg *sbgPtr = (uObjScaleBg *)(dwAddr+g_pu8RamBase);
 	CRender::g_pRender->LoadObjBG1CYC(*sbgPtr);
 	CRender::g_pRender->DrawObjBG1CYC(*sbgPtr);
 
@@ -496,16 +496,11 @@ void RSP_S2DEX_BG_1CYC_2(MicroCodeCommand command)
 // YoshiStory uses this - 0xb2
 void RSP_S2DEX_OBJ_RECTANGLE_R(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uObjSprite *ptr = (uObjSprite*)(g_pRDRAMu8+dwAddr);
+	uObjSprite *ptr = (uObjSprite*)(g_pu8RamBase+RSPSegmentAddr(command.inst.cmd1));
 
 	uObjTxSprite objtx;
 	memcpy(&objtx.sprite,ptr,sizeof(uObjSprite));
 
-
-	//uObjTxSprite* ptr = (uObjTxSprite*)(g_pRDRAMu8+(RSPSegmentAddr((command.inst.cmd1))&(g_dwRamSize-1)));
-	//gObjTxtr = (uObjTxtr*)ptr;
-	
 	//Now draw the sprite
 	if( g_TxtLoadBy == CMD_LOAD_OBJ_TXTR )
 	{
@@ -516,7 +511,6 @@ void RSP_S2DEX_OBJ_RECTANGLE_R(MicroCodeCommand command)
 	{
 		PrepareTextures();
 	}
-	//CRender::g_pRender->DrawSprite(*ptr, true);
 	CRender::g_pRender->DrawSprite(objtx, true);
 
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((eventToPause == NEXT_OBJ_TXT_CMD||eventToPause == NEXT_FLUSH_TRI),

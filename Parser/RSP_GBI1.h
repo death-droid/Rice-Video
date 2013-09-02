@@ -16,6 +16,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+//Clean me
+struct N64Light
+{
+    u8 pad0, b, g, r;		// Colour
+    u8 pad1, b2, g2, r2;	// Unused..
+    s8 pad2, z, y, x;		// Direction
+};
+
+struct N64LightMM
+{
+    u8 pad0, b, g, r;
+    u8 pad1, b2, g2, r2;
+    s16 y, x, range, z;		// What to do with range?
+};
 
 void RSP_GBI1_Vtx(MicroCodeCommand command)
 {
@@ -83,7 +97,7 @@ void RSP_GBI1_Tri2(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = false;
 
@@ -136,7 +150,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 #endif
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-		uint32 dwDL = *(uint32 *)(g_pRDRAMu8 + dwPC-12);
+		uint32 dwDL = *(uint32 *)(g_pu8RamBase + dwPC-12);
 		uint32 dwAddr = RSPSegmentAddr(dwDL);
 
 		dwAddr = RSPSegmentAddr(dwDL);
@@ -165,7 +179,7 @@ void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 dwUcStart = RSPSegmentAddr(command.inst.cmd1);
 	uint32 dwSize = ((command.inst.cmd0)&0xFFFF)+1;
-	uint32 dwUcDStart = RSPSegmentAddr(*(uint32 *)(g_pRDRAMu8 + dwPC-12));
+	uint32 dwUcDStart = RSPSegmentAddr(*(uint32 *)(g_pu8RamBase + dwPC-12));
 
 	uint32 ucode = DLParser_CheckUcode(dwUcStart, dwUcDStart, dwSize, 8);
 	RSP_SetUcode(ucode, dwUcStart, dwUcDStart, dwSize);
@@ -193,8 +207,8 @@ void RSP_GFX_Force_Matrix(uint32 dwAddr)
 void DisplayVertexInfo(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 {
 #ifdef _DEBUG
-		s8 *pcSrc = (s8 *)(g_pRDRAMu8 + dwAddr);
-		short *psSrc = (short *)(g_pRDRAMu8 + dwAddr);
+		s8 *pcSrc = (s8 *)(g_pu8RamBase + dwAddr);
+		short *psSrc = (short *)(g_pu8RamBase + dwAddr);
 
 		for (uint32 dwV = dwV0; dwV < dwV0 + dwN; dwV++)
 		{
@@ -237,60 +251,45 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 		return;
 	}
 
-	s8 * pcBase = g_pRDRAMs8 + dwAddr;
-	uint32 * pdwBase = (uint32 *)pcBase;
+	u8 * base = g_pu8RamBase + dwAddr;
+	u8 r, g, b;
+	s16 x, y, z, range;
 
-	float range = 0, x, y, z;
-	if( options.enableHackForGames == HACK_FOR_ZELDA_MM && (pdwBase[0]&0xFF) == 0x08 && (pdwBase[1]&0xFF) == 0xFF )
+	if( options.enableHackForGames == HACK_FOR_ZELDA_MM && (base[0] == 0x08) && (base[4] == 0xFF ))
 	{
-		gRSPn64lights[dwLight].dwRGBA		= pdwBase[0];
-		gRSPn64lights[dwLight].dwRGBACopy	= pdwBase[1];
-		short* pdwBase16 = (short*)pcBase;
-		x		= pdwBase16[5];
-		y		= pdwBase16[4];
-		z		= pdwBase16[7];
-		range	= pdwBase16[6];
+		N64LightMM *light = (N64LightMM*)base;
+
+		r = light->r;
+		g = light->g;
+		b = light->b;
+
+		x = light->x;
+		y = light->y;
+		z = light->z;
+		range = light->range;
 	}
 	else
 	{
-		gRSPn64lights[dwLight].dwRGBA		= pdwBase[0];
-		gRSPn64lights[dwLight].dwRGBACopy	= pdwBase[1];
-		x		= pcBase[8 ^ 0x3];
-		y		= pcBase[9 ^ 0x3];
-		z		= pcBase[10 ^ 0x3];
+		N64Light *light = (N64Light*)base;
+		r = light->r;
+		g = light->g;
+		b = light->b;
+
+		x = light->x;
+		y = light->y;
+		z = light->z;
+		range = 0;
 	}
 
-					
-	LOG_UCODE("       RGBA: 0x%08x, RGBACopy: 0x%08x, x: %d, y: %d, z: %d", 
-		gRSPn64lights[dwLight].dwRGBA,
-		gRSPn64lights[dwLight].dwRGBACopy,
-		x, y, z);
+	bool valid = (x | y | z) != 0;
 
-	LIGHT_DUMP(TRACE3("Move Light: %08X, %08X, %08X", pdwBase[0], pdwBase[1], pdwBase[2]));
+	LIGHT_DUMP(TRACE4("  Light[%d] RGB[%d, %d, %d]", dwLight, r, g, b));
+	LIGHT_DUMP(TRACE4("  x[%d] y[%d] z[%d] %s direction", x, y, z, valid ? "Valid" : "Invalid"));
+	
+	SetLightCol(dwLight, r, g, b);
 
-
-	if (dwLight == gRSP.ambientLightIndex)
-	{
-		LOG_UCODE("      (Ambient Light)");
-
-		uint32 dwCol = COLOR_RGBA( (gRSPn64lights[dwLight].dwRGBA >> 24)&0xFF,
-					  (gRSPn64lights[dwLight].dwRGBA >> 16)&0xFF,
-					  (gRSPn64lights[dwLight].dwRGBA >>  8)&0xFF, 0xff);
-
-		SetAmbientLight( dwCol );
-	}
-	else
-	{
-		
-		LOG_UCODE("      (Normal Light)");
-
-		SetLightCol(dwLight, gRSPn64lights[dwLight].dwRGBA);
-		if (pdwBase[2] == 0)	// Direction is 0!
-		{
-			LOG_UCODE("      Light is invalid");
-		}
+	if(valid != 0)
 		SetLightDirection(dwLight, x, y, z, range);
-	}
 }
 
 void RSP_MoveMemViewport(uint32 dwAddr)
@@ -305,15 +304,15 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 	short trans[4];
 
 	// dwAddr is offset into RD_RAM of 8 x 16bits of data...
-	scale[0] = *(short *)(g_pRDRAMu8 + ((dwAddr+(0*2))^0x2));
-	scale[1] = *(short *)(g_pRDRAMu8 + ((dwAddr+(1*2))^0x2));
-//	scale[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(2*2))^0x2));
-//	scale[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(3*2))^0x2));
+	scale[0] = *(short *)(g_pu8RamBase + ((dwAddr+(0*2))^0x2));
+	scale[1] = *(short *)(g_pu8RamBase + ((dwAddr+(1*2))^0x2));
+//	scale[2] = *(short *)(g_pu8RamBase + ((dwAddr+(2*2))^0x2));
+//	scale[3] = *(short *)(g_pu8RamBase + ((dwAddr+(3*2))^0x2));
 
-	trans[0] = *(short *)(g_pRDRAMu8 + ((dwAddr+(4*2))^0x2));
-	trans[1] = *(short *)(g_pRDRAMu8 + ((dwAddr+(5*2))^0x2));
-//	trans[2] = *(short *)(g_pRDRAMu8 + ((dwAddr+(6*2))^0x2));
-//	trans[3] = *(short *)(g_pRDRAMu8 + ((dwAddr+(7*2))^0x2));
+	trans[0] = *(short *)(g_pu8RamBase + ((dwAddr+(4*2))^0x2));
+	trans[1] = *(short *)(g_pu8RamBase + ((dwAddr+(5*2))^0x2));
+//	trans[2] = *(short *)(g_pu8RamBase + ((dwAddr+(6*2))^0x2));
+//	trans[3] = *(short *)(g_pu8RamBase + ((dwAddr+(7*2))^0x2));
 
 
 	int nCenterX = trans[0]/4;
@@ -444,7 +443,7 @@ void RSP_GBI1_RDPHalf_1(MicroCodeCommand command)
 void RSP_GBI1_Line3D(MicroCodeCommand command)
 {
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = FALSE;
 
@@ -493,36 +492,24 @@ void RSP_GBI1_Line3D(MicroCodeCommand command)
 	}
 }
 
-
-void RSP_GBI1_ClearGeometryMode(MicroCodeCommand command)
+void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 {
-	uint32 dwMask = ((command.inst.cmd1));
-
-#ifdef _DEBUG
-	LOG_UCODE("    Mask=0x%08x", dwMask);
-	if (dwMask & G_ZBUFFER)						LOG_UCODE("  Disabling ZBuffer");
-	if (dwMask & G_TEXTURE_ENABLE)				LOG_UCODE("  Disabling Texture");
-	if (dwMask & G_SHADE)						LOG_UCODE("  Disabling Shade");
-	if (dwMask & G_SHADING_SMOOTH)				LOG_UCODE("  Disabling Smooth Shading");
-	if (dwMask & G_CULL_FRONT)					LOG_UCODE("  Disabling Front Culling");
-	if (dwMask & G_CULL_BACK)					LOG_UCODE("  Disabling Back Culling");
-	if (dwMask & G_FOG)							LOG_UCODE("  Disabling Fog");
-	if (dwMask & G_LIGHTING)					LOG_UCODE("  Disabling Lighting");
-	if (dwMask & G_TEXTURE_GEN)					LOG_UCODE("  Disabling Texture Gen");
-	if (dwMask & G_TEXTURE_GEN_LINEAR)			LOG_UCODE("  Disabling Texture Gen Linear");
-	if (dwMask & G_LOD)							LOG_UCODE("  Disabling LOD (no impl)");
-#endif
-
-	gRDP.geometryMode &= ~dwMask;
+	uint32 dwMask = (command.inst.cmd1);
+	if(command.inst.cmd & 1)
+	{
+		gRDP.geometryMode |= dwMask;
+		LOG_UCODE("Setting mask -> 0x%08x", dwMask);
+	}
+	else
+	{
+		gRDP.geometryMode &= ~dwMask;
+		LOG_UCODE("Clearing mask -> 0x%08x", dwMask);
+	}
+	
 	RSP_GFX_InitGeometryMode();
-}
-
-void RSP_GBI1_SetGeometryMode(MicroCodeCommand command)
-{
-	uint32 dwMask = ((command.inst.cmd1));
 
 #ifdef _DEBUG
-	LOG_UCODE("    Mask=0x%08x", dwMask);
+	
 	if (dwMask & G_ZBUFFER)						LOG_UCODE("  Enabling ZBuffer");
 	if (dwMask & G_TEXTURE_ENABLE)				LOG_UCODE("  Enabling Texture");
 	if (dwMask & G_SHADE)						LOG_UCODE("  Enabling Shade");
@@ -535,8 +522,6 @@ void RSP_GBI1_SetGeometryMode(MicroCodeCommand command)
 	if (dwMask & G_TEXTURE_GEN_LINEAR)			LOG_UCODE("  Enabling Texture Gen Linear");
 	if (dwMask & G_LOD)							LOG_UCODE("  Enabling LOD (no impl)");
 #endif // _DEBUG
-	gRDP.geometryMode |= dwMask;
-	RSP_GFX_InitGeometryMode();
 }
 
 void RSP_GBI1_EndDL(MicroCodeCommand command)
@@ -548,6 +533,7 @@ static const char * sc_szBlClr[4] = { "In", "Mem", "Bl", "Fog" };
 static const char * sc_szBlA1[4] = { "AIn", "AFog", "AShade", "0" };
 static const char * sc_szBlA2[4] = { "1-A", "AMem", "1", "?" };
 
+//TODO CLEAN OTHERMODEL and OTHERMODEH
 void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 {
 	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
@@ -729,29 +715,13 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_LIGHTCOL:
 		{
 			uint32 dwLight = command.mw1.offset / 0x20;
-			uint32 dwField = (command.mw1.offset & 0x7);
+			uint32 field_offset = (command.mw1.offset & 0x7);
 
-			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw1.offset, command.inst.cmd1);
-
-			switch (dwField)
+			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw1.offset, command.mw1.value);
+			
+			if(field_offset == 0)
 			{
-			case 0:
-				if (dwLight == gRSP.ambientLightIndex)
-				{
-					SetAmbientLight( ((command.mw1.value)>>8) );
-				}
-				else
-				{
-					SetLightCol(dwLight, command.mw1.value);
-				}
-				break;
-
-			case 4:
-				break;
-
-			default:
-				TRACE1("RSP_MOVE_WORD_LIGHTCOL with unknown offset 0x%08x", dwField);
-				break;
+				SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF));
 			}
 		}
 		break;
@@ -855,7 +825,7 @@ void RSP_GBI1_Tri1(MicroCodeCommand command)
 
 	// While the next command pair is Tri1, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8+  dwPC);
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase+  dwPC);
 	
 	do
 	{

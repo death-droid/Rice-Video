@@ -25,35 +25,67 @@ uint32 g_SavedUcode=1;
  
 void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	dwAddr &= (g_dwRamSize-1);
+	u32 address;
 
-	//RSP_RDP_NOIMPL("RDP: Sprite2D (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
+	u32 pc = gDlistStack[gDlistStackPointer].pc;
+	u32 * pCmdBase = (u32 *)(g_pu8RamBase + pc);
 
-	g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_pRDRAMs8+dwAddr);
+	// Try to execute as many sprite2d ucodes as possible, I seen chains over 200! in FB
+	// NB Glover calls RDP Sync before draw for the sky.. so checks were added
+	do
+	{
+		address = RSPSegmentAddr(command.inst.cmd1) & (g_dwRamSize-1);
+		g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_ps8RamBase + address);
 
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {DebuggerAppendMsg("Pause after Sprite2DBase: Addr=%08X\n", dwAddr);});
+		// Fetch Sprite2D Flip
+		command.inst.cmd0= *pCmdBase++;
+		command.inst.cmd1= *pCmdBase++;
+		if(command.inst.cmd != G_GBI1_SPRITE2D_SCALEFLIP)
+		{
+			pc += 8;
+			break;
+		}
+		RSP_GBI1_Sprite2DScaleFlip( command );
+
+		// Fetch Sprite2D Draw
+		command.inst.cmd0= *pCmdBase++;
+		command.inst.cmd1= *pCmdBase++;
+		if(command.inst.cmd != G_GBI1_SPRITE2D_DRAW)
+		{
+			pc += 16;	//We have executed atleast 2 instructions at this point
+			break;
+		}
+		RSP_GBI1_Sprite2DDraw( command );
+
+		// Fetch Sprite2D Base
+		command.inst.cmd0= *pCmdBase++;
+		command.inst.cmd1= *pCmdBase++;
+		pc += 24;
+	}while(command.inst.cmd == G_GBI1_SPRITE2D_BASE);
+
+	gDlistStack[gDlistStackPointer].pc = pc-8;
+	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {DebuggerAppendMsg("Pause after Sprite2DBase: Addr=%08X\n", address);});
 }
 
 typedef struct{
-	uint32 SourceImagePointer;
-	uint32 TlutPointer;
+	uint32 address; 
+	uint32 tlut;
 
-	short SubImageWidth;
+	short width;
 	short Stride;
 
-	char  SourceImageBitSize;
-	char  SourceImageType;
-	short SubImageHeight;
+	char  size;
+	char  format;
+	short height;
 
 	short scaleY;
 	short scaleX;
 
-	short SourceImageOffsetS;
+	short imageX;
 	char  dummy1[2]; 
 
 	short px;
-	short SourceImageOffsetT;
+	short imageY;
 
 	char  dummy2[2]; 
 	short py;
@@ -62,13 +94,10 @@ typedef struct{
 
 void RSP_GBI_Sprite2D_PuzzleMaster64(MicroCodeCommand command)
 {
-	
-	
-
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	dwAddr &= (g_dwRamSize-1);
 
-	g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_pRDRAMs8+dwAddr);
+	g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_ps8RamBase+dwAddr);
 
 	g_Sprite2DInfo.flipX = 0;
 	g_Sprite2DInfo.flipY = 0;
@@ -84,9 +113,8 @@ void RSP_GBI_Sprite2D_PuzzleMaster64(MicroCodeCommand command)
 	g_Sprite2DInfo.py = info.py>>2;
 	g_Sprite2DInfo.scaleX = info.scaleX / 1024.0f;
 	g_Sprite2DInfo.scaleY = info.scaleY / 1024.0f;
-
-	tempInfo.SourceImageOffsetS = info.SourceImageOffsetS;
-	tempInfo.SourceImageOffsetT = info.SourceImageOffsetT;
+	tempInfo.imageX = info.imageX;
+	tempInfo.imageY = info.imageY;
 	g_Sprite2DInfo.spritePtr = &tempInfo;
 
 	CRender::g_pRender->DrawSprite2D(g_Sprite2DInfo, 1);
@@ -105,9 +133,9 @@ void RSP_GBI1_Sprite2DDraw(MicroCodeCommand command)
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, 
 		{DebuggerAppendMsg("Pause after Sprite2DDraw at (%d, %d)\n", g_Sprite2DInfo.px, g_Sprite2DInfo.py);});
 
-	LoadedUcodeMap[RSP_SPRITE2D_SCALEFLIP] = &RSP_GBI1_CullDL;
-	LoadedUcodeMap[RSP_SPRITE2D_DRAW] = &RSP_GBI1_PopMtx;
-	LoadedUcodeMap[RSP_SPRITE2D_BASE] = &RSP_GBI1_Sprite2DBase;
+//	LoadedUcodeMap[RSP_SPRITE2D_SCALEFLIP] = &RSP_GBI1_CullDL;
+//	LoadedUcodeMap[RSP_SPRITE2D_DRAW] = &RSP_GBI1_PopMtx;
+//	LoadedUcodeMap[RSP_SPRITE2D_BASE] = &RSP_GBI1_Sprite2DBase;
 
 }
 
@@ -143,30 +171,16 @@ void RSP_GBI1_Sprite2DScaleFlip(MicroCodeCommand command)
 }
 
 
-
+//remove us
 void RSP_GBI1_Sprite2DBase(MicroCodeCommand command)
 {
-	if( !status.bUseModifiedUcodeMap )
-	{
-		memcpy( &LoadedUcodeMap, &ucodeMap1, sizeof(UcodeMap));
-		status.bUseModifiedUcodeMap = true;
-	}
-
-	LoadedUcodeMap[RSP_SPRITE2D_BASE] = &RSP_GBI_Sprite2DBase;
-	LoadedUcodeMap[RSP_SPRITE2D_SCALEFLIP] = &RSP_GBI1_Sprite2DScaleFlip;
-	LoadedUcodeMap[RSP_SPRITE2D_DRAW] = &RSP_GBI1_Sprite2DDraw;
-
-	TRACE0("Adding Sprite2D ucodes to ucode 1");
 	RSP_GBI_Sprite2DBase(command);
 }
 
 
-
+//remove us
 void RSP_GBI0_Sprite2DBase(MicroCodeCommand command)
 {
-	
-	
-
 	//Weired, this ucode 0 game is using ucode 1, but sprite2D cmd is working differently from
 	//normal ucode1 sprite2D game
 

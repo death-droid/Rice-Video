@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 CDXRenderTexture::CDXRenderTexture(int width, int height, RenderTextureInfo* pInfo, TextureUsage usage)
 : CRenderTexture(width, height, pInfo, usage)
 {
-	m_pTexture = new CDirectXTexture(width, height, usage);
+	m_pTexture = new CTexture(width, height, usage);
 	if( m_pTexture )
 	{
 		m_width = width;

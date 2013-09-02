@@ -304,8 +304,8 @@ bool FrameBufferManager::IsDIaRenderTexture()
 
 	for( int i=0; i<10; i++ )
 	{
-		uint32 w0 = *(uint32 *)(g_pRDRAMu8 + dwPC + i*8);
-		uint32 w1 = *(uint32 *)(g_pRDRAMu8 + dwPC + 4 + i*8);
+		uint32 w0 = *(uint32 *)(g_pu8RamBase + dwPC + i*8);
+		uint32 w1 = *(uint32 *)(g_pu8RamBase + dwPC + 4 + i*8);
 
 		if( (w0>>24) == RDP_SETSCISSOR )
 		{
@@ -491,8 +491,8 @@ void TexRectToFrameBuffer_8b(uint32 dwXL, uint32 dwYL, uint32 dwXH, uint32 dwYH,
 	float xScale = (t0u1-t0u0)/dwWidth;
 	float yScale = (t0v1-t0v0)/dwHeight;
 
-	uint8* dwSrc = g_pRDRAMu8 + info.dwLoadAddress;
-	uint8* dwDst = g_pRDRAMu8 + g_pRenderTextureInfo->CI_Info.dwAddr;
+	uint8* dwSrc = g_pu8RamBase + info.dwLoadAddress;
+	uint8* dwDst = g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr;
 
 	uint32 dwSrcPitch = gRDP.tiles[dwTile].dwPitch;
 	uint32 dwDstPitch = g_pRenderTextureInfo->CI_Info.dwWidth;
@@ -545,7 +545,7 @@ void TexRectToN64FrameBuffer_16b(uint32 x0, uint32 y0, uint32 width, uint32 heig
 	for (uint32 y = 0; y < height; y++)
 	{
 		uint32* pSrc = (uint32*)((uint8*)srcInfo.lpSurface + y * srcInfo.lPitch);
-		uint16* pN64Buffer = (uint16*)(g_pRDRAMu8+(n64CIaddr&(g_dwRamSize-1)))+(y+y0)*n64CIwidth;
+		uint16* pN64Buffer = (uint16*)(g_pu8RamBase+(n64CIaddr&(g_dwRamSize-1)))+(y+y0)*n64CIwidth;
 
 		for (uint32 x = 0; x < width; x++)
 		{
@@ -800,7 +800,7 @@ BYTE CalculateMaxCI(void *pPhysicalAddress, uint32 left, uint32 top, uint32 widt
 bool FrameBufferManager::FrameBufferInRDRAMCheckCRC()
 {
 	RecentCIInfo &p = *(g_uRecentCIInfoPtrs[0]);
-	uint8 *pFrameBufferBase = (uint8*)(g_pRDRAMu8+p.dwAddr);
+	uint8 *pFrameBufferBase = (uint8*)(g_pu8RamBase+p.dwAddr);
 	uint32 pitch = (p.dwWidth << p.dwSize ) >> 1;
 	uint32 crc = CalculateRDRAMCRC(pFrameBufferBase, 0, 0, p.dwWidth, p.dwHeight, p.dwSize, pitch);
 	if( crc != p.dwCRC )
@@ -1071,8 +1071,8 @@ uint32 FrameBufferManager::ComputeCImgHeight(SetImgInfo &info, uint32 &height)
 
 	for( int i=0; i<10; i++ )
 	{
-		uint32 w0 = *(uint32 *)(g_pRDRAMu8 + dwPC + i*8);
-		uint32 w1 = *(uint32 *)(g_pRDRAMu8 + dwPC + 4 + i*8);
+		uint32 w0 = *(uint32 *)(g_pu8RamBase + dwPC + i*8);
+		uint32 w1 = *(uint32 *)(g_pu8RamBase + dwPC + 4 + i*8);
 
 		if( (w0>>24) == RDP_SETSCISSOR )
 		{
@@ -1374,35 +1374,30 @@ void FrameBufferManager::CloseRenderTexture(bool toSave)
 	if( m_curRenderTextureIndex < 0 )	return;
 
 	status.bHandleN64RenderTexture = false;
-	if( status.bDirectWriteIntoRDRAM )
+
+	RestoreNormalBackBuffer();
+	if( !toSave || !status.bFrameBufferIsDrawn || !status.bFrameBufferDrawnByTriangles )
 	{
+		TXTRBUF_DUMP(TRACE0("Closing render_texture without save"););
+		SAFE_DELETE(gRenderTextureInfos[m_curRenderTextureIndex].pRenderTexture);
+		gRenderTextureInfos[m_curRenderTextureIndex].isUsed = false;
+		TXTRBUF_DUMP(TRACE1("Delete render_texture %d",m_curRenderTextureIndex););
 	}
 	else
 	{
-		RestoreNormalBackBuffer();
-		if( !toSave || !status.bFrameBufferIsDrawn || !status.bFrameBufferDrawnByTriangles )
+		TXTRBUF_DUMP(TRACE1("Closing render_texture %d", m_curRenderTextureIndex););
+		StoreRenderTextureToRDRAM();
+
+		if( frameBufferOptions.bRenderTextureWriteBack )
 		{
-			TXTRBUF_DUMP(TRACE0("Closing render_texture without save"););
 			SAFE_DELETE(gRenderTextureInfos[m_curRenderTextureIndex].pRenderTexture);
 			gRenderTextureInfos[m_curRenderTextureIndex].isUsed = false;
-			TXTRBUF_DUMP(TRACE1("Delete render_texture %d",m_curRenderTextureIndex););
+			TXTRBUF_DUMP(TRACE1("Delete render_texture %d after writing back to RDRAM",m_curRenderTextureIndex););
 		}
 		else
 		{
-			TXTRBUF_DUMP(TRACE1("Closing render_texture %d", m_curRenderTextureIndex););
-			StoreRenderTextureToRDRAM();
-
-			if( frameBufferOptions.bRenderTextureWriteBack )
-			{
-				SAFE_DELETE(gRenderTextureInfos[m_curRenderTextureIndex].pRenderTexture);
-				gRenderTextureInfos[m_curRenderTextureIndex].isUsed = false;
-				TXTRBUF_DUMP(TRACE1("Delete render_texture %d after writing back to RDRAM",m_curRenderTextureIndex););
-			}
-			else
-			{
-				g_pRenderTextureInfo->crcInRDRAM = ComputeRenderTextureCRCInRDRAM(m_curRenderTextureIndex);
-				g_pRenderTextureInfo->crcCheckedAtFrame = status.gDlistCount;
-			}
+			g_pRenderTextureInfo->crcInRDRAM = ComputeRenderTextureCRCInRDRAM(m_curRenderTextureIndex);
+			g_pRenderTextureInfo->crcCheckedAtFrame = status.gDlistCount;
 		}
 	}
 
@@ -1420,7 +1415,7 @@ void FrameBufferManager::CloseRenderTexture(bool toSave)
 void FrameBufferManager::ClearN64FrameBufferToBlack(uint32 left, uint32 top, uint32 width, uint32 height)
 {
 	RecentCIInfo &p = *(g_uRecentCIInfoPtrs[0]);
-	uint16 *frameBufferBase = (uint16*)(g_pRDRAMu8+p.dwAddr);
+	uint16 *frameBufferBase = (uint16*)(g_pu8RamBase+p.dwAddr);
 	uint32 pitch = p.dwWidth;
 
 	if( width == 0 || height == 0 )
@@ -1556,7 +1551,7 @@ uint32 FrameBufferManager::ComputeRenderTextureCRCInRDRAM(int infoIdx)
 
 	RenderTextureInfo &info = gRenderTextureInfos[infoIdx];
 	uint32 height = info.knownHeight ? info.N64Height : info.maxUsedHeight;
-	uint8 *pAddr = (uint8*)(g_pRDRAMu8+info.CI_Info.dwAddr);
+	uint8 *pAddr = (uint8*)(g_pu8RamBase+info.CI_Info.dwAddr);
 	uint32 pitch = (info.N64Width << info.CI_Info.dwSize ) >> 1;
 
 	return CalculateRDRAMCRC(pAddr, 0, 0, info.N64Width, height, info.CI_Info.dwSize, pitch);
@@ -1632,8 +1627,6 @@ void FrameBufferManager::ActiveTextureBuffer(void)
 			}
 
 			m_curRenderTextureIndex = idxToUse;
-
-			status.bDirectWriteIntoRDRAM = false;
 
 			//SetScreenMult(1, 1);
 			SetScreenMult(gRenderTextureInfos[m_curRenderTextureIndex].scaleX, gRenderTextureInfos[m_curRenderTextureIndex].scaleY);
@@ -1872,7 +1865,7 @@ void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, 
 
 	if( siz == TXT_SIZE_16b )
 	{
-		uint16 *frameBufferBase = (uint16*)(g_pRDRAMu8+addr);
+		uint16 *frameBufferBase = (uint16*)(g_pu8RamBase+addr);
 
 		int  sy0;
 		float ratio = bufHeight/(float)height;
@@ -1900,7 +1893,7 @@ void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, 
 	}
 	else if( siz == TXT_SIZE_8b && fmt == TXT_FMT_CI )
 	{
-		uint8 *frameBufferBase = (uint8*)(g_pRDRAMu8+addr);
+		uint8 *frameBufferBase = (uint8*)(g_pu8RamBase+addr);
 
 		uint16 tempword;
 		InitTlutReverseLookup();
@@ -1924,7 +1917,7 @@ void FrameBufferManager::CopyBufferToRDRAM(uint32 addr, uint32 fmt, uint32 siz, 
 	}
 	else if( siz == TXT_SIZE_8b && fmt == TXT_FMT_I )
 	{
-		uint8 *frameBufferBase = (uint8*)(g_pRDRAMu8+addr);
+		uint8 *frameBufferBase = (uint8*)(g_pu8RamBase+addr);
 
 		int sy0;
 		float ratio = bufHeight/(float)height;

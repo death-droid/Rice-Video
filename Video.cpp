@@ -25,9 +25,9 @@ char generalText[256];
 GFX_INFO g_GraphicsInfo;
 
 uint32 g_dwRamSize = 0x400000;
-uint32* g_pRDRAMu32 = NULL;
-signed char *g_pRDRAMs8 = NULL;
-unsigned char *g_pRDRAMu8 = NULL;
+uint32* g_pu32RamBase = NULL;
+signed char *g_ps8RamBase = NULL;
+unsigned char *g_pu8RamBase = NULL;
 
 CCritSect g_CritialSection;
 
@@ -58,12 +58,7 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
 	case DLL_THREAD_DETACH: 
 		break; 
 	case DLL_PROCESS_DETACH:
-		//Process has been detached, write anything that needs to be back to the ini 
-		if (bIniIsChanged)
-		{
-			WriteIniFile();
-			TRACE0("Write back INI file");
-		}
+		//Process has been detached
 		break; 
 	} 
 	return TRUE; 
@@ -108,44 +103,9 @@ FUNC_TYPE(void) NAME_DEFINE(DllConfig) ( HWND hParent )
 	CreateOptionsDialogs(hParent);
 }
 
-void ChangeWindowStep2()//backtome
-{
-	status.bDisableFPS = true;
-	windowSetting.bDisplayFullscreen = !windowSetting.bDisplayFullscreen;
-	g_CritialSection.Lock();
-	windowSetting.bDisplayFullscreen = CGraphicsContext::Get()->ToggleFullscreen();
-
-	if( windowSetting.bDisplayFullscreen )
-	{
-		if( g_GraphicsInfo.hStatusBar != NULL )
-		{
-			ShowWindow(g_GraphicsInfo.hStatusBar, SW_HIDE);
-		}
-		ShowCursor(FALSE);
-	}
-	else
-	{
-		if( g_GraphicsInfo.hStatusBar != NULL )
-		{
-			ShowWindow(g_GraphicsInfo.hStatusBar, SW_SHOW);
-		}
-		ShowCursor(TRUE);
-	}
-
-	CGraphicsContext::Get()->Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
-	CGraphicsContext::Get()->UpdateFrame();
-	CGraphicsContext::Get()->Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
-	CGraphicsContext::Get()->UpdateFrame();
-	CGraphicsContext::Get()->Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
-	CGraphicsContext::Get()->UpdateFrame();
-	g_CritialSection.Unlock();
-	status.bDisableFPS = false;
-	status.ToToggleFullScreen = FALSE;
-}
 
 void ChangeWinSize( void ) 
 {
-	//ShowWindow(g_GraphicsInfo.hWnd, SW_HIDE);
 	WINDOWPLACEMENT wndpl;
     RECT rc1, swrect;
 	
@@ -176,7 +136,21 @@ FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
 	else
 		status.ToToggleFullScreen = TRUE;
 
-	ChangeWindowStep2();
+	status.bDisableFPS = true;
+	windowSetting.bDisplayFullscreen = !windowSetting.bDisplayFullscreen;
+	g_CritialSection.Lock();
+	windowSetting.bDisplayFullscreen = CGraphicsContext::Get()->ToggleFullscreen();
+
+	if( g_GraphicsInfo.hStatusBar != NULL )
+		ShowWindow(g_GraphicsInfo.hStatusBar, windowSetting.bDisplayFullscreen ? SW_HIDE : SW_SHOW);
+
+	ShowCursor(windowSetting.bDisplayFullscreen ? FALSE : TRUE);
+
+	CGraphicsContext::Get()->Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
+	CGraphicsContext::Get()->UpdateFrame();
+	g_CritialSection.Unlock();
+	status.bDisableFPS = false;
+	status.ToToggleFullScreen = FALSE;
 }
 
 //---------------------------------------------------------------------------------------
@@ -233,7 +207,7 @@ bool StartVideo(void)
 	ROM_GetRomNameFromHeader(g_curRomInfo.szGameName, &g_curRomInfo.romheader);
 	Ini_GetRomOptions(&g_curRomInfo);
 
-	char *p = g_curRomInfo.szGameName + (lstrlen(g_curRomInfo.szGameName) -1);		// -1 to skip null
+	char *p = g_curRomInfo.szGameName + (lstrlen(g_curRomInfo.szGameName) -1);// -1 to skip null
 	while (p >= g_curRomInfo.szGameName)
 	{
 		if( *p == ':' || *p == '\\' || *p == '/' )
@@ -246,6 +220,8 @@ bool StartVideo(void)
 
 	//Lets figure out what the tv system is
 	status.dwTvSystem = CountryCodeToTVSystem(g_curRomInfo.romheader.nCountryID);
+	
+	//Now we have determined the tv system of the rom, lets set the frame ratio's
 	if( status.dwTvSystem == TV_SYSTEM_NTSC )
 		status.fRatio = 0.75f;
 	else
@@ -436,17 +412,6 @@ void SetVIScales()
 				{
 					windowSetting.fViHeight = windowSetting.fViWidth*status.fRatio;
 				}
-				/*
-				else
-				{
-					if( abs(windowSetting.fViWidth*status.fRatio-windowSetting.fViHeight) > windowSetting.fViWidth*0.1f )
-					{
-						if( status.fRatio > 0.8 )
-							windowSetting.fViHeight = windowSetting.fViWidth*3/4;
-						//windowSetting.fViHeight = (*g_GraphicsInfo.VI_V_SYNC_REG - 0x2C)/2;
-					}
-				}
-				*/
 			}
 			
 			if( windowSetting.fViHeight<100 || windowSetting.fViWidth<100 )
@@ -647,27 +612,6 @@ FUNC_TYPE(void) NAME_DEFINE(ViWidthChanged) (void)
 	g_CritialSection.Unlock();
 }
 
-EXPORT BOOL CALL GetFullScreenStatus(void);
-
-__declspec(dllexport) void CALL SetOnScreenText (char *msg)
-{
-	status.CPUCoreMsgIsSet = true;
-	memset(&status.CPUCoreMsgToDisplay, 0, 256);
-	strncpy(status.CPUCoreMsgToDisplay, msg, 255);
-}
-
-__declspec(dllexport) BOOL CALL GetFullScreenStatus(void)
-{
-	if( CGraphicsContext::g_pGraphicsContext )
-	{
-		return CGraphicsContext::g_pGraphicsContext->IsWindowed() ? FALSE : TRUE;
-	}
-	else
-	{
-		return FALSE;
-	}
-}
-
 FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 {
 #ifdef _DEBUG
@@ -677,10 +621,10 @@ FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 	memset(&status, 0, sizeof(status));
 	memcpy(&g_GraphicsInfo, &Gfx_Info, sizeof(GFX_INFO));
 	
-	g_pRDRAMu8			= Gfx_Info.RDRAM;
-	g_pRDRAMu32			= (uint32*)Gfx_Info.RDRAM;
-	g_pRDRAMs8			= (signed char *)Gfx_Info.RDRAM;
-
+	g_pu8RamBase			= Gfx_Info.RDRAM;
+	g_pu32RamBase			= (uint32*)Gfx_Info.RDRAM;
+	g_ps8RamBase			= (signed char *)Gfx_Info.RDRAM;
+	
 	windowSetting.fViWidth = 320;
 	windowSetting.fViHeight = 240;
 	status.ToToggleFullScreen = FALSE;
@@ -732,12 +676,6 @@ FUNC_TYPE(void) NAME_DEFINE(CloseDLL) (void)
 		RomClosed();
 	}
 
-	if (bIniIsChanged)
-	{
-		WriteIniFile();
-		TRACE0("Write back INI file");
-	}
-
 #ifdef _DEBUG
 	CloseDialogBox();
 #endif
@@ -753,7 +691,6 @@ FUNC_TYPE(void) NAME_DEFINE(ProcessRDPList)(void)
 	{
 		TRACE0("Unknown Error in ProcessRDPList");
 		TriggerDPInterrupt();
-		TriggerSPInterrupt();
 	}
 }	
 
@@ -774,7 +711,6 @@ FUNC_TYPE(void) NAME_DEFINE(ProcessDList)(void)
 	{
 		TRACE0("Unknown Error in ProcessDList");
 		TriggerDPInterrupt();
-		TriggerSPInterrupt();
 	}
 
 	g_CritialSection.Unlock();
@@ -784,135 +720,8 @@ FUNC_TYPE(void) NAME_DEFINE(ProcessDList)(void)
 
 void TriggerDPInterrupt(void)
 {
-	*(g_GraphicsInfo.MI_INTR_REG) |= MI_INTR_DP;
+	*(g_GraphicsInfo.MI_INTR_REG) |= 0x20;
 	g_GraphicsInfo.CheckInterrupts();
-}
-
-void TriggerSPInterrupt(void)
-{
-	*(g_GraphicsInfo.MI_INTR_REG) |= MI_INTR_SP;
-	g_GraphicsInfo.CheckInterrupts();
-}
-
-/******************************************************************
-  Function: FrameBufferWriteList
-  Purpose:  This function is called to notify the dll that the
-            frame buffer has been modified by CPU at the given address.
-  input:    FrameBufferModifyEntry *plist
-			size = size of the plist, max = 1024
-  output:   none
-*******************************************************************/ 
-FUNC_TYPE(void) NAME_DEFINE(FBWList)(FrameBufferModifyEntry *plist, uint32 size)
-{
-}
-
-/******************************************************************
-  Function: FrameBufferRead
-  Purpose:  This function is called to notify the dll that the
-            frame buffer memory is beening read at the given address.
-			DLL should copy content from its render buffer to the frame buffer
-			in N64 RDRAM
-			DLL is responsible to maintain its own frame buffer memory addr list
-			DLL should copy 4KB block content back to RDRAM frame buffer.
-			Emulator should not call this function again if other memory
-			is read within the same 4KB range
-
-			Since depth buffer is also being watched, the reported addr
-			may belong to depth buffer
-  input:    addr		rdram address
-			val			val
-			size		1 = uint8, 2 = uint16, 4 = uint32
-  output:   none
-*******************************************************************/ 
-
-FUNC_TYPE(void) NAME_DEFINE(FBRead)(uint32 addr)
-{
-	g_pFrameBufferManager->FrameBufferReadByCPU(addr);
-}
-
-
-/******************************************************************
-  Function: FrameBufferWrite
-  Purpose:  This function is called to notify the dll that the
-            frame buffer has been modified by CPU at the given address.
-
-			Since depth buffer is also being watched, the reported addr
-			may belong to depth buffer
-
-  input:    addr		rdram address
-			val			val
-			size		1 = uint8, 2 = uint16, 4 = uint32
-  output:   none
-*******************************************************************/ 
-
-FUNC_TYPE(void) NAME_DEFINE(FBWrite)(uint32 addr, uint32 size)
-{
-	g_pFrameBufferManager->FrameBufferWriteByCPU(addr, size);
-}
-
-/************************************************************************
-Function: FBGetFrameBufferInfo
-Purpose:  This function is called by the emulator core to retrieve frame
-		  buffer information from the video plugin in order to be able
-		  to notify the video plugin about CPU frame buffer read/write
-		  operations
-
-		  size:
-			= 1		byte
-			= 2		word (16 bit) <-- this is N64 default depth buffer format
-			= 4		dword (32 bit)
-
-		  when frame buffer information is not available yet, set all values
-		  in the FrameBufferInfo structure to 0
-
-input:    FrameBufferInfo pinfo[6]
-		  pinfo is pointed to a FrameBufferInfo structure which to be
-		  filled in by this function
-output:   Values are return in the FrameBufferInfo structure
-		  Plugin can return up to 6 frame buffer info
-/************************************************************************/
-typedef struct
-{
-	uint32	addr;
-	uint32	size;
-	uint32	width;
-	uint32	height;
-} FrameBufferInfo;
-__declspec(dllexport) void CALL FBGetFrameBufferInfo(void *p)
-{
-	FrameBufferInfo * pinfo = (FrameBufferInfo *)p;
-	memset(pinfo,0,sizeof(FrameBufferInfo)*6);
-
-	//if( g_ZI.dwAddr == 0 )
-	//{
-	//	memset(pinfo,0,sizeof(FrameBufferInfo)*6);
-	//}
-	//else
-	{
-		int idx=0;
-		for (int i=0; i<5; i++ )
-		{
-			if( status.gDlistCount-g_RecentCIInfo[i].lastUsedFrame > 30 || g_RecentCIInfo[i].lastUsedFrame == 0 )
-			{
-				//memset(&pinfo[i],0,sizeof(FrameBufferInfo));
-			}
-			else
-			{
-				pinfo[i].addr = g_RecentCIInfo[i].dwAddr;
-				pinfo[i].size = 2;
-				pinfo[i].width = g_RecentCIInfo[i].dwWidth;
-				pinfo[i].height = g_RecentCIInfo[i].dwHeight;
-				TXTRBUF_DETAIL_DUMP(TRACE3("Protect 0x%08X (%d,%d)", g_RecentCIInfo[i].dwAddr, g_RecentCIInfo[i].dwWidth, g_RecentCIInfo[i].dwHeight));
-				pinfo[5].width = g_RecentCIInfo[i].dwWidth;
-				pinfo[5].height = g_RecentCIInfo[i].dwHeight;
-			}
-		}
-
-		pinfo[5].addr = g_ZI.dwAddr;
-		//pinfo->size = g_RecentCIInfo[5].dwSize;
-		pinfo[5].size = 2;
-		TXTRBUF_DETAIL_DUMP(TRACE3("Protect 0x%08X (%d,%d)", pinfo[5].addr, pinfo[5].width, pinfo[5].height));
-	}
 }
 
 // Plugin spec 1.3 functions
@@ -921,18 +730,15 @@ FUNC_TYPE(void) NAME_DEFINE(ShowCFB) (void)
 	status.toShowCFB = true;
 }
 
-
 FUNC_TYPE(void) NAME_DEFINE(CaptureScreen) ( char * Directory )
 {
 	if( status.bGameIsRunning && status.gDlistCount > 0 )
 	{
-		if( !PathFileExists(Directory) )
+		if( !PathFileExists(Directory) && !CreateDirectory(Directory, NULL) )
 		{
-			if( !CreateDirectory(Directory, NULL) )
-			{
-				//DisplayError("Can not create new folder: %s", pathname);
-				return;
-			}
+
+			//DisplayError("Can not create new folder: %s", pathname);
+			return;
 		}
 
 		strcpy(status.screenCaptureFilename, Directory);

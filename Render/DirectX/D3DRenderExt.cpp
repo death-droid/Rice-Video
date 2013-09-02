@@ -91,7 +91,7 @@ void D3DRender::DrawObjBGCopy(uObjBg &info)
 			// We don't support lockable Zbuffer, but we can simular it by splitting the image
 			// to small pieces and render the piece with depth from the depth image
 
-			uint16 *Base = (uint16*)(g_pRDRAMu8+RSPSegmentAddr(info.imagePtr));
+			uint16 *Base = (uint16*)(g_pu8RamBase+RSPSegmentAddr(info.imagePtr));
 			float depth;
 
 			const uint32 inc=10;
@@ -151,7 +151,7 @@ void D3DRender::DrawObjBGCopy(uObjBg &info)
 
 		if (IsResultGood(pDepthBufferSurf->LockRect(&dlre, NULL, D3DLOCK_NOSYSLOCK)))
 		{
-			uint16 *Base = (uint16*)(g_pRDRAMu8+RSPSegmentAddr(g_ZI.dwAddr));
+			uint16 *Base = (uint16*)(g_pu8RamBase+RSPSegmentAddr(g_ZI.dwAddr));
 			int x, y;
 			for( int i=0; i<windowSetting.uDisplayHeight; i++ )
 			{

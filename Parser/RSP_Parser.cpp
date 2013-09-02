@@ -286,7 +286,6 @@ void DLParser_Init()
 	status.frameReadByCPU = FALSE;
 	status.frameWriteByCPU = FALSE;
 	status.bN64IsDrawingTextureBuffer = false;
-	status.bDirectWriteIntoRDRAM = false;
 	status.bHandleN64RenderTexture = false;
 
 	status.bUcodeIsKnown = FALSE;
@@ -663,14 +662,14 @@ uint32 DLParser_CheckUcode(uint32 ucStart, uint32 ucDStart, uint32 ucSize, uint3
 		for ( uint32 i = 0; i < 0x1000; i++ )
 		{
 
-			if ( g_pRDRAMs8[ base + ((i+0) ^ 3) ] == 'R' &&
-				g_pRDRAMs8[ base + ((i+1) ^ 3) ] == 'S' &&
-				g_pRDRAMs8[ base + ((i+2) ^ 3) ] == 'P' )
+			if ( g_ps8RamBase[ base + ((i+0) ^ 3) ] == 'R' &&
+				g_ps8RamBase[ base + ((i+1) ^ 3) ] == 'S' &&
+				g_ps8RamBase[ base + ((i+2) ^ 3) ] == 'P' )
 			{
 				CHAR * p = str;
-				while ( g_pRDRAMs8[ base + (i ^ 3) ] >= ' ')
+				while ( g_ps8RamBase[ base + (i ^ 3) ] >= ' ')
 				{
-					*p++ = g_pRDRAMs8[ base + (i ^ 3) ];
+					*p++ = g_ps8RamBase[ base + (i ^ 3) ];
 					i++;
 				}
 				*p++ = 0;
@@ -684,8 +683,8 @@ uint32 DLParser_CheckUcode(uint32 ucStart, uint32 ucDStart, uint32 ucSize, uint3
 		uint32 size = ucDSize;
 		base = ucStart & 0x1fffffff;
 
-		uint32 crc_size = ComputeCRC32( 0, &g_pRDRAMu8[ base ], 8);//size );
-		uint32 crc_800 = ComputeCRC32( 0, &g_pRDRAMu8[ base ], 0x800 );
+		uint32 crc_size = ComputeCRC32( 0, &g_pu8RamBase[ base ], 8);//size );
+		uint32 crc_800 = ComputeCRC32( 0, &g_pu8RamBase[ base ], 0x800 );
 		uint32 ucode;
 		ucode = DLParser_IdentifyUcode( crc_size, crc_800, str );
 		if ( ucode == ~0 )
@@ -757,32 +756,19 @@ extern bool bHalfTxtScale;
 
 void DLParser_Process(OSTask * pTask)
 {
-	static int skipframe=0;
-
 	dlistMtxCount = 0;
 	bHalfTxtScale = false;
 
 	if ( CRender::g_pRender == NULL)
 	{
 		TriggerDPInterrupt();
-		TriggerSPInterrupt();
 		return;
 	}
 
 	status.bScreenIsDrawn = true;
-	if( options.bSkipFrame )
-	{
-		skipframe++;
-		if(skipframe%2)
-		{
-			TriggerDPInterrupt();
-			TriggerSPInterrupt();
-			return;
-		}
-	}
 
 	g_pOSTask = pTask;
-	
+
 	DebuggerPauseCountN( NEXT_DLIST );
 	status.gRDPTime = timeGetTime();
 	status.gDlistCount++;
@@ -799,6 +785,7 @@ void DLParser_Process(OSTask * pTask)
 	gDlistStackPointer=0;
 	gDlistStack[gDlistStackPointer].pc = (uint32)pTask->t.data_ptr;
 	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((gDlistStack[gDlistStackPointer].pc == 0 && pauseAtNext && eventToPause==NEXT_UNKNOWN_OP),
 			{DebuggerAppendMsg("Start Task without DLIST: ucode=%08X, data=%08X", (uint32)pTask->t.ucode, (uint32)pTask->t.ucode_data);});
 
@@ -852,11 +839,8 @@ void DLParser_Process(OSTask * pTask)
 
 			status.gUcodeCount++;
 
-			MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
-#ifdef _DEBUG
-	//		LOG_UCODE("0x%08x: %08x %08x %-10s", 
-//				gDlistStack[gDlistStackPointer].pc, p_command.inst.cmd0, p_command.inst.cmd1, (gRSP.ucode!=5&&gRSP.ucode!=10)?ucodeNames_GBI1[(p_command.inst.cmd0>>24)]:ucodeNames_GBI2[(p_command.inst.cmd0>>24)]);
-#endif
+			MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
+
 			gDlistStack[gDlistStackPointer].pc += 8;
 			currentUcodeMap[p_command->inst.cmd0 >>24](*p_command);
 
@@ -875,11 +859,7 @@ void DLParser_Process(OSTask * pTask)
 	}
 
 	CRender::g_pRender->EndRendering();
-
-	if( gRSP.ucode >= 17)
-		TriggerDPInterrupt();
-	TriggerSPInterrupt();
-
+		
 }
 
 //*****************************************************************************
@@ -888,7 +868,7 @@ void DLParser_Process(OSTask * pTask)
 inline void DLParser_FetchNextCommand(MicroCodeCommand * p_command)
 {
 	// Current PC is the last value on the stack
-	*p_command = *(MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
+	*p_command = *(MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
 
 	gDlistStack[gDlistStackPointer].pc += 8;
 
@@ -968,8 +948,10 @@ void RSP_GFX_InitGeometryMode()
 	
 	BOOL bShade			= (gRDP.geometryMode & G_SHADE) ? TRUE : FALSE;
 	BOOL bShadeSmooth	= (gRDP.geometryMode & G_SHADING_SMOOTH) ? TRUE : FALSE;
-	if (bShade && bShadeSmooth)		CRender::g_pRender->SetShadeMode( SHADE_SMOOTH );
-	else							CRender::g_pRender->SetShadeMode( SHADE_FLAT );
+	if (bShade && bShadeSmooth)		
+		CRender::g_pRender->SetShadeMode( SHADE_SMOOTH );
+	else							
+		CRender::g_pRender->SetShadeMode( SHADE_FLAT );
 	
 	CRender::g_pRender->SetFogEnable( gRDP.geometryMode & G_FOG ? true : false );
 	SetTextureGen((gRDP.geometryMode & G_TEXTURE_GEN) ? true : false );
@@ -1128,7 +1110,6 @@ void DLParser_SetScissor(MicroCodeCommand command)
 
 		CRender::g_pRender->UpdateClipRectangle();
 		CRender::g_pRender->UpdateScissor();
-		CRender::g_pRender->SetViewportRender();
 	}
 
 	LOG_UCODE("SetScissor: x0=%d y0=%d x1=%d y1=%d mode=%d",
@@ -1146,17 +1127,47 @@ void DLParser_FillRect(MicroCodeCommand command)
 	if( status.bN64IsDrawingTextureBuffer && frameBufferOptions.bIgnore )
 		return;
 
+	// Removes annoying rect that appears in Conker and fillrects that cover screen in banjo tooie
+	if (g_CI.dwFormat != TXT_FMT_RGBA)
+	{
+		TRACE0("	Ignoring Fillrect	");
+		return;
+	}
+
+	u32 fill_colour = gRDP.originalFillColor;
+
+	//Always clear zBuffer if depth buffer has been selected
+	if(g_ZI.dwAddr == g_CI.dwAddr)
+	{
+		CRender::g_pRender->ClearBuffer(false,true);
+		
+		//Clear framebuffer, fixes jumpy camera in DK64, also the sun and flames glare in Zelda
+		u32 * dst = (u32*)(g_pu8RamBase + g_CI.dwAddr);
+		u32 * end = (u32*)(dst + (command.fillrect.y1*(g_CI.dwWidth >> 1)));
+
+		do
+		{
+			*dst++ = fill_colour;
+			*dst++ = fill_colour;
+			*dst++ = fill_colour;
+			*dst++ = fill_colour;
+		} while(dst < end);
+
+		TRACE0("Clearing ZBuffer");
+		return;
+	}
+
 	if( options.enableHackForGames == HACK_FOR_MARIO_TENNIS )
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-		uint32 w2 = *(uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 		if( (w2>>24) == RDP_FILLRECT )
 		{
 			// Mario Tennis, a lot of FillRect ucodes, skip all of them
 			while( (w2>>24) == RDP_FILLRECT )
 			{
 				dwPC += 8;
-				w2 = *(uint32 *)(g_pRDRAMu8 + dwPC);
+				w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 			}
 
 			gDlistStack[gDlistStackPointer].pc = dwPC;
@@ -1164,106 +1175,36 @@ void DLParser_FillRect(MicroCodeCommand command)
 		}
 	}
 
-	uint32 x0   = (((command.inst.cmd1)>>12)&0xFFF)/4;
-	uint32 y0   = (((command.inst.cmd1)>>0 )&0xFFF)/4;
-	uint32 x1   = (((command.inst.cmd0)>>12)&0xFFF)/4;
-	uint32 y1   = (((command.inst.cmd0)>>0 )&0xFFF)/4;
 
 	// Note, in some modes, the right/bottom lines aren't drawn
 
-	LOG_UCODE("    (%d,%d) (%d,%d)", x0, y0, x1, y1);
-
 	if( gRDP.otherMode.cycle_type >= CYCLE_TYPE_COPY )
 	{
-		x1++;
-		y1++;
+		command.fillrect.x1++;
+		command.fillrect.y1++;
 	}
 
-	//TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor););
-
-	if( status.bHandleN64RenderTexture && options.enableHackForGames == HACK_FOR_BANJO_TOOIE )
-	{
-		// Skip this
-		return;
-	}
-
-	if (IsUsedAsDI(g_CI.dwAddr))
-	{
-		// Clear the Z Buffer
-		if( x0!=0 || y0!=0 || windowSetting.uViWidth-x1>1 || windowSetting.uViHeight-y1>1)
-		{
-			if( options.enableHackForGames == HACK_FOR_GOLDEN_EYE )
-			{
-				// GoldenEye is using double zbuffer
-				if( g_CI.dwAddr == g_ZI.dwAddr )
-				{
-					// The zbuffer is the upper screen
-					D3DRECT rect={int(x0*windowSetting.fMultX),int(y0*windowSetting.fMultY),int(x1*windowSetting.fMultX),int(y1*windowSetting.fMultY)};
-					CRender::g_pRender->ClearBuffer(false,true,rect);	//Check me
-					LOG_UCODE("    Clearing ZBuffer");
-				}
-				else
-				{
-					// The zbuffer is the lower screen
-					int h = (g_CI.dwAddr-g_ZI.dwAddr)/g_CI.dwWidth/2;
-					D3DRECT rect={int(x0*windowSetting.fMultX),int((y0+h)*windowSetting.fMultY),int(x1*windowSetting.fMultX),int((y1+h)*windowSetting.fMultY)};
-					CRender::g_pRender->ClearBuffer(false,true,rect);	//Check me
-					LOG_UCODE("    Clearing ZBuffer");
-				}
-			}
-			else
-			{
-				D3DRECT rect={int(x0*windowSetting.fMultX),int(y0*windowSetting.fMultY),int(x1*windowSetting.fMultX),int(y1*windowSetting.fMultY)};
-				CRender::g_pRender->ClearBuffer(false,true,rect);	//Check me
-				LOG_UCODE("    Clearing ZBuffer");
-			}
-		}
-		else
-		{
-			CRender::g_pRender->ClearBuffer(false,true);	//Check me
-			LOG_UCODE("    Clearing ZBuffer");
-		}
-
-		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect: ClearZbuffer\n");});
-		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("ClearZbuffer: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor);
-		DebuggerAppendMsg("Pause after ClearZbuffer: Color=%08X\n", gRDP.originalFillColor);});
-
-		if( g_curRomInfo.bEmulateClear )
-		{
-			// Emulating Clear, by write the memory in RDRAM
-			uint16 color = (uint16)gRDP.originalFillColor;
-			uint32 pitch = g_CI.dwWidth<<1;
-			uint32 base = (uint32)(g_pRDRAMu8 + g_CI.dwAddr);
-			for( uint32 i =y0; i<y1; i++ )
-			{
-				for( uint32 j=x0; j<x1; j++ )
-				{
-					*(uint16*)((base+pitch*i+j)^2) = color;
-				}
-			}
-		}
-	}
-	else if( status.bHandleN64RenderTexture )
+	if( status.bHandleN64RenderTexture )
 	{
 		if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-		status.leftRendered = status.leftRendered<0 ? x0 : min((int)x0,status.leftRendered);
-		status.topRendered = status.topRendered<0 ? y0 : min((int)y0,status.topRendered);
-		status.rightRendered = status.rightRendered<0 ? x1 : max((int)x1,status.rightRendered);
-		status.bottomRendered = status.bottomRendered<0 ? y1 : max((int)y1,status.bottomRendered);
+		status.leftRendered = status.leftRendered<0 ? command.fillrect.x0 : min((int)command.fillrect.x0,status.leftRendered);
+		status.topRendered = status.topRendered<0 ? command.fillrect.y0 : min((int)command.fillrect.y0,status.topRendered);
+		status.rightRendered = status.rightRendered<0 ? command.fillrect.x1 : max((int)command.fillrect.x1,status.rightRendered);
+		status.bottomRendered = status.bottomRendered<0 ? command.fillrect.y1 : max((int)command.fillrect.y1,status.bottomRendered);
 
-		g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,(int)y1);
+		g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,(int)command.fillrect.y1);
 
-		if( status.bDirectWriteIntoRDRAM || ( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) ) )
+		if(command.fillrect.x0==0 && command.fillrect.y0==0 && (command.fillrect.x1 == g_pRenderTextureInfo->N64Width || command.fillrect.x1 == g_pRenderTextureInfo->N64Width-1 ))
 		{
 			if( g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_16b )
 			{
-				uint16 color = (uint16)gRDP.originalFillColor;
+				uint16 color = (uint16)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width<<1;
-				uint32 base = (uint32)(g_pRDRAMu8 + g_pRenderTextureInfo->CI_Info.dwAddr);
-				for( uint32 i =y0; i<y1; i++ )
+				uint32 base = (uint32)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
+				for( uint32 i =command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
-					for( uint32 j=x0; j<x1; j++ )
+					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )
 					{
 						*(uint16*)((base+pitch*i+j)^2) = color;
 					}
@@ -1271,18 +1212,17 @@ void DLParser_FillRect(MicroCodeCommand command)
 			}
 			else
 			{
-				uint8 color = (uint8)gRDP.originalFillColor;
+				uint8 color = (uint8)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width;
-				uint32 base = (uint32)(g_pRDRAMu8 + g_pRenderTextureInfo->CI_Info.dwAddr);
-				for( uint32 i=y0; i<y1; i++ )
+				uint32 base = (uint32)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
+				for( uint32 i=command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
-					for( uint32 j=x0; j<x1; j++ )
+					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )
 					{
 						*(uint8*)((base+pitch*i+j)^3) = color;
 					}
 				}
 			}
-
 			status.bFrameBufferDrawnByTriangles = false;
 		}
 		else
@@ -1291,30 +1231,28 @@ void DLParser_FillRect(MicroCodeCommand command)
 		}
 		status.bFrameBufferDrawnByTriangles = true;
 
-		if( !status.bDirectWriteIntoRDRAM )
-		{
-			status.bFrameBufferIsDrawn = true;
 
-			//if( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) && gRDP.fillColor == 0)
-			//{
-			//	CRender::g_pRender->ClearBuffer(true,false);
-			//}
-			//else
+		status.bFrameBufferIsDrawn = true;
+
+		//if( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) && gRDP.fillColor == 0)
+		//{
+		//	CRender::g_pRender->ClearBuffer(true,false);
+		//}
+		//else
+		{
+			if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 			{
-				if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
-				{
-					CRender::g_pRender->FillRect(x0, y0, x1, y1, gRDP.fillColor);
-				}
-				else
-				{
-					D3DCOLOR primColor = GetPrimitiveColor();
-					CRender::g_pRender->FillRect(x0, y0, x1, y1, primColor);
-				}
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
+			}
+			else
+			{
+				D3DCOLOR primColor = GetPrimitiveColor();
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
 			}
 		}
 
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect\n");});
-		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor);
+		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.originalFillColor);
 		DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", gRDP.originalFillColor);});
 	}
 	else
@@ -1324,17 +1262,17 @@ void DLParser_FillRect(MicroCodeCommand command)
 		{
 			if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-			status.leftRendered = status.leftRendered<0 ? x0 : min((int)x0,status.leftRendered);
-			status.topRendered = status.topRendered<0 ? y0 : min((int)y0,status.topRendered);
-			status.rightRendered = status.rightRendered<0 ? x1 : max((int)x1,status.rightRendered);
-			status.bottomRendered = status.bottomRendered<0 ? y1 : max((int)y1,status.bottomRendered);
+			status.leftRendered = status.leftRendered<0 ? command.fillrect.x0 : min((int)command.fillrect.x0,status.leftRendered);
+			status.topRendered = status.topRendered<0 ? command.fillrect.y0 : min((int)command.fillrect.y0,status.topRendered);
+			status.rightRendered = status.rightRendered<0 ? command.fillrect.x1 : max((int)command.fillrect.x1,status.rightRendered);
+			status.bottomRendered = status.bottomRendered<0 ? command.fillrect.y1 : max((int)command.fillrect.y1,status.bottomRendered);
 		}
 
 		if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 		{
 			if( !status.bHandleN64RenderTexture || g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_16b )
 			{
-				CRender::g_pRender->FillRect(x0, y0, x1, y1, gRDP.fillColor);
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
 			}
 		}
 		else
@@ -1342,11 +1280,11 @@ void DLParser_FillRect(MicroCodeCommand command)
 			D3DCOLOR primColor = GetPrimitiveColor();
 			//if( RGBA_GETALPHA(primColor) != 0 )
 			{
-				CRender::g_pRender->FillRect(x0, y0, x1, y1, primColor);
+				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
 			}
 		}
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect\n");});
-		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", x0, y0, x1, y1, gRDP.originalFillColor);
+		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.originalFillColor);
 		DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", gRDP.originalFillColor);});
 	}
 }
@@ -1376,7 +1314,9 @@ void RSP_RDP_Nothing(MicroCodeCommand command)
 		
 	if( options.bEnableHacks )
 		return;
-	
+
+	TriggerDPInterrupt();
+
 	gDlistStackPointer=-1;
 }
 
@@ -1662,7 +1602,7 @@ void RDP_DLParser_Process(void)
 
 	while( gDlistStack[gDlistStackPointer].pc < end )
 	{
-		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pRDRAMu32[(gDlistStack[gDlistStackPointer].pc>>2)];
+		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
 		gDlistStack[gDlistStackPointer].pc += 8;
 		currentUcodeMap[p_command->inst.cmd0 >>24](*p_command);
 	}
@@ -1744,8 +1684,8 @@ void LoadMatrix(uint32 addr)
 	{
 		for (j = 0; j < 4; j++) 
 		{
-			int     hi = *(short *)(g_pRDRAMu8 + ((addr+(i<<3)+(j<<1)     )^0x2));
-			uint16  lo = *(uint16  *)(g_pRDRAMu8 + ((addr+(i<<3)+(j<<1) + 32)^0x2));
+			int     hi = *(short *)(g_pu8RamBase + ((addr+(i<<3)+(j<<1)     )^0x2));
+			uint16  lo = *(uint16  *)(g_pu8RamBase + ((addr+(i<<3)+(j<<1) + 32)^0x2));
 			matToLoad.m[i][j] = (float)((hi<<16) | (lo))/ 65536.0f;
 		}
 	}

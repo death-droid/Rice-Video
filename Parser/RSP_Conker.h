@@ -76,8 +76,8 @@ void RSP_Tri4_Conker(MicroCodeCommand command)
 
 		bTrisAdded |= AddTri(idx[9], idx[10], idx[11]);
 
-		w0 = *(uint32 *)(g_pRDRAMu8 + dwPC+0);
-		w1 = *(uint32 *)(g_pRDRAMu8 + dwPC+4);
+		w0 = *(uint32 *)(g_pu8RamBase + dwPC+0);
+		w1 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 		dwPC += 8;
 
 #ifdef _DEBUG
@@ -100,7 +100,7 @@ void RDP_GFX_Force_Vertex_Z_Conker(uint32 dwAddr)
 {
 	VTX_DUMP( 
 	{
-		s8 * pcBase = g_pRDRAMs8 + (dwAddr&(g_dwRamSize-1));
+		s8 * pcBase = g_ps8RamBase + (dwAddr&(g_dwRamSize-1));
 		uint32 * pdwBase = (uint32 *)pcBase;
 		LONG i;
 

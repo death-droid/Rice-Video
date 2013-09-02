@@ -88,8 +88,7 @@ struct D3DAdapterInfo
     int				dwCurrentDevice;
 };
 
-extern BufferSettingInfo DirectXDepthBufferSetting[];
-extern int numberOfDirectXDepthBufferSettings;
+
 struct TxtrCacheEntry;
 
 // Implementation

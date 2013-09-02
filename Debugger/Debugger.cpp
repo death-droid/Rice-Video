@@ -287,8 +287,8 @@ void DumpDlistAt(uint32 dwPC)
 	//if( dwPC>100 ) dwPC -= 40;
 	for( uint32 i=0; i<20; i++)
 	{
-		word0 = g_pRDRAMu32[(dwPC>>2)+0];
-		word1 = g_pRDRAMu32[(dwPC>>2)+1];
+		word0 = g_pu32RamBase[(dwPC>>2)+0];
+		word1 = g_pu32RamBase[(dwPC>>2)+1];
 		opcode = word0>>24;
 		DebuggerAppendMsg("%08X: %08X, %08X - %s", dwPC, word0, word1, name[opcode] );
 		dwPC+=8;
@@ -306,8 +306,8 @@ void DumpMatrixAt(uint32 dwPC)
 	for (dwI = 0; dwI < 4; dwI++) {
 		for (dwJ = 0; dwJ < 4; dwJ++) {
 
-			short nDataHi = *(short *)(g_pRDRAMu8 + ((dwPC+(dwI<<3)+(dwJ<<1)     )^0x2));
-			uint16  nDataLo = *(uint16  *)(g_pRDRAMu8 + ((dwPC+(dwI<<3)+(dwJ<<1) + 32)^0x2));
+			short nDataHi = *(short *)(g_pu8RamBase + ((dwPC+(dwI<<3)+(dwJ<<1)     )^0x2));
+			uint16  nDataLo = *(uint16  *)(g_pu8RamBase + ((dwPC+(dwI<<3)+(dwJ<<1) + 32)^0x2));
 
 			mat.m[dwI][dwJ] = (float)(((LONG)nDataHi<<16) | (nDataLo))*fRecip;
 		}
@@ -430,7 +430,7 @@ void DumpInfo(int thingToDump)
 		DebuggerAppendMsg("----Light Colors----\nNumber of Lights: %d\n",GetNumLights());
 		for( i=0; i<GetNumLights()+2; i++)
 		{
-			DebuggerAppendMsg("Light %d:\t%08X, (%d,%d,%d)\n", i, gRSPn64lights[i].dwRGBA,gRSPn64lights[i].x,gRSPn64lights[i].y,gRSPn64lights[i].z );
+		//	DebuggerAppendMsg("Light %d:\t%08X, (%d,%d,%d)\n", i, gRSPn64lights[i].dwRGBA,gRSPn64lights[i].x,gRSPn64lights[i].y,gRSPn64lights[i].z );
 		}
 		break;
 	case DUMP_TEXTURE_AT:
@@ -471,7 +471,7 @@ void DumpInfo(int thingToDump)
 		DumpTlut(g_wRDPTlut);
 		break;
 	case DUMP_OBJ_TLUT:
-		DumpTlut((uint16*)(g_pRDRAMu8+gObjTlutAddr));
+		DumpTlut((uint16*)(g_pu8RamBase+gObjTlutAddr));
 		break;
 	case DUMP_TILE_AT:
 		{
@@ -943,7 +943,7 @@ void __cdecl LOG_UCODE(LPCTSTR szFormat, ...)
 void DumpHex(uint32 rdramAddr, int count)
 {
 	rdramAddr &= 0xFFFFFFF0;
-	uint32 *ptr = (uint32 *)((rdramAddr&(g_dwRamSize-1))+g_pRDRAMu8);
+	uint32 *ptr = (uint32 *)((rdramAddr&(g_dwRamSize-1))+g_pu8RamBase);
 
 	for( int i=0; i<(count+3)/4; i++)
 	{

@@ -65,14 +65,16 @@ public:
 	
 	TextureUsage	m_Usage;
 
-	virtual LPDIRECT3DTEXTURE9 GetTexture() { return m_pTexture; }
+	LPDIRECT3DTEXTURE9 GetTexture() { return m_pTexture; }
 
 	// Provides access to "surface"
-	virtual bool StartUpdate(DrawInfo *di)=0;
-	virtual void EndUpdate(DrawInfo *di)=0;
+	bool StartUpdate(DrawInfo *di);
+	void EndUpdate(DrawInfo *di);
+	
+	CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
 
 protected:
-	CTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
+	LPDIRECT3DTEXTURE9 CreateTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage = AS_NORMAL);
 	LPDIRECT3DTEXTURE9	m_pTexture;
 };
 

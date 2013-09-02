@@ -105,6 +105,7 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_MATRIX:
 		RSP_RDP_InsertMatrix(command);
 		break;
+
 	case RSP_MOVE_WORD_NUMLIGHT:
 		{
 			uint32 dwNumLights = command.mw2.value/24;
@@ -131,22 +132,13 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 
 	case RSP_MOVE_WORD_SEGMENT:
 		{
-			uint32 dwSeg     = command.mw2.offset / 4;
+			uint32 dwSeg     = command.mw2.offset >> 2;
 			uint32 dwAddr = command.mw2.value & 0x00FFFFFF;			// Hack - convert to physical
 
 			LOG_UCODE("      RSP_MOVE_WORD_SEGMENT Segment[%d] = 0x%08x",	dwSeg, dwAddr);
-			if( dwAddr > g_dwRamSize )
-			{
-				gRSP.segments[dwSeg] = dwAddr;
-#ifdef _DEBUG
-				if( pauseAtNext )
-					DebuggerAppendMsg("warning: Segment %d addr is %8X", dwSeg, dwAddr);
-#endif
-			}
-			else
-			{
-				gRSP.segments[dwSeg] = dwAddr;
-			}
+
+			gRSP.segments[dwSeg] = dwAddr;
+
 		}
 		break;
 	case RSP_MOVE_WORD_FOG:
@@ -179,29 +171,14 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_LIGHTCOL:
 		{
 			uint32 dwLight = command.mw2.offset / 0x18;
-			uint32 dwField = (command.mw2.offset & 0x7);
+			uint32 field_offset = (command.mw2.offset & 0x7);
 
-			switch (dwField)
+			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw2.offset, command.mw2.value);
+
+			if (field_offset == 0)
 			{
-			case 0:
-				if (dwLight == gRSP.ambientLightIndex)
-				{
-					SetAmbientLight( (command.mw2.value>>8) );
-				}
-				else
-				{
-					SetLightCol(dwLight, command.mw2.value);
-				}
-				break;
-
-			case 4:
-				break;
-
-			default:
-				DebuggerAppendMsg("RSP_MOVE_WORD_LIGHTCOL with unknown offset 0x%08x", dwField);
-				break;
+				SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF) );
 			}
-
 
 		}
 		break;
@@ -239,7 +216,7 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 
 		// While the next command pair is Tri1, add vertices
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 		do
 		{
@@ -287,7 +264,7 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 
 		// While the next command pair is Tri2, add vertices
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 		bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
@@ -341,7 +318,7 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 	else
 	{
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pRDRAMu8 + dwPC);
+		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 		bool bTrisAdded = false;
 
@@ -457,21 +434,13 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 
 void RSP_GBI2_PopMtx(MicroCodeCommand command)
 {
-	uint8 nCommand = (uint8)(command.inst.cmd0 & 0xFF);
+	LOG_UCODE("    Command: (%s)",	command.inst.cmd1 ? "Projection" : "ModelView");
 
-	LOG_UCODE("        PopMtx: 0x%02x (%s)",
-		nCommand, 
-		(nCommand & RSP_ZELDA_MTX_PROJECTION) ? "Projection" : "ModelView");
+	// Banjo Tooie, pops more than one matrix
+	u32 num = command.inst.cmd1>>6;
 
-
-/*	if (nCommand & RSP_ZELDA_MTX_PROJECTION)
-	{
-		CRender::g_pRender->PopProjection();
-	}
-	else*/
-	{
-		CRender::g_pRender->PopWorldView();
-	}
+	CRender::g_pRender->PopWorldView(num);
+	
 #ifdef _DEBUG
 	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
 	{
@@ -671,7 +640,7 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 		{
 		case 0x00:
 			{
-				s8 * pcBase = g_pRDRAMs8 + addr;
+				s8 * pcBase = g_ps8RamBase + addr;
 				LOG_UCODE("    RSP_GBI1_MV_MEM_LOOKATX %f %f %f",
 					(float)pcBase[8 ^ 0x3],
 					(float)pcBase[9 ^ 0x3],
@@ -681,7 +650,7 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 			break;
 		case 0x18:
 			{
-				s8 * pcBase = g_pRDRAMs8 + addr;
+				s8 * pcBase = g_ps8RamBase + addr;
 				LOG_UCODE("    RSP_GBI1_MV_MEM_LOOKATY %f %f %f",
 					(float)pcBase[8 ^ 0x3],
 					(float)pcBase[9 ^ 0x3],

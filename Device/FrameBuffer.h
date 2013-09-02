@@ -47,11 +47,11 @@ public:
 	virtual int SetBackBufferAsRenderTexture(SetImgInfo &CIinfo, int ciInfoIdx);
 	void		LoadTextureFromRenderTexture(TxtrCacheEntry* pEntry, int infoIdx);
 	void		UpdateFrameBufferBeforeUpdateFrame();
-	virtual void RestoreNormalBackBuffer();					// restore the normal back buffer
-	virtual void CopyBackToFrameBufferIfReadByCPU(uint32 addr);
-	virtual void SetRenderTexture(void);
-	virtual void CloseRenderTexture(bool toSave);
-	virtual void ActiveTextureBuffer(void);
+	void RestoreNormalBackBuffer();					// restore the normal back buffer
+	void CopyBackToFrameBufferIfReadByCPU(uint32 addr);
+	void SetRenderTexture(void);
+	void CloseRenderTexture(bool toSave);
+	 void ActiveTextureBuffer(void);
 
 	int IsAddrInRecentFrameBuffers(uint32 addr);
 	int CheckAddrInBackBuffers(uint32 addr, uint32 memsize, bool copyToRDRAM = false);

@@ -116,8 +116,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define RDP_TEXRECT_FLIP	0xe5
 #define RDP_TEXRECT			0xe4
 
-
-
+// Overloaded for sprite microcode
+#define G_GBI1_SPRITE2D_SCALEFLIP    0xbe
+#define G_GBI1_SPRITE2D_DRAW         0xbd
+#define G_GBI1_SPRITE2D_BASE	9
 
 #define RSP_ZELDA_MTX_MODELVIEW		0x00
 #define RSP_ZELDA_MTX_PROJECTION	0x04
@@ -441,18 +443,18 @@ struct LoadCmdInfo
 };
 
 typedef struct {	// This is in Intel format
-  uint32 SourceImagePointer;
-  uint32 TlutPointer;
+  uint32 address; 
+  uint32 tlut;
 
-  short SubImageWidth;
+  short width;
   short Stride;
 
-  char  SourceImageBitSize;
-  char  SourceImageType;
-  short SubImageHeight;
+  char  size;
+  char  format;
+  short height;
 
-  short SourceImageOffsetT;
-  short SourceImageOffsetS;
+  short imageY;
+  short imageX;
 
   char	dummy[4]; 
 } SpriteStruct;			//Converted Sprint struct in Intel format
@@ -569,18 +571,18 @@ typedef struct
 
 // Mask down to 0x003FFFFF?
 #define RSPSegmentAddr(seg) ( gRSP.segments[((seg)>>24)&0x0F] + ((seg)&0x00FFFFFF) )
-#define RDRAM_UWORD(addr)	(*(uint32 *)((addr)+g_pRDRAMu8))
-#define RDRAM_SWORD(addr)	(*(s32 *)((addr)+g_pRDRAMu8))
-#define RDRAM_UHALF(addr)	(*(uint16 *)(((addr)^2)+g_pRDRAMu8))
-#define RDRAM_SHALF(addr)	(*(short *)(((addr)^2)+g_pRDRAMu8))
-#define RDRAM_UBYTE(addr)	(*(uint8 *)(((addr)^3)+g_pRDRAMu8))
-#define RDRAM_SBYTE(addr)	(*(s8 *)(((addr)^3)+g_pRDRAMu8))
-#define pRDRAM_UWORD(addr)	((uint32 *)((addr)+g_pRDRAMu8))
-#define pRDRAM_SWORD(addr)	((s32 *)((addr)+g_pRDRAMu8))
-#define pRDRAM_UHALF(addr)	((uint16 *)(((addr)^2)+g_pRDRAMu8))
-#define pRDRAM_SHALF(addr)	((short *)(((addr)^2)+g_pRDRAMu8))
-#define pRDRAM_UBYTE(addr)	((uint8 *)(((addr)^3)+g_pRDRAMu8))
-#define pRDRAM_SBYTE(addr)	((s8 *)(((addr)^3)+g_pRDRAMu8))
+#define RDRAM_UWORD(addr)	(*(uint32 *)((addr)+g_pu8RamBase))
+#define RDRAM_SWORD(addr)	(*(s32 *)((addr)+g_pu8RamBase))
+#define RDRAM_UHALF(addr)	(*(uint16 *)(((addr)^2)+g_pu8RamBase))
+#define RDRAM_SHALF(addr)	(*(short *)(((addr)^2)+g_pu8RamBase))
+#define RDRAM_UBYTE(addr)	(*(uint8 *)(((addr)^3)+g_pu8RamBase))
+#define RDRAM_SBYTE(addr)	(*(s8 *)(((addr)^3)+g_pu8RamBase))
+#define pRDRAM_UWORD(addr)	((uint32 *)((addr)+g_pu8RamBase))
+#define pRDRAM_SWORD(addr)	((s32 *)((addr)+g_pu8RamBase))
+#define pRDRAM_UHALF(addr)	((uint16 *)(((addr)^2)+g_pu8RamBase))
+#define pRDRAM_SHALF(addr)	((short *)(((addr)^2)+g_pu8RamBase))
+#define pRDRAM_UBYTE(addr)	((uint8 *)(((addr)^3)+g_pu8RamBase))
+#define pRDRAM_SBYTE(addr)	((s8 *)(((addr)^3)+g_pu8RamBase))
 
 extern uint16 g_wRDPTlut[];
 extern const char *textluttype[4];
@@ -624,7 +626,6 @@ void LoadMatrix(uint32 addr);
 ULONG ComputeCRC32(ULONG crc, const uint8 *buf, UINT len);
 
 void TriggerDPInterrupt();
-void TriggerSPInterrupt();
 uint32 DLParser_CheckUcode(uint32 ucStart, uint32 ucDStart, uint32 ucSize, uint32 ucDSize);
 
 bool IsUsedAsDI(uint32 addr);
@@ -633,13 +634,6 @@ bool IsUsedAsDI(uint32 addr);
 void __cdecl LOG_UCODE(LPCTSTR szFormat, ...);
 #else
 // VC7
-#if _MSC_VER >= 1300
 #define LOG_UCODE __noop
-#else
-inline void DL_PF_Noop() {}
-#define LOG_UCODE(x) DL_PF_Noop()
-#pragma warning(disable : 4002) 
 #endif
-#endif
-
 #endif	// __RICE_RDP_GFX_H__

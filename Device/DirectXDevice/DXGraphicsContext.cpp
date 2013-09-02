@@ -244,10 +244,7 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 	g_pD3DDev->GetDeviceCaps(&g_D3DDeviceCaps);
 
 	// Force to use Software T&L
-	if( options.bForceSoftwareTnL )
-		g_pD3DDev->SetSoftwareVertexProcessing(TRUE);
-	else
-		g_pD3DDev->SetSoftwareVertexProcessing(FALSE);
+	g_pD3DDev->SetSoftwareVertexProcessing(options.bForceSoftwareTnL ? TRUE : FALSE);
 
 	if( g_GraphicsInfo.hStatusBar )
 	{
@@ -703,7 +700,6 @@ HRESULT CDXGraphicsContext::AdjustWindowForChange()
     {
         // Set windowed-mode style - but disable resizing
         SetWindowLong( m_hWnd, GWL_STYLE, m_dwWindowStyle & (~(WS_THICKFRAME|WS_MAXIMIZEBOX)) );
-
 		if ( IsWindow(m_hWndStatus) )
 		{
 			SetWindowLong( m_hWndStatus, GWL_STYLE, m_dwStatusWindowStyle & (~SBARS_SIZEGRIP));
@@ -872,6 +868,7 @@ HRESULT CDXGraphicsContext::BuildDeviceList()
     // Pick a default device that can render into a window
     // (This code assumes that the HAL device comes before the REF
     // device in the device array).
+	m_bWindowed = true;
     for( int a=0; a<m_dwNumAdapters; a++ )
     {
         for( int d=0; d < m_Adapters[a].dwNumDevices; d++ )
@@ -893,7 +890,6 @@ int	CDXGraphicsContext::FindCurrentDisplayModeIndex()
 {
 	D3DDISPLAYMODE dMode;
 	D3DAdapterInfo &adapter = m_Adapters[m_dwAdapter];
-	//D3DDeviceInfo &device = adapter.devices[adapter.dwCurrentDevice];
 	D3DDeviceInfo &device = adapter.devices[options.DirectXDevice];
 	int m;
 
@@ -1152,7 +1148,7 @@ void CDXGraphicsContext::SaveSurfaceToFile(char *filenametosave, LPDIRECT3DSURFA
 
 	D3DSURFACE_DESC desc;
 	surf->GetDesc(&desc);
-	CDirectXTexture *dsttxtr = new CDirectXTexture(desc.Width, desc.Height, AS_NORMAL);
+	CTexture *dsttxtr = new CTexture(desc.Width, desc.Height, AS_NORMAL);
 
 	LPDIRECT3DSURFACE9 pDst;
 	dsttxtr->GetTexture()->GetSurfaceLevel(0,&pDst);
@@ -1297,7 +1293,27 @@ HRESULT CD3DDevWrapper::SetViewport(D3DVIEWPORT9* pViewport)
 		m_savedViewport.Height	= pViewport->Height;
 		m_savedViewport.MinZ	= pViewport->MinZ;
 		m_savedViewport.MaxZ	= pViewport->MaxZ;
-	
+
+		//Preliminary support for pillarboxing
+		if(windowSetting.uScreenScaleMode == 1)
+		{
+			float scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
+			int offset = (windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3) / 2;
+
+			pViewport->X = pViewport->X * scaleFactor + offset;
+			pViewport->Width = pViewport->Width * scaleFactor;
+		}
+		else if(windowSetting.uScreenScaleMode == 2)
+		{
+			if (pViewport->Width < windowSetting.uDisplayWidth * 0.9)
+			{
+				float scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
+                int offset = (windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3 - pViewport->Width * scaleFactor / 2) / 2 ;
+
+				pViewport->X = pViewport->X * scaleFactor + offset;
+			}
+		}
+
 		try
 		{
 			return m_pD3DDev->SetViewport(pViewport);
