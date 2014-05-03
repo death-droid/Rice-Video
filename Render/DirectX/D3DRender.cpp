@@ -26,12 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern FiddledVtx * g_pVtxBase;
 const int d3d_bias_factor = 4;
 
-inline float round( float x )
-{
-	return (float)(s32)( x + 0.5f );
-}
-
-
 //*****************************************************************************
 // Creator function for singleton
 //*****************************************************************************

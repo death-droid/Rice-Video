@@ -42,7 +42,7 @@ inline void RSP_Vtx_Clipping(int i)
 		{
 			float scaleFactor = 1.0f;
 			if(windowSetting.uScreenScaleMode == 1)
-				scaleFactor = (3.0 * windowSetting.uDisplayWidth) / (4.0 * windowSetting.uDisplayHeight);
+				scaleFactor = (3.0f * windowSetting.uDisplayWidth) / (4.0f * windowSetting.uDisplayHeight);
 
 			if( g_vecProjected[i].x > scaleFactor )   g_clipFlag2[i] |= X_CLIP_MAX;
 			if( g_vecProjected[i].x < -scaleFactor )  g_clipFlag2[i] |= X_CLIP_MIN;
@@ -683,7 +683,7 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	VTX_DUMP(TRACE4("  Trans: x=%f, y=%f, z=%f, w=%f",  g_vtxTransformed[dwV].x,g_vtxTransformed[dwV].y,g_vtxTransformed[dwV].z,g_vtxTransformed[dwV].w));
 	float scaleFactor = 1.0f;
 	if(windowSetting.uScreenScaleMode == 2)
-		scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
+		scaleFactor = (4.0f * windowSetting.uDisplayHeight) / (3.0f * windowSetting.uDisplayWidth);
 	v.x = g_vecProjected[dwV].x*gRSP.vtxXMul+gRSP.vtxXAdd*scaleFactor;
 	v.y = g_vecProjected[dwV].y*gRSP.vtxYMul+gRSP.vtxYAdd;
 	v.z = (g_vecProjected[dwV].z + 1.0f) * 0.5f;	// DirectX minZ=0, maxZ=1
@@ -2014,7 +2014,7 @@ void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT0_AMBIENT+dwLight, (float*)&c, 1 );
 	}
 
-	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
+//	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
 }
 
 void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)

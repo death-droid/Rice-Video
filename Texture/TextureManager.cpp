@@ -1146,10 +1146,10 @@ void ConvertTextureRGBAtoI(TxtrCacheEntry* pEntry, bool alpha)
 		uint32 val;
 		uint32 r,g,b,a,i;
 
-		for(int nY = 0; nY < srcInfo.dwCreatedHeight; nY++)
+		for(unsigned int nY = 0; nY < srcInfo.dwCreatedHeight; nY++)
 		{
 			buf = (uint32*)((uint8*)srcInfo.lpSurface+nY*srcInfo.lPitch);
-			for(int nX = 0; nX < srcInfo.dwCreatedWidth; nX++)
+			for(unsigned int nX = 0; nX < srcInfo.dwCreatedWidth; nX++)
 			{
 				val = buf[nX];
 				b = (val>>0)&0xFF;

@@ -1401,9 +1401,6 @@ void DLParser_SetTImg(MicroCodeCommand command)
 //Clean me up now
 void DLParser_TexRect(MicroCodeCommand command)
 {
-	MicroCodeCommand command2;
-	MicroCodeCommand command3;
-
 	if( !status.bCIBufferIsRendered ) 
 		g_pFrameBufferManager->ActiveTextureBuffer();
 
