@@ -1056,7 +1056,6 @@ inline void ReplaceAlphaWithFogFactor(int i)
 
 // Assumes dwAddr has already been checked!	
 // Don't inline - it's too big with the transform macros
-
 void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 	UpdateCombinedMatrix();

@@ -20,52 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "..\stdafx.h"
 
 CTextureManager gTextureManager;
-// Returns the first prime greater than or equal to nFirst
-inline LONG GetNextPrime(LONG nFirst)
-{
-	LONG nCurrent;
-
-	LONG i;
-
-	nCurrent = nFirst;
-
-	// Just make sure it's odd
-	if ((nCurrent % 2) == 0)
-		nCurrent++;
-
-	for (;;)
-	{
-		LONG nSqrtCurrent;
-		BOOL bIsComposite;
-
-		// nSqrtCurrent = nCurrent^0.5 + 1 (round up)
-		nSqrtCurrent = (LONG)sqrt((double)nCurrent) + 1;
-
-
-		bIsComposite = FALSE;
-		
-		// Test all odd numbers from 3..nSqrtCurrent
-		for (i = 3; i <= nSqrtCurrent; i+=2)
-		{
-			if ((nCurrent % i) == 0)
-			{
-				bIsComposite = TRUE;
-				break;
-			}
-		}
-
-		if (!bIsComposite)
-		{			
-			return nCurrent;
-		}
-
-		// Select next odd candidate...
-		nCurrent += 2;
-	}
-
-}
-
-
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -75,7 +29,6 @@ CTextureManager::CTextureManager() :
 	m_pCacheTxtrList(NULL),
 	m_numOfCachedTxtrList(809)
 {
-	m_numOfCachedTxtrList = GetNextPrime(800);
 
 	m_pCacheTxtrList = new TxtrCacheEntry *[m_numOfCachedTxtrList];
 	SAFE_CHECK(m_pCacheTxtrList);
@@ -97,7 +50,6 @@ CTextureManager::~CTextureManager()
 	delete []m_pCacheTxtrList;
 	m_pCacheTxtrList = NULL;	
 }
-
 
 //
 //  Delete all textures.
@@ -181,8 +133,10 @@ void CTextureManager::PurgeOldTextures()
 		
 		if ( status.gDlistCount - pCurr->FrameLastUsed > dwFramesToDelete && !TCacheEntryIsLoaded(pCurr) )
 		{
-			if (pPrev != NULL) pPrev->pNext        = pCurr->pNext;
-			else			   m_pHead = pCurr->pNext;
+			if (pPrev != NULL) 
+				pPrev->pNext = pCurr->pNext;
+			else			  
+				m_pHead = pCurr->pNext;
 			
 			delete pCurr;
 			pCurr = pNext;	
