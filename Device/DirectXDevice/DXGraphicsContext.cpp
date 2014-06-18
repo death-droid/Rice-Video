@@ -333,35 +333,24 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 		SetWindowText(g_GraphicsInfo.hStatusBar, "FSAA is turned off in order to use BackBuffer emulation");
 	}
 
-    if( m_bWindowed )
+
+	if( !m_FSAAIsEnabled )
+		m_d3dpp.SwapEffect = m_bWindowed ? D3DSWAPEFFECT_COPY : D3DSWAPEFFECT_FLIP;	// Always use COPY for window mode
+	else
+		m_d3dpp.SwapEffect		= D3DSWAPEFFECT_DISCARD;	// Anti-Aliasing mode
+	windowSetting.uDisplayWidth = m_bWindowed ? windowSetting.uWindowDisplayWidth : windowSetting.uFullScreenDisplayWidth;
+	windowSetting.uDisplayHeight = m_bWindowed ? windowSetting.uWindowDisplayHeight : windowSetting.uFullScreenDisplayHeight;
+
+	m_d3dpp.FullScreen_RefreshRateInHz = m_bWindowed ? 0 : windowSetting.uFullScreenRefreshRate;
+
+	if (m_d3dpp.FullScreen_RefreshRateInHz > m_displayMode.RefreshRate && !m_bWindowed)
 	{
-		if( !m_FSAAIsEnabled )
-			m_d3dpp.SwapEffect		= D3DSWAPEFFECT_COPY;	// Always use COPY for window mode
-		else
-			m_d3dpp.SwapEffect		= D3DSWAPEFFECT_DISCARD;	// Anti-Aliasing mode
-		windowSetting.uDisplayWidth = windowSetting.uWindowDisplayWidth;
-		windowSetting.uDisplayHeight= windowSetting.uWindowDisplayHeight;
+		m_d3dpp.FullScreen_RefreshRateInHz = m_displayMode.RefreshRate;
+		windowSetting.uFullScreenRefreshRate = m_displayMode.RefreshRate;
+	}
 
-		m_d3dpp.FullScreen_RefreshRateInHz = 0;
-    }
-    else
-    {
-		if( !m_FSAAIsEnabled )
-			m_d3dpp.SwapEffect		= D3DSWAPEFFECT_FLIP;
-		else
-			m_d3dpp.SwapEffect		= D3DSWAPEFFECT_DISCARD;	// Anti-Aliasing mode
-		windowSetting.uDisplayWidth = windowSetting.uFullScreenDisplayWidth;
-		windowSetting.uDisplayHeight = windowSetting.uFullScreenDisplayHeight;
-		m_d3dpp.FullScreen_RefreshRateInHz = windowSetting.uFullScreenRefreshRate;
-		if (m_d3dpp.FullScreen_RefreshRateInHz > m_displayMode.RefreshRate)
-		{
-			m_d3dpp.FullScreen_RefreshRateInHz = m_displayMode.RefreshRate;
-			windowSetting.uFullScreenRefreshRate = m_displayMode.RefreshRate;
-		}
-    }
-
-	m_d3dpp.BackBufferWidth	 = windowSetting.uDisplayWidth;
-	m_d3dpp.BackBufferHeight = windowSetting.uDisplayHeight;
+	m_d3dpp.BackBufferWidth = m_bWindowed ? 0 : windowSetting.uDisplayWidth;
+	m_d3dpp.BackBufferHeight = m_bWindowed ? 0 : windowSetting.uDisplayHeight;
 
     // Create the device
 	if(!SUCCEEDED(m_pD3D->CreateDevice(
