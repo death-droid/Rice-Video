@@ -97,13 +97,10 @@ protected:
 	RECT				m_rcWindowBounds;
 
 	DEVMODEA			m_DMsaved;
-	
-    char				m_strDeviceStats[256];
-	
+
 public:
 	static CGraphicsContext *g_pGraphicsContext;
 	static CGraphicsContext * Get(void);
-	inline const char* GetDeviceStr() {return m_strDeviceStats;}
 	static bool needCleanScene;
 };
 

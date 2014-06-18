@@ -102,8 +102,6 @@ const SettingInfo TextureEnhancementSettings[] =
 	"HQ2xS", TEXTURE_HQ2XS_ENHANCEMENT,
 };
 
-const char*	strDXDeviceDescs[] = { "HAL", "REF" };
-
 
 /*
 *	Constants
@@ -1569,20 +1567,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 	case WM_INITDIALOG:
 		g_hwndDlg = hDlg;
 		EnumChildWndTooltip();
-
-		{
-			D3DADAPTER_IDENTIFIER9 &identifier = CDXGraphicsContext::GetAdapterInfo().d3dAdapterIdentifier;
-			LONG high = identifier.DriverVersion.HighPart;
-			LONG low = identifier.DriverVersion.LowPart;
-
-			sprintf(generalText, "Adapter: %s HAL, Driver Version: %d.%d.%d.%d", identifier.Description, (high>>16), (high&0xFFFF), (low>>16), (low&0xFFFF));
-			SendDlgItemMessage(hDlg, IDC_DX_ADAPTER_TEXT, WM_SETTEXT, NULL, (LPARAM)generalText );
-		}
-
-		SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_RESETCONTENT, 0, 0);
-		SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_INSERTSTRING, 0, (LPARAM) (strDXDeviceDescs[0]));
-		SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_INSERTSTRING, 1, (LPARAM) (strDXDeviceDescs[1]));
-		SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_SETCURSEL, options.DirectXDevice, 0);
 
 		SendDlgItemMessage(hDlg, IDC_SOFTWARE_TNL, BM_SETCHECK, options.bForceSoftwareTnL ? BST_CHECKED : BST_UNCHECKED, 0);
 

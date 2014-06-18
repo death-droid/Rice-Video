@@ -34,61 +34,6 @@ enum APPMSGTYPE { MSG_NONE, MSGERR_APPMUSTEXIT, MSGWARN_SWITCHEDTOREF };
 #define D3DAPPERR_NONZEROREFCOUNT     0x8200000a
 #define D3DAPPERR_RESIZEFAILED        0x8200000c
 
-//-----------------------------------------------------------------------------
-// Name: struct D3DModeInfo
-// Desc: Structure for holding information about a display mode
-//-----------------------------------------------------------------------------
-struct D3DModeInfo //BACKTOME
-{
-    uint32      Width;      // Screen width in this mode
-    uint32      Height;     // Screen height in this mode
-    D3DFORMAT  Format;     // Pixel format in this mode
-    uint32	   RefreshRate;     // Pixel format in this mode
-    D3DFORMAT  DepthStencilFormat; // Which depth/stencil format to use with this mode
-};
-
-//-----------------------------------------------------------------------------
-// Name: struct D3DDeviceInfo
-// Desc: Structure for holding information about a Direct3D device, including
-//       a list of modes compatible with this device
-//-----------------------------------------------------------------------------
-struct D3DDeviceInfo
-{
-    // Device data
-    D3DDEVTYPE   DeviceType;      // Reference, HAL, etc.
-    D3DCAPS9     d3dCaps;         // Capabilities of this device
-    const TCHAR* strDesc;         // Name of this device
-    bool		 bCanDoWindowed;  // Whether this device can work in windowed mode
-	
-    // Modes for this device
-    int			dwNumModes;
-    D3DModeInfo  modes[150];
-	
-    // Current state
-    bool		bWindowed;
-    D3DMULTISAMPLE_TYPE MultiSampleType;
-};
-
-//-----------------------------------------------------------------------------
-// Name: struct D3DAdapterInfo
-// Desc: Structure for holding information about an adapter, including a list
-//       of devices available on this adapter
-//-----------------------------------------------------------------------------
-struct D3DAdapterInfo
-{
-    // Adapter data
-    D3DADAPTER_IDENTIFIER9 d3dAdapterIdentifier;
-    D3DDISPLAYMODE d3ddmDesktop;      // Desktop display mode for this adapter
-	
-    // Devices for this adapter
-    int				dwNumDevices;
-    D3DDeviceInfo  devices[5];
-	
-    // Current state
-    int				dwCurrentDevice;
-};
-
-
 struct TxtrCacheEntry;
 
 // Implementation
@@ -109,16 +54,11 @@ public:
 	virtual void SaveSurfaceToFile(char *filenametosave, LPDIRECT3DSURFACE9 surf, bool bShow = true);
 
 	int ToggleFullscreen();		// return 0 as the result is windowed
-	D3DFORMAT GetFormat() {return m_desktopFormat;}
 	static bool IsResultGood(HRESULT hr, bool displayError = false);
 	static void InitDeviceParameters();
-	static D3DAdapterInfo& GetAdapterInfo()	{return m_1stAdapters;}
 
 protected:
 	friend class DirectXDeviceBuilder;
-
-	HRESULT BuildDeviceList();
-	int		FindCurrentDisplayModeIndex();
 
 	HRESULT Create3D( BOOL bWindowed );
 	HRESULT InitializeD3D();
@@ -133,15 +73,13 @@ protected:
 	HRESULT CleanDeviceObjects();
 
 	bool	CreateFontObjects();
-	bool	DrawText(char *str, RECT &rect, int alignment=0);
 
 	// Device information
 	static int				m_dwNumAdapters;
-	static D3DAdapterInfo	m_1stAdapters;
 	static D3DCAPS9			m_d3dCaps;           // Caps for the device
 	static bool				m_bSupportAnisotropy;
 	static HRESULT			DisplayD3DErrorMsg( HRESULT hr, uint32 dwType );
-
+	static D3DDISPLAYMODE	m_displayMode;
 
 	// Graphic context
 	LPDIRECT3D9			m_pD3D;
@@ -151,18 +89,10 @@ protected:
 
     D3DSURFACE_DESC		m_d3dsdBackBuffer;   // Surface desc of the backbuffer
 	
-	uint32				m_dwAdapter;
-	
 	uint32				m_dwMinDepthBits;
 	uint32				m_dwMinStencilBits;
-	D3DAdapterInfo		m_Adapters[10];
-
-	D3DFORMAT			m_desktopFormat;
 
 	bool				m_FSAAIsEnabled;
-
-	HFONT				m_hFont;
-	ID3DXFont*			m_pID3DFont;
 };
 
 #define MAX_RENDER_STATE					152

@@ -51,8 +51,6 @@ void SetVtx(TLITVERTEX &v, TLITVERTEX &v1, TLITVERTEX &v2, float r)
 	}
 }
 
-
-
 void SwapVertexPos(int firstidx)
 {
 	TLITVERTEX &v1 = g_vtxBuffer[firstidx];

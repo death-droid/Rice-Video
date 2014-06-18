@@ -1462,8 +1462,8 @@ void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val)
 		break;
 	case RSP_MV_WORD_OFFSET_POINT_XYSCREEN:		// Modify X,Y
 		{
-			uint16 x = (uint16)(val>>16) / 4.0f;
-			uint16 y = (uint16)(val & 0xFFFF) / 4.0f;
+			uint16 x = (uint16)(val>>16) / 4;
+			uint16 y = (uint16)(val & 0xFFFF) / 4;
 			// Should do viewport transform
 
 			x -= windowSetting.uViWidth/2;
