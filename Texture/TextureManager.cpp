@@ -29,7 +29,7 @@ CTextureManager::CTextureManager() :
 	m_pCacheTxtrList(NULL),
 	m_numOfCachedTxtrList(809)
 {
-
+	//Instantiate our cachelist
 	m_pCacheTxtrList = new TxtrCacheEntry *[m_numOfCachedTxtrList];
 	SAFE_CHECK(m_pCacheTxtrList);
 
@@ -45,9 +45,12 @@ CTextureManager::CTextureManager() :
 
 CTextureManager::~CTextureManager()
 {
+	//Call cleanup so we safely kill off all textures
 	CleanUp();
 
+	//Delete our list of textures
 	delete []m_pCacheTxtrList;
+	//And ensure its NULL
 	m_pCacheTxtrList = NULL;	
 }
 
@@ -56,13 +59,17 @@ CTextureManager::~CTextureManager()
 //
 bool CTextureManager::CleanUp()
 {
+	//Wait what do we actually need to recycle them if where just going to delete them all?
 	RecycleAllTextures();
 
+	//Loop through our linked list
 	while (m_pHead)
 	{
+		//Grab the head every go
 		TxtrCacheEntry * pVictim = m_pHead;
+		//Set the head to our next entry
 		m_pHead = pVictim->pNext;
-
+		//Delete it
 		delete pVictim;
 	}
 
@@ -93,6 +100,7 @@ bool CTextureManager::TCacheEntryIsLoaded(TxtrCacheEntry *pEntry)
 // Check here
 void CTextureManager::PurgeOldTextures()
 {
+	//Dont bother if our cache list doesnt exist
 	if (m_pCacheTxtrList == NULL)
 		return;
 
@@ -173,11 +181,14 @@ void CTextureManager::RecycleAllTextures()
 
 void CTextureManager::RecheckHiresForAllTextures()
 {
+	//Only continue if we currently have a list
 	if (m_pCacheTxtrList == NULL)
 		return;
 
+	//Loop through our list but only at the amount we allow at a maximum
 	for (uint32 i = 0; i < m_numOfCachedTxtrList; i++)
 	{
+		//While we actually have an entry that exists
 		while (m_pCacheTxtrList[i])
 		{
 			TxtrCacheEntry *pTVictim = m_pCacheTxtrList[i];
@@ -188,10 +199,10 @@ void CTextureManager::RecheckHiresForAllTextures()
 	}
 }
 
-
 // Add to the recycle list
 void CTextureManager::RecycleTexture(TxtrCacheEntry *pEntry)
 {
+	//Whooooops entry doesnt exist
 	if (pEntry->pTexture == NULL)
 	{
 		// No point in saving!
@@ -206,6 +217,7 @@ void CTextureManager::RecycleTexture(TxtrCacheEntry *pEntry)
 
 		SAFE_DELETE(pEntry->pEnhancedTexture);
 
+		//Push us to the front by making us the current head
 		m_pHead = pEntry;
 	}
 }
@@ -219,17 +231,20 @@ TxtrCacheEntry * CTextureManager::ReviveTexture( uint32 width, uint32 height )
 	pPrev = NULL;
 	pCurr = m_pHead;
 	
+	//While we currently have a entry, keep going
 	while (pCurr)
 	{
+		//We will only revive the texture if its the same width and height
 		if (pCurr->ti.WidthToCreate == width &&
 			pCurr->ti.HeightToCreate == height)
 		{
-			// Remove from list
+			// If this is not the first entry then set it the previous entrys, next pointer to our current one
 			if (pPrev != NULL)
 				pPrev->pNext = pCurr->pNext;
-			else			   
+			else
 				m_pHead = pCurr->pNext;
 			
+			//Return the current entry where iterated on
 			return pCurr;
 		}
 		
@@ -249,13 +264,13 @@ uint32 CTextureManager::Hash(uint32 dwValue)
 
 void CTextureManager::AddTexture(TxtrCacheEntry *pEntry)
 {	
+	//Procude a hash for our texture
 	uint32 dwKey = Hash(pEntry->ti.Address);
 	
+	//We only can proceed if the cache list exists
 	if (m_pCacheTxtrList == NULL)
 		return;
-	
-	TxtrCacheEntry **p = &m_pCacheTxtrList[dwKey];
-	
+
 	// Add to head (not tail, for speed - new textures are more likely to be accessed next)
 	pEntry->pNext = m_pCacheTxtrList[dwKey];
 	m_pCacheTxtrList[dwKey] = pEntry;
@@ -326,14 +341,17 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 
 	if (pEntry == NULL)
 	{
-		// Couldn't find on - recreate!
+		// Couldn't find one - recreate!
 		pEntry = new TxtrCacheEntry;
 		if (pEntry == NULL)
 		{
+			//Whoops something odd has happend here :O Couldnt create a new entry
 			return NULL;
 		}
-
+		//Create a new directX texture at our required width and height!
 		pEntry->pTexture = new CTexture(dwWidth, dwHeight);
+		
+		//Uhhh oh if any of this is NULL, we have a problem
 		if (pEntry->pTexture == NULL || pEntry->pTexture->GetTexture() == NULL)
 			TRACE2("Warning, unable to create %d x %d texture!", dwWidth, dwHeight);
 	}
@@ -463,7 +481,6 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		pStart = (uint8*)pgti->PalAddress+dwOffset*2;
 
 		uint32 dwAsmCRCSave = dwAsmCRC;
-		//dwPalCRC = CalculateRDRAMCRC(pStart, 0, 0, dwPalSize, 1, TXT_SIZE_16b, dwPalSize*2);
 		dwPalCRC = CalculateRDRAMCRC(pStart, 0, 0, maxCI+1, 1, TXT_SIZE_16b, dwPalSize*2);
 		dwAsmCRC = dwAsmCRCSave;
 	}
@@ -517,13 +534,8 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 
 			return pEntry;
 		}
-		else
-		{
-			; //Do something
-		}
 	}
-
-	if (pEntry == NULL)
+	else
 	{
 		// We need to create a new entry, and add it
 		//  to the hash table.
