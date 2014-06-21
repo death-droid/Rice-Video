@@ -65,21 +65,20 @@ bool D3DRender::ClearDeviceObjects()
 bool D3DRender::InitDeviceObjects()
 {
 	// We never change these
-	gD3DDevWrapper.SetRenderState( D3DRS_DITHERENABLE, TRUE ); // Re-enabled by Orkin - Makes 16-bit look nicer
+	gD3DDevWrapper.SetRenderState( D3DRS_DITHERENABLE, FALSE ); //DIsabled, we shouldnt need to deal with 16-bit anymore
 
 	// We do our own culling
 	gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_NONE );
 
 	// We do our own lighting
-	gD3DDevWrapper.SetRenderState(  D3DRS_AMBIENT, COLOR_RGBA(255,255,255,255) );
+	gD3DDevWrapper.SetRenderState( D3DRS_AMBIENT, COLOR_RGBA(255,255,255,255) );
 	gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING,	  FALSE);
-
 
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
 	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 
-	gD3DDevWrapper.SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	gD3DDevWrapper.SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 	gD3DDevWrapper.SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 	
 	if( ((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->IsFSAAEnable() )
@@ -99,7 +98,7 @@ bool D3DRender::InitDeviceObjects()
 	gD3DDevWrapper.SetRenderState( D3DRS_FOGTABLEMODE, D3DFOG_NONE );
 
     gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE );
-    gD3DDevWrapper.SetRenderState(D3DRS_ALPHAREF,0x04 );
+    gD3DDevWrapper.SetRenderState(D3DRS_ALPHAREF, 0x04);
     gD3DDevWrapper.SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL );
 
 	m_Mux = 0;
@@ -157,7 +156,6 @@ bool D3DRender::InitDeviceObjects()
 	g_pD3DDev->SetClipStatus(&clippingstatus);
 	g_pD3DDev->GetClipStatus(&clippingstatus);
 	g_pD3DDev->SetRenderState(D3DRS_CLIPPING, TRUE);
-
 
 	return true;	
 }

@@ -27,7 +27,6 @@ LPDIRECT3DVERTEXSHADER9 gVertexShader = NULL;
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
-int				CDXGraphicsContext::m_dwNumAdapters;
 D3DCAPS9		CDXGraphicsContext::m_d3dCaps;           // Caps for the device
 D3DDISPLAYMODE CDXGraphicsContext::m_displayMode;
 bool			CDXGraphicsContext::m_bSupportAnisotropy;
@@ -35,8 +34,6 @@ bool			CDXGraphicsContext::m_bSupportAnisotropy;
 CDXGraphicsContext::CDXGraphicsContext() :
 	m_pd3dDevice(NULL),
 	m_pD3D(NULL),
-	m_dwMinDepthBits(16),
-	m_dwMinStencilBits(0),
 	m_FSAAIsEnabled(false)
 {
 }

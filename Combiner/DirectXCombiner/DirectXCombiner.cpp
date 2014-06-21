@@ -414,7 +414,7 @@ int CDirectXPixelShaderCombiner::GeneratePixelShaderFromMux(void)
 	PixelShaderEntry newEntry;
 	newEntry.mux64 = m_pD3DRender->m_Mux;
 
-	HRESULT e =D3DXAssembleShader( m_textBuf, strlen(m_textBuf),  0, NULL, NULL, &(newEntry.pVS), NULL );
+	HRESULT e = D3DXAssembleShader( m_textBuf, strlen(m_textBuf),  0, NULL, NULL, &(newEntry.pVS), NULL );
 	if( e != S_OK )
 	{
 #ifdef _DEBUG
@@ -557,7 +557,6 @@ void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE);
 	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,FALSE);
 	
-	//SetNumStages(0);
 	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = true;
 
 	gD3DDevWrapper.SetTexture( 0, g_textures[tile].m_lpsTexturePtr );

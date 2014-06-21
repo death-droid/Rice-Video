@@ -75,7 +75,6 @@ protected:
 	bool	CreateFontObjects();
 
 	// Device information
-	static int				m_dwNumAdapters;
 	static D3DCAPS9			m_d3dCaps;           // Caps for the device
 	static bool				m_bSupportAnisotropy;
 	static HRESULT			DisplayD3DErrorMsg( HRESULT hr, uint32 dwType );
@@ -88,9 +87,6 @@ protected:
 	D3DPRESENT_PARAMETERS m_d3dpp;
 
     D3DSURFACE_DESC		m_d3dsdBackBuffer;   // Surface desc of the backbuffer
-	
-	uint32				m_dwMinDepthBits;
-	uint32				m_dwMinStencilBits;
 
 	bool				m_FSAAIsEnabled;
 };
