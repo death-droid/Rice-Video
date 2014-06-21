@@ -520,6 +520,10 @@ void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.CullBack	= gGeometryMode.GBI1_CullBack;
 
 	CRender::g_pRender->SetFogEnable(gRDP.tnl.Fog);
+	if (gRDP.tnl.Shade)
+		CRender::g_pRender->SetShadeMode(SHADE_SMOOTH);
+	else
+		CRender::g_pRender->SetShadeMode(SHADE_FLAT);
 }
 
 void RSP_GBI1_EndDL(MicroCodeCommand command)

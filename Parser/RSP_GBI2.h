@@ -488,6 +488,10 @@ void RSP_GBI2_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.PointLight = gGeometryMode.GBI2_PointLight;
 
 	CRender::g_pRender->SetFogEnable( gRDP.tnl.Fog );
+	if (gRDP.tnl.Shade)
+		CRender::g_pRender->SetShadeMode(SHADE_SMOOTH);
+	else
+		CRender::g_pRender->SetShadeMode(SHADE_FLAT);
 }
 
 
