@@ -360,10 +360,10 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 		ApplyRDPScissor();
 		TurnFogOnOff(false);
 		res = RenderFillRect(dwColor, depth);
-		TurnFogOnOff(gRSP.bFogEnabled);
+		TurnFogOnOff(gRDP.tnl.Fog);
 
 		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			ZBufferEnable(gRSP.bZBufferEnabled);
+			ZBufferEnable(gRDP.tnl.Zbuffer);
 	}
 
 	if( options.bWinFrameMode )	SetFillMode(RICE_FILLMODE_WINFRAME );
@@ -776,11 +776,11 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		res = RenderTexRect();
 	}
 
-	TurnFogOnOff(gRSP.bFogEnabled);
+	TurnFogOnOff(gRDP.tnl.Fog);
 
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY || !gRDP.otherMode.z_cmp  )
 	{
-		ZBufferEnable(gRSP.bZBufferEnabled);
+		ZBufferEnable(gRDP.tnl.Zbuffer);
 	}
 
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((eventToPause == NEXT_FLUSH_TRI || eventToPause == NEXT_TEXTRECT), {
@@ -870,10 +870,10 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 	ApplyRDPScissor();
 	bool res = RenderTexRect();
 
-	TurnFogOnOff(gRSP.bFogEnabled);
+	TurnFogOnOff(gRDP.tnl.Fog);
 
 	// Restore state
-	ZBufferEnable( gRSP.bZBufferEnabled );
+	ZBufferEnable( gRDP.tnl.Zbuffer );
 
 	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((eventToPause == NEXT_FLUSH_TRI || eventToPause == NEXT_TEXTRECT), {
 		DebuggerAppendMsg("TexRectFlip: tile=%d, X0=%d, Y0=%d, X1=%d, Y1=%d,\nfS0=%f, fT0=%f, nfS1=%f, fT1=%f\n",
@@ -1042,11 +1042,11 @@ void CRender::SetTextureScale(int dwTile,  float fScaleX, float fScaleY)
 
 void CRender::SetFogFlagForNegativeW()
 {
-	if( !gRSP.bFogEnabled )	return;
+	if( !gRDP.tnl.Fog )	return;
 
-	m_bFogStateSave = gRSP.bFogEnabled;
+	m_bFogStateSave = gRDP.tnl.Fog;
 
-	bool flag=gRSP.bFogEnabled;
+	bool flag=gRDP.tnl.Fog;
 	
 	for (uint32 i = 0; i < gRSP.numVertices; i++) 
 	{
@@ -1059,7 +1059,7 @@ void CRender::SetFogFlagForNegativeW()
 
 void CRender::RestoreFogFlag()
 {
-	if( !gRSP.bFogEnabled )	return;
+	if( !gRDP.tnl.Fog )	return;
 	TurnFogOnOff(m_bFogStateSave);
 }
 
@@ -1159,7 +1159,7 @@ bool CRender::DrawTriangles()
 		status.bFrameBufferDrawnByTriangles = true;
 	}
 
-	if( !gRDP.bFogEnableInBlender && gRSP.bFogEnabled )
+	if( !gRDP.bFogEnableInBlender && gRDP.tnl.Fog )
 	{
 		TurnFogOnOff(false);
 	}
@@ -1282,7 +1282,7 @@ bool CRender::DrawTriangles()
 		if( logCombiners ) m_pColorCombiner->DisplayMuxString();
 	});
 
-	if( !gRDP.bFogEnableInBlender && gRSP.bFogEnabled )
+	if( !gRDP.bFogEnableInBlender && gRDP.tnl.Fog )
 	{
 		TurnFogOnOff(true);
 	}
@@ -1901,7 +1901,7 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 	}
 
 	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
-		gRSP.bCullFront && gRDP.otherMode.aa_en && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd )
+		gRDP.tnl.TriCull && gRDP.otherMode.aa_en && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd)
 	{
 		SetZCompare(FALSE);
 	}

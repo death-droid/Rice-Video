@@ -375,14 +375,14 @@ void DumpOtherMode()
 	DebuggerAppendMsg( "\tpipeline:\t\t%s", gRDP.otherMode.atomic_prim ? "1Primitive" : "NPrimitive" );
 
 	DebuggerAppendMsg("\n\nSP render flags:");
-	DebuggerAppendMsg("\tCull mode: %s%s", gRSP.bCullFront?"Cull Front":"", gRSP.bCullBack?" Cull Back":"");
+	DebuggerAppendMsg("\tCull mode: %s%s", gRDP.tnl.CullTri?"Cull Front":"", gRDP.tnl.cullBack?" Cull Back":"");
 	DebuggerAppendMsg("\tShade mode: %d", gRSP.shadeMode);
-	DebuggerAppendMsg("\tFog: %s", gRSP.bFogEnabled?"enabled":"disabled");
-	DebuggerAppendMsg("\tZbuffer in SP: %s", gRSP.bZBufferEnabled?"enabled":"disabled");
-	DebuggerAppendMsg("\tLighting: %s", gRSP.bLightingEnable?"enabled":"disabled");
+	DebuggerAppendMsg("\tFog: %s", gRDP.tnl.Fog?"enabled":"disabled");
+	DebuggerAppendMsg("\tZbuffer in SP: %s", gRDP.tnl.Zbuffer?"enabled":"disabled");
+	DebuggerAppendMsg("\tLighting: %s", gRDP.tnl.Light?"enabled":"disabled");
 	DebuggerAppendMsg("\\Number of lights: %d", gRSPnumLights);
-	DebuggerAppendMsg("\tTexture Gen: %s", gRSP.bTextureGen?"enabled":"disabled");
-	DebuggerAppendMsg("\tTexture Gen Linear: %s", (gRDP.geometryMode & G_TEXTURE_GEN_LINEAR)?"enabled":"disabled");
+	DebuggerAppendMsg("\tTexture Gen: %s", gRDP.tnl.TexGen?"enabled":"disabled");
+	DebuggerAppendMsg("\tTexture Gen Linear: %s", (gRDP.tnl.TexGenLin)?"enabled":"disabled");
 }
 
 void DumpCachedTexture(uint32 index)

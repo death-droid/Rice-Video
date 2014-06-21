@@ -471,67 +471,23 @@ void RSP_GBI2_PopMtx(MicroCodeCommand command)
 
 void RSP_GBI2_GeometryMode(MicroCodeCommand command)
 {
-	uint32 dwAnd = ((command.inst.cmd0)) & 0x00FFFFFF;
-	uint32 dwOr  = ((command.inst.cmd1)) & 0x00FFFFFF;
+	gGeometryMode._u32	&= command.inst.cmd0;
+	gGeometryMode._u32  |= command.inst.cmd1;
 
-#ifdef _DEBUG
-		LOG_UCODE("    0x%08x 0x%08x =(x & 0x%08x) | 0x%08x", command.inst.cmd0, command.inst.cmd1, dwAnd, dwOr);
+	gRDP.tnl._u32 = 0;
 
-		if ((~dwAnd) & RSP_ZELDA_ZBUFFER)					LOG_UCODE("  Disabling ZBuffer");
-		//	if ((~dwAnd) & RSP_ZELDA_TEXTURE_ENABLE)			LOG_UCODE("  Disabling Texture");
-		//	if ((~dwAnd) & RSP_ZELDA_SHADE)					LOG_UCODE("  Disabling Shade");
-		if ((~dwAnd) & RSP_ZELDA_SHADING_SMOOTH)			LOG_UCODE("  Disabling Flat Shading");
-		if ((~dwAnd) & RSP_ZELDA_CULL_FRONT)				LOG_UCODE("  Disabling Front Culling");
-		if ((~dwAnd) & RSP_ZELDA_CULL_BACK)				LOG_UCODE("  Disabling Back Culling");
-		if ((~dwAnd) & RSP_ZELDA_FOG)						LOG_UCODE("  Disabling Fog");
-		if ((~dwAnd) & RSP_ZELDA_LIGHTING)				LOG_UCODE("  Disabling Lighting");
-		if ((~dwAnd) & RSP_ZELDA_TEXTURE_GEN)				LOG_UCODE("  Disabling Texture Gen");
-		if ((~dwAnd) & RSP_ZELDA_TEXTURE_GEN_LINEAR)		LOG_UCODE("  Disabling Texture Gen Linear");
-		//	if ((~dwAnd) & RSP_ZELDA_LOD)						LOG_UCODE("  Disabling LOD (no impl)");
+	gRDP.tnl.Light		= gGeometryMode.GBI2_Lighting;
+	gRDP.tnl.TexGen		= gGeometryMode.GBI2_TexGen;
+	gRDP.tnl.TexGenLin	= gGeometryMode.GBI2_TexGenLin;
+	gRDP.tnl.Fog		= gGeometryMode.GBI2_Fog;
+	gRDP.tnl.Shade		= !(gGeometryMode.GBI2_TexGenLin);
+	gRDP.tnl.Zbuffer	= gGeometryMode.GBI2_Zbuffer;
 
-		if (dwOr & RSP_ZELDA_ZBUFFER)						LOG_UCODE("  Enabling ZBuffer");
-		//	if (dwOr & RSP_ZELDA_TEXTURE_ENABLE)				LOG_UCODE("  Enabling Texture");
-		//	if (dwOr & RSP_ZELDA_SHADE)						LOG_UCODE("  Enabling Shade");
-		if (dwOr & RSP_ZELDA_SHADING_SMOOTH)				LOG_UCODE("  Enabling Flat Shading");
-		if (dwOr & RSP_ZELDA_CULL_FRONT)					LOG_UCODE("  Enabling Front Culling");
-		if (dwOr & RSP_ZELDA_CULL_BACK)					LOG_UCODE("  Enabling Back Culling");
-		if (dwOr & RSP_ZELDA_FOG)							LOG_UCODE("  Enabling Fog");
-		if (dwOr & RSP_ZELDA_LIGHTING)					LOG_UCODE("  Enabling Lighting");
-		if (dwOr & RSP_ZELDA_TEXTURE_GEN)					LOG_UCODE("  Enabling Texture Gen");
-		if (dwOr & RSP_ZELDA_TEXTURE_GEN_LINEAR)			LOG_UCODE("  Enabling Texture Gen Linear");
-		//	if (dwOr & RSP_ZELDA_LOD)							LOG_UCODE("  Enabling LOD (no impl)");
-#endif // _DEBUG
+	gRDP.tnl.TriCull = gGeometryMode.GBI2_CullFront;// | gGeometryMode.GBI2_CullBack;
+	gRDP.tnl.CullBack	= gGeometryMode.GBI2_CullBack;
+	gRDP.tnl.PointLight = gGeometryMode.GBI2_PointLight;
 
-		gRDP.geometryMode &= dwAnd;
-	gRDP.geometryMode |= dwOr;
-
-
-	bool bCullFront		= (gRDP.geometryMode & RSP_ZELDA_CULL_FRONT) ? true : false;
-	bool bCullBack		= (gRDP.geometryMode & RSP_ZELDA_CULL_BACK) ? true : false;
-	
-	BOOL bShade			= (gRDP.geometryMode & G_SHADE) ? TRUE : FALSE;
-	//BOOL bFlatShade		= (gRDP.geometryMode & RSP_ZELDA_SHADING_SMOOTH) ? TRUE : FALSE;
-	BOOL bFlatShade		= (gRDP.geometryMode & RSP_ZELDA_TEXTURE_GEN_LINEAR) ? TRUE : FALSE;
-	if( options.enableHackForGames == HACK_FOR_TIGER_HONEY_HUNT )
-		bFlatShade		= FALSE;
-	
-	bool bFog			= (gRDP.geometryMode & RSP_ZELDA_FOG) ? true : false;
-	bool bTextureGen	= (gRDP.geometryMode & RSP_ZELDA_TEXTURE_GEN) ? true : false;
-
-	bool bLighting      = (gRDP.geometryMode & RSP_ZELDA_LIGHTING) ? true : false;
-	BOOL bZBuffer		= (gRDP.geometryMode & RSP_ZELDA_ZBUFFER)	? TRUE : FALSE;	
-
-	CRender::g_pRender->SetCullMode(bCullFront, bCullBack);
-	
-	//if (bFlatShade||!bShade)	CRender::g_pRender->SetShadeMode( SHADE_FLAT );
-	if (bFlatShade)	CRender::g_pRender->SetShadeMode( SHADE_FLAT );
-	else			CRender::g_pRender->SetShadeMode( SHADE_SMOOTH );
-	
-	SetTextureGen(bTextureGen);
-
-	SetLighting( bLighting );
-	CRender::g_pRender->ZBufferEnable( bZBuffer );
-	CRender::g_pRender->SetFogEnable( bFog );
+	CRender::g_pRender->SetFogEnable( gRDP.tnl.Fog );
 }
 
 

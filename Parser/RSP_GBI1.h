@@ -497,31 +497,29 @@ void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 	uint32 dwMask = (command.inst.cmd1);
 	if(command.inst.cmd & 1)
 	{
-		gRDP.geometryMode |= dwMask;
+		gGeometryMode._u32 |= dwMask;
 		LOG_UCODE("Setting mask -> 0x%08x", dwMask);
 	}
 	else
 	{
-		gRDP.geometryMode &= ~dwMask;
+		gGeometryMode._u32 &= ~dwMask;
 		LOG_UCODE("Clearing mask -> 0x%08x", dwMask);
 	}
 	
-	RSP_GFX_InitGeometryMode();
+	gRDP.tnl._u32 = 0;
 
-#ifdef _DEBUG
-	
-	if (dwMask & G_ZBUFFER)						LOG_UCODE("  Enabling ZBuffer");
-	if (dwMask & G_TEXTURE_ENABLE)				LOG_UCODE("  Enabling Texture");
-	if (dwMask & G_SHADE)						LOG_UCODE("  Enabling Shade");
-	if (dwMask & G_SHADING_SMOOTH)				LOG_UCODE("  Enabling Smooth Shading");
-	if (dwMask & G_CULL_FRONT)					LOG_UCODE("  Enabling Front Culling");
-	if (dwMask & G_CULL_BACK)					LOG_UCODE("  Enabling Back Culling");
-	if (dwMask & G_FOG)							LOG_UCODE("  Enabling Fog");
-	if (dwMask & G_LIGHTING)					LOG_UCODE("  Enabling Lighting");
-	if (dwMask & G_TEXTURE_GEN)					LOG_UCODE("  Enabling Texture Gen");
-	if (dwMask & G_TEXTURE_GEN_LINEAR)			LOG_UCODE("  Enabling Texture Gen Linear");
-	if (dwMask & G_LOD)							LOG_UCODE("  Enabling LOD (no impl)");
-#endif // _DEBUG
+	gRDP.tnl.Light		= gGeometryMode.GBI1_Lighting;
+	gRDP.tnl.TexGen		= gGeometryMode.GBI1_TexGen;
+	gRDP.tnl.TexGenLin	= gGeometryMode.GBI1_TexGenLin;
+	gRDP.tnl.Fog		= gGeometryMode.GBI1_Fog;
+	gRDP.tnl.Shade		= gGeometryMode.GBI1_Shade;
+	gRDP.tnl.Zbuffer	= gGeometryMode.GBI1_Zbuffer;
+
+	//CUll back needs to take priority to ensure MOrtal Kombat 4 works properly
+	gRDP.tnl.TriCull = gGeometryMode.GBI1_CullFront;// | gGeometryMode.GBI1_CullBack;
+	gRDP.tnl.CullBack	= gGeometryMode.GBI1_CullBack;
+
+	CRender::g_pRender->SetFogEnable(gRDP.tnl.Fog);
 }
 
 void RSP_GBI1_EndDL(MicroCodeCommand command)

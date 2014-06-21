@@ -51,7 +51,7 @@ void ProcessVertexDataExternal(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		g_vtxForExternal[i].b = vert.rgba.b;
 		g_vtxForExternal[i].a = vert.rgba.a;
 
-		if (gRSP.bTextureGen && gRSP.bLightingEnable )
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
 			TexGen(g_vtxForExternal[i].u, g_vtxForExternal[i].v);
 		}
@@ -114,10 +114,10 @@ void UpdateOptionsForVertexShader(float halfS, float halfT)
 
 	float (*pf)[4];
 
-	pf = gRSP.bFogEnabled ? &f1 : &f0;
+	pf = gRDP.tnl.Fog ? &f1 : &f0;
 	g_pD3DDev->SetVertexShaderConstantF( FOG_IS_ENABLED, (float*)pf, 1 );
 
-	pf = gRSP.bLightingEnable ? &f1 : &f0;
+	pf = gRDP.tnl.Light ? &f1 : &f0;
 	g_pD3DDev->SetVertexShaderConstantF( LIGHTING_ENABLED, (float*)pf, 1 );
 
 	if(  gRDP.otherMode.key_en )
@@ -137,7 +137,7 @@ void UpdateOptionsForVertexShader(float halfS, float halfT)
 	pf = g_curRomInfo.bZHack ? &f1 : &f0;
 	g_pD3DDev->SetVertexShaderConstantF( Z_HACK_ENABLE, (float*)pf, 1 );
 
-	pf = ( (gRDP.geometryMode & G_SHADE) == 0 && gRSP.ucode < 5 ) ? &f1 : &f0;
+	pf = ((gRDP.tnl.Shade) == 0 && gRSP.ucode < 5) ? &f1 : &f0;
 	g_pD3DDev->SetVertexShaderConstantF( USE_PRIMARY_COLOR, (float*)pf, 1 );
 
 	if( (g_curRomInfo.bPrimaryDepthHack || options.enableHackForGames == HACK_FOR_NASCAR ) && gRDP.otherMode.depth_source )
@@ -145,7 +145,6 @@ void UpdateOptionsForVertexShader(float halfS, float halfT)
 	else
 		pf = &f0;
 	g_pD3DDev->SetVertexShaderConstantF( USE_PRIMARY_DEPTH, (float*)pf, 1 );
-
 
 	// Fog
 	float f = -gRSPfFogDivider/255.0f;
@@ -156,13 +155,12 @@ void UpdateOptionsForVertexShader(float halfS, float halfT)
 	float f7[]={f,f,f,f};
 	g_pD3DDev->SetVertexShaderConstantF( FOG_ADD, (float*)&f6, 1 );
 
-
 	// Texture
 	if( CRender::g_pRender->IsTextureEnabled() || gRSP.ucode == 6 )
 	{
 		float scale0x, scale1x=0, offset0x, offset1x=0;
 		float scale0y, scale1y=0, offset0y, offset1y=0;
-		if (gRSP.bTextureGen && gRSP.bLightingEnable)
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light)
 		{
 			RenderTexture &tex0 = g_textures[gRSP.curTile];
 			scale0x = 32 * 1024 * gRSP.fTexScaleX / tex0.m_fTexWidth * (gRDP.tiles[gRSP.curTile].fShiftScaleS);

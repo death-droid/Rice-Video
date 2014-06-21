@@ -81,11 +81,7 @@ public:
 	void SetTextureEnable(bool bEnable);
 	void SetTextureScale(int dwTile, float fScaleX, float fScaleY);
 	
-	virtual void SetFogEnable(bool bEnable) 
-	{ 
-		DEBUGGER_IF_DUMP( (gRSP.bFogEnabled != bEnable && logFog ), TRACE1("Set Fog %s", bEnable? "enable":"disable"));
-		gRSP.bFogEnabled = bEnable&&options.bEnableFog;
-	}
+	virtual void SetFogEnable(bool bEnable) {}
 	virtual void SetFogMinMax(float fMin, float fMax) = 0;
 	virtual void TurnFogOnOff(bool flag)=0;
 	bool m_bFogStateSave;
@@ -135,7 +131,7 @@ public:
 	virtual void SetCombinerAndBlender();
 	virtual void SetMux(uint32 dwMux0, uint32 dwMux1);
 	virtual void SetCullMode(bool bCullFront, bool bCullBack)
-	{ gRSP.bCullFront = bCullFront; gRSP.bCullBack = bCullBack; }
+	{ gRDP.tnl.TriCull = bCullFront; gRDP.tnl.CullBack = bCullBack; }
 
 	virtual void BeginRendering(void) {CRender::gRenderReferenceCount++;}		// For DirectX only
 	virtual void EndRendering(void) 

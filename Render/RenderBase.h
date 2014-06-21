@@ -94,12 +94,6 @@ typedef __declspec(align(16)) struct
 	float	fTexScaleY;
 
 	RenderShadeMode	shadeMode;
-	bool	bCullFront;
-	bool	bCullBack;
-	bool	bLightingEnable;
-	bool	bTextureGen;
-	bool	bFogEnabled;
-	BOOL	bZBufferEnabled;
 
 	uint32	ambientLightIndex;
 
@@ -156,7 +150,30 @@ typedef __declspec(align(16)) struct
 
 } RSP_Options;
 
+struct TnLMode
+{
+	union
+	{
+		struct
+		{
+			u32 Light : 1;			// 0x1
+			u32 Texture : 1;		// 0x2
+			u32 TexGen : 1;			// 0x4
+			u32 TexGenLin : 1;		// 0x8
+			u32 Fog : 1;			// 0x10
+			u32 Shade : 1;			// 0x20
+			u32 Zbuffer : 1;		// 0x40
+			u32 TriCull : 1;		// 0x80
+			u32 CullBack : 1;		// 0x100
+			u32 PointLight : 1;		// 0x200
+			u32 pad0 : 22;			// 0x0
+		};
+		u32	_u32;
+	};
+};
+
 extern RSP_Options gRSP;
+
 
 typedef __declspec(align(16)) struct {
 	uint32	keyR;
@@ -185,7 +202,7 @@ typedef __declspec(align(16)) struct {
 	uint32	fillColor;
 	uint32	originalFillColor;
 
-	uint32	geometryMode;
+	TnLMode tnl;
 	RDP_OtherMode otherMode;
 
 	Tile	tiles[8];
@@ -252,10 +269,7 @@ inline void SetEnvColor(uint32 dwCol)
 inline uint32 GetEnvColor() { return gRDP.envColor; }
 inline float* GetEnvColorfv() { return gRDP.fvEnvColor; }
 
-inline void SetLighting(bool bLighting) { gRSP.bLightingEnable = bLighting; }
 
-// Generate texture coords?
-inline void SetTextureGen(bool bTextureGen) { gRSP.bTextureGen = bTextureGen; }
 inline void SetNumLights(uint32 dwNumLights) 
 { 
 	gRSPnumLights = dwNumLights; 

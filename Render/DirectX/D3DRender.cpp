@@ -370,7 +370,7 @@ void D3DRender::SetZCompare(BOOL bZCompare)
 	if( g_curRomInfo.bForceDepthBuffer )
 		bZCompare = TRUE;
 
-	gRSP.bZBufferEnabled = bZCompare;
+	gRDP.tnl.Zbuffer = bZCompare;
 	m_bZCompare = bZCompare;
 	gD3DDevWrapper.SetRenderState(D3DRS_ZENABLE, bZCompare ? D3DZB_TRUE : D3DZB_FALSE );
 }
@@ -552,20 +552,19 @@ void D3DRender::TurnFogOnOff(bool flag)
 #define RSP_ZELDA_CULL_FRONT 0x00000400
 void D3DRender::SetFogEnable(bool bEnable)
 {
-	DEBUGGER_IF_DUMP( (gRSP.bFogEnabled != (bEnable==TRUE) && logFog ), TRACE1("Set Fog %s", bEnable? "enable":"disable"));
+	DEBUGGER_IF_DUMP( (gRDP.tnl.Fog != (bEnable==TRUE) && logFog ), TRACE1("Set Fog %s", bEnable? "enable":"disable"));
 
-	if( options.enableHackForGames == HACK_FOR_TWINE && gRSP.bFogEnabled == FALSE && bEnable == FALSE && (gRDP.geometryMode & RSP_ZELDA_CULL_FRONT) )
+	if( options.enableHackForGames == HACK_FOR_TWINE && gRDP.tnl.Fog == FALSE && bEnable == FALSE && (gRDP.tnl.TriCull) )
 	{
 		g_pD3DDev->Clear(1, NULL, D3DCLEAR_ZBUFFER, 0xFF000000, 1.0, 0);
 	}
 
-	gRSP.bFogEnabled = bEnable&&options.bEnableFog;
-	//DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Set Fog %s", bEnable?"enable":"disable");});
+	DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Set Fog %s", bEnable?"enable":"disable");});
 	
 	//gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
 	//return;		//Fog does work, need to fix
 
-	if( gRSP.bFogEnabled )
+	if( gRDP.tnl.Fog )
 	{
 		gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, TRUE);
 		gD3DDevWrapper.SetRenderState(D3DRS_FOGCOLOR, gRDP.fogColor);

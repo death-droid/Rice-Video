@@ -231,6 +231,7 @@ static UcodeData g_UcodeData[] =
 };
 
 FiddledVtx * g_pVtxBase=NULL;
+static RDP_GeometryMode gGeometryMode;
 
 SetImgInfo g_TI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
 SetImgInfo g_CI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
@@ -933,30 +934,6 @@ uint32 CalcalateCRC(uint32* srcPtr, uint32 srcSize)
 		crc += srcPtr[i];
 	}
 	return crc;
-}
-
-
-void RSP_GFX_InitGeometryMode()
-{
-	bool bCullFront		= (gRDP.geometryMode & G_CULL_FRONT) ? true : false;
-	bool bCullBack		= (gRDP.geometryMode & G_CULL_BACK) ? true : false;
-
-	if( bCullFront && bCullBack ) // should never cull front
-		bCullFront = false;
-
-	CRender::g_pRender->SetCullMode(bCullFront, bCullBack);
-	
-	BOOL bShade			= (gRDP.geometryMode & G_SHADE) ? TRUE : FALSE;
-	BOOL bShadeSmooth	= (gRDP.geometryMode & G_SHADING_SMOOTH) ? TRUE : FALSE;
-	if (bShade && bShadeSmooth)		
-		CRender::g_pRender->SetShadeMode( SHADE_SMOOTH );
-	else							
-		CRender::g_pRender->SetShadeMode( SHADE_FLAT );
-	
-	CRender::g_pRender->SetFogEnable( gRDP.geometryMode & G_FOG ? true : false );
-	SetTextureGen((gRDP.geometryMode & G_TEXTURE_GEN) ? true : false );
-	SetLighting( (gRDP.geometryMode & G_LIGHTING ) ? true : false );
-	CRender::g_pRender->ZBufferEnable( gRDP.geometryMode & G_ZBUFFER );
 }
 
 //////////////////////////////////////////////////////////

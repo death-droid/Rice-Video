@@ -505,7 +505,7 @@ UcodeMap ucodeMap3=
 	//d0
 	RSP_RDP_Nothing,  RSP_RDP_Nothing,		 RSP_RDP_Nothing,	 RSP_RDP_Nothing,
 	RSP_RDP_Nothing,  RSP_GBI2_DL_Count,	 RSP_GBI2_SubModule, RSP_GBI2_Texture,
-	RSP_GBI2_PopMtx,  RSP_GBI2_GeometryMode, RSP_GBI2_Mtx,		 RSP_GBI2_MoveWord,
+	RSP_GBI2_PopMtx,  RSP_GBI2_GeometryMode, RSP_S2DEX_OBJ_RECTANGLE_R, RSP_GBI2_MoveWord,
 	RSP_GBI2_MoveMem, RSP_GBI1_LoadUCode,	 RSP_GBI2_DL,		 RSP_GBI2_EndDL,
 	//e0
 	RSP_GBI1_SpNoop,	  RSP_GBI1_RDPHalf_1,	RSP_GBI2_SetOtherModeL, RSP_GBI2_SetOtherModeH,

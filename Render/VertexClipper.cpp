@@ -458,7 +458,7 @@ bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3
 	}
 
 	out.dcSpecular = v2.dcSpecular; //fix me here
-	if( gRSP.bFogEnabled )
+	if( gRDP.tnl.Fog )
 	{
 		float f1 = (v1.dcSpecular>>24)*v1.rhw;
 		float f2 = (v2.dcSpecular>>24)*v2.rhw;
@@ -550,7 +550,7 @@ bool Interp1Point2p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &ou
 		RDP_NOIMPL_WARN("Warning: z>1");
 
 	out.dcSpecular = v2.dcSpecular; //fix me here
-	if( gRSP.bFogEnabled )
+	if( gRDP.tnl.Fog )
 	{
 		float f1 = (v1.dcSpecular>>24)*v1.rhw;
 		float f2 = (v2.dcSpecular>>24)*v2.rhw;

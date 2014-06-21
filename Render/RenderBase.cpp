@@ -500,17 +500,13 @@ void InitRenderBase()
 	gRDP.scissor.left=gRDP.scissor.top=0;
 	gRDP.scissor.right=gRDP.scissor.bottom=640;
 	
-	gRSP.bLightingEnable = gRSP.bTextureGen = false;
 	gRSP.curTile=gRSPnumLights=gRSP.ambientLightIndex= 0;
 	gRSP.projectionMtxTop = gRSP.modelViewMtxTop = 0;
 	gRDP.fogColor = gRDP.primitiveColor = gRDP.envColor = gRDP.primitiveDepth = gRDP.primLODMin = gRDP.primLODFrac = gRDP.LODFrac = 0;
 	gRDP.fPrimitiveDepth = 0;
 	gRSP.numVertices = 0;
 	gRSP.maxVertexID = 0;
-	gRSP.bCullFront=false;
-	gRSP.bCullBack=true;
-	gRSP.bFogEnabled=gRDP.bFogEnableInBlender=false;
-	gRSP.bZBufferEnabled=true;
+	gRDP.bFogEnableInBlender=false;
 	gRSP.shadeMode=SHADE_SMOOTH;
 	gRDP.keyR=gRDP.keyG=gRDP.keyB=gRDP.keyA=gRDP.keyRGB=gRDP.keyRGBA = 0;
 	gRDP.fKeyA = 0;
@@ -543,7 +539,7 @@ void InitRenderBase()
 	gRSP.real_clip_ratio_posx = 1;
 	gRSP.real_clip_ratio_posy = 1;
 
-	gRDP.geometryMode	= 0;
+	gRDP.tnl._u32	= 0;
 	gRDP.otherMode.L		= 0;
 	gRDP.otherMode.H		= 0;
 	gRDP.fillColor		= 0xFFFFFFFF;
@@ -629,7 +625,7 @@ void InitVertexTextureConstants()
 
 void TexGen(float &s, float &t)
 {
-	if (gRDP.geometryMode & G_TEXTURE_GEN_LINEAR)
+	if (gRDP.tnl.TexGenLin)
 	{   
 		s = acosf(g_normal.x) / 3.14f;
 		t = acosf(g_normal.y) / 3.14f;
@@ -693,14 +689,14 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	if( gRSP.bProcessSpecularColor )
 	{
 		v.dcSpecular = CRender::g_pRender->PostProcessSpecularColor();
-		if( gRSP.bFogEnabled )
+		if( gRDP.tnl.Fog )
 		{
 			v.dcSpecular &= 0x00FFFFFF;
 			uint32	fogFct = 0xFF-(uint8)((g_fFogCoord[dwV]-gRSPfFogMin)*gRSPfFogDivider);
 			v.dcSpecular |= (fogFct<<24);
 		}
 	}
-	else if( gRSP.bFogEnabled )
+	else if( gRDP.tnl.Fog )
 	{
 		uint32	fogFct = 0xFF-(uint8)((g_fFogCoord[dwV]-gRSPfFogMin)*gRSPfFogDivider);
 		v.dcSpecular = (fogFct<<24);
@@ -731,7 +727,7 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	{
 		// If the vert is already lit, then there is no normal (and hence we can't generate tex coord)
 		// Only scale if not generated automatically
-		if (gRSP.bTextureGen && gRSP.bLightingEnable)
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light)
 		{
 			// Correction for texGen result
 			float u0,u1,v0,v1;
@@ -1031,7 +1027,7 @@ breakout:
 
 inline void ReplaceAlphaWithFogFactor(int i)
 {
-	if( gRDP.geometryMode & G_FOG )
+	if( gRDP.tnl.Fog )
 	{
 		// Use fog factor to replace vertex alpha
 		if( g_vecProjected[i].z > 1 )
@@ -1086,7 +1082,7 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		SSEVec3Transform(i);
 
-		if( gRSP.bFogEnabled )
+		if( gRDP.tnl.Fog )
 		{
 			g_fFogCoord[i] = g_vecProjected[i].z;
 			if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
@@ -1107,7 +1103,7 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		RSP_Vtx_Clipping(i);
 
-		if( gRSP.bLightingEnable )
+		if (gRDP.tnl.Light)
 		{
 			g_normal.x = (float)vert.norma.nx;
 			g_normal.y = (float)vert.norma.ny;
@@ -1122,7 +1118,7 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		}
 		else
 		{
-			if( (gRDP.geometryMode & G_SHADE) == 0 && gRSP.ucode < 5 )	//Shade is disabled
+			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
 			{
 				//FLAT shade
 				g_dwVtxDifColor[i] = gRDP.primitiveColor;
@@ -1141,12 +1137,12 @@ void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		{
 			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba.r, vert.rgba.g, vert.rgba.b, vert.rgba.a);
 		}
-
+		
 		// Update texture coords n.b. need to divide tu/tv by bogus scale on addition to buffer
 
 		// If the vert is already lit, then there is no normal (and hence we
 		// can't generate tex coord)
-		if (gRSP.bTextureGen && gRSP.bLightingEnable )
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
 			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
 		}
@@ -1206,7 +1202,7 @@ void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
 		}
 
-		if( gRSP.bFogEnabled )
+		if( gRDP.tnl.Fog )
 		{
 			g_fFogCoord[i] = g_vecProjected[i].z;
 			if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
@@ -1225,7 +1221,7 @@ void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		RSP_Vtx_Clipping(i);
 
-		if( gRSP.bLightingEnable )
+		if( gRDP.tnl.Light )
 		{
 			g_normal.x = (float)vert.norma.nx;
 			g_normal.y = (float)vert.norma.ny;
@@ -1237,7 +1233,7 @@ void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		}
 		else
 		{
-			if( (gRDP.geometryMode & G_SHADE) == 0 && gRSP.ucode < 5 )	//Shade is disabled
+			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
 			{
 				//FLAT shade
 				g_dwVtxDifColor[i] = gRDP.primitiveColor;
@@ -1263,7 +1259,7 @@ void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		// If the vert is already lit, then there is no normal (and hence we
 		// can't generate tex coord)
-		if (gRSP.bTextureGen && gRSP.bLightingEnable )
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
 			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
 		}
@@ -1344,7 +1340,7 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 	// 3 vertices, it means that all three x, y or z lie outside of
 	// the current viewing volume.
 	// Currently disabled - still seems a bit dodgy
-	if ((gRSP.bCullFront || gRSP.bCullBack) && gRDP.otherMode.zmode != 3)
+	if ((gRDP.tnl.TriCull || gRDP.tnl.CullBack) && gRDP.otherMode.zmode != 3)
 	{
 		D3DXVECTOR4 & v0 = g_vecProjected[dwV0];
 		D3DXVECTOR4 & v1 = g_vecProjected[dwV1];
@@ -1366,12 +1362,12 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 			/*
 			*/
 
-			if (fDirection < 0 && gRSP.bCullBack)
+			if (fDirection < 0 && gRDP.tnl.CullBack)
 			{
 				status.dwNumTrisClipped++;
 				return false;
 			}
-			else if (fDirection > 0 && gRSP.bCullFront)
+			else if (fDirection > 0 && gRDP.tnl.TriCull)
 			{
 				status.dwNumTrisClipped++;
 				return false;
@@ -1580,7 +1576,7 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		VTX_DUMP(TRACE5("vtx %d: %f, %f, %f, %f", i, 
 			g_vtxTransformed[i].x,g_vtxTransformed[i].y,g_vtxTransformed[i].z,g_vtxTransformed[i].w));
 
-		if( gRSP.bFogEnabled )
+		if( gRDP.tnl.Fog )
 		{
 			g_fFogCoord[i] = g_vecProjected[i].z;
 			if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
@@ -1597,7 +1593,7 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		s8 b = (s8)(wB >> 8);
 		s8 a = (s8)(wB);
 
-		if (gRSP.bLightingEnable)
+		if (gRDP.tnl.Light)
 		{
 			g_normal.x = (char)r; //norma.nx;
 			g_normal.y = (char)g; //norma.ny;
@@ -1671,7 +1667,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		uint32 g = addr[2];
 		uint32 b = addr[1];
 
-		if( gRSP.bLightingEnable )
+		if( gRDP.tnl.Light )
 		{
 			g_normal.x = (char)r;
 			g_normal.y = (char)g;
@@ -1691,7 +1687,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		}
 		else
 		{
-			if( (gRDP.geometryMode & G_SHADE) == 0 && gRSP.ucode < 5 )	//Shade is disabled
+			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
 			{
 				g_dwVtxDifColor[i] = gRDP.primitiveColor;
 			}
@@ -1709,7 +1705,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		ReplaceAlphaWithFogFactor(i);
 
 		VECTOR2 & t = g_fVtxTxtCoords[i];
-		if (gRSP.bTextureGen && gRSP.bLightingEnable )
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
 			// Not sure if we should transform the normal here
 			//Matrix & matWV = gRSP.projectionMtxs[gRSP.projectionMtxTop];
@@ -1746,6 +1742,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = pVtxBase;
+	
 	short *vertexColoraddr = (short*)(g_pu8RamBase+dwConkerVtxZAddr);
 
 	uint32 i;
@@ -1785,7 +1782,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		RSP_Vtx_Clipping(i);
 
-		if( gRSP.bLightingEnable )
+		if( gRDP.tnl.Light )
 		{
 			{
 				uint32 r= gRSPlights[gRSP.ambientLightIndex].r;
@@ -1824,7 +1821,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		}
 		else
 		{
-			if( (gRDP.geometryMode & G_SHADE) == 0 && gRSP.ucode < 5 )	//Shade is disabled
+			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
 			{
 				g_dwVtxDifColor[i] = gRDP.primitiveColor;
 			}
@@ -1847,7 +1844,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		// If the vert is already lit, then there is no normal (and hence we
 		// can't generate tex coord)
-		if (gRSP.bTextureGen && gRSP.bLightingEnable )
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
 				g_normal.x = (float)*(char*)(g_pu8RamBase+ (((i<<1)+0)^3)+dwConkerVtxZAddr);
 				g_normal.y = (float)*(char*)(g_pu8RamBase+ (((i<<1)+1)^3)+dwConkerVtxZAddr);
@@ -1935,7 +1932,7 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 
 		RSP_Vtx_Clipping(i);
 
-		if( gRSP.bLightingEnable )
+		if( gRDP.tnl.Light )
 		{
 			g_normal.x = (float)vertcolors.nx;
 			g_normal.y = (float)vertcolors.ny;
@@ -1955,7 +1952,7 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 		}
 		else
 		{
-			if( (gRDP.geometryMode & G_SHADE) == 0 && gRSP.ucode < 5 )	//Shade is disabled
+			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
 			{
 				g_dwVtxDifColor[i] = gRDP.primitiveColor;
 			}
@@ -1978,7 +1975,7 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 
 		// If the vert is already lit, then there is no normal (and hence we
 		// can't generate tex coord)
-		if (gRSP.bTextureGen && gRSP.bLightingEnable && g_textures[gRSP.curTile].m_bTextureEnable )
+		if (gRDP.tnl.TexGen && gRDP.tnl.Light && g_textures[gRSP.curTile].m_bTextureEnable )
 		{
 			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
 		}
