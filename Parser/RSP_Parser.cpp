@@ -1139,19 +1139,35 @@ void DLParser_FillRect(MicroCodeCommand command)
 	//Always clear zBuffer if depth buffer has been selected
 	if(g_ZI.dwAddr == g_CI.dwAddr)
 	{
+		//Clear the z buffer
 		CRender::g_pRender->ClearBuffer(false,true);
 		
-		//Clear framebuffer, fixes jumpy camera in DK64, also the sun and flames glare in Zelda
-		u32 * dst = (u32*)(g_pu8RamBase + g_CI.dwAddr);
-		u32 * end = (u32*)(dst + (command.fillrect.y1*(g_CI.dwWidth >> 1)));
+		//Clear depth buffer, fixes jumpy camera in DK64, also the sun and flames glare in Zelda
+		u32 x0 = command.fillrect.x0 + 1;
+		u32 x1 = command.fillrect.x1 + 1;
+		u32 y1 = command.fillrect.y1;
+		u32 y0 = command.fillrect.y0;
+		
+		x0 = min(max(x0, gRDP.scissor.left), gRDP.scissor.right);
+		x1 = min(max(x1, gRDP.scissor.left), gRDP.scissor.right);
+		y1 = min(max(y1, gRDP.scissor.top), gRDP.scissor.bottom);
+		y0 = min(max(y0, gRDP.scissor.top), gRDP.scissor.bottom);
 
-		do
+		x0 >>= 1;
+		x1 >>= 1;
+
+		u32 zi_width_in_dwords = g_CI.dwWidth >> 1;
+
+		u32 * dst = (u32*)(g_pu8RamBase + g_CI.dwAddr) + y0 * zi_width_in_dwords;
+
+		for (u32 y = y0; y < y1; y++)
 		{
-			*dst++ = fill_colour;
-			*dst++ = fill_colour;
-			*dst++ = fill_colour;
-			*dst++ = fill_colour;
-		} while(dst < end);
+			for (u32 x = x0; x < x1; x++)
+			{
+				dst[x] = fill_colour;
+			}
+			dst += zi_width_in_dwords;
+		}
 
 		TRACE0("Clearing ZBuffer");
 		return;
