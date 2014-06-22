@@ -220,19 +220,8 @@ typedef struct
 	float u,v;
 }EXTERNAL_VERTEX, *LPSHADERVERTEX;
 
-
-typedef struct
+struct Color
 {
-	union {
-		struct {
-			float x;
-			float y;
-			float z;
-			float range;		// Range == 0  for directional light
-								// Range != 0  for point light, Zelda MM
-		};
-	};
-
 	union {
 		struct {
 			uint8 r;
@@ -252,31 +241,32 @@ typedef struct
 		};
 		float fcolors[4];
 	};
+};
 
+struct Direction
+{
 	union {
 		struct {
-			float tx;
-			float ty;
-			float tz;
-			float tdummy;
-		};
-		struct {
-			D3DXVECTOR3 td;
+			float x;
+			float y;
+			float z;
+			float range;		// Range == 0  for directional light
+			// Range != 0  for point light, Zelda MM
 		};
 	};
+};
 
-	union {
-		struct {
-			float ox;
-			float oy;
-			float oz;
-			float odummy;
-		};
-		struct {
-			D3DXVECTOR3 od;
-		};
-	};
-} Light;
+struct Light
+{
+	Direction direction;
+	u32 skipIfZero; //Needed by CBFD and MM
+	Color colour; // HOlds the colours
+	float Iscale;
+	float ca; //Used by point lights
+	float la; //Used by point lights
+	float qa; //Used by point lights
+
+};
 
 
 

@@ -150,6 +150,7 @@ typedef __declspec(align(16)) struct
 
 } RSP_Options;
 
+
 struct TnLMode
 {
 	union
@@ -203,6 +204,8 @@ typedef __declspec(align(16)) struct {
 	uint32	originalFillColor;
 
 	TnLMode tnl;
+	float CoordMod[16];
+
 	RDP_OtherMode otherMode;
 
 	Tile	tiles[8];
@@ -278,6 +281,6 @@ inline void SetNumLights(uint32 dwNumLights)
 inline uint32 GetNumLights() { return gRSPnumLights; }
 inline D3DCOLOR GetVertexDiffuseColor(uint32 ver) { return g_dwVtxDifColor[ver]; }
 inline void SetScreenMult(float fMultX, float fMultY) { windowSetting.fMultX = fMultX; windowSetting.fMultY = fMultY; }
-inline D3DCOLOR GetLightCol(uint32 dwLight) { return gRSPlights[dwLight].col; }
+inline D3DCOLOR GetLightCol(uint32 dwLight) { return gRSPlights[dwLight].colour.col; }
 
 #endif

@@ -806,21 +806,21 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 	float fCosT;
 
 	// Do ambient
-	float r = gRSPlights[gRSP.ambientLightIndex].r;
-	float g = gRSPlights[gRSP.ambientLightIndex].g;
-	float b = gRSPlights[gRSP.ambientLightIndex].b;
+	float r = gRSPlights[gRSP.ambientLightIndex].colour.r;
+	float g = gRSPlights[gRSP.ambientLightIndex].colour.g;
+	float b = gRSPlights[gRSP.ambientLightIndex].colour.b;
 
 	if( options.enableHackForGames != HACK_FOR_ZELDA_MM )
 	{
 		for (unsigned int l=0; l < gRSPnumLights; l++)
 		{
-			fCosT = norm.x*gRSPlights[l].x + norm.y*gRSPlights[l].y + norm.z*gRSPlights[l].z; 
+			fCosT = norm.x*gRSPlights[l].direction.x + norm.y*gRSPlights[l].direction.y + norm.z*gRSPlights[l].direction.z;
 
 			if (fCosT > 0 )
 			{
-				r += gRSPlights[l].fr * fCosT;
-				g += gRSPlights[l].fg * fCosT;
-				b += gRSPlights[l].fb * fCosT;
+				r += gRSPlights[l].colour.fr * fCosT;
+				g += gRSPlights[l].colour.fg * fCosT;
+				b += gRSPlights[l].colour.fb * fCosT;
 			}
 		}
 	}
@@ -831,16 +831,16 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 
 		for (unsigned int l=0; l < gRSPnumLights; l++)
 		{
-			if( gRSPlights[l].range == 0 )
+			if( gRSPlights[l].direction.range == 0 )
 			{
 				// Regular directional light
-				fCosT = norm.x*gRSPlights[l].x + norm.y*gRSPlights[l].y + norm.z*gRSPlights[l].z; 
+				fCosT = norm.x*gRSPlights[l].direction.x + norm.y*gRSPlights[l].direction.y + norm.z*gRSPlights[l].direction.z;
 
 				if (fCosT > 0 )
 				{
-					r += gRSPlights[l].fr * fCosT;
-					g += gRSPlights[l].fg * fCosT;
-					b += gRSPlights[l].fb * fCosT;
+					r += gRSPlights[l].colour.fr * fCosT;
+					g += gRSPlights[l].colour.fg * fCosT;
+					b += gRSPlights[l].colour.fb * fCosT;
 				}
 			}
 			else //if( (gRSPlights[l].col&0x00FFFFFF) != 0x00FFFFFF )
@@ -852,7 +852,7 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 					transformed = true;
 				}
 
-				D3DXVECTOR3 dir(gRSPlights[l].x - v.x, gRSPlights[l].y - v.y, gRSPlights[l].z - v.z);
+				D3DXVECTOR3 dir(gRSPlights[l].direction.x - v.x, gRSPlights[l].direction.y - v.y, gRSPlights[l].direction.z - v.z);
 				//D3DXVECTOR3 dir(v.x-gRSPlights[l].x, v.y-gRSPlights[l].y, v.z-gRSPlights[l].z);
 				float d2 = sqrtf(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z);
 				dir.x /= d2;
@@ -868,9 +868,9 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 					f = 1 - min(f,1);
 					fCosT *= f*f;
 
-					r += gRSPlights[l].fr * fCosT;
-					g += gRSPlights[l].fg * fCosT;
-					b += gRSPlights[l].fb * fCosT;
+					r += gRSPlights[l].colour.fr * fCosT;
+					g += gRSPlights[l].colour.fg * fCosT;
+					b += gRSPlights[l].colour.fb * fCosT;
 				}
 
 			}
@@ -882,35 +882,6 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 	if (b > 255) b = 255;
 	return ((0xff000000)|(((uint32)r)<<16)|(((uint32)g)<<8)|((uint32)b));
 }
-
-uint32 LightVertNew(D3DXVECTOR4 & norm)
-{
-	float fCosT;
-
-	// Do ambient
-	float r = gRSPlights[gRSP.ambientLightIndex].r;
-	float g = gRSPlights[gRSP.ambientLightIndex].g;
-	float b = gRSPlights[gRSP.ambientLightIndex].b;
-
-
-	for (register unsigned int l=0; l < gRSPnumLights; l++)
-	{
-		fCosT = norm.x*gRSPlights[l].tx + norm.y*gRSPlights[l].ty + norm.z*gRSPlights[l].tz; 
-
-		if (fCosT > 0 )
-		{
-			r += gRSPlights[l].fr * fCosT;
-			g += gRSPlights[l].fg * fCosT;
-			b += gRSPlights[l].fb * fCosT;
-		}
-	}
-
-	if (r > 255) r = 255;
-	if (g > 255) g = 255;
-	if (b > 255) b = 255;
-	return ((0xff000000)|(((uint32)r)<<16)|(((uint32)g)<<8)|((uint32)b));
-}
-
 
 float zero = 0.0f;
 float onef = 1.0f;
@@ -1785,15 +1756,15 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		if( gRDP.tnl.Light )
 		{
 			{
-				uint32 r= gRSPlights[gRSP.ambientLightIndex].r;
-				uint32 g= gRSPlights[gRSP.ambientLightIndex].g;
-				uint32 b= gRSPlights[gRSP.ambientLightIndex].b;
+				uint32 r= gRSPlights[gRSP.ambientLightIndex].colour.r;
+				uint32 g= gRSPlights[gRSP.ambientLightIndex].colour.g;
+				uint32 b= gRSPlights[gRSP.ambientLightIndex].colour.b;
 
 				for( uint32 k=1; k<=gRSPnumLights; k++)
 				{
-					r += gRSPlights[k].r;
-					g += gRSPlights[k].g;
-					b += gRSPlights[k].b;
+					r += gRSPlights[k].colour.r;
+					g += gRSPlights[k].colour.g;
+					b += gRSPlights[k].colour.b;
 				}
 				if( r>255 ) 
 					r=255;
@@ -1815,8 +1786,8 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = vert.rgba.a;	// still use alpha from the vertex
 //TEXTURE
-				g_vtxTransformed[i].x = (float)vert.tu;
-				g_vtxTransformed[i].y = (float)vert.tv;
+			g_vtxTransformed[i].x = (float)vert.tu;
+			g_vtxTransformed[i].y = (float)vert.tv;
 
 		}
 		else
@@ -1993,20 +1964,21 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 
 void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 {
-	gRSPlights[dwLight].r = r;
-	gRSPlights[dwLight].g = g;
-	gRSPlights[dwLight].b = b;
-	gRSPlights[dwLight].a = 255;	// Ignore light alpha
-	gRSPlights[dwLight].fr = (float)gRSPlights[dwLight].r;
-	gRSPlights[dwLight].fg = (float)gRSPlights[dwLight].g;
-	gRSPlights[dwLight].fb = (float)gRSPlights[dwLight].b;
-	gRSPlights[dwLight].fa = 255;	// Ignore light alpha
+	
+	gRSPlights[dwLight].colour.r = r;
+	gRSPlights[dwLight].colour.g = g;
+	gRSPlights[dwLight].colour.b = b;
+	gRSPlights[dwLight].colour.a = 255;	// Ignore light alpha
+	gRSPlights[dwLight].colour.fr = (float)gRSPlights[dwLight].colour.r;
+	gRSPlights[dwLight].colour.fg = (float)gRSPlights[dwLight].colour.g;
+	gRSPlights[dwLight].colour.fb = (float)gRSPlights[dwLight].colour.b;
+	gRSPlights[dwLight].colour.fa = 255;	// Ignore light alpha
 
 	//TRACE1("Set light %d color", dwLight);
 
 	if( status.isVertexShaderEnabled )
 	{
-		float c[4] = {gRSPlights[dwLight].r/255.0f, gRSPlights[dwLight].g/255.0f, gRSPlights[dwLight].b/255.0f, gRSPlights[dwLight].a/255.0f};
+		float c[4] = {gRSPlights[dwLight].colour.r/255.0f, gRSPlights[dwLight].colour.g/255.0f, gRSPlights[dwLight].colour.b/255.0f, gRSPlights[dwLight].colour.a/255.0f};
 		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT0_AMBIENT+dwLight, (float*)&c, 1 );
 	}
 
@@ -2016,15 +1988,14 @@ void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)
 {
 	float w = range == 0 ? sqrt(x*x+y*y+z*z) : 1;
-
-	gRSPlights[dwLight].x = x/w;
-	gRSPlights[dwLight].y = y/w;
-	gRSPlights[dwLight].z = z/w;
-	gRSPlights[dwLight].range = range; 
+	gRSPlights[dwLight].direction.x = x/w;
+	gRSPlights[dwLight].direction.y = y/w;
+	gRSPlights[dwLight].direction.z = z/w;
+	gRSPlights[dwLight].direction.range = range; 
 
 	if( status.isVertexShaderEnabled && dwLight>0 )
 	{
-		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT1_DIRECTION+dwLight, &(gRSPlights[dwLight].x), 1 );
+		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT1_DIRECTION+dwLight, &(gRSPlights[dwLight].direction.x), 1 );
 	}
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f, %.4f", dwLight, x, y, z, range));

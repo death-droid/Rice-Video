@@ -25,7 +25,7 @@ extern void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void RSP_Vtx_Conker(MicroCodeCommand command)
 {
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uint32 dwVEnd   = ((command.inst.cmd0		 )&0xFFF)/2;
+	uint32 dwVEnd   = ((command.inst.cmd0 >> 1 )&0x7F);
 	uint32 dwN      = ((command.inst.cmd0 >> 12)&0xFFF);
 	uint32 dwV0		= dwVEnd - dwN;
 
@@ -47,7 +47,7 @@ void RSP_Tri4_Conker(MicroCodeCommand command)
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 
-	bool bTrisAdded = FALSE;
+	bool bTrisAdded = false;
 
 	do {
 		LOG_UCODE("    Conker Tri4: 0x%08x 0x%08x", w0, w1);
@@ -132,17 +132,16 @@ void RSP_MoveMem_Conker(MicroCodeCommand command)
 		{
 			LOG_UCODE("    MoveMem Light Conker");
 			uint32 dwOffset2 = ((command.inst.cmd0) >> 5) & 0x3FFF;
-			if( dwOffset2 >= 0x30 )
+			uint32 light_index = (dwOffset2 / 48);
+
+			if (light_index < 2)
 			{
-				uint32 dwLight = (dwOffset2 - 0x30)/0x30;
-				LOG_UCODE("    Light %d:", dwLight);
-				RSP_MoveMemLight(dwLight, dwAddr);
+				return;
 			}
-			else
-			{
-				// fix me
-				//TRACE0("Check me in DLParser_MoveMem_Conker - MoveMem Light");
-			}
+			light_index -= 2;
+
+				RSP_MoveMemLight(light_index, dwAddr);
+	
 			DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_SET_LIGHT, 
 			{
 				DebuggerAppendMsg("RSP_MoveMemLight: Addr=%08X, cmd0=%08X", dwAddr, (command.inst.cmd0));
