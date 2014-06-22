@@ -50,7 +50,6 @@ BEGIN
     LTEXT           "Full Screen Resolution:",IDC_STATIC,15,50,99,8
     CONTROL         "Enable Fog",IDC_FOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,124,91,10
     CONTROL         "Skip frame",IDC_SKIP_FRAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,162,126,10
-    CONTROL         "Enable SSE",IDC_SSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,126,97,10
     CONTROL         "Display Tooltips",IDC_TOOLTIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,108,126,10
     PUSHBUTTON      "About",IDC_ABOUT,126,180,50,14
     LTEXT           "Full Screen Refresh Rate (Hz):",IDC_STATIC,14,68,110,8

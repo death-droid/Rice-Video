@@ -229,7 +229,6 @@ bool AddTri(u32 v0, u32 v1, u32 v2, bool bTri4 = false);
 bool PrepareTriangle(uint32 dwV0, uint32 dwV1, uint32 dwV2);
 bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2);
 extern void (*ProcessVertexData)(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
-void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void ProcessVertexDataExternal(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void SetPrimitiveColor(uint32 dwCol, uint32 LODMin, uint32 LODFrac);

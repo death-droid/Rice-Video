@@ -1120,10 +1120,10 @@ void DLParser_FillRect(MicroCodeCommand command)
 		CRender::g_pRender->ClearBuffer(false,true);
 		
 		//Clear depth buffer, fixes jumpy camera in DK64, also the sun and flames glare in Zelda
-		u32 x0 = command.fillrect.x0 + 1;
-		u32 x1 = command.fillrect.x1 + 1;
-		u32 y1 = command.fillrect.y1;
-		u32 y0 = command.fillrect.y0;
+		int x0 = command.fillrect.x0 + 1;
+		int x1 = command.fillrect.x1 + 1;
+		int y1 = command.fillrect.y1;
+		int y0 = command.fillrect.y0;
 		
 		x0 = min(max(x0, gRDP.scissor.left), gRDP.scissor.right);
 		x1 = min(max(x1, gRDP.scissor.left), gRDP.scissor.right);
@@ -1137,9 +1137,9 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 		u32 * dst = (u32*)(g_pu8RamBase + g_CI.dwAddr) + y0 * zi_width_in_dwords;
 
-		for (u32 y = y0; y < y1; y++)
+		for (int y = y0; y < y1; y++)
 		{
-			for (u32 x = x0; x < x1; x++)
+			for (int x = x0; x < x1; x++)
 			{
 				dst[x] = fill_colour;
 			}

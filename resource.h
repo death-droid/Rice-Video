@@ -72,7 +72,6 @@
 #define IDC_DROP_COMBINER               1064
 #define IDC_FOG                         1066
 #define IDC_DISABLE_COMBINER            1068
-#define IDC_SSE                         1069
 #define IDC_SETTING_LABEL1              1071
 #define IDC_SETTING_LABEL2              1072
 #define IDC_SETTING_LABEL3              1073

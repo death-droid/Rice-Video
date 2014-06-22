@@ -284,7 +284,6 @@ void WriteConfiguration(void)
 	ini.SetLongValue("MiscSettings", "EnableHacks", options.bEnableHacks);
 	ini.SetLongValue("MiscSettings", "ScreenUpdateSetting", defaultRomOptions.screenUpdateSetting);
 	ini.SetLongValue("MiscSettings", "FPSColor", options.FPSColor);
-	ini.SetLongValue("MiscSettings","EnableSSE", options.bEnableSSE);
 	ini.SetLongValue("MiscSettings","DisplayTooltip", options.bDisplayTooltip);
 	ini.SetLongValue("MiscSettings","HideAdvancedOptions", options.bHideAdvancedOptions);
 	ini.SetLongValue("MiscSettings","DisplayOnscreenFPS", options.bDisplayOnscreenFPS);
@@ -310,24 +309,6 @@ bool isMMXSupported()
 		return false; 
 } 
 
-bool isSSESupported() 
-{
-	int SSESupport;
-	// And finally, check the CPUID for Streaming SIMD Extensions support.
-	__asm
-	{
-		mov		eax, 1			// Put a "1" in eax to tell CPUID to get the feature bits
-		cpuid					// Perform CPUID (puts processor feature info into EDX)
-		and		edx, 02000000h	// Test bit 25, for Streaming SIMD Extensions existence.
-		mov		SSESupport, edx	// SIMD Extensions).  Set return value to 1 to indicate,
-	}
-	
-	if (SSESupport != 0) 
-		return true; 
-	else 
-		return false; 
-} 
-
 void ReadConfiguration(void)
 {
 
@@ -336,14 +317,12 @@ void ReadConfiguration(void)
 	strcat(name, CONFIG_FILE);
 
 	options.bEnableHacks = TRUE;
-	options.bEnableSSE = TRUE;
 	options.bEnableVertexShader = FALSE;
 
 	defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_CHANGE;
 	//defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN;
 
 	status.isMMXSupported = isMMXSupported();
-	status.isSSESupported = isSSESupported();
 	status.isVertexShaderSupported = false;
 
 	defaultRomOptions.N64FrameBufferEmuType = FRM_BUF_NONE;
@@ -356,7 +335,6 @@ void ReadConfiguration(void)
 		options.bWinFrameMode = FALSE;
 		options.bMipMaps = TRUE;
 		options.bForceSoftwareTnL = TRUE;
-		options.bEnableSSE = TRUE;
 		options.bEnableVertexShader = FALSE;
 		options.forceTextureFilter = 0;
 		options.bLoadHiResTextures = FALSE;
@@ -431,17 +409,12 @@ void ReadConfiguration(void)
 
 		options.bDisplayTooltip = ini.GetBoolValue("MiscSettings", "DisplayTooltip");
 		options.bHideAdvancedOptions = ini.GetBoolValue("MiscSettings", "HideAdvancedOptions");
-		options.bDisplayOnscreenFPS = ini.GetBoolValue("MiscSettings", "DisplayOnscreenFPS");
-		options.bEnableSSE = ini.GetBoolValue("MiscSettings", "EnableSSE");		
+		options.bDisplayOnscreenFPS = ini.GetBoolValue("MiscSettings", "DisplayOnscreenFPS");	
 		options.FPSColor = ini.GetLongValue("MiscSettings", "FPSColor");
 		ini.Reset();
 	}
 
-	status.isSSEEnabled = status.isSSESupported && options.bEnableSSE;
-	if( status.isSSEEnabled )
-		ProcessVertexData = ProcessVertexDataSSE;
-	else
-		ProcessVertexData = ProcessVertexDataNoSSE;
+	ProcessVertexData = ProcessVertexDataNoSSE;
 
 	status.isVertexShaderEnabled = status.isVertexShaderSupported && options.bEnableVertexShader;
 	status.bUseHW_T_L = false;
@@ -757,13 +730,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_FOG,
 			"Enable/Disable Fog",
 			"Enable or disable fog emulation by this option\n"
-	},
-	{ 
-		IDC_SSE,
-			"Enable/Disable SSE for Intel P3/P4 CPUs",
-			"SSE (Intel Streaming SMID Extension) can speed up 3D transformation, vertex and matrix processing. "
-			"It is only available with Intel P3 and P4 CPUs, not with AMD CPUs. P3 is actually much faster than P4 "
-			"with SSE instructions\n"
 	},
 	{ 
 		IDC_SKIP_FRAME,
@@ -1321,17 +1287,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_SETCHECK, options.bMipMaps ? BST_CHECKED : BST_UNCHECKED, 0);
 
-		if( status.isSSESupported )
-		{
-			SendDlgItemMessage(hDlg, IDC_SSE, BM_SETCHECK, options.bEnableSSE ? BST_CHECKED : BST_UNCHECKED, 0);
-		}
-		else
-		{
-			SendDlgItemMessage(hDlg, IDC_SSE, BM_SETCHECK, BST_UNCHECKED, 0);
-			item = GetDlgItem(hDlg, IDC_SSE );
-			EnableWindow(item, FALSE);
-		}
-
 		if( status.isVertexShaderSupported )
 		{
 			SendDlgItemMessage(hDlg, IDC_VERTEX_SHADER, BM_SETCHECK, options.bEnableVertexShader ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -1441,7 +1396,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					ShowItem(hDlg, IDC_FOG, FALSE);
 					ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
 					ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
-					ShowItem(hDlg, IDC_SSE, FALSE);
 					ShowItem(hDlg, IDC_VERTEX_SHADER, FALSE);
 				}
 				else
@@ -1449,7 +1403,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					ShowItem(hDlg, IDC_FOG, TRUE);
 					ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
 					ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
-					ShowItem(hDlg, IDC_SSE, TRUE);
 					ShowItem(hDlg, IDC_VERTEX_SHADER, TRUE);
 				}
 
@@ -1480,7 +1433,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				ShowItem(hDlg, IDC_FOG, FALSE);
 				ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
 				ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
-				ShowItem(hDlg, IDC_SSE, FALSE);
 				ShowItem(hDlg, IDC_VERTEX_SHADER, FALSE);
 			}
 			else
@@ -1488,7 +1440,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				ShowItem(hDlg, IDC_FOG, TRUE);
 				ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
 				ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
-				ShowItem(hDlg, IDC_SSE, TRUE);
 				ShowItem(hDlg, IDC_VERTEX_SHADER, TRUE);
 			}
 			WriteConfiguration();
@@ -1500,16 +1451,8 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
-			options.bEnableSSE = (SendDlgItemMessage(hDlg, IDC_SSE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			status.isSSEEnabled = status.isSSESupported && options.bEnableSSE;
-			if( status.isSSEEnabled )
-			{
-				ProcessVertexData = ProcessVertexDataSSE;
-			}
-			else
-			{
-				ProcessVertexData = ProcessVertexDataNoSSE;
-			}
+
+			ProcessVertexData = ProcessVertexDataNoSSE;
 
 			options.bEnableVertexShader = (SendDlgItemMessage(hDlg, IDC_VERTEX_SHADER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bEnableVertexShader = FALSE;

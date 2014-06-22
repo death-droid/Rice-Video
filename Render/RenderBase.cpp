@@ -109,7 +109,6 @@ void (*ProcessVertexData)(uint32 dwAddr, uint32 dwV0, uint32 dwNum)=NULL;
  *	
  */
 
-
 /*n.x = (g_normal.x * matWorld.m00) + (g_normal.y * matWorld.m10) + (g_normal.z * matWorld.m20);
 n.y = (g_normal.x * matWorld.m01) + (g_normal.y * matWorld.m11) + (g_normal.z * matWorld.m21);
 n.z = (g_normal.x * matWorld.m02) + (g_normal.y * matWorld.m12) + (g_normal.z * matWorld.m22);*/
@@ -188,280 +187,6 @@ __asm l3:	\
 }		\
 
 
-// Multiply (x,y,z,1) by matrix m and project onto w = 1
-#define Vec3TransformCoord(vecout, vec, m) __asm			\
-{														\
-	__asm fld	dword ptr [vec + 0]							\
-	__asm fmul	dword ptr [m + 0]			/* x m00*/		\
-	__asm fld	dword ptr [vec + 0]							\
-	__asm fmul	dword ptr [m + 4] 	/* x m01  x m00*/			\
-	__asm fld	dword ptr [vec + 0]								\
-	__asm fmul	dword ptr [m + 8] 	/* x m02  x m01  x m00*/	\
-	\
-	__asm fld	dword ptr [vec + 4]								\
-	__asm fmul	dword ptr [m + 16] 	/* y m10  x m02  x m01  x m00*/	\
-	__asm fld	dword ptr [vec + 4]									\
-	__asm fmul	dword ptr [m + 20] 	/* y m11  y m10  x m02  x m01  x m00*/		\
-	__asm fld	dword ptr [vec + 4]												\
-	__asm fmul	dword ptr [m + 24]	/* y m12  y m11  y m10  x m02  x m01  x m00*/	\
-	\
-	__asm fxch	st(2)				/* y m10  y m11  y m12  x m02  x m01  x m00*/			\
-	__asm faddp	st(5), st(0)		/* y m11  y m12  x m02  x m01  (x m00 + y m10)*/		\
-	__asm faddp	st(3), st(0)		/* y m12  x m02  (x m01 + ym11)  (x m00 + y m10)*/	\
-	__asm faddp	st(1), st(0)		/* (x m02 + y m12) (x m01 + ym11)  (x m00 + y m10)*/	\
-	\
-	__asm fld	dword ptr [vec + 8]														\
-	__asm fmul	dword ptr [m + 32] /* z m20  (x m02 + y m12) (x m01 + ym11)  (x m00 + y m10)*/	\
-	__asm fld	dword ptr [vec + 8]																\
-	__asm fmul	dword ptr [m + 36] /* z m21  z m20  (x m02 + y m12) (x m01 + ym11)  (x m00 + y m10)*/				\
-	__asm fld	dword ptr [vec + 8]																				\
-	__asm fmul	dword ptr [m + 40] /* z m22  z m21  z m20  (x m02 + y m12) (x m01 + ym11)  (x m00 + y m10)*/		\
-	\
-	__asm fxch	st(2)				/* z m20  z m21  z m22  (x m02 + y m12) (x m01 + ym11)  (x m00 + y m10)*/		\
-	__asm faddp	st(5), st(0)		/* z m21  z m22  (x m02 + y m12) (x m01 + ym11)  (x m00 + y m10 + z m20)*/	\
-	__asm faddp	st(3), st(0)		/* z m22  (x m02 + y m12) (x m01 + ym11 + z m21)  (x m00 + y m10 + z m20)*/	\
-	__asm faddp	st(1), st(0)		/* (x m02 + y m12 + z m 22) (x m01 + ym11 + z m21)  (x m00 + y m10 + z m20)*/	\
-	\
-	__asm fxch	st(2)				/* (x m00 + y m10 + z m20) (x m01 + ym11 + z m21) (x m02 + y m12 + z m 22) */	\
-	__asm fadd	dword ptr [m + 48]	/* (xm00+ym10+zm20+m30)	 (xm01+ym11+zm21) (xm02+ym12+zm22) */		\
-	__asm fxch	st(1)				/* (xm01+ym11+zm21) (xm00+ym10+zm20+m30)  (xm02+ym12+zm22) */		\
-	__asm fadd	dword ptr [m + 52] 	/* (xm01+ym11+zm21+m31) (xm00+ym10+zm20+m30)  (xm02+ym12+zm22) */		\
-	__asm fxch	st(2)				/* (xm02+ym12+zm22) (xm00+ym10+zm20+m30)(xm01+ym11+zm21+m31)   */	\
-	__asm fadd	dword ptr [m + 56]	/* (xm02+ym12+zm22+m32) (xm00+ym10+zm20+m30)(xm01+ym11+zm21+m31)   */	\
-	__asm fxch	st(1)				/* (xm00+ym10+zm20+m30)(xm02+ym12+zm22+m32) (xm01+ym11+zm21+m31)   */	\
-	\
-	__asm fld1						/* 1 abc */											\
-	__asm fld	dword ptr [vec + 0]	/* x 1 abc*/										\
-	__asm fmul  dword ptr [m + 12]  /* xm03 1 abc*/										\
-	__asm fld	dword ptr [vec + 4]	/* y xm03 1 abc*/									\
-	__asm fmul  dword ptr [m + 28]	/* ym13 xm03 1 abc*/								\
-	__asm fld	dword ptr [vec + 8]	/* z ym13 xm03 1 abc*/								\
-	__asm fmul  dword ptr [m + 44]  /* zm23 ym13 xm03 1 abc*/							\
-	\
-	__asm fxch	st(2)				/* xm03 ym13 zm23 1 abc*/							\
-	__asm faddp st(1), st(0)		/* (xm03 + ym13) zm23 1 abc*/						\
-	__asm faddp	st(1), st(0)		/* (xm03 + ym13 + zm23) 1 abc*/						\
-	\
-	__asm fadd  dword ptr [m + 60]	/* (xm03+ym13+zm23+m33) 1 abc*/						\
-	\
-	__asm fdivp  st(1), st(0)		/* 1.0 / (xm03+ym13+zm23+m33) abc*/					\
-	\
-	__asm fmul  st(3),st(0)		    /* f a b fc */										\
-	__asm fmul  st(2),st(0)			/* f a fb fc */										\
-	__asm fmulp st(1),st(0)			/* fx fz fy */										\
-	\
-	__asm fstp	dword ptr [vecout + 0]	/* (xm02+ym12+zm22+m32) (xm01+ym11+zm21+m31)*/	\
-	__asm fstp	dword ptr [vecout + 8]	/* (xm01+ym11+zm21+m31)	*/						\
-	__asm fstp	dword ptr [vecout + 4]	/* done	*/										\
-}																						\
-
-__declspec( naked ) void  __fastcall SSEVec3Transform(int i)
-{
-	//SSEVec3Transform(g_vtxTransformed[i], g_vtxNonTransformed[i]);
-	__asm
-	{
-		shl		ecx,4;		// ecx = i
-
-		movaps	xmm1,	DWORD PTR g_vtxNonTransformed [ecx];		// xmm1 as original vector
-
-		movaps	xmm4,	DWORD PTR gRSPworldProjectTransported;			// row1
-		movaps	xmm5,	DWORD PTR gRSPworldProjectTransported[0x10];	// row2
-		movaps	xmm6,	DWORD PTR gRSPworldProjectTransported[0x20];	// row3
-		movaps	xmm7,	DWORD PTR gRSPworldProjectTransported[0x30];	// row4
-
-		mulps	xmm4, xmm1;		// row 1
-		mulps	xmm5, xmm1;		// row 2
-		mulps	xmm6, xmm1;		// row 3
-		mulps	xmm7, xmm1;		// row 4
-
-		movhlps	xmm0, xmm4;		// xmm4 high to xmm0 low
-		movlhps	xmm0, xmm5;		// xmm5 low to xmm0 high
-
-		addps	xmm4, xmm0;		// result of add are in xmm4 low
-		addps	xmm5, xmm0;		// result of add are in xmm5 high
-
-		shufps	xmm0, xmm4, 0x44;	// move xmm4 low DWORDs to xmm0 high
-		shufps	xmm4, xmm5, 0xe4;	// move xmm5 high DWORS to xmm4
-		movhlps	xmm5, xmm0;			// xmm4, xmm5 are mirrored
-
-		shufps	xmm4, xmm4, 0x08;	// move xmm4's 3rd uint32 to its 2nd uint32
-		shufps	xmm5, xmm5, 0x0d;	// move xmm5's 4th uint32 to its 2nd uint32, 
-									// and move its 2nd uint32 to its 1st uint32
-		
-		addps	xmm4, xmm5;		// results are in 1st and 2nd uint32
-
-
-		movhlps	xmm0, xmm6;		// xmm6 high to xmm0 low
-		movlhps	xmm0, xmm7;		// xmm7 low to xmm0 high
-
-		addps	xmm6, xmm0;		// result of add are in xmm6 low
-		addps	xmm7, xmm0;		// result of add are in xmm7 high
-
-		shufps	xmm0, xmm6, 0x44;	// move xmm6 low DWORDs to xmm0 high
-		shufps	xmm6, xmm7, 0xe4;	// move xmm7 high DWORS to xmm6
-		movhlps	xmm7, xmm0;			// xmm6, xmm7 are mirrored
-
-		shufps	xmm6, xmm6, 0x08;	// move xmm6's 3rd uint32 to its 2nd uint32
-		shufps	xmm7, xmm7, 0x0d;	// move xmm7's 4th uint32 to its 2nd uint32, 
-									// and move its 2nd uint32 to its 1st uint32
-		
-		addps	xmm6, xmm7;		// results are in 1st and 2nd uint32
-		
-		movlhps xmm4, xmm6;		// final result is in xmm4
-		movaps  DWORD PTR g_vtxTransformed [ecx], xmm4;
-
-		movaps	xmm0,xmm4;
-		shufps	xmm0,xmm0,0xff;
-		divps	xmm4,xmm0;
-		rcpps	xmm0,xmm0;
-		movhlps	xmm0,xmm4;
-		shufps	xmm0,xmm0,0xe8;
-		movlhps	xmm4,xmm0;
-
-		movaps	DWORD PTR g_vecProjected [ecx], xmm4;
-
-		emms;
-		ret;
-	}
-}
-
-// Only used by DKR
-__declspec( naked ) void  __fastcall SSEVec3TransformDKR(D3DXVECTOR4 &pOut, const D3DXVECTOR4 &pV)
-{
-	__asm
-	{
-		movaps	xmm1,	DWORD PTR [edx];		// xmm1 as original vector
-
-		movaps	xmm4,	DWORD PTR dkrMatrixTransposed;	// row1
-		movaps	xmm5,	DWORD PTR dkrMatrixTransposed[0x10];	// row2
-		movaps	xmm6,	DWORD PTR dkrMatrixTransposed[0x20];	// row3
-		movaps	xmm7,	DWORD PTR dkrMatrixTransposed[0x30];	// row4
-
-		mulps	xmm4, xmm1;		// row 1
-		mulps	xmm5, xmm1;		// row 2
-		mulps	xmm6, xmm1;		// row 3
-		mulps	xmm7, xmm1;		// row 4
-
-		movhlps	xmm0, xmm4;		// xmm4 high to xmm0 low
-		movlhps	xmm0, xmm5;		// xmm5 low to xmm0 high
-
-		addps	xmm4, xmm0;		// result of add are in xmm4 low
-		addps	xmm5, xmm0;		// result of add are in xmm5 high
-
-		shufps	xmm0, xmm4, 0x44;	// move xmm4 low DWORDs to xmm0 high
-		shufps	xmm4, xmm5, 0xe4;	// move xmm5 high DWORS to xmm4
-		movhlps	xmm5, xmm0;			// xmm4, xmm5 are mirrored
-
-		shufps	xmm4, xmm4, 0x08;	// move xmm4's 3rd uint32 to its 2nd uint32
-		shufps	xmm5, xmm5, 0x0d;	// move xmm5's 4th uint32 to its 2nd uint32, 
-		// and move its 2nd uint32 to its 1st uint32
-
-		addps	xmm4, xmm5;		// results are in 1st and 2nd uint32
-
-
-		movhlps	xmm0, xmm6;		// xmm6 high to xmm0 low
-		movlhps	xmm0, xmm7;		// xmm7 low to xmm0 high
-
-		addps	xmm6, xmm0;		// result of add are in xmm6 low
-		addps	xmm7, xmm0;		// result of add are in xmm7 high
-
-		shufps	xmm0, xmm6, 0x44;	// move xmm6 low DWORDs to xmm0 high
-		shufps	xmm6, xmm7, 0xe4;	// move xmm7 high DWORS to xmm6
-		movhlps	xmm7, xmm0;			// xmm6, xmm7 are mirrored
-
-		shufps	xmm6, xmm6, 0x08;	// move xmm6's 3rd uint32 to its 2nd uint32
-		shufps	xmm7, xmm7, 0x0d;	// move xmm7's 4th uint32 to its 2nd uint32, 
-		// and move its 2nd uint32 to its 1st uint32
-
-		addps	xmm6, xmm7;		// results are in 1st and 2nd uint32
-
-		movlhps xmm4, xmm6;		// final result is in xmm4
-		movaps  DWORD PTR [ecx], xmm4;
-
-		emms;
-		ret;
-	}
-}
-
-float real255 = 255.0f;
-float real128 = 128.0f;
-
-__declspec( naked ) void  __fastcall SSEVec3TransformNormal()
-{
-	__asm
-	{
-		mov		DWORD PTR [g_normal][12], 0;
-
-		movaps	xmm4,	DWORD PTR gRSPmodelViewTopTranspose;	// row1
-		movaps	xmm5,	DWORD PTR gRSPmodelViewTopTranspose[0x10];	// row2
-		movaps	xmm1,	DWORD PTR [g_normal];		// xmm1 as the normal vector
-		movaps	xmm6,	DWORD PTR gRSPmodelViewTopTranspose[0x20];	// row3
-
-		mulps	xmm4, xmm1;		// row 1
-		mulps	xmm5, xmm1;		// row 2
-		mulps	xmm6, xmm1;		// row 3
-
-		movhlps	xmm0, xmm4;		// xmm4 high to xmm0 low
-		movlhps	xmm0, xmm5;		// xmm5 low to xmm0 high
-
-		addps	xmm4, xmm0;		// result of add are in xmm4 low
-		addps	xmm5, xmm0;		// result of add are in xmm5 high
-
-		shufps	xmm0, xmm4, 0x44;	// move xmm4 low DWORDs to xmm0 high
-		shufps	xmm4, xmm5, 0xe4;	// move xmm5 high DWORS to xmm4
-		movhlps	xmm5, xmm0;			// xmm4, xmm5 are mirrored
-
-		shufps	xmm4, xmm4, 0x08;	// move xmm4's 3rd uint32 to its 2nd uint32
-		shufps	xmm5, xmm5, 0x0d;	// move xmm5's 4th uint32 to its 2nd uint32, 
-
-		addps	xmm4, xmm5;		// results are in 1st and 2nd uint32
-
-		movaps	xmm1,xmm4;
-		mulps	xmm1,xmm1;	//square
-		movlhps	xmm7, xmm1;
-		shufps	xmm7, xmm7,0x03;
-		addss	xmm7, xmm1;
-
-		movhlps	xmm0, xmm6;		// xmm6 high to xmm0 low
-		addps	xmm6, xmm0;		// result of add are in xmm6 low
-
-		movlhps	xmm0, xmm6;
-		shufps	xmm0, xmm0, 0x03;
-		addss	xmm0, xmm6;		// result of add is at xmm0's 1st uint32
-
-		movlhps	xmm4, xmm0;
-
-		mulss	xmm0,xmm0;
-		addss	xmm7,xmm0;		// xmm7 1st uint32 is the sum of squares
-
-#ifdef _DEBUG
-		movaps  DWORD PTR [g_normal], xmm4;
-		movss  DWORD PTR [g_normal][12], xmm7;
-#endif
-		xorps	xmm0,xmm0;
-		ucomiss	xmm0,xmm7;
-		jz		l2
-
-		rsqrtss	xmm7,xmm7;
-		shufps	xmm7,xmm7,0;
-#ifdef _DEBUG
-		movss  DWORD PTR [g_normal][12], xmm7;
-#endif
-		mulps	xmm4,xmm7;
-
-		movaps  DWORD PTR [g_normal], xmm4;		// Normalized
-		mov		DWORD PTR [g_normal][12], 0;
-
-		emms;
-		ret;
-l2:
-		movss	DWORD PTR [g_normal], xmm0;
-		movss	DWORD PTR [g_normal][12], xmm0;
-		emms;
-		ret;
-	}
-}
-
 void NormalizeNormalVec()
 {
 	float w = 1/sqrtf(g_normal.x*g_normal.x + g_normal.y*g_normal.y + g_normal.z*g_normal.z);
@@ -473,18 +198,8 @@ void NormalizeNormalVec()
 
 void InitRenderBase()
 {
-	if( status.isVertexShaderEnabled || status.bUseHW_T_L )
-	{
-		ProcessVertexData = ProcessVertexDataExternal;
-	}
-	else if( !status.isSSEEnabled || g_curRomInfo.bPrimaryDepthHack || options.enableHackForGames == HACK_FOR_NASCAR)
-	{
-		ProcessVertexData = ProcessVertexDataNoSSE;
-	}
-	else
-	{
-		ProcessVertexData = ProcessVertexDataSSE;
-	}
+
+	ProcessVertexData = ProcessVertexDataNoSSE;
 
 	gRSPfFogMin = gRSPfFogMax = 0.0f;
 	windowSetting.fMultX = windowSetting.fMultY = 2.0f;
@@ -810,10 +525,15 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 	float g = gRSPlights[gRSP.ambientLightIndex].colour.g;
 	float b = gRSPlights[gRSP.ambientLightIndex].colour.b;
 
-	if( options.enableHackForGames != HACK_FOR_ZELDA_MM )
+	D3DXVECTOR4 v;
+	bool transformed = false;
+
+	for (unsigned int l=0; l < gRSPnumLights; l++)
 	{
-		for (unsigned int l=0; l < gRSPnumLights; l++)
+		//Are we a normal light?
+		if (!gRDP.tnl.PointLight)
 		{
+			// Regular directional light
 			fCosT = norm.x*gRSPlights[l].direction.x + norm.y*gRSPlights[l].direction.y + norm.z*gRSPlights[l].direction.z;
 
 			if (fCosT > 0 )
@@ -823,57 +543,36 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 				b += gRSPlights[l].colour.fb * fCosT;
 			}
 		}
-	}
-	else
-	{
-		D3DXVECTOR4 v;
-		bool transformed = false;
-
-		for (unsigned int l=0; l < gRSPnumLights; l++)
+		else
 		{
-			if( gRSPlights[l].direction.range == 0 )
+			//Ok where a Point light, lets handle it
+			if( !transformed )
 			{
-				// Regular directional light
-				fCosT = norm.x*gRSPlights[l].direction.x + norm.y*gRSPlights[l].direction.y + norm.z*gRSPlights[l].direction.z;
-
-				if (fCosT > 0 )
-				{
-					r += gRSPlights[l].colour.fr * fCosT;
-					g += gRSPlights[l].colour.fg * fCosT;
-					b += gRSPlights[l].colour.fb * fCosT;
-				}
+				D3DXVec3Transform(&v, (D3DXVECTOR3*)&g_vtxNonTransformed[vidx], &gRSPmodelViewTop);	// Convert to w=1
+				transformed = true;
 			}
-			else //if( (gRSPlights[l].col&0x00FFFFFF) != 0x00FFFFFF )
+
+			D3DXVECTOR3 dir(gRSPlights[l].direction.x - v.x, gRSPlights[l].direction.y - v.y, gRSPlights[l].direction.z - v.z);
+
+			float d2 = sqrtf(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z);
+			dir.x /= d2;
+			dir.y /= d2;
+			dir.z /= d2;
+
+			fCosT = norm.x*dir.x + norm.y*dir.y + norm.z*dir.z; 
+
+			if (fCosT > 0 )
 			{
-				// Point light
-				if( !transformed )
-				{
-					D3DXVec3Transform(&v, (D3DXVECTOR3*)&g_vtxNonTransformed[vidx], &gRSPmodelViewTop);	// Convert to w=1
-					transformed = true;
-				}
+				//float f = d2/gRSPlights[l].range*50;
+				float f = d2/15000*50;
+				f = 1 - min(f,1);
+				fCosT *= f*f;
 
-				D3DXVECTOR3 dir(gRSPlights[l].direction.x - v.x, gRSPlights[l].direction.y - v.y, gRSPlights[l].direction.z - v.z);
-				//D3DXVECTOR3 dir(v.x-gRSPlights[l].x, v.y-gRSPlights[l].y, v.z-gRSPlights[l].z);
-				float d2 = sqrtf(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z);
-				dir.x /= d2;
-				dir.y /= d2;
-				dir.z /= d2;
-
-				fCosT = norm.x*dir.x + norm.y*dir.y + norm.z*dir.z; 
-
-				if (fCosT > 0 )
-				{
-					//float f = d2/gRSPlights[l].range*50;
-					float f = d2/15000*50;
-					f = 1 - min(f,1);
-					fCosT *= f*f;
-
-					r += gRSPlights[l].colour.fr * fCosT;
-					g += gRSPlights[l].colour.fg * fCosT;
-					b += gRSPlights[l].colour.fb * fCosT;
-				}
-
+				r += gRSPlights[l].colour.fr * fCosT;
+				g += gRSPlights[l].colour.fg * fCosT;
+				b += gRSPlights[l].colour.fb * fCosT;
 			}
+
 		}
 	}
 
@@ -881,119 +580,6 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 	if (g > 255) g = 255;
 	if (b > 255) b = 255;
 	return ((0xff000000)|(((uint32)r)<<16)|(((uint32)g)<<8)|((uint32)b));
-}
-
-float zero = 0.0f;
-float onef = 1.0f;
-float fcosT;
-
-__declspec( naked ) uint32  __fastcall SSELightVert()
-{
-	__asm
-	{
-		movaps		xmm3, DWORD PTR gRSP;	// loading Ambient colors, xmm3 is the result color
-		movaps		xmm4, DWORD PTR [g_normal];	// xmm4 is the normal
-
-		mov			ecx, 0;
-loopback:
-		cmp			ecx, DWORD PTR gRSPnumLights;
-		jae			breakout;
-		mov			eax,ecx;
-		imul		eax,0x48;
-		movups		xmm5, DWORD PTR gRSPlights[eax];		// Light Dir
-		movups		xmm1, DWORD PTR gRSPlights[0x18][eax];	// Light color
-		mulps       xmm5, xmm4;					// Lightdir * normals
-
-		movlhps		xmm0,xmm5;
-		addps		xmm0,xmm5;
-		shufps		xmm5,xmm0,0xf0;			// xmm5 3rd float = xmm0 4th float
-		addps		xmm0,xmm5;
-		shufps		xmm0,xmm0,0x02;			// xmm0 1st float = xmm0 3rd float
-
-		comiss		xmm0,zero;
-		jc			endloop
-
-		shufps      xmm0,xmm0,0;					// fcosT
-		mulps       xmm1,xmm0; 
-		addps       xmm3,xmm1; 
-endloop:
-		inc			ecx;
-		jmp			loopback;
-breakout:
-
-		movss		xmm0,DWORD PTR real255;
-		shufps      xmm0,xmm0,0;
-		minps       xmm0,xmm3;
-
-		// Without using a memory
-		cvtss2si	eax,xmm0;	// move the 1st uint32 to eax
-		shl			eax,10h;
-		or			eax,0FF000000h;
-		shufps		xmm0,xmm0,0E5h;	// move the 2nd uint32 to the 1st uint32
-		cvtss2si	ecx,xmm0;	// move the 1st uint32 to ecx
-		shl			ecx,8;
-		or			eax,ecx;
-		shufps		xmm0,xmm0,0E6h;	// Move the 3rd uint32 to the 1st uint32
-		cvtss2si	ecx,xmm0;
-		or          eax,ecx;
-
-		ret;
-	}
-}
-
-
-__declspec( naked ) uint32  __fastcall SSELightVertNew()
-{
-	__asm
-	{
-		movaps		xmm3, DWORD PTR gRSP;	// loading Ambient colors, xmm3 is the result color
-		movaps		xmm4, DWORD PTR [g_normal];	// xmm4 is the normal
-
-		mov			ecx, 0;
-loopback:
-		cmp			ecx, DWORD PTR gRSPnumLights;
-		jae			breakout;
-		mov			eax,ecx;
-		imul		eax,0x48;
-		movups		xmm5, DWORD PTR gRSPlights[0x28][eax];	// Light Dir (transformed)
-		movups		xmm1, DWORD PTR gRSPlights[0x18][eax];	// Light color
-		mulps       xmm5, xmm4;					// Lightdir * normals
-
-		movlhps		xmm0,xmm5;
-		addps		xmm0,xmm5;
-		shufps		xmm5,xmm0,0xf0;			// xmm5 3rd float = xmm0 4th float
-		addps		xmm0,xmm5;
-		shufps		xmm0,xmm0,0x02;			// xmm0 1st float = xmm0 3rd float
-
-		comiss		xmm0,zero;
-		jc			endloop
-
-		shufps      xmm0,xmm0,0;					// fcosT
-		mulps       xmm1,xmm0; 
-		addps       xmm3,xmm1; 
-endloop:
-		inc			ecx;
-		jmp			loopback;
-breakout:
-
-		movss		xmm0,DWORD PTR real255;
-		shufps      xmm0,xmm0,0;
-		minps       xmm0,xmm3;
-
-		// Without using a memory
-		cvtss2si	eax,xmm0;	// move the 1st uint32 to eax
-		shl			eax,10h;
-		or			eax,0FF000000h;
-		shufps		xmm0,xmm0,0E5h;	// move the 2nd uint32 to the 1st uint32
-		cvtss2si	ecx,xmm0;	// move the 1st uint32 to ecx
-		shl			ecx,8;
-		or			eax,ecx;
-		shufps		xmm0,xmm0,0E6h;	// Move the 3rd uint32 to the 1st uint32
-		cvtss2si	ecx,xmm0;
-		or          eax,ecx;
-
-		ret;
-	}
 }
 
 inline void ReplaceAlphaWithFogFactor(int i)
@@ -1020,113 +606,6 @@ inline void ReplaceAlphaWithFogFactor(int i)
 #define Y_POS  0x08
 #define X_NEG  0x10
 #define X_POS  0x20
-
-// Assumes dwAddr has already been checked!	
-// Don't inline - it's too big with the transform macros
-void ProcessVertexDataSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
-{
-	UpdateCombinedMatrix();
-
-	// This function is called upon SPvertex
-	// - do vertex matrix transform
-	// - do vertex lighting
-	// - do texture cooridinate transform if needed
-	// - calculate normal vector
-
-	// Output:  - g_vecProjected[i]				-> transformed vertex x,y,z
-	//			- g_vecProjected[i].w						-> saved vertex 1/w
-	//			- g_dwVtxFlags[i]				-> flags
-	//			- g_dwVtxDifColor[i]			-> vertex color
-	//			- g_fVtxTxtCoords[i]				-> vertex texture cooridinates
-
-	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
-	g_pVtxBase = pVtxBase;
-
-	uint32 i;
-	for (i = dwV0; i < dwV0 + dwNum; i++)
-	{
-		FiddledVtx & vert = pVtxBase[i - dwV0];
-
-		g_vtxNonTransformed[i].x = (float)vert.x;
-		g_vtxNonTransformed[i].y = (float)vert.y;
-		g_vtxNonTransformed[i].z = (float)vert.z;
-
-		SSEVec3Transform(i);
-
-		if( gRDP.tnl.Fog )
-		{
-			g_fFogCoord[i] = g_vecProjected[i].z;
-			if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
-				g_fFogCoord[i] = gRSPfFogMin;
-		}
-		ReplaceAlphaWithFogFactor(i);
-
-
-		VTX_DUMP( 
-		{
-			uint32 *dat = (uint32*)(&vert);
-			DebuggerAppendMsg("vtx %d: %08X %08X %08X %08X", i, dat[0],dat[1],dat[2],dat[3]); 
-			DebuggerAppendMsg("      : %f, %f, %f, %f", 
-				g_vtxTransformed[i].x,g_vtxTransformed[i].y,g_vtxTransformed[i].z,g_vtxTransformed[i].w);
-			DebuggerAppendMsg("      : %f, %f, %f, %f", 
-				g_vecProjected[i].x,g_vecProjected[i].y,g_vecProjected[i].z,g_vecProjected[i].w);
-		});
-
-		RSP_Vtx_Clipping(i);
-
-		if (gRDP.tnl.Light)
-		{
-			g_normal.x = (float)vert.norma.nx;
-			g_normal.y = (float)vert.norma.ny;
-			g_normal.z = (float)vert.norma.nz;
-
-			SSEVec3TransformNormal();
-			if( options.enableHackForGames != HACK_FOR_ZELDA_MM )
-				g_dwVtxDifColor[i] = SSELightVert();
-			else
-				g_dwVtxDifColor[i] = LightVert(g_normal, i);
-			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = vert.rgba.a;	// still use alpha from the vertex
-		}
-		else
-		{
-			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
-			{
-				//FLAT shade
-				g_dwVtxDifColor[i] = gRDP.primitiveColor;
-			}
-			else
-			{
-				register IColor &color = *(IColor*)&g_dwVtxDifColor[i];
-				color.b = vert.rgba.r;
-				color.g = vert.rgba.g;
-				color.r = vert.rgba.b;
-				color.a = vert.rgba.a;
-			}
-		}
-
-		if( options.bWinFrameMode )
-		{
-			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba.r, vert.rgba.g, vert.rgba.b, vert.rgba.a);
-		}
-		
-		// Update texture coords n.b. need to divide tu/tv by bogus scale on addition to buffer
-
-		// If the vert is already lit, then there is no normal (and hence we
-		// can't generate tex coord)
-		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
-		{
-			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
-		}
-		else
-		{
-			g_fVtxTxtCoords[i].x = (float)vert.tu;
-			g_fVtxTxtCoords[i].y = (float)vert.tv; 
-		}
-	}
-
-	VTX_DUMP(TRACE2("Setting Vertexes: %d - %d\n", dwV0, dwV0+dwNum-1));
-	DEBUGGER_PAUSE_AND_DUMP(NEXT_VERTEX_CMD,{TRACE0("Paused at Vertex Cmd");});
-}
 
 void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
@@ -1517,10 +996,7 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		g_vtxNonTransformed[i].y = (float)*(short*)((pVtxBase+nOff + 2) ^ 2);
 		g_vtxNonTransformed[i].z = (float)*(short*)((pVtxBase+nOff + 4) ^ 2);
 
-		//if( status.isSSEEnabled )
-		//	SSEVec3TransformDKR(g_vtxTransformed[i], g_vtxNonTransformed[i]);
-		//else
-			D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &matWorldProject);	// Convert to w=1
+		D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &matWorldProject);	// Convert to w=1
 
 		if( gDKRVtxCount == 0 && dwNum==1 )
 		{
@@ -1570,11 +1046,8 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			g_normal.y = (char)g; //norma.ny;
 			g_normal.z = (char)b; //norma.nz;
 
-			Vec3TransformNormal(g_normal, matWorldProject)
-			if( status.isSSEEnabled )
-				g_dwVtxDifColor[i] = SSELightVert();
-			else
-				g_dwVtxDifColor[i] = LightVert(g_normal, i);
+			Vec3TransformNormal(g_normal, matWorldProject);
+			g_dwVtxDifColor[i] = LightVert(g_normal, i);
 		}
 		else
 		{
@@ -1615,16 +1088,11 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		g_vtxNonTransformed[i].y = (float)vert.y;
 		g_vtxNonTransformed[i].z = (float)vert.z;
 
-		if( status.isSSEEnabled )
-			SSEVec3Transform(i);
-		else
-		{
-			D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &gRSPworldProject);	// Convert to w=1
-			g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-			g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-			g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
-			g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
-		}
+		D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &gRSPworldProject);	// Convert to w=1
+		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
+		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
+		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
+		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
 
 		g_fFogCoord[i] = g_vecProjected[i].z;
 		if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
@@ -1644,16 +1112,10 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			g_normal.y = (char)g;
 			g_normal.z = (char)b;
 
-			if( status.isSSEEnabled )
-			{
-				SSEVec3TransformNormal();
-				g_dwVtxDifColor[i] = SSELightVert();
-			}
-			else
-			{
-				Vec3TransformNormal(g_normal, gRSPmodelViewTop);
-				g_dwVtxDifColor[i] = LightVert(g_normal, i);
-			}
+
+			Vec3TransformNormal(g_normal, gRSPmodelViewTop);
+			g_dwVtxDifColor[i] = LightVert(g_normal, i);
+
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = (uint8)a;	// still use alpha from the vertex
 		}
 		else
@@ -1725,16 +1187,11 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		g_vtxNonTransformed[i].y = (float)vert.y;
 		g_vtxNonTransformed[i].z = (float)vert.z;
 
-		if( status.isSSEEnabled )
-			SSEVec3Transform(i);
-		else
-		{
-			D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &gRSPworldProject);	// Convert to w=1
-			g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-			g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-			g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
-			g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
-		}
+		D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &gRSPworldProject);	// Convert to w=1
+		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
+		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
+		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
+		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
 
 		g_fFogCoord[i] = g_vecProjected[i].z;
 
@@ -1878,16 +1335,11 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 		g_vtxNonTransformed[i].y = (float)vertxyz.y;
 		g_vtxNonTransformed[i].z = (float)vertxyz.z;
 
-		if( status.isSSEEnabled )
-			SSEVec3Transform(i);
-		else
-		{
-			D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &gRSPworldProject);	// Convert to w=1
-			g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-			g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-			g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
-			g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
-		}
+		D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &gRSPworldProject);	// Convert to w=1
+		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
+		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
+		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
+		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
 
 		VTX_DUMP( 
 		{
@@ -1909,16 +1361,9 @@ void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint
 			g_normal.y = (float)vertcolors.ny;
 			g_normal.z = (float)vertcolors.nz;
 
-			if( status.isSSEEnabled )
-			{
-				SSEVec3TransformNormal();
-				g_dwVtxDifColor[i] = SSELightVert();
-			}
-			else
-			{
-				Vec3TransformNormal(g_normal, gRSPmodelViewTop);
-				g_dwVtxDifColor[i] = LightVert(g_normal, i);
-			}
+			Vec3TransformNormal(g_normal, gRSPmodelViewTop);
+			g_dwVtxDifColor[i] = LightVert(g_normal, i);
+
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = vertcolors.a;	// still use alpha from the vertex
 		}
 		else
@@ -2120,12 +1565,6 @@ void UpdateCombinedMatrix()
 		{
 			gRSPworldProject = gRSPworldProject * reverseY;
 			gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
-		}
-
-		if( status.isSSEEnabled )
-		{
-			D3DXMatrixTranspose(&gRSPworldProjectTransported, &gRSPworldProject);
-			D3DXMatrixTranspose(&gRSPmodelViewTopTranspose, &gRSPmodelViewTop);
 		}
 
 		gRSP.bCombinedMatrixIsUpdated = false;

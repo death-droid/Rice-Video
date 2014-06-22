@@ -144,7 +144,6 @@ typedef struct {
 	BOOL	bWinFrameMode;
 	BOOL	bMipMaps;
 	BOOL	bForceSoftwareTnL;
-	BOOL	bEnableSSE;
 	BOOL	bEnableVertexShader;
 	BOOL	bDisplayTooltip;
 	BOOL	bHideAdvancedOptions;

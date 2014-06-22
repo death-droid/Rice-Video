@@ -211,9 +211,6 @@ void RSP_Mtx_DKR(MicroCodeCommand command)
 		mat = matToLoad;
 	}
 
-	if( status.isSSEEnabled )
-		D3DXMatrixTranspose(&dkrMatrixTransposed, &mat);
-
 	DEBUGGER_IF_DUMP(logMatrix,TRACE3("DKR Matrix: cmd=0x%X, idx = %d, mul=%d", dwCommand, index, mul));
 	LOG_UCODE("    DKR Loading Mtx: %d, command=%d", index, dwCommand);
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_MATRIX_CMD,{TRACE0("Paused at DKR Matrix Cmd");});

@@ -104,11 +104,9 @@ typedef struct {
 	int		leftRendered,topRendered,rightRendered,bottomRendered;
 
 	bool	isMMXSupported;
-	bool	isSSESupported;
 	bool	isVertexShaderSupported;
 
 	bool	isMMXEnabled;
-	bool	isSSEEnabled;
 	bool	isVertexShaderEnabled;
 	bool	bUseHW_T_L;					// Use hardware T&L, for debug purpose only
 
