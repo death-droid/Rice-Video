@@ -1320,12 +1320,13 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 
 	UpdateCombinedMatrix();
 
+	int x = ((command.inst.cmd0) & 0x1F) >> 1;
+	int y = x >> 2;
+	x &= 3;
+
+	//Float
 	if ((command.inst.cmd0) & 0x20)
 	{
-		int x = ((command.inst.cmd0) & 0x1F) >> 1;
-		int y = x >> 2;
-		x &= 3;
-
 		fraction = ((command.inst.cmd1)>>16)/65536.0f;
 		gRSPworldProject.m[y][x] = (float)(int)gRSPworldProject.m[y][x];
 		gRSPworldProject.m[y][x] += fraction;
@@ -1336,15 +1337,9 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 	}
 	else
 	{
-		int x = ((command.inst.cmd0) & 0x1F) >> 1;
-		int y = x >> 2;
-		x &= 3;
-
-		fraction = (float)fabs(gRSPworldProject.m[y][x] - (int)gRSPworldProject.m[y][x]);
-		gRSPworldProject.m[y][x] = (short)((command.inst.cmd1)>>16) + fraction;
-
-		fraction = (float)fabs(gRSPworldProject.m[y][x+1] - (int)gRSPworldProject.m[y][x+1]);
-		gRSPworldProject.m[y][x+1] = (short)((command.inst.cmd1)&0xFFFF) + fraction;
+		//Integer
+		gRSPworldProject.m[y][x] = (short)((command.inst.cmd1)>>16);
+		gRSPworldProject.m[y][x+1] = (short)((command.inst.cmd1)&0xFFFF);
 	}
 
 	gRSP.bMatrixIsUpdated = false;
