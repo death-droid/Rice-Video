@@ -354,7 +354,6 @@ void D3DRender::SetAddressVAllStages(uint32 dwTile, int dwFlag)
 	SetTextureVFlag(dwFlag, dwTile);
 }
 
-#define RSP_ZELDA_FOG 0x00010000
 void D3DRender::ZBufferEnable(BOOL bZBuffer)
 {
 	if( g_curRomInfo.bForceDepthBuffer )
@@ -363,8 +362,7 @@ void D3DRender::ZBufferEnable(BOOL bZBuffer)
 	SetZCompare(bZBuffer);
 	SetZUpdate(bZBuffer);
 }
-
-#define RSP_ZELDA_ZBUFFER 0x00000001 
+ 
 void D3DRender::SetZCompare(BOOL bZCompare)
 {
 	if( g_curRomInfo.bForceDepthBuffer )

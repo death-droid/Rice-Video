@@ -515,10 +515,10 @@ void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.Shade		= gGeometryMode.GBI1_Shade;
 	gRDP.tnl.Zbuffer	= gGeometryMode.GBI1_Zbuffer;
 
-	//CUll back needs to take priority to ensure MOrtal Kombat 4 works properly
 	gRDP.tnl.TriCull = gGeometryMode.GBI1_CullFront;// | gGeometryMode.GBI1_CullBack;
 	gRDP.tnl.CullBack	= gGeometryMode.GBI1_CullBack;
 
+	CRender::g_pRender->ZBufferEnable(gRDP.tnl.Zbuffer);
 	CRender::g_pRender->SetFogEnable(gRDP.tnl.Fog);
 	if (gRDP.tnl.Shade)
 		CRender::g_pRender->SetShadeMode(SHADE_SMOOTH);
