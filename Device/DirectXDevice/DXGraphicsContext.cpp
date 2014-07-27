@@ -318,7 +318,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	{
 		m_d3dpp.MultiSampleType = (D3DMULTISAMPLE_TYPE)(D3DMULTISAMPLE_NONE + min(m_maxFSAA, (int)options.DirectXAntiAliasingValue));
 		m_FSAAIsEnabled = true;
-		TRACE1("Start with FSAA=%d X", pDeviceInfo->MultiSampleType-D3DMULTISAMPLE_NONE);
+		//TRACE1("Start with FSAA=%d X", pDeviceInfo->MultiSampleType-D3DMULTISAMPLE_NONE);
 	}
 
 	if( currentRomOptions.N64FrameBufferEmuType != FRM_BUF_NONE && m_FSAAIsEnabled )

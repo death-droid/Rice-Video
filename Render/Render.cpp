@@ -26,6 +26,7 @@ int CRender::gRenderReferenceCount=0;
 
 D3DXMATRIX reverseXY(-1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,1);
 D3DXMATRIX reverseY(1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,1);
+
 extern char* right (char * src, int nchars);
 
 //========================================================================
@@ -117,40 +118,23 @@ void CRender::ResetMatrices()
 
 void CRender::SetProjection(const Matrix & mat, bool bPush, bool bReplace) 
 {
-	if (bPush)
+	if (gRSP.projectionMtxTop >= (RICE_MATRIX_STACK-1) && bPush)
 	{
-		if (gRSP.projectionMtxTop >= (RICE_MATRIX_STACK-1))
-		{
-			TRACE0("Pushing past proj stack limits!");
-		}
-		else
-			gRSP.projectionMtxTop++;
+		TRACE0("Pushing past proj stack limits!");
+	}
+	else if (bPush)
+		gRSP.projectionMtxTop++;
 
-		if (bReplace)
-		{
-			// Load projection matrix
-			gRSP.projectionMtxs[gRSP.projectionMtxTop] = mat;
-		}
-		else
-		{
-			gRSP.projectionMtxs[gRSP.projectionMtxTop] = mat * gRSP.projectionMtxs[gRSP.projectionMtxTop-1];
-		}
-		
+	if (bReplace)
+	{
+		// Load projection matrix
+		gRSP.projectionMtxs[gRSP.projectionMtxTop] = mat;
 	}
 	else
 	{
-		if (bReplace)
-		{
-			// Load projection matrix
-			gRSP.projectionMtxs[gRSP.projectionMtxTop] = mat;
-		}
-		else
-		{
-			gRSP.projectionMtxs[gRSP.projectionMtxTop] = mat * gRSP.projectionMtxs[gRSP.projectionMtxTop];
-		}
-
+		gRSP.projectionMtxs[gRSP.projectionMtxTop] = bPush ? mat * gRSP.projectionMtxs[gRSP.projectionMtxTop - 1] : mat * gRSP.projectionMtxs[gRSP.projectionMtxTop];
 	}
-	
+
 	gRSP.bMatrixIsUpdated = true;
 
 	DumpMatrix(mat,"Set Projection Matrix");
@@ -965,7 +949,6 @@ void CRender::SetAllTexelRepeatFlag()
 	}
 }
 
-
 void CRender::SetTexelRepeatFlags(uint32 dwTile)
 {
 	Tile &tile = gRDP.tiles[dwTile];
@@ -1217,42 +1200,6 @@ bool CRender::DrawTriangles()
 					}
 				}
 			}
-
-			/*
-			// The code here is disabled because it could cause incorrect texture repeating flag 
-			// for later DrawTriangles
-			bool clampS=true;
-			bool clampT=true;
-
-			for( i=0; i<gRSP.numVertices; i++ )
-			{
-				float w = g_vtxBuffer[i].rhw; 
-				if( w < 0 || g_vtxBuffer[i].tcord[t].u > 1.0 || g_vtxBuffer[i].tcord[t].u < 0.0  )
-				{
-					clampS = false;
-					break;
-				}
-			}
-
-			for( i=0; i<gRSP.numVertices; i++ )
-			{
-				float w = g_vtxBuffer[i].rhw; 
-				if( w < 0 || g_vtxBuffer[i].tcord[t].v > 1.0 || g_vtxBuffer[i].tcord[t].v < 0.0  )
-				{
-					clampT = false;
-					break;
-				}
-			}
-
-			if( clampS )
-			{
-				SetTextureUFlag(D3DTADDRESS_CLAMP, gRSP.curTile+t);
-			}
-			if( clampT )
-			{
-				SetTextureVFlag(D3DTADDRESS_CLAMP, gRSP.curTile+t);
-			}
-			*/
 		}
 	}
 
@@ -1290,6 +1237,7 @@ bool CRender::DrawTriangles()
 	return res;
 }
 
+//MOVE THIS STUFF OUT OF HERE? Doesnt feel like it should be in the renderer XD
 inline int ReverseCITableLookup(uint32 *pTable, int size, uint32 val)
 {
 	for( int i=0; i<size; i++)
@@ -1301,6 +1249,7 @@ inline int ReverseCITableLookup(uint32 *pTable, int size, uint32 val)
 	TRACE0("Cannot find value in CI table");
 	return 0;
 }
+
 
 bool SaveCITextureToFile(TxtrCacheEntry &entry, char *filename, bool bShow, bool bWholeTexture )
 {

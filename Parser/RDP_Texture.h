@@ -1439,7 +1439,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 
 	// Hack for Mario Tennis
-	if( !status.bHandleN64RenderTexture && g_CI.dwAddr == g_ZI.dwAddr )
+	if (!status.bHandleN64RenderTexture && (g_CI.dwAddr == g_ZI.dwAddr || g_CI.dwFormat != TXT_FMT_RGBA))
 	{
 		return;
 	}

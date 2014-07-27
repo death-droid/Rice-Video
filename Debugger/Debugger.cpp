@@ -373,9 +373,8 @@ void DumpOtherMode()
 	DebuggerAppendMsg( "\ttext_persp:\t%s", gRDP.otherMode.text_persp ? "On" : "Off" );
 	DebuggerAppendMsg( "\tcycle_type:\t%s", cycletype[ gRDP.otherMode.cycle_type ] );
 	DebuggerAppendMsg( "\tpipeline:\t\t%s", gRDP.otherMode.atomic_prim ? "1Primitive" : "NPrimitive" );
-
 	DebuggerAppendMsg("\n\nSP render flags:");
-	DebuggerAppendMsg("\tCull mode: %s%s", gRDP.tnl.CullTri?"Cull Front":"", gRDP.tnl.cullBack?" Cull Back":"");
+	DebuggerAppendMsg("\tCull mode: %s%s", gRDP.tnl.TriCull?"Cull Front":"", gRDP.tnl.CullBack?" Cull Back":"");
 	DebuggerAppendMsg("\tShade mode: %d", gRSP.shadeMode);
 	DebuggerAppendMsg("\tFog: %s", gRDP.tnl.Fog?"enabled":"disabled");
 	DebuggerAppendMsg("\tZbuffer in SP: %s", gRDP.tnl.Zbuffer?"enabled":"disabled");

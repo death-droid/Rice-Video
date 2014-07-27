@@ -664,10 +664,10 @@ void FindAllDumpedTextures(void)
 	{
 		CheckAndCreateFolder(foldername);
 		char	foldername2[256];
-		for( int i=0; i<5; i++)
+		for( int i=0; i<2; i++)
 		{
 			strcpy(foldername2,foldername);
-			strcat(foldername2,subfolders[i]);
+			strcat(foldername2, subfolders[i]);
 			CheckAndCreateFolder(foldername2);
 		}
 		return;
@@ -678,7 +678,7 @@ void FindAllDumpedTextures(void)
 		FindAllTexturesFromFolder(foldername,gTxtrDumpInfos, false, true);
 
 		char	foldername2[256];
-		for( int i=0; i<5; i++)
+		for( int i=0; i<2; i++)
 		{
 			strcpy(foldername2,foldername);
 			strcat(foldername2,subfolders[i]);
