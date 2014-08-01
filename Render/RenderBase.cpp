@@ -181,16 +181,6 @@ __asm l2:	\
 __asm l3:	\
 }		\
 
-
-void NormalizeNormalVec()
-{
-	float w = 1/sqrtf(g_normal.x*g_normal.x + g_normal.y*g_normal.y + g_normal.z*g_normal.z);
-	g_normal.x *= w;
-	g_normal.y *= w;
-	g_normal.z *= w;
-}
-
-
 void InitRenderBase()
 {
 	gRSPfFogMin = gRSPfFogMax = 0.0f;
@@ -289,10 +279,6 @@ void SetFogMinMax(float fMin, float fMax, float fMul, float fOffset)
 
 	gRSPfFogDivider = 255/(gRSPfFogMax-gRSPfFogMin);
 	CRender::g_pRender->SetFogMinMax(fMin, fMax);
-}
-
-void InitVertexColors()
-{
 }
 
 void InitVertexTextureConstants()
@@ -1266,122 +1252,6 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 	VTX_DUMP(TRACE2("Setting Vertexes: %d - %d\n", dwV0, dwV0+dwNum-1));
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_VERTEX_CMD,{DebuggerAppendMsg("Paused at Vertex Cmd");});
-}
-
-
-typedef struct{
-	short y;
-	short x;
-	short flag;
-	short z;
-} RS_Vtx_XYZ;
-
-typedef union {
-	struct {
-		uint8 a;
-		uint8 b;
-		uint8 g;
-		uint8 r;
-	};
-	struct {
-		char na;
-		char nz;	//b
-		char ny;	//g
-		char nx;	//r
-	};
-} RS_Vtx_Color;
-
-
-void ProcessVertexData_Rogue_Squadron(uint32 dwXYZAddr, uint32 dwColorAddr, uint32 dwXYZCmd, uint32 dwColorCmd)
-{
-	UpdateCombinedMatrix();
-
-	uint32 dwV0 = 0;
-	uint32 dwNum = (dwXYZCmd&0xFF00)>>10;
-
-	RS_Vtx_XYZ * pVtxXYZBase = (RS_Vtx_XYZ*)(g_pu8RamBase + dwXYZAddr);
-	RS_Vtx_Color * pVtxColorBase = (RS_Vtx_Color*)(g_pu8RamBase + dwColorAddr);
-
-	uint32 i;
-	for (i = dwV0; i < dwV0 + dwNum; i++)
-	{
-		RS_Vtx_XYZ & vertxyz = pVtxXYZBase[i - dwV0];
-		RS_Vtx_Color & vertcolors = pVtxColorBase[i - dwV0];
-
-		g_vtxNonTransformed[i].x = (float)vertxyz.x;
-		g_vtxNonTransformed[i].y = (float)vertxyz.y;
-		g_vtxNonTransformed[i].z = (float)vertxyz.z;
-
-		D3DXVec3Transform(&g_vtxTransformed[i], (D3DXVECTOR3*)&g_vtxNonTransformed[i], &gRSPworldProject);	// Convert to w=1
-		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
-		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
-
-		VTX_DUMP( 
-		{
-			DebuggerAppendMsg("      : %f, %f, %f, %f", 
-				g_vtxTransformed[i].x,g_vtxTransformed[i].y,g_vtxTransformed[i].z,g_vtxTransformed[i].w);
-			DebuggerAppendMsg("      : %f, %f, %f, %f", 
-				g_vecProjected[i].x,g_vecProjected[i].y,g_vecProjected[i].z,g_vecProjected[i].w);
-		});
-
-		g_fFogCoord[i] = g_vecProjected[i].z;
-		if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
-			g_fFogCoord[i] = gRSPfFogMin;
-
-		RSP_Vtx_Clipping(i);
-
-		if( gRDP.tnl.Light )
-		{
-			g_normal.x = (float)vertcolors.nx;
-			g_normal.y = (float)vertcolors.ny;
-			g_normal.z = (float)vertcolors.nz;
-
-			Vec3TransformNormal(g_normal, gRSPmodelViewTop);
-			g_dwVtxDifColor[i] = LightVert(g_normal, i);
-
-			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = vertcolors.a;	// still use alpha from the vertex
-		}
-		else
-		{
-			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
-			{
-				g_dwVtxDifColor[i] = gRDP.primitiveColor;
-			}
-			else	//FLAT shade
-			{
-				g_dwVtxDifColor[i] = COLOR_RGBA(vertcolors.r, vertcolors.g, vertcolors.b, vertcolors.a);
-			}
-		}
-
-		if( options.bWinFrameMode )
-		{
-			g_dwVtxDifColor[i] = COLOR_RGBA(vertcolors.r, vertcolors.g, vertcolors.b, vertcolors.a);
-		}
-
-		ReplaceAlphaWithFogFactor(i);
-
-		/*
-		// Update texture coords n.b. need to divide tu/tv by bogus scale on addition to buffer
-		VECTOR2 & t = g_fVtxTxtCoords[i];
-
-		// If the vert is already lit, then there is no normal (and hence we
-		// can't generate tex coord)
-		if (gRDP.tnl.TexGen && gRDP.tnl.Light && g_textures[gRSP.curTile].m_bTextureEnable )
-		{
-			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
-		}
-		else
-		{
-			t.x = (float)vert.tu;
-			t.y = (float)vert.tv; 
-		}
-		*/
-	}
-
-	VTX_DUMP(TRACE2("Setting Vertexes: %d - %d\n", dwV0, dwV0+dwNum-1));
-	DEBUGGER_PAUSE_AND_DUMP(NEXT_VERTEX_CMD,{TRACE0("Paused at Vertex Cmd");});
 }
 
 void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)

@@ -203,7 +203,6 @@
     <ClInclude Include="Parser\RSP_GE.h" />
     <ClInclude Include="Parser\RSP_LL.h" />
     <ClInclude Include="Parser\RSP_PD.h" />
-    <ClInclude Include="Parser\RSP_RS.h" />
     <ClInclude Include="Parser\RSP_S2DEX.h" />
     <ClInclude Include="Parser\RSP_SOTE.h" />
     <ClInclude Include="Parser\RSP_WRUS.h" />

@@ -464,10 +464,6 @@ void GenerateCurrentRomOptions()
 	{
 		options.enableHackForGames = HACK_FOR_TWINE;
 	}
-	else if ((strstr(g_curRomInfo.szGameName, "Squadron") != 0))
-	{
-		options.enableHackForGames = HACK_FOR_ROGUE_SQUADRON;
-	}
 	else if ((strstr(g_curRomInfo.szGameName, "Baseball") != 0) && (strstr(g_curRomInfo.szGameName, "Star") != 0))
 	{
 		options.enableHackForGames = HACK_FOR_ALL_STAR_BASEBALL;

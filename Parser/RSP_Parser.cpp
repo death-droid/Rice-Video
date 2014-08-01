@@ -269,7 +269,6 @@ uint32	g_dwRDPPalCrc[16];
 #include "RSP_Conker.h" //Conkers Bad Fur Day
 #include "RSP_GE.h" //Golden Eye
 #include "RSP_PD.h" //Perfect Dark
-#include "RSP_RS.h" //Rouge Squadron
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -436,31 +435,6 @@ void RDP_SetUcodeMap(int ucode)
 		status.bUseModifiedUcodeMap = true;
 		break;
 	case 16: // Star War, Shadow Of Empire
-		break;
-	case 17:	//Indiana Jones, does not work anyway
-		memcpy( &LoadedUcodeMap, &ucodeMap1, sizeof(UcodeMap));
-		LoadedUcodeMap[0]=DLParser_Ucode8_0x0;
-		//LoadedUcodeMap[1]=RSP_RDP_Nothing;
-		LoadedUcodeMap[2]=DLParser_RS_Color_Buffer;
-		LoadedUcodeMap[3]=DLParser_RS_MoveMem;
-		LoadedUcodeMap[4]=DLParser_RS_Vtx_Buffer;
-		LoadedUcodeMap[5]=DLParser_Ucode8_0x05;
-		LoadedUcodeMap[6]=DLParser_Ucode8_DL;
-		LoadedUcodeMap[7]=DLParser_Ucode8_JUMP;
-		LoadedUcodeMap[8]=RSP_RDP_Nothing;
-		LoadedUcodeMap[9]=RSP_RDP_Nothing;
-		LoadedUcodeMap[10]=RSP_RDP_Nothing;
-		LoadedUcodeMap[11]=RSP_RDP_Nothing;
-		LoadedUcodeMap[0x80]=DLParser_RS_Block;
-		LoadedUcodeMap[0xb4]=DLParser_Ucode8_0xb4;
-		LoadedUcodeMap[0xb5]=DLParser_Ucode8_0xb5;
-		LoadedUcodeMap[0xb8]=DLParser_Ucode8_EndDL;
-		LoadedUcodeMap[0xbc]=DLParser_Ucode8_0xbc;
-		LoadedUcodeMap[0xbd]=DLParser_Ucode8_0xbd;
-		LoadedUcodeMap[0xbe]=DLParser_RS_0xbe;
-		LoadedUcodeMap[0xbF]=DLParser_Ucode8_0xbf;
-		LoadedUcodeMap[0xe4]=DLParser_TexRect_Last_Legion;
-		status.bUseModifiedUcodeMap = true;
 		break;
 	case 18: // World Driver Championship
 		memcpy( &LoadedUcodeMap, &ucodeMap1, sizeof(UcodeMap));

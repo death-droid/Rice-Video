@@ -404,7 +404,6 @@ int CDirectXPixelShaderCombiner::GeneratePixelShaderFromMux(void)
 	sprintf(buf, "sub r0.rgb,     %s, %s\n", MuxToC(m.aRGB1), MuxToC(m.bRGB1) );	strcat(m_textBuf, buf);
 	sprintf(buf, "mad_sat r0.rgb, r0, %s, %s\n", MuxToC(m.cRGB1), MuxToC(m.dRGB1) );	strcat(m_textBuf, buf);
 
-
 	// Alpha channel 2
 	sprintf(buf, "sub r0.a,     %s, %s\n", MuxToA(m.aA1), MuxToA(m.bA1) );	strcat(m_textBuf, buf);
 	sprintf(buf, "mad_sat r0.a, r0, %s, %s\n", MuxToA(m.cA1), MuxToA(m.dA1) );	strcat(m_textBuf, buf);

@@ -191,9 +191,6 @@
     <ClInclude Include="Parser\RSP_PD.h">
       <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
     </ClInclude>
-    <ClInclude Include="Parser\RSP_RS.h">
-      <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
-    </ClInclude>
     <ClInclude Include="Parser\RSP_SOTE.h">
       <Filter>Graphics\Parser\Ucodes\Custom Ucodes</Filter>
     </ClInclude>
