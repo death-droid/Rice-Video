@@ -1169,35 +1169,28 @@ bool CRender::DrawTriangles()
 
 		if( t==1 && !(m_pColorCombiner->m_bTex1Enabled) ) break;
 
-		if( status.isVertexShaderEnabled )
+		uint32 i;
+		if( halfscaleS < 1 )
 		{
-			UpdateOptionsForVertexShader(halfscaleS,halfscaleT);
-		}
-		else
-		{
-			uint32 i;
-			if( halfscaleS < 1 )
+			for( i=0; i<gRSP.numVertices; i++ )
 			{
-				for( i=0; i<gRSP.numVertices; i++ )
+				if( t == 0 )
 				{
-					if( t == 0 )
-					{
-						g_vtxBuffer[i].tcord[t].u += gRSP.tex0OffsetX;
-						g_vtxBuffer[i].tcord[t].u /= 2;
-						g_vtxBuffer[i].tcord[t].u -= gRSP.tex0OffsetX;
-						g_vtxBuffer[i].tcord[t].v += gRSP.tex0OffsetY;
-						g_vtxBuffer[i].tcord[t].v /= 2;
-						g_vtxBuffer[i].tcord[t].v -= gRSP.tex0OffsetY;
-					}
-					else
-					{
-						g_vtxBuffer[i].tcord[t].u += gRSP.tex1OffsetX;
-						g_vtxBuffer[i].tcord[t].u /= 2;
-						g_vtxBuffer[i].tcord[t].u -= gRSP.tex1OffsetX;
-						g_vtxBuffer[i].tcord[t].v += gRSP.tex1OffsetY;
-						g_vtxBuffer[i].tcord[t].v /= 2;
-						g_vtxBuffer[i].tcord[t].v -= gRSP.tex1OffsetY;
-					}
+					g_vtxBuffer[i].tcord[t].u += gRSP.tex0OffsetX;
+					g_vtxBuffer[i].tcord[t].u /= 2;
+					g_vtxBuffer[i].tcord[t].u -= gRSP.tex0OffsetX;
+					g_vtxBuffer[i].tcord[t].v += gRSP.tex0OffsetY;
+					g_vtxBuffer[i].tcord[t].v /= 2;
+					g_vtxBuffer[i].tcord[t].v -= gRSP.tex0OffsetY;
+				}
+				else
+				{
+					g_vtxBuffer[i].tcord[t].u += gRSP.tex1OffsetX;
+					g_vtxBuffer[i].tcord[t].u /= 2;
+					g_vtxBuffer[i].tcord[t].u -= gRSP.tex1OffsetX;
+					g_vtxBuffer[i].tcord[t].v += gRSP.tex1OffsetY;
+					g_vtxBuffer[i].tcord[t].v /= 2;
+					g_vtxBuffer[i].tcord[t].v -= gRSP.tex1OffsetY;
 				}
 			}
 		}

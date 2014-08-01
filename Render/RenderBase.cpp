@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "..\stdafx.h"
 #include "float.h"
-#include "VertexShaderConstantDef.h"
 
 extern FiddledVtx * g_pVtxBase;
 
@@ -80,8 +79,6 @@ uint32		g_clipFlag[MAX_VERTS];
 uint32		g_clipFlag2[MAX_VERTS];
 RenderTexture g_textures[MAX_TEXTURES];
 float		g_fFogCoord[MAX_VERTS];
-
-EXTERNAL_VERTEX	g_vtxForExternal[MAX_VERTS];
 
 TLITVERTEX			g_vtxBuffer[1000];
 TLITVERTEX			g_clippedVtxBuffer[2000];
@@ -198,9 +195,6 @@ void NormalizeNormalVec()
 
 void InitRenderBase()
 {
-
-	ProcessVertexData = ProcessVertexDataNoSSE;
-
 	gRSPfFogMin = gRSPfFogMax = 0.0f;
 	windowSetting.fMultX = windowSetting.fMultY = 2.0f;
 	windowSetting.vpLeftW = windowSetting.vpTopW = 0;
@@ -607,7 +601,7 @@ inline void ReplaceAlphaWithFogFactor(int i)
 #define X_NEG  0x10
 #define X_POS  0x20
 
-void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
+void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 
 	UpdateCombinedMatrix();
@@ -726,26 +720,15 @@ void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 bool PrepareTriangle(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 {
-	if( status.isVertexShaderEnabled || status.bUseHW_T_L )
-	{
-		g_vtxIndex[gRSP.numVertices++] = dwV0;
-		g_vtxIndex[gRSP.numVertices++] = dwV1;
-		g_vtxIndex[gRSP.numVertices++] = dwV2;
-		status.dwNumTrisRendered++;
-		gRSP.maxVertexID = max(gRSP.maxVertexID,max(dwV0,max(dwV1,dwV2)));
-	}
-	else
-	{
-		bool textureFlag = (CRender::g_pRender->IsTextureEnabled() || gRSP.ucode == 6 );
 
-		InitVertex(dwV0, gRSP.numVertices, textureFlag);
-		InitVertex(dwV1, gRSP.numVertices+1, textureFlag);
-		InitVertex(dwV2, gRSP.numVertices+2, textureFlag);
+	bool textureFlag = (CRender::g_pRender->IsTextureEnabled() || gRSP.ucode == 6 );
 
-		gRSP.numVertices += 3;
-		status.dwNumTrisRendered++;
-	}
+	InitVertex(dwV0, gRSP.numVertices, textureFlag);
+	InitVertex(dwV1, gRSP.numVertices+1, textureFlag);
+	InitVertex(dwV2, gRSP.numVertices+2, textureFlag);
 
+	gRSP.numVertices += 3;
+	status.dwNumTrisRendered++;
 	return true;
 }
 
@@ -774,10 +757,6 @@ bool AddTri(u32 v0, u32 v1, u32 v2, bool bTri4)
 // Returns FALSE if it is clipped
 bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 {
-	//return true;	//fix me
-
-	if( status.isVertexShaderEnabled || status.bUseHW_T_L )	return true;	// We won't have access to transformed vertex data
-
 	DEBUGGER_ONLY_IF( (!debuggerEnableTestTris || !debuggerEnableCullFace), {return TRUE;});
     
 #ifdef _DEBUG
@@ -1420,13 +1399,6 @@ void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 	gRSPlights[dwLight].colour.fa = 255;	// Ignore light alpha
 
 	//TRACE1("Set light %d color", dwLight);
-
-	if( status.isVertexShaderEnabled )
-	{
-		float c[4] = {gRSPlights[dwLight].colour.r/255.0f, gRSPlights[dwLight].colour.g/255.0f, gRSPlights[dwLight].colour.b/255.0f, gRSPlights[dwLight].colour.a/255.0f};
-		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT0_AMBIENT+dwLight, (float*)&c, 1 );
-	}
-
 //	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
 }
 
@@ -1437,11 +1409,6 @@ void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)
 	gRSPlights[dwLight].direction.y = y/w;
 	gRSPlights[dwLight].direction.z = z/w;
 	gRSPlights[dwLight].direction.range = range; 
-
-	if( status.isVertexShaderEnabled && dwLight>0 )
-	{
-		g_pD3DDev->SetVertexShaderConstantF( CV_LIGHT1_DIRECTION+dwLight, &(gRSPlights[dwLight].direction.x), 1 );
-	}
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f, %.4f", dwLight, x, y, z, range));
 }

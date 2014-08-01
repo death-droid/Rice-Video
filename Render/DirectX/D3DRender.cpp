@@ -52,12 +52,6 @@ bool D3DRender::ClearDeviceObjects()
 			gD3DDevWrapper.SetTexture( i, NULL );
 		}
 	}
-
-	if( gVertexShader != NULL )
-	{
-		gVertexShader->Release();
-	}
-
 	return true;
 }
 	
@@ -136,19 +130,6 @@ bool D3DRender::InitDeviceObjects()
 	
 	status.curScissor = UNKNOWN_SCISSOR;
 
-	if( gVertexShader != NULL )
-	{
-		gVertexShader->Release();
-	}
-
-	if( status.isVertexShaderEnabled )
-	{
-		if( !InitVertexShader() )
-		{
-			status.isVertexShaderEnabled = false;
-		}
-	}
-
 	D3DCLIPSTATUS9 clippingstatus;
 	g_pD3DDev->GetClipStatus(&clippingstatus);
 	clippingstatus.ClipUnion = D3DCS_BACK | D3DCS_BOTTOM | D3DCS_FRONT | D3DCS_LEFT | D3DCS_RIGHT | D3DCS_TOP;
@@ -206,51 +187,10 @@ bool D3DRender::RenderFlushTris()
 {
 	ApplyZBias(m_dwZBias);
 
-	if( status.bUseHW_T_L )
-	{
-#define RICE_HW_VERTEX (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX0 ) 
-
-		HRESULT res = g_pD3DDev->SetFVF( RICE_HW_VERTEX );
-		//D3DXMATRIX mat;
-		//D3DXMatrixIdentity(&mat);
-		//g_pD3DDev->SetTransform( D3DTS_WORLD, &mat );
-		//g_pD3DDev->SetTransform( D3DTS_PROJECTION, &mat );
-		//g_pD3DDev->SetTransform( D3DTS_VIEW, &mat );
-
-		//UpdateCombinedMatrix();
-		//g_pD3DDev->SetTransform( D3DTS_WORLD, &gRSPworldProject );
-		g_pD3DDev->SetTransform( D3DTS_WORLD, &gRSP.modelviewMtxs[gRSP.modelViewMtxTop] );
-		g_pD3DDev->SetTransform( D3DTS_PROJECTION, &gRSP.projectionMtxs[gRSP.projectionMtxTop] );
-
-		g_pD3DDev->SetRenderState( D3DRS_CULLMODE,   D3DCULL_CW );
-		//gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING,	  FALSE);
-		//gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
-
-		//D3DVIEWPORT9 vp = {0, 0, 640, 480, -1, 1};
-		//gD3DDevWrapper.SetViewport(&vp);
-		g_pD3DDev->DrawIndexedPrimitiveUP( D3DPT_TRIANGLELIST, 0, gRSP.maxVertexID, gRSP.numVertices/3, g_vtxIndex, D3DFMT_INDEX32, g_vtxForExternal, sizeof(EXTERNAL_VERTEX) );
-	}
-	else if( status.isVertexShaderEnabled )
-	{
-		HRESULT res = g_pD3DDev->SetVertexShader( gVertexShader );
-		D3DXMATRIX mat;
-		D3DXMatrixIdentity(&mat);
-		g_pD3DDev->SetTransform( D3DTS_WORLD, &mat );
-		g_pD3DDev->SetTransform( D3DTS_PROJECTION, &mat );
-		g_pD3DDev->SetTransform( D3DTS_VIEW, &mat );
-		UpdateOptionsForVertexShader(1.0f,1.0f);
-		InitVertexShaderConstants();
-		UpdateVertexShaderConstant();
-
-		g_pD3DDev->DrawIndexedPrimitiveUP( D3DPT_TRIANGLELIST, 0, gRSP.maxVertexID, gRSP.numVertices/3, g_vtxIndex, D3DFMT_INDEX32, g_vtxForExternal, sizeof(EXTERNAL_VERTEX) );
-	}
-	else
-	{
-		g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
-		ClipVertexes();
-		if( g_clippedVtxCount > 0 )
-			g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_clippedVtxCount/3, g_clippedVtxBuffer, sizeof(TLITVERTEX));
-	}
+	g_pD3DDev->SetFVF(RICE_FVF_TLITVERTEX);
+	ClipVertexes();
+	if( g_clippedVtxCount > 0 )
+		g_pD3DDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_clippedVtxCount/3, g_clippedVtxBuffer, sizeof(TLITVERTEX));
 
 	return true;
 }

@@ -263,8 +263,6 @@ void WriteConfiguration(void)
 	ini.SetLongValue("RenderSetting", "EnableFog", options.bEnableFog);
 	ini.SetLongValue("RenderSetting", "WinFrameMode", options.bWinFrameMode);
 	ini.SetLongValue("RenderSetting", "MipMaps", options.bMipMaps);
-	ini.SetLongValue("RenderSetting", "EnableVertexShader", options.bEnableVertexShader);
-	ini.SetLongValue("RenderSetting", "ForceSoftwareTnL", options.bForceSoftwareTnL);
 
 	//Now texture settings
 	ini.SetLongValue("Texture Settings", "CacheHiResTextures" , (uint32)options.bCacheHiResTextures);
@@ -293,37 +291,16 @@ void WriteConfiguration(void)
 	ini.Reset();
 }
 
-bool isMMXSupported() 
-{ 
-	int IsMMXSupported; 
-	__asm 
-	{ 
-		mov eax,1	// CPUID level 1 
-		cpuid		// EDX = feature flag 
-		and edx,0x800000		// test bit 23 of feature flag 
-		mov IsMMXSupported,edx	// != 0 if MMX is supported 
-	} 
-	if (IsMMXSupported != 0) 
-		return true; 
-	else 
-		return false; 
-} 
-
 void ReadConfiguration(void)
 {
-
 	char name[1024];
 	GetPluginDir(name);
 	strcat(name, CONFIG_FILE);
 
 	options.bEnableHacks = TRUE;
-	options.bEnableVertexShader = FALSE;
 
 	defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_CHANGE;
 	//defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN;
-
-	status.isMMXSupported = isMMXSupported();
-	status.isVertexShaderSupported = false;
 
 	defaultRomOptions.N64FrameBufferEmuType = FRM_BUF_NONE;
 	defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
@@ -334,8 +311,6 @@ void ReadConfiguration(void)
 		options.bEnableFog = TRUE;
 		options.bWinFrameMode = FALSE;
 		options.bMipMaps = TRUE;
-		options.bForceSoftwareTnL = TRUE;
-		options.bEnableVertexShader = FALSE;
 		options.forceTextureFilter = 0;
 		options.bLoadHiResTextures = FALSE;
 		// set caching by default to "off"
@@ -402,10 +377,6 @@ void ReadConfiguration(void)
 		options.bEnableFog = ini.GetBoolValue("RenderSetting", "EnableFog");
 		options.bWinFrameMode = ini.GetBoolValue("RenderSetting", "WinFrameMode");
 		options.bMipMaps = ini.GetBoolValue("RenderSetting", "MipMaps");
-		options.bForceSoftwareTnL = ini.GetLongValue("RenderSetting", "ForceSoftwareTnL");
-		
-		options.bEnableVertexShader = ini.GetBoolValue("RenderSetting", "EnableVertexShader");
-		options.bEnableVertexShader = FALSE;
 
 		options.bDisplayTooltip = ini.GetBoolValue("MiscSettings", "DisplayTooltip");
 		options.bHideAdvancedOptions = ini.GetBoolValue("MiscSettings", "HideAdvancedOptions");
@@ -413,11 +384,6 @@ void ReadConfiguration(void)
 		options.FPSColor = ini.GetLongValue("MiscSettings", "FPSColor");
 		ini.Reset();
 	}
-
-	ProcessVertexData = ProcessVertexDataNoSSE;
-
-	status.isVertexShaderEnabled = status.isVertexShaderSupported && options.bEnableVertexShader;
-	status.bUseHW_T_L = false;
 }
 	
 //---------------------------------------------------------------------------------------
@@ -738,15 +704,6 @@ ToolTipMsg ttmsg[] = {
 			"speed for some games, and could cause flickering for other games.\n"
 	},
 	{ 
-		IDC_VERTEX_SHADER,
-			"Vertex Shader",
-			"If this option is on, the plugin will try to use vertex shaders if supported by the GPU. Using "
-			"a vertex shader will transfer most CPU duty on vertex transforming and lighting to the GPU, "
-			"which will greatly decrease the CPU duty and increase the game's speed.\n"
-			"The plugin uses Vertex Shader Model 1.0 which is defined by DirectX 8.0. The plugin supports vertex shaders "
-			"in DirectX mode only at this moment."
-	},
-	{ 
 		IDC_ALPHA_BLENDER,
 			"Force to use normal alpha blender",
 			"Use this option if you have opaque/transparency problems with certain games.\n"
@@ -844,13 +801,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_EMULATE_CLEAR,
 			"Emulate Memory Clear",
 			"\nA few games need this option to work better, including DK64."
-	},
-	{ 
-		IDC_SOFTWARE_TNL,
-			"Force Software Transformation and Lighting",
-			"\nThis option will force software T and L instead of available hardware T and L. "
-			"It is needed for most newer ATI Radeons."
-			"\n\nThe plugin will run slower with this option on. If you don't need it, don't leave it on."
 	},
 	{ 
 		IDC_FULLSCREEN_FREQUENCY,
@@ -1287,17 +1237,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_SETCHECK, options.bMipMaps ? BST_CHECKED : BST_UNCHECKED, 0);
 
-		if( status.isVertexShaderSupported )
-		{
-			SendDlgItemMessage(hDlg, IDC_VERTEX_SHADER, BM_SETCHECK, options.bEnableVertexShader ? BST_CHECKED : BST_UNCHECKED, 0);
-		}
-		else
-		{
-			SendDlgItemMessage(hDlg, IDC_VERTEX_SHADER, BM_SETCHECK, BST_UNCHECKED, 0);
-			item = GetDlgItem(hDlg, IDC_VERTEX_SHADER );
-			EnableWindow(item, FALSE);
-		}
-
 		SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_SETCHECK, options.bDisplayTooltip ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_SETCHECK, options.bHideAdvancedOptions ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -1396,14 +1335,12 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					ShowItem(hDlg, IDC_FOG, FALSE);
 					ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
 					ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
-					ShowItem(hDlg, IDC_VERTEX_SHADER, FALSE);
 				}
 				else
 				{
 					ShowItem(hDlg, IDC_FOG, TRUE);
 					ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
 					ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
-					ShowItem(hDlg, IDC_VERTEX_SHADER, TRUE);
 				}
 
 				if(status.bGameIsRunning)
@@ -1433,14 +1370,12 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				ShowItem(hDlg, IDC_FOG, FALSE);
 				ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
 				ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
-				ShowItem(hDlg, IDC_VERTEX_SHADER, FALSE);
 			}
 			else
 			{
 				ShowItem(hDlg, IDC_FOG, TRUE);
 				ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
 				ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
-				ShowItem(hDlg, IDC_VERTEX_SHADER, TRUE);
 			}
 			WriteConfiguration();
 			break;
@@ -1450,14 +1385,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			options.bDisplayTooltip = (SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-
-
-			ProcessVertexData = ProcessVertexDataNoSSE;
-
-			options.bEnableVertexShader = (SendDlgItemMessage(hDlg, IDC_VERTEX_SHADER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bEnableVertexShader = FALSE;
-
-			status.isVertexShaderEnabled = status.isVertexShaderSupported && options.bEnableVertexShader;
 
 			i = SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_GETCURSEL, 0, 0);
 			if( i<=0 )
@@ -1511,23 +1438,12 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		g_hwndDlg = hDlg;
 		EnumChildWndTooltip();
 
-		SendDlgItemMessage(hDlg, IDC_SOFTWARE_TNL, BM_SETCHECK, options.bForceSoftwareTnL ? BST_CHECKED : BST_UNCHECKED, 0);
-
 		SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_RESETCONTENT, 0, 0);
 		for( i=0; i<sizeof(OnScreenDisplaySettings)/sizeof(SettingInfo); i++ )
 		{
 			SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_INSERTSTRING, i, (LPARAM) (OnScreenDisplaySettings[i].description));
 			if( options.bDisplayOnscreenFPS == OnScreenDisplaySettings[i].setting )
 				SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_SETCURSEL, i, 0);
-		}
-
-		item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
-		EnableWindow(item, TRUE);
-
-		if( status.bGameIsRunning )
-		{
-			item = GetDlgItem(hDlg, IDC_SOFTWARE_TNL );
-			EnableWindow(item, FALSE);
 		}
 
 		item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
@@ -1683,7 +1599,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		switch(LOWORD(wParam))
 		{
         case IDOK:
-			options.bForceSoftwareTnL = (SendDlgItemMessage(hDlg, IDC_SOFTWARE_TNL, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			i = SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_GETCURSEL, 0, 0);
 			options.bDisplayOnscreenFPS = OnScreenDisplaySettings[i].setting;

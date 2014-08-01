@@ -57,8 +57,6 @@ extern float				g_fFogCoord[MAX_VERTS];
 
 extern TLITVERTEX			g_texRectTVtx[4];
 
-extern EXTERNAL_VERTEX			g_vtxForExternal[MAX_VERTS];
-
 
 //#define INIT_VERTEX_METHOD_2
 
@@ -228,9 +226,7 @@ void InitVertexTextureConstants();
 bool AddTri(u32 v0, u32 v1, u32 v2, bool bTri4 = false);
 bool PrepareTriangle(uint32 dwV0, uint32 dwV1, uint32 dwV2);
 bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2);
-extern void (*ProcessVertexData)(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
-void ProcessVertexDataNoSSE(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
-void ProcessVertexDataExternal(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
+void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void SetPrimitiveColor(uint32 dwCol, uint32 LODMin, uint32 LODFrac);
 void SetPrimitiveDepth(uint32 z, uint32 dwDZ);
 void SetVertexXYZ(uint32 vertex, float x, float y, float z);
@@ -242,7 +238,6 @@ void ForceMainTextureIndex(int dwTile);
 void UpdateCombinedMatrix();
 
 void ClipVertexes();
-void ClipVertexesForRect();
 
 void LogTextureCoords(float fTex0S, float fTex0T, float fTex1S, float fTex1T);
 bool CheckTextureCoords(int tex);

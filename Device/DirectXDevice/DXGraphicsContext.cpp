@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 LPDIRECT3DDEVICE9 g_pD3DDev = NULL;
 CD3DDevWrapper    gD3DDevWrapper;
 D3DCAPS9 g_D3DDeviceCaps;
-LPDIRECT3DVERTEXSHADER9 gVertexShader = NULL;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -194,9 +193,6 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 
 	g_pD3DDev->GetDeviceCaps(&g_D3DDeviceCaps);
 
-	// Force to use Software T&L
-	g_pD3DDev->SetSoftwareVertexProcessing(options.bForceSoftwareTnL ? TRUE : FALSE);
-
 	if( g_GraphicsInfo.hStatusBar )
 	{
 		SetWindowText(g_GraphicsInfo.hStatusBar,"DirectX device is ready");
@@ -255,10 +251,6 @@ void CDXGraphicsContext::InitDeviceParameters()
 		WriteConfiguration();
 	}
 
-	//status.isVertexShaderSupported = D3DSHADER_VERSION_MAJOR( pAdapter->devices[0].d3dCaps.VertexShaderVersion ) >= 1;
-	//status.isVertexShaderEnabled = status.isVertexShaderSupported && options.bEnableVertexShader;
-	//status.isVertexShaderEnabled = false;	// Disable it for now
-	//status.bUseHW_T_L = true;				// Debug hardware T&L so to debug vertex shader
 
 	// Release the Direct3D object
 	pD3D->Release();
@@ -335,6 +327,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 		m_d3dpp.SwapEffect = m_bWindowed ? D3DSWAPEFFECT_COPY : D3DSWAPEFFECT_FLIP;	// Always use COPY for window mode
 	else
 		m_d3dpp.SwapEffect		= D3DSWAPEFFECT_DISCARD;	// Anti-Aliasing mode
+
 	windowSetting.uDisplayWidth = m_bWindowed ? windowSetting.uWindowDisplayWidth : windowSetting.uFullScreenDisplayWidth;
 	windowSetting.uDisplayHeight = m_bWindowed ? windowSetting.uWindowDisplayHeight : windowSetting.uFullScreenDisplayHeight;
 

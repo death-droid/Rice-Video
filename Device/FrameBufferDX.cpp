@@ -20,8 +20,6 @@ Overview of DX framebuffer code:
 * Copies video backbuffer to rendertexture in main memory
 * This is needed for framebuffer effects rendering
 * This is slow due to the lack of hardware render to tex code
-
-
 */
 
 #include "..\stdafx.h"

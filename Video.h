@@ -104,13 +104,6 @@ typedef struct {
 	bool	bCIBufferIsRendered;
 	int		leftRendered,topRendered,rightRendered,bottomRendered;
 
-	bool	isMMXSupported;
-	bool	isVertexShaderSupported;
-
-	bool	isMMXEnabled;
-	bool	isVertexShaderEnabled;
-	bool	bUseHW_T_L;					// Use hardware T&L, for debug purpose only
-
 	bool	toShowCFB;
 	bool	toCaptureScreen;
 	char	screenCaptureFilename[MAX_PATH];

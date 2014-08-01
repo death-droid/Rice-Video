@@ -28,8 +28,6 @@ DIRECTX DIALOGEX 0, 0, 300, 187
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Force Software Transformation && Lighting",IDC_SOFTWARE_TNL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,120,150,10
     CONTROL         "",IDC_SLIDER_FSAA,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,21,157,100,15
     CONTROL         "",IDC_SLIDER_ANISO,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,162,157,100,15
     CTEXT           "Full Scene Anti-Aliasing:",IDC_ANTI_ALIASING_TEXT,21,148,104,8
