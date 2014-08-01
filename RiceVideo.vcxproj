@@ -174,8 +174,6 @@
     <ClInclude Include="Render\ExtendedRender.h" />
     <ClInclude Include="Render\Render.h" />
     <ClInclude Include="Render\RenderBase.h" />
-    <ClInclude Include="Render\shaderdx9_include.h" />
-    <ClInclude Include="Render\VertexShaderConstantDef.h" />
     <ClInclude Include="Render\DirectX\D3DRender.h" />
     <ClInclude Include="Device\FrameBuffer.h" />
     <ClInclude Include="Device\GraphicsContext.h" />
@@ -229,7 +227,6 @@
     <ClCompile Include="Render\RenderBase.cpp" />
     <ClCompile Include="Render\RenderExt.cpp" />
     <ClCompile Include="Render\VertexClipper.cpp" />
-    <ClCompile Include="Render\VertexShader.cpp" />
     <ClCompile Include="Render\DirectX\D3DRender.cpp" />
     <ClCompile Include="Render\DirectX\D3DRenderExt.cpp" />
     <ClCompile Include="Device\FrameBuffer.cpp" />
@@ -248,9 +245,6 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Video.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Render\shaderdx9.vsh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

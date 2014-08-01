@@ -104,12 +104,6 @@
     <ClInclude Include="Render\RenderBase.h">
       <Filter>Graphics\Render</Filter>
     </ClInclude>
-    <ClInclude Include="Render\shaderdx9_include.h">
-      <Filter>Graphics\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="Render\VertexShaderConstantDef.h">
-      <Filter>Graphics\Render</Filter>
-    </ClInclude>
     <ClInclude Include="Render\DirectX\D3DRender.h">
       <Filter>Graphics\Render\DirectX</Filter>
     </ClInclude>
@@ -250,9 +244,6 @@
     <ClCompile Include="Render\VertexClipper.cpp">
       <Filter>Graphics\Render</Filter>
     </ClCompile>
-    <ClCompile Include="Render\VertexShader.cpp">
-      <Filter>Graphics\Render</Filter>
-    </ClCompile>
     <ClCompile Include="Render\DirectX\D3DRender.cpp">
       <Filter>Graphics\Render\DirectX</Filter>
     </ClCompile>
@@ -303,10 +294,5 @@
     <ResourceCompile Include="Video.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Render\shaderdx9.vsh">
-      <Filter>Graphics\Render</Filter>
-    </None>
   </ItemGroup>
 </Project>

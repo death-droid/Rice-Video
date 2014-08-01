@@ -100,8 +100,6 @@ __declspec(align(16)) Matrix	gRSPmodelViewTop;
 __declspec(align(16)) Matrix	gRSPmodelViewTopTranspose;
 __declspec(align(16)) Matrix	dkrMatrixTransposed;
 
-void (*ProcessVertexData)(uint32 dwAddr, uint32 dwV0, uint32 dwNum)=NULL;
-
 /*
  *	
  */

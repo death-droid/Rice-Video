@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class ofstream;
 extern LPDIRECT3DDEVICE9 g_pD3DDev;
 extern CD3DDevWrapper    gD3DDevWrapper;
-extern LPDIRECT3DVERTEXSHADER9 gVertexShader;
 
 class D3DRender : public CRender
 {
@@ -139,11 +138,5 @@ public:
 	// S2DEX GBI2 function
 	void DrawObjBGCopy(uObjBg &info);
 };
-
-
-extern void UpdateOptionsForVertexShader(float halfS, float halfT);
-extern bool InitVertexShader();
-extern void InitVertexShaderConstants();
-extern void UpdateVertexShaderConstant();
 
 #endif // __RICE_D3DRENDER_H__
