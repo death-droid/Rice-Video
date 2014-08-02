@@ -51,8 +51,6 @@ public:
 	void UpdateFrame(bool swaponly=false);
 	bool IsFSAAEnable() {return m_FSAAIsEnabled;}
 
-	virtual void SaveSurfaceToFile(char *filenametosave, LPDIRECT3DSURFACE9 surf, bool bShow = true);
-
 	int ToggleFullscreen();		// return 0 as the result is windowed
 	static bool IsResultGood(HRESULT hr, bool displayError = false);
 	static void InitDeviceParameters();

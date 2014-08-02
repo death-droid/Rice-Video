@@ -50,7 +50,7 @@ void D3DRender::LoadTxtrBufFromRDRAM(void)
 			LPDIRECT3DTEXTURE9 pD3DTexture = g_textures[0].m_lpsTexturePtr;
 			LPDIRECT3DSURFACE9 pD3DSurface = NULL;
 			pD3DTexture->GetSurfaceLevel(0,&pD3DSurface);
-			((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->SaveSurfaceToFile("\\DxTxtBuf25", pD3DSurface);
+			D3DXSaveSurfaceToFile("\\DxTxtBuf25", D3DXIFF_BMP, pD3DSurface, NULL, NULL);
 		}
 #endif
 	}

@@ -234,7 +234,7 @@ void CDXRenderTexture::Display(int idx)
 	m_pTexture->GetTexture()->GetSurfaceLevel(0,&pSourceSurface);
 	char filename[256];
 	sprintf(filename,"\\DxTxtBuf%d",idx);
-	((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->SaveSurfaceToFile(filename, pSourceSurface);
+	D3DXSaveSurfaceToFile(filename, D3DXIFF_BMP, pSourceSurface, NULL, NULL);
 	SAFE_RELEASE(pSourceSurface);
 }
 #endif

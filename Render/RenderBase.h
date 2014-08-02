@@ -239,10 +239,6 @@ void UpdateCombinedMatrix();
 
 void ClipVertexes();
 
-void LogTextureCoords(float fTex0S, float fTex0T, float fTex1S, float fTex1T);
-bool CheckTextureCoords(int tex);
-void ResetTextureCoordsLog(float maxs0, float maxt0, float maxs1, float maxt1);
-
 inline float ViewPortTranslatef_x(float x) { return ( (x+1) * windowSetting.vpWidthW/2) + windowSetting.vpLeftW; }
 inline float ViewPortTranslatef_y(float y) { return ( (1-y) * windowSetting.vpHeightW/2) + windowSetting.vpTopW; }
 inline float ViewPortTranslatei_x(LONG x) { return x*windowSetting.fMultX; }

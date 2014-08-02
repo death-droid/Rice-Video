@@ -723,36 +723,6 @@ bool CDXGraphicsContext::IsResultGood(HRESULT hr, bool displayError)
 		return true;
 }
 
-
-void CDXGraphicsContext::SaveSurfaceToFile(char *filenametosave, LPDIRECT3DSURFACE9 surf, bool bShow)
-{
-	char filename[256];
-	strcpy(filename, filenametosave);
-
-	D3DSURFACE_DESC desc;
-	surf->GetDesc(&desc);
-	CTexture *dsttxtr = new CTexture(desc.Width, desc.Height, AS_NORMAL);
-
-	LPDIRECT3DSURFACE9 pDst;
-	dsttxtr->GetTexture()->GetSurfaceLevel(0,&pDst);
-
-	if( pDst )
-	{
-		HRESULT res;
-		RECT dstrect = {0,0,desc.Width-1, desc.Height-1};
-		res = D3DXLoadSurfaceFromSurface(pDst, NULL, &dstrect, surf, NULL, &dstrect, D3DX_FILTER_POINT, 0xFF000000);
-		pDst->Release();
-
-		if( res == S_OK )
-		{
-			CRender::g_pRender->SaveTextureToFile(*dsttxtr, filenametosave, TXT_RGB, bShow, false);
-		}
-	}
-
-	delete dsttxtr;
-}
-
-
 HRESULT CD3DDevWrapper::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 {
 	if( m_pD3DDev != NULL )

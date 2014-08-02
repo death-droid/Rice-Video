@@ -647,8 +647,7 @@ void D3DRender::CaptureScreen(char *filename)
 {
 	LPDIRECT3DSURFACE9 surface;
 	g_pD3DDev->GetRenderTarget(0,&surface);
-	((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->SaveSurfaceToFile(filename, surface, false);
-	//D3DXSaveSurfaceToFile(filename,D3DXIFF_BMP,surface,NULL,NULL);
+	D3DXSaveSurfaceToFile(filename,D3DXIFF_BMP,surface,NULL,NULL);
 	surface->Release();
 	TRACE1("Capture screen to %s", filename);
 }

@@ -574,17 +574,6 @@ inline void ReplaceAlphaWithFogFactor(int i)
 	}
 }
 
-
-// Bits
-// +-+-+-
-// xxyyzz
-#define Z_NEG  0x01
-#define Z_POS  0x02
-#define Y_NEG  0x04
-#define Y_POS  0x08
-#define X_NEG  0x10
-#define X_POS  0x20
-
 void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 
@@ -685,8 +674,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		// Update texture coords n.b. need to divide tu/tv by bogus scale on addition to buffer
 
-		// If the vert is already lit, then there is no normal (and hence we
-		// can't generate tex coord)
+		// If the vert is already lit, then there is no normal (and hence we can't generate tex coord)
 		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
 			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
@@ -704,7 +692,6 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 bool PrepareTriangle(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 {
-
 	bool textureFlag = (CRender::g_pRender->IsTextureEnabled() || gRSP.ucode == 6 );
 
 	InitVertex(dwV0, gRSP.numVertices, textureFlag);
@@ -1106,7 +1093,6 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			// Not sure if we should transform the normal here
 			//Matrix & matWV = gRSP.projectionMtxs[gRSP.projectionMtxTop];
 			//Vec3TransformNormal(g_normal, matWV);
-
 			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
 		}
 		else
@@ -1281,54 +1267,6 @@ void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f, %.4f", dwLight, x, y, z, range));
 }
 
-static float maxS0, maxT0;
-static float maxS1, maxT1;
-static bool validS0, validT0;
-static bool validS1, validT1;
-
-//Checkme
-void LogTextureCoords(float fTex0S, float fTex0T, float fTex1S, float fTex1T)
-{
-	if( validS0 )
-	{
-		if( fTex0S<0 || fTex0S>maxS0 )	validS0 = false;
-	}
-	if( validT0 )
-	{
-		if( fTex0T<0 || fTex0T>maxT0 )	validT0 = false;
-	}
-	if( validS1 )
-	{
-		if( fTex1S<0 || fTex1S>maxS1 )	validS1 = false;
-	}
-	if( validT1 )
-	{
-		if( fTex1T<0 || fTex1T>maxT1 )	validT1 = false;
-	}
-}
-
-bool CheckTextureCoords(int tex)
-{
-	if( tex==0 )
-	{
-		return validS0&&validT0;
-	}
-	else
-	{
-		return validS1&&validT1;
-	}
-}
-
-void ResetTextureCoordsLog(float maxs0, float maxt0, float maxs1, float maxt1)
-{
-	maxS0 = maxs0;
-	maxT0 = maxt0;
-	maxS1 = maxs1;
-	maxT1 = maxt1;
-	validS0 = validT0 = true;
-	validS1 = validT1 = true;
-}
-
 void ForceMainTextureIndex(int dwTile) 
 {
 	if( dwTile == 1 && !(CRender::g_pRender->IsTexel0Enable()) && CRender::g_pRender->IsTexel1Enable() )
@@ -1340,12 +1278,13 @@ void ForceMainTextureIndex(int dwTile)
 		gRSP.curTile = dwTile;
 }
 
+//CheckMe
 float HackZ2(float z)
 {
 	z = (z+9)/10;
 	return z;
 }
-
+//CheckMe
 float HackZ(float z)
 {
 	return HackZ2(z);
@@ -1357,7 +1296,7 @@ float HackZ(float z)
 		z = (expf(z)/20);
 	return z;
 }
-
+//CheckMe
 void HackZ(std::vector<D3DXVECTOR3>& points)
 {
 	int size = points.size();
@@ -1367,7 +1306,7 @@ void HackZ(std::vector<D3DXVECTOR3>& points)
 		v.z = (float)HackZ(v.z);
 	}
 }
-
+//CheckMe
 void HackZAll()
 {
 	for( uint32 i=0; i<gRSP.numVertices; i++)

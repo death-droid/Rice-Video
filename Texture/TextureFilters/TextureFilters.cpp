@@ -1106,8 +1106,6 @@ int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &e
 		return -1;
 }
 
-bool SaveCITextureToFile(TxtrCacheEntry &entry, char *filename, bool bShow, bool bWhole);
-
 void DumpCachedTexture( TxtrCacheEntry &entry )
 {
 
@@ -1122,59 +1120,28 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 			return;		// This texture has been dumped
 
 		char filename1[256];
-		char filename2[256];
-		char filename3[256];
 		char gamefolder[256];
 		GetPluginDir(gamefolder);
 		strcat(gamefolder,"texture_dump\\");
 		strcat(gamefolder,g_curRomInfo.szGameName);
 		strcat(gamefolder,"\\");
 
-		//sprintf(filename1+strlen(filename1), "%08X#%d#%d", entry.dwCRC, entry.ti.Format, entry.ti.Size);
 		sprintf(filename1, "%s%s#%08X#%d#%d", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
 
 		if( (gRDP.otherMode.text_tlut>=2 || entry.ti.Format == TXT_FMT_CI || entry.ti.Format == TXT_FMT_RGBA) && entry.ti.Size <= TXT_SIZE_8b )
 		{
 			sprintf(filename1, "%sci_by_png\\%s#%08X#%d#%d#%08X_ciByRGBA", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
-			//BACKTOMENOW
-			CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename1, TXT_RGBA, false, false, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
+			D3DXSaveTextureToFile(filename1, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
 		}
 		else
 		{
-			sprintf(filename1, "%spng_by_rgb_a\\%s#%08X#%d#%d_rgb", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
-			sprintf(filename2, "%spng_by_rgb_a\\%s#%08X#%d#%d_a", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
-			sprintf(filename3, "%spng_all\\%s#%08X#%d#%d_all", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
-
-			CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename1, TXT_RGB, false, false, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
-			CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename3, TXT_RGBA, false, false, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
-			if( entry.ti.Format != TXT_FMT_I )
-			{
-				DrawInfo srcInfo;	
-				uint32 aFF = 0xFF;
-				if( pSrcTexture->StartUpdate(&srcInfo) )
-				{
-					// Copy RGB to buffer
-					for( int i=entry.ti.HeightToLoad-1; i>=0; i--)
-					{
-						BYTE *pSrc = (BYTE*)srcInfo.lpSurface+srcInfo.lPitch * i;
-						for( uint32 j=0; j<entry.ti.WidthToLoad; j++)
-						{
-							aFF &= pSrc[3];
-							pSrc += 4;
-						}
-					}
-					pSrcTexture->EndUpdate(&srcInfo);
-				}
-
-				if( aFF != 0xFF)
-					CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename2, TXT_ALPHA, false, false, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
-			}		
+			sprintf(filename1, "%spng_all\\%s#%08X#%d#%d_all.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
+			D3DXSaveTextureToFile(filename1, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
 		}
 
 		ExtTxtrInfo newinfo;
 		newinfo.width = entry.ti.WidthToLoad;
 		newinfo.height = entry.ti.HeightToLoad;
-		//strcpy(newinfo.name,g_curRomInfo.szGameName);
 		newinfo.fmt = entry.ti.Format;
 		newinfo.siz = entry.ti.Size;
 		newinfo.crc32 = entry.dwCRC;
@@ -1301,6 +1268,16 @@ bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, 
  * return:
  * none
  *******************************************************/
+//Fix me, we have two problems with our current method
+//One - If memory caching is enabled we have to load the texture from memory and convert it to data that we can use
+//this is quite a time consuming process considering we do it plenty of time, and if the pack uses very high resolution
+//Textures it will slowly bog it down further
+//Two - Caching all the textures into memory requires a significant amount of memory as we do not do any compression on
+//textures.
+
+//Solution: Implement automatic DXT5 compression of textures and dump them to a .dds file. DDS has the added benefit.
+//That it is GPU ready and doesnt require much processing power, speeding up the process.
+//DXT compression will also make storing textures into memory more feasible.
 void LoadHiresTexture( TxtrCacheEntry &entry )
 {
 	// check if the external texture has already been loaded
