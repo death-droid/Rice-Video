@@ -103,7 +103,6 @@ public:
 	void ConvertComplements();
 	void MergeConstFactors();
 	void ReplaceVal(uint8 val1, uint8 val2, int cycle= -1, uint8 mask = MUX_MASK);
-	int Count(uint8 val, int cycle= -1, uint8 mask = MUX_MASK);
 
 #ifdef _DEBUG
 	void DisplayMuxString(const char *prompt);
