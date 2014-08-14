@@ -228,27 +228,6 @@ D3DCOLOR CColorCombiner::GetConstFactor(uint32 colorFlag, uint32	alphaFlag, uint
 	return (color|alpha);
 }
 
-//*****************************************************************************
-int CountTexel1Cycle(N64CombinerType &m)
-{
-	int hasTexel[2];
-	uint8 *p = (uint8*)&m;
-
-	for( int i=0; i<2; i++)
-	{
-		hasTexel[i]=0;
-		for( int j=0; j<4; j++)
-		{
-			if( (p[j]&MUX_MASK) == MUX_TEXEL0+i )
-			{
-				hasTexel[i]=1;
-				break;
-			}
-		}
-	}
-
-	return hasTexel[0]+hasTexel[1];
-}
 //========================================================================
 
 void CColorCombiner::InitCombinerMode(void)
@@ -261,11 +240,7 @@ void CColorCombiner::InitCombinerMode(void)
 	}
 #endif
 
-	if( currentRomOptions.bNormalCombiner )
-	{
-		DisableCombiner();
-	}
-	else if( gRDP.otherMode.cycle_type  == CYCLE_TYPE_COPY )
+	if( gRDP.otherMode.cycle_type  == CYCLE_TYPE_COPY )
 	{
 		InitCombinerCycleCopy();
 		m_bCycleChanged = true;
@@ -338,19 +313,8 @@ void CColorCombiner::UpdateCombiner(uint32 dwMux0, uint32 dwMux1)
 		else
 		{
 			m_decodedMux.Decode(dwMux0, dwMux1);
-			m_decodedMux.splitType[0] = CM_FMT_TYPE_NOT_CHECKED;
-			m_decodedMux.splitType[1] = CM_FMT_TYPE_NOT_CHECKED;
-			m_decodedMux.splitType[2] = CM_FMT_TYPE_NOT_CHECKED;
-			m_decodedMux.splitType[3] = CM_FMT_TYPE_NOT_CHECKED;
 
 			m_decodedMux.Hack();
-
-			if( !m_bSupportMultiTexture )
-			{
-				m_decodedMux.ReplaceVal(MUX_TEXEL1, MUX_TEXEL0);
-				m_decodedMux.ReplaceVal(MUX_LODFRAC,1);
-				m_decodedMux.ReplaceVal(MUX_PRIMLODFRAC,1);
-			}
 
 			m_decodedMux.Simplify();
 			
@@ -366,7 +330,6 @@ void CColorCombiner::UpdateCombiner(uint32 dwMux0, uint32 dwMux1)
 
 		m_bTex0Enabled = m_decodedMux.m_bTexel0IsUsed;
 		m_bTex1Enabled = m_decodedMux.m_bTexel1IsUsed;
-		m_bTexelsEnable = m_bTex0Enabled||m_bTex1Enabled;
 
 		gRSP.bProcessDiffuseColor = (m_decodedMux.m_dwShadeColorChannelFlag != MUX_0 || m_decodedMux.m_dwShadeAlphaChannelFlag != MUX_0);
 		gRSP.bProcessSpecularColor = false;

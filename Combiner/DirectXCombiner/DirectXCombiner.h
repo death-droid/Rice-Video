@@ -184,7 +184,6 @@ protected:
 
 
 	void CleanUp(void);
-	void DisableCombiner(void);
 	void InitCombinerCycleCopy(void);
 	void InitCombinerCycleFill(void);
 	void InitCombinerCycle12(void);

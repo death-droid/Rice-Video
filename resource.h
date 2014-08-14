@@ -96,7 +96,6 @@
 #define IDC_ANTI_ALIASING_MAX_TEXT      1097
 #define IDC_EDIT_HEIGHT                 1099
 #define IDC_TMEM_EMULATION_DEBUG        1100
-#define IDC_NORMAL_COMBINER             1101
 #define IDC_TEXTURE_1_HACK              1102
 #define IDC_ALPHA_TEST                  1103
 #define IDC_PRIMARY_DEPTH_HACK          1104

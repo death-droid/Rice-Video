@@ -333,7 +333,6 @@ void ReadConfiguration(void)
 		defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
 
 		defaultRomOptions.bNormalBlender = FALSE;
-		defaultRomOptions.bNormalCombiner = FALSE;
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
 		windowSetting.uFullScreenRefreshRate = 0;	// 0 is the default value, means to use Window default frequency
 		windowSetting.uScreenScaleMode = 0;
@@ -407,7 +406,6 @@ void GenerateCurrentRomOptions()
 	currentRomOptions.N64FrameBufferWriteBackControl		=defaultRomOptions.N64FrameBufferWriteBackControl;	
 	currentRomOptions.N64RenderToTextureEmuType	=g_curRomInfo.dwRenderToTextureOption;	
 	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
-	currentRomOptions.bNormalCombiner			=g_curRomInfo.dwNormalCombiner;
 	currentRomOptions.bNormalBlender			=g_curRomInfo.dwNormalBlender;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
@@ -554,8 +552,6 @@ void GenerateCurrentRomOptions()
 	if( currentRomOptions.N64RenderToTextureEmuType == 0 )		currentRomOptions.N64RenderToTextureEmuType = defaultRomOptions.N64RenderToTextureEmuType;
 	else currentRomOptions.N64RenderToTextureEmuType--;
 	if( currentRomOptions.screenUpdateSetting == 0 )		currentRomOptions.screenUpdateSetting = defaultRomOptions.screenUpdateSetting;
-	if( currentRomOptions.bNormalCombiner == 0 )			currentRomOptions.bNormalCombiner = defaultRomOptions.bNormalCombiner;
-	else currentRomOptions.bNormalCombiner--;
 	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
 	else currentRomOptions.bNormalBlender--;
 
@@ -594,7 +590,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->bForceDepthBuffer		= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
 	pGameSetting->bDisableObjBG			= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
 
-	pGameSetting->dwNormalCombiner		= perRomIni.GetLongValue(szCRC, "dwNormalCombiner", 0);
 	pGameSetting->dwNormalBlender		= perRomIni.GetLongValue(szCRC, "dwNormalBlender", 0);
 	pGameSetting->dwFrameBufferOption	= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
 	pGameSetting->dwRenderToTextureOption	= perRomIni.GetLongValue(szCRC, "dwRenderToTextureOption", 0);
@@ -612,7 +607,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	perRomIni.SetLongValue(szCRC, "dwNormalBlender", pGameSetting->dwNormalBlender);
 	perRomIni.SetLongValue(szCRC, "bDisableBlender", pGameSetting->bDisableBlender);
 	perRomIni.SetLongValue(szCRC, "bForceScreenClear", pGameSetting->bForceScreenClear);
-	perRomIni.SetLongValue(szCRC, "dwNormalCombiner", pGameSetting->dwNormalCombiner);
 	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer", pGameSetting->bForceDepthBuffer);
 	perRomIni.SetLongValue(szCRC, "bDisableObjBG", pGameSetting->bDisableObjBG);
 	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption", pGameSetting->dwFrameBufferOption);
@@ -703,19 +697,6 @@ ToolTipMsg ttmsg[] = {
 		IDC_ALPHA_BLENDER,
 			"Force to use normal alpha blender",
 			"Use this option if you have opaque/transparency problems with certain games.\n"
-			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
-			"When a game is running, it is the game setting. Three available setting are on/off/as default."
-	},
-	{ 
-		IDC_NORMAL_COMBINER,
-			"Normal color combiner",
-			"Forces plugin to use normal color combiner\n"
-			"Normal color combiner is:\n"
-			"- Texture * Shade,  if both texture and shade are used\n"
-			"- Texture only,     if texture is used and shade is not used\n"
-			"- shade only,       if texture is not used\n\n"
-			"Try to use this option if you have ingame texture color problems, transparency problems, "
-			"or black/white texture problems\n"
 			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
 			"When a game is running, it is the game setting. Three available setting are on/off/as default."
 	},
@@ -1780,7 +1761,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		EnumChildWndTooltip();
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, defaultRomOptions.bNormalCombiner ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_SETCHECK, defaultRomOptions.bDoubleSizeForSmallTxtrBuf ? BST_CHECKED : BST_UNCHECKED, 0);
 
 		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_RESETCONTENT, 0, 0);
@@ -1839,7 +1819,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		{
 		case IDOK:
 			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			defaultRomOptions.bNormalCombiner = (SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
 			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
@@ -1874,9 +1853,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, state, 0);
 
-		state = g_curRomInfo.dwNormalCombiner ==2 ? BST_CHECKED : (g_curRomInfo.dwNormalCombiner ==1?BST_UNCHECKED:BST_INDETERMINATE);
-		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
-		SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_SETCHECK, state, 0);
 
 		// Normal bi-state variable
 		SendDlgItemMessage(hDlg, IDC_DISABLE_BLENDER, BM_SETCHECK, g_curRomInfo.bDisableBlender?BST_CHECKED:BST_UNCHECKED, 0);
@@ -1983,9 +1959,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			state = SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0);
 			g_curRomInfo.dwNormalBlender = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
 			
-			state = SendDlgItemMessage(hDlg, IDC_NORMAL_COMBINER, BM_GETCHECK, 0, 0);
-			g_curRomInfo.dwNormalCombiner = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
-
 			// Bi-state options
 			g_curRomInfo.bDisableBlender = (SendDlgItemMessage(hDlg, IDC_DISABLE_BLENDER, BM_GETCHECK, 0, 0)==BST_CHECKED);
 			g_curRomInfo.bEmulateClear = (SendDlgItemMessage(hDlg, IDC_EMULATE_CLEAR, BM_GETCHECK, 0, 0)==BST_CHECKED);

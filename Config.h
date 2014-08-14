@@ -201,7 +201,6 @@ typedef struct {
 	uint32	N64FrameBufferWriteBackControl;
 	uint32	N64RenderToTextureEmuType;
 	uint32	screenUpdateSetting;
-	BOOL 	bNormalCombiner;
 	BOOL 	bNormalBlender;
 	BOOL 	bDoubleSizeForSmallTxtrBuf;
 } RomOptions;
@@ -243,7 +242,6 @@ typedef struct
 	ROMHeader	romheader;
 
 	// With changeable default values
-	uint32	dwNormalCombiner;
 	uint32	dwNormalBlender;
 	uint32	dwFrameBufferOption;
 	uint32	dwRenderToTextureOption;

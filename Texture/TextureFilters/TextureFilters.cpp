@@ -881,6 +881,7 @@ void InitHiresTextures(bool bWIPFolder)
 				//Than find all hires textures
 				FindAllHiResTextures();
 
+
 				//And after we have foudn them all, loopthrough them and dump them to our cache file
 				for( int i=0; i<gHiresTxtrInfos.size(); i++)
 				{
@@ -896,7 +897,6 @@ void InitHiresTextures(bool bWIPFolder)
 					ini.SetValue(gHiresTxtrInfos[i].filename,        "filename", gHiresTxtrInfos[i].filename);
 					ini.SetValue(gHiresTxtrInfos[i].filename,  "filename_alpha",gHiresTxtrInfos[i].filename_a);
 					ini.SetValue(gHiresTxtrInfos[i].filename, "foldername", gHiresTxtrInfos[i].foldername);
-				
 				}
 				//Save our cache file
 				ini.SaveFile(inifilename);

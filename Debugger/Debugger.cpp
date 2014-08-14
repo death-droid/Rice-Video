@@ -392,7 +392,7 @@ void DumpCachedTexture(uint32 index)
 	{
 		char filename[80];
 		sprintf(filename,"\\Texture%d_rgb", index);
-		D3DXSaveTextureToFile(filename1, D3DXIFF_PNG, *(p->pTexture)->GetTexture(), NULL);
+		//D3DXSaveTextureToFile(filename, D3DXIFF_PNG, *(p->pTexture)->GetTexture(), NULL);
 
 		DebuggerAppendMsg("Display cached texture #%d of %d\n", index, gTextureManager.GetNumOfCachedTexture());
 		DebuggerAppendMsg("W:%d, H:%d, RealW:%d, RealH:%d, D3DW:%d, D3DH: %d", p->ti.WidthToCreate, p->ti.HeightToCreate,

@@ -18,8 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "..\stdafx.h"
 
-#define ALLOW_USE_TEXTURE_FOR_CONSTANTS
-
 static const uint8 sc_Mux32[32] = 
 {
 	MUX_COMBINED, MUX_TEXEL0,   MUX_TEXEL1, MUX_PRIM,
@@ -168,7 +166,6 @@ bool DecodedMux::isUsed(uint8 val, uint8 mask)
 			break;
 		}
 	}
-
 	return isUsed;
 }
 
@@ -239,11 +236,6 @@ void DecodedMux::Simplify(void)
 		ReplaceVal(MUX_TEXEL1,MUX_TEXEL0,2);
 		ReplaceVal(MUX_TEXEL1,MUX_TEXEL0,3);
 	}
-	splitType[0] = CM_FMT_TYPE_NOT_USED;
-	splitType[1] = CM_FMT_TYPE_NOT_USED;
-	splitType[2] = CM_FMT_TYPE_NOT_USED;
-	splitType[3] = CM_FMT_TYPE_NOT_USED;
-	mType = CM_FMT_TYPE_NOT_USED;
 
 	m_bTexel0IsUsed = isUsed(MUX_TEXEL0);
 	m_bTexel1IsUsed = isUsed(MUX_TEXEL1);
@@ -283,9 +275,8 @@ void DecodedMux::DisplayMuxString(const char *prompt)
 void DecodedMux::DisplaySimpliedMuxString(const char *prompt)
 {
 	DebuggerAppendMsg("//Simplied Mux=0x%08x%08x\t%s in %s\n", m_dwMux0, m_dwMux1, prompt, g_curRomInfo.szGameName);
-	DebuggerAppendMsg("Simplied DWORDs=%08X, %08X, %08X, %08X", m_dWords[0],m_dWords[1],m_dWords[2],m_dWords[3]);
 //	Display(true);
-	DebuggerAppendMsg("Simplfied type: %s", muxTypeStrs[mType]);
+
 	if( m_dwShadeColorChannelFlag != 0 )
 	{
 		if( m_dwShadeColorChannelFlag == MUX_ENV )
@@ -428,8 +419,4 @@ void DecodedMux::Hack(void)
 			cRGB1 = MUX_TEXEL0;
 		}
 	}
-
-
-
 }
-
