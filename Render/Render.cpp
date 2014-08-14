@@ -383,13 +383,11 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 	m_line3DVtx[0].y = ViewPortTranslatef_y(g_vecProjected[dwV0].y);
 	m_line3DVtx[0].rhw = g_vecProjected[dwV0].w;
 	m_line3DVtx[0].dcDiffuse = PostProcessDiffuseColor(g_dwVtxDifColor[dwV0]);
-	m_line3DVtx[0].dcSpecular = PostProcessSpecularColor();
 
 	m_line3DVtx[1].x = ViewPortTranslatef_x(g_vecProjected[dwV1].x);
 	m_line3DVtx[1].y = ViewPortTranslatef_y(g_vecProjected[dwV1].y);
 	m_line3DVtx[1].rhw = g_vecProjected[dwV1].w;
 	m_line3DVtx[1].dcDiffuse = PostProcessDiffuseColor(g_dwVtxDifColor[dwV1]);
-	m_line3DVtx[1].dcSpecular = m_line3DVtx[0].dcSpecular;
 
 	float width = dwWidth*0.5f+1.5f;
 
@@ -640,7 +638,6 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	if(!tile0.bMirrorT && RemapTextureCoordinate(t0v0, t0v1, tex0.m_dwTileHeight, tile0.dwMaskT, heightDiv, m_texRectTex1UV[0].v, m_texRectTex1UV[1].v) )
 		SetTextureVFlag(D3DTADDRESS_CLAMP, gRSP.curTile);
 	
-	D3DCOLOR speColor = PostProcessSpecularColor();
 	D3DCOLOR difColor;
 	if( colorFlag )
 		difColor = PostProcessDiffuseColor(diffuseColor);
@@ -651,22 +648,18 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	g_texRectTVtx[0].x = ViewPortTranslatei_x(nX0);
 	g_texRectTVtx[0].y = ViewPortTranslatei_y(nY0);
 	g_texRectTVtx[0].dcDiffuse = difColor;
-	g_texRectTVtx[0].dcSpecular = speColor;
 
 	g_texRectTVtx[1].x = ViewPortTranslatei_x(nX1);
 	g_texRectTVtx[1].y = ViewPortTranslatei_y(nY0);
 	g_texRectTVtx[1].dcDiffuse = difColor;
-	g_texRectTVtx[1].dcSpecular = speColor;
 
 	g_texRectTVtx[2].x = ViewPortTranslatei_x(nX1);
 	g_texRectTVtx[2].y = ViewPortTranslatei_y(nY1);
 	g_texRectTVtx[2].dcDiffuse = difColor;
-	g_texRectTVtx[2].dcSpecular = speColor;
 
 	g_texRectTVtx[3].x = ViewPortTranslatei_x(nX0);
 	g_texRectTVtx[3].y = ViewPortTranslatei_y(nY1);
 	g_texRectTVtx[3].dcDiffuse = difColor;
-	g_texRectTVtx[3].dcSpecular = speColor;
 
 	float depth = (gRDP.otherMode.depth_source == 1 ? gRDP.fPrimitiveDepth : 0 );
 
@@ -818,29 +811,24 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 
 	SetCombinerAndBlender();
 
-	D3DCOLOR speColor = PostProcessSpecularColor();
 	D3DCOLOR difColor = PostProcessDiffuseColor(gRDP.primitiveColor);
 
 	// Same as TexRect, but with texcoords 0,2 swapped
 	g_texRectTVtx[0].x = ViewPortTranslatei_x(nX0);
 	g_texRectTVtx[0].y = ViewPortTranslatei_y(nY0);
 	g_texRectTVtx[0].dcDiffuse = difColor;
-	g_texRectTVtx[0].dcSpecular = speColor;
 
 	g_texRectTVtx[1].x = ViewPortTranslatei_x(nX1);
 	g_texRectTVtx[1].y = ViewPortTranslatei_y(nY0);
 	g_texRectTVtx[1].dcDiffuse = difColor;
-	g_texRectTVtx[1].dcSpecular = speColor;
 
 	g_texRectTVtx[2].x = ViewPortTranslatei_x(nX1);
 	g_texRectTVtx[2].y = ViewPortTranslatei_y(nY1);
 	g_texRectTVtx[2].dcDiffuse = difColor;
-	g_texRectTVtx[2].dcSpecular = speColor;
 
 	g_texRectTVtx[3].x = ViewPortTranslatei_x(nX0);
 	g_texRectTVtx[3].y = ViewPortTranslatei_y(nY1);
 	g_texRectTVtx[3].dcDiffuse = difColor;
-	g_texRectTVtx[3].dcSpecular = speColor;
 
 	g_texRectTVtx[0].z = g_texRectTVtx[1].z = g_texRectTVtx[2].z = g_texRectTVtx[3].z = depth;
 	g_texRectTVtx[0].rhw = g_texRectTVtx[1].rhw = g_texRectTVtx[2].rhw = g_texRectTVtx[3].rhw = 1.0f;
@@ -872,12 +860,11 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 }
 
 
-void CRender::StartDrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, D3DCOLOR spe, float z, float rhw)
+void CRender::StartDrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif,  float z, float rhw)
 {
 	g_texRectTVtx[0].x = ViewPortTranslatei_x(x0);	// << Error here, shouldn't divid by 4
 	g_texRectTVtx[0].y = ViewPortTranslatei_y(y0);
 	g_texRectTVtx[0].dcDiffuse = dif;
-	g_texRectTVtx[0].dcSpecular = spe;
 	g_texRectTVtx[0].tcord[0].u = u0;
 	g_texRectTVtx[0].tcord[0].v = v0;
 
@@ -885,21 +872,18 @@ void CRender::StartDrawSimple2DTexture(float x0, float y0, float x1, float y1, f
 	g_texRectTVtx[1].x = ViewPortTranslatei_x(x1);
 	g_texRectTVtx[1].y = ViewPortTranslatei_y(y0);
 	g_texRectTVtx[1].dcDiffuse = dif;
-	g_texRectTVtx[1].dcSpecular = spe;
 	g_texRectTVtx[1].tcord[0].u = u1;
 	g_texRectTVtx[1].tcord[0].v = v0;
 
 	g_texRectTVtx[2].x = ViewPortTranslatei_x(x1);
 	g_texRectTVtx[2].y = ViewPortTranslatei_y(y1);
 	g_texRectTVtx[2].dcDiffuse = dif;
-	g_texRectTVtx[2].dcSpecular = spe;
 	g_texRectTVtx[2].tcord[0].u = u1;
 	g_texRectTVtx[2].tcord[0].v = v1;
 
 	g_texRectTVtx[3].x = ViewPortTranslatei_x(x0);
 	g_texRectTVtx[3].y = ViewPortTranslatei_y(y1);
 	g_texRectTVtx[3].dcDiffuse = dif;
-	g_texRectTVtx[3].dcSpecular = spe;
 	g_texRectTVtx[3].tcord[0].u = u0;
 	g_texRectTVtx[3].tcord[0].v = v1;
 

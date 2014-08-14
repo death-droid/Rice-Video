@@ -165,7 +165,6 @@ public:
 	void SetVertexTextureUVCoord(TLITVERTEX &v, float fTex0S, float fTex0T, float fTex1S, float fTex1T);
 	void SetVertexTextureUVCoord(TLITVERTEX &v, float fTex0S, float fTex0T);
 	virtual D3DCOLOR PostProcessDiffuseColor(D3DCOLOR curDiffuseColor)=0;
-	virtual D3DCOLOR PostProcessSpecularColor()=0;
 	
 	bool DrawTriangles();
 	virtual bool RenderFlushTris()=0;
@@ -209,7 +208,7 @@ public:
 	void DrawSprite(uObjTxSprite &sprite, bool rectR = true);
 	void DrawObjBGCopy(uObjBg &info);
 	virtual void DrawSpriteR_Render(){};
-	virtual void DrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, D3DCOLOR spe, float z, float rhw)=0;
+	virtual void DrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, float z, float rhw)=0;
 	void DrawFrameBuffer(bool useVIreg=false, uint32 left=0, uint32 top=0, uint32 width=0, uint32 height=0);
 	void DrawObjBG1CYC(uObjScaleBg &bg, bool scaled=true);
 
@@ -238,7 +237,7 @@ protected:
 	TexCord			m_texRectTex2UV[2];
 
 	// DrawSimple2DTexture
-	virtual void	StartDrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, D3DCOLOR spe, float z, float rhw);
+	virtual void	StartDrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, float z, float rhw);
 
 	// DrawSimpleRect
 	virtual void	StartDrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor, float depth, float rhw);

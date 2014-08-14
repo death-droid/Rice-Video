@@ -374,18 +374,6 @@ D3DCOLOR D3DRender::PostProcessDiffuseColor(D3DCOLOR curDiffuseColor)
 		return (CalculateConstFactor(m_curCombineInfo.m_dwShadeColorChannelFlag, m_curCombineInfo.m_dwShadeAlphaChannelFlag, curDiffuseColor)&mask);
 }
 
-D3DCOLOR D3DRender::PostProcessSpecularColor()
-{
-	if( m_curCombineInfo.specularPostOp == MUX_0 )
-	{
-		return 0xFFFFFFFF;
-	}
-	else
-	{
-		return m_pColorCombiner->GetConstFactor(m_curCombineInfo.specularPostOp, m_curCombineInfo.specularPostOp);
-	}
-}
-
 void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32 tile)
 {
 	gD3DDevWrapper.SetPixelShader( NULL );
@@ -412,7 +400,6 @@ void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32
 
 	m_pD3DRender->m_curCombineInfo.m_dwShadeColorChannelFlag = 0;
 	m_pD3DRender->m_curCombineInfo.m_dwShadeAlphaChannelFlag = 0;
-	m_pD3DRender->m_curCombineInfo.specularPostOp = 0;
 
 	m_pD3DRender->SetAddressUAllStages( 0, D3DTADDRESS_CLAMP );
 	m_pD3DRender->SetAddressVAllStages( 0, D3DTADDRESS_CLAMP );

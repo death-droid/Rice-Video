@@ -125,7 +125,6 @@ public:
 	
 	CombineStage stages[8];
 	uint32 TFactor;
-	uint32 specularPostOp;
 	uint32 m_dwShadeColorChannelFlag;
 	uint32 m_dwShadeAlphaChannelFlag;
 	
@@ -146,8 +145,6 @@ public:
 		}
 
 		if( sci.TFactor != TFactor )
-			return FALSE;
-		if( sci.specularPostOp != specularPostOp )
 			return FALSE;
 		if( sci.m_dwShadeColorChannelFlag != m_dwShadeColorChannelFlag )
 			return FALSE;

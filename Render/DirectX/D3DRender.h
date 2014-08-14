@@ -92,7 +92,7 @@ public:
 	bool SetCurrentTexture(int tile, CTexture *handler,uint32 dwTileWidth, uint32 dwTileHeight, TxtrCacheEntry *pTextureEntry);
 	bool SetCurrentTexture(int tile, TxtrCacheEntry *pTextureEntry);
 
-	void DrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, D3DCOLOR spe, float z, float rhw);
+	void DrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, float z, float rhw);
 	void DrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor, float depth, float rhw);
 	void DrawText(const char* str, RECT *rect);
 
@@ -111,7 +111,6 @@ protected:
 protected:
 
 	D3DCOLOR PostProcessDiffuseColor(D3DCOLOR curDiffuseColor);
-	D3DCOLOR PostProcessSpecularColor();
 
 	// Basic render drawing functions
 	bool RenderFlushTris();
