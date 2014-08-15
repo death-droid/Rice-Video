@@ -643,11 +643,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			}
 			else
 			{
-				register D3DXCOLOR &color = *(D3DXCOLOR*)&g_dwVtxDifColor[i];
-				color.b = vert.rgba.r;
-				color.g = vert.rgba.g;
-				color.r = vert.rgba.b;
-				color.a = vert.rgba.a;
+				g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba.r, vert.rgba.g, vert.rgba.b, vert.rgba.a);
 			}
 		}
 
