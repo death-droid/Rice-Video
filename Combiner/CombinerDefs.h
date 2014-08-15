@@ -53,49 +53,10 @@ enum
 	MUX_ERR = 0xFF,
 };
 
-
-enum CombinerFormatType
-{
-	CM_FMT_TYPE_NOT_USED,
-	CM_FMT_TYPE_D,					// = A			can mapped to D3D SEL(arg1)
-	CM_FMT_TYPE_A_MOD_C,			// = A*C		can mapped to D3D MOD(arg1,arg2)
-	CM_FMT_TYPE_A_ADD_D,			// = A+D		can mapped to D3D ADD(arg1,arg2)
-	CM_FMT_TYPE_A_SUB_B,			// = A-B		can mapped to D3D SUB(arg1,arg2)
-	CM_FMT_TYPE_A_MOD_C_ADD_D,		// = A*C+D		can mapped to D3D MULTIPLYADD(arg1,arg2,arg0)
-	CM_FMT_TYPE_A_LERP_B_C,			// = (A-B)*C+B	can mapped to D3D LERP(arg1,arg2,arg0)
-									//				or mapped to BLENDALPHA(arg1,arg2) if C is
-									//				alpha channel or DIF, TEX, FAC, CUR
-	CM_FMT_TYPE_A_SUB_B_ADD_D,		// = A-B+C		can not map very well to D3D in 1 stage
-	CM_FMT_TYPE_A_SUB_B_MOD_C,		// = (A-B)*C	can not map very well to D3D in 1 stage
-	CM_FMT_TYPE_A_ADD_B_MOD_C,		// = (A+B)*C	can not map very well to D3D in 1 stage
-	CM_FMT_TYPE_A_B_C_D,			// = (A-B)*C+D	can not map very well to D3D in 1 stage
-	CM_FMT_TYPE_A_B_C_A,			// = (A-B)*C+D	can not map very well to D3D in 1 stage
-
-	// Don't use these two types in default functions
-	CM_FMT_TYPE_AB_ADD_CD,			// = A*B+C*D	Use by nvidia video cards
-	CM_FMT_TYPE_AB_SUB_CD,			// = A*B-C*D	Use by nvidia video cards
-	CM_FMT_TYPE_AB_ADD_C,			// = A*B+C		Use by ATI video cards
-	CM_FMT_TYPE_AB_SUB_C,			// = A*B-C		Use by ATI video cards
-	CM_FMT_TYPE_NOT_CHECKED = 0xFF,
-};
-
-
-typedef enum {
-	ENABLE_BOTH,
-	DISABLE_ALPHA,
-	DISABLE_COLOR,
-	DISABLE_BOTH,
-	COLOR_ONE,
-	ALPHA_ONE,
-} BlendingFunc;
-
-
 typedef enum {
 	COLOR_CHANNEL,
 	ALPHA_CHANNEL,
 } CombineChannel;
-
-
 
 typedef struct {
 	uint8 a;
@@ -104,13 +65,6 @@ typedef struct {
 	uint8 d;
 } N64CombinerType;
 
-#define CONST_FLAG4(a,b,c,d)	(a|(b<<8)|(c<<16)|(d<<24))	//(A-B)*C+D
-#define CONST_MOD(a,b)			(a|(b<<16))				//A*B		
-#define CONST_SEL(a)			(a<<24)					//=D
-#define CONST_ADD(a,b)			(a|b<<24)				//A+D
-#define CONST_SUB(a,b)			(a|b<<8)				//A-B
-#define CONST_MULADD(a,b,c)		(a|b<<16|c<<24)			//A*C+D
-
 #define G_CCMUX_TEXEL1		2
 #define G_ACMUX_TEXEL1		2
 
@@ -118,8 +72,6 @@ typedef struct {
 #define NOTUSED MUX_0
 
 enum { TEX_0=0, TEX_1=1};
-
-
 
 typedef struct {
 	uint32 op;

@@ -55,19 +55,12 @@ public:
 		uint64 m_u64Mux;
 	};
 
-	uint32 m_ColorTextureFlag[2];	// I may use a texture to represent a constant color
-									// when there are more constant colors are used than	
-									// the system can support
-
-	bool m_bShadeIsUsed[2];		// 0 for color channel, 1 for alpha channel
 	bool m_bTexel0IsUsed;
 	bool m_bTexel1IsUsed;
 
 	void Decode(uint32 dwMux0, uint32 dwMux1);
 	void Hack(void);
 	bool isUsed(uint8 fac, uint8 mask=MUX_MASK);
-	bool isUsedInAlphaChannel(uint8 fac, uint8 mask=MUX_MASK);
-	bool isUsedInColorChannel(uint8 fac, uint8 mask=MUX_MASK);
 	bool isUsedInCycle(uint8 fac, int cycle, CombineChannel channel, uint8 mask=MUX_MASK);
 	bool isUsedInCycle(uint8 fac, int cycle, uint8 mask=MUX_MASK);
 	void CheckCombineInCycle1(void);

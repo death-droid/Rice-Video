@@ -322,6 +322,7 @@ void CDirectXPixelShaderCombiner::InitCombinerCycle12(void)
 	if( m_bTex0Enabled ) 
 	{
 		m_pD3DRender->SetTexelRepeatFlags(gRSP.curTile);
+
 		if( g_textures[gRSP.curTile].m_pCTexture != NULL )
 			gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
 	}

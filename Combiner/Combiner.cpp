@@ -46,17 +46,14 @@ void CColorCombiner::InitCombinerMode(void)
 	if( gRDP.otherMode.cycle_type  == CYCLE_TYPE_COPY )
 	{
 		InitCombinerCycleCopy();
-		m_bCycleChanged = true;
 	}
 	else if ( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 	{
 		InitCombinerCycleFill();
-		m_bCycleChanged = true;
 	}
 	else
 	{
 		InitCombinerCycle12();
-		m_bCycleChanged = false;
 	}
 }
 

@@ -119,9 +119,7 @@ class SetCombineInfo
 public:
 	uint64 mux;
 	LONG nStages;
-	
-	BlendingFunc  blendingFunc;
-	
+
 	CombineStage stages[8];
 	uint32 TFactor;
 
@@ -131,8 +129,6 @@ public:
 		LONG i;
 		
 		if (sci.nStages != nStages)
-			return FALSE;
-		if (sci.blendingFunc != blendingFunc)
 			return FALSE;
 		
 		for (i = 0; i < nStages; i++)

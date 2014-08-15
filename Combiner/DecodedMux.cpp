@@ -43,58 +43,6 @@ static const uint8 sc_Mux8[8] =
 	MUX_SHADE,    MUX_ENV,      MUX_1,      MUX_0
 };
 
-
-const char * translatedCombTypes[] =
-{
-	"0",
-	"1",
-	"COMBINED",
-	"TEXEL0",
-	"TEXEL1",
-	"PRIM",
-	"SHADE",
-	"ENV",
-	"COMBALPHA",
-	"T0_ALPHA_wrong",
-	"T1_ALPHA_wrong",
-	"PRIM_ALPHA_wrong",
-	"SHADE_ALPHA_wrong",
-	"ENV_ALPHA_wrong",
-	"LODFRAC",
-	"PRIMLODFRAC",
-	"K5",
-	"UNK",
-	"FACTOR_PRIM_MINUS_ENV",
-	"FACTOR_ENV_MINUS_PRIM",
-	"FACTOR_1_MINUS_PRIM",
-	"FACTOR_0_MINUS_PRIM",
-	"FACTOR_1_MINUS_ENV",
-	"FACTOR_0_MINUS_ENV",
-	"FACTOR_1_MINUS_PRIMALPHA",
-	"FACTOR_1_MINUS_ENVALPHA",
-	"FACTOR_HALF",
-	"PRIM_X_PRIMALPHA",
-	"1_MINUS_PRIM_X_ENV_PLUS_PRIM",
-	"ENV_X_PRIM",
-	"PRIM_X_1_MINUS_ENV",
-	"PRIM_X_PRIM",
-	"ENV_X_ENV",
-};
-
-char* muxTypeStrs[] = {
-	"CM_FMT_TYPE_NOT_USED",
-	"CM_FMT_TYPE1_D",
-	"CM_FMT_TYPE2_A_ADD_D",
-	"CM_FMT_TYPE3_A_MOD_C",
-	"CM_FMT_TYPE4_A_SUB_B",
-	"CM_FMT_TYPE5_A_MOD_C_ADD_D",
-	"CM_FMT_TYPE6_A_LERP_B_C",
-	"CM_FMT_TYPE7_A_SUB_B_ADD_D",
-	"CM_FMT_TYPE8_A_SUB_B_MOD_C",
-	"CM_FMT_TYPE9_A_B_C_D",
-	"CM_FMT_TYPE_NOT_CHECKED",
-};
-
 void DecodedMux::Decode(uint32 dwMux0, uint32 dwMux1)
 {
 	m_dwMux0 = dwMux0;
@@ -143,13 +91,8 @@ void DecodedMux::Decode(uint32 dwMux0, uint32 dwMux1)
 	cA1    = sc_Mux8[cA1];
 	dA1    = sc_Mux8[dA1];
 
-	m_bShadeIsUsed[1] = isUsedInAlphaChannel(MUX_SHADE);
-	m_bShadeIsUsed[0] = isUsedInColorChannel(MUX_SHADE);
 	m_bTexel0IsUsed = isUsed(MUX_TEXEL0);
 	m_bTexel1IsUsed = isUsed(MUX_TEXEL1);
-
-	m_ColorTextureFlag[0] = 0;
-	m_ColorTextureFlag[1] = 0;
 }
 
 bool DecodedMux::isUsed(uint8 val, uint8 mask)
@@ -164,41 +107,6 @@ bool DecodedMux::isUsed(uint8 val, uint8 mask)
 			break;
 		}
 	}
-	return isUsed;
-}
-
-bool DecodedMux::isUsedInAlphaChannel(uint8 val, uint8 mask)
-{
-	uint8* pmux = m_bytes;
-	bool isUsed = false;
-	for( int i=0; i<16; i++ )
-	{
-		if( (i/4)%2 == 0 )
-			continue;	//Don't test color channel
-
-		if( (pmux[i]&mask) == (val&mask) )
-		{
-			isUsed = true;
-			break;
-		}
-	}
-
-	return isUsed;
-}
-
-bool DecodedMux::isUsedInColorChannel(uint8 val, uint8 mask)
-{
-	uint8* pmux = m_bytes;
-	bool isUsed = false;
-	for( int i=0; i<16; i++ )
-	{
-		if( (i/4)%2 == 0 && (pmux[i]&mask) == (val&mask) )
-		{
-			isUsed = true;
-			break;
-		}
-	}
-
 	return isUsed;
 }
 
@@ -262,7 +170,6 @@ void DecodedMux::ReplaceVal(uint8 val1, uint8 val2, int cycle, uint8 mask)
 }
 
 #ifdef _DEBUG
-extern const char *translatedCombTypes[];
 void DecodedMux::DisplayMuxString(const char *prompt)
 {
 	DebuggerAppendMsg("//Mux=0x%08x%08x\t%s in %s\n", m_dwMux0, m_dwMux1, prompt, g_curRomInfo.szGameName);
@@ -275,22 +182,6 @@ void DecodedMux::DisplaySimpliedMuxString(const char *prompt)
 	DebuggerAppendMsg("//Simplied Mux=0x%08x%08x\t%s in %s\n", m_dwMux0, m_dwMux1, prompt, g_curRomInfo.szGameName);
 //	Display(true);
 
-	for( int i=0; i<2; i++ )
-	{
-		if( m_ColorTextureFlag[i] != 0 )
-		{
-			if( m_ColorTextureFlag[i] == MUX_ENV )
-				TRACE1("Tex %d = ENV", i)
-			else if( m_ColorTextureFlag[i] == MUX_PRIM )
-				TRACE1("Tex %d = PRIM", i)
-			else if( m_ColorTextureFlag[i] == MUX_LODFRAC )
-				TRACE1("Tex %d = MUX_LODFRAC", i)
-			else if( m_ColorTextureFlag[i] == MUX_PRIMLODFRAC )
-				TRACE1("Tex %d = MUX_PRIMLODFRAC", i)
-		}
-	}
-
-
 	TRACE0("\n");
 }
 
@@ -298,9 +189,6 @@ void DecodedMux::DisplayConstantsWithShade(uint32 flag,CombineChannel channel)
 {
 	DebuggerAppendMsg("Shade = %08X in %s channel",flag,channel==COLOR_CHANNEL?"color":"alpha");
 }
-#else
-
-extern const char *translatedCombTypes[];
 #endif
 
 void DecodedMux::CheckCombineInCycle1(void)

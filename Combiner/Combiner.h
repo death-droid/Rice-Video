@@ -31,7 +31,6 @@ class CColorCombiner
 	friend class CRender;
 public:
 	virtual ~CColorCombiner() {};
-	D3DCOLOR GetConstFactor(uint32 colorFlag, uint32 alphaFlag, uint32 defaultColor = 0);
 	virtual void InitCombinerMode(void);
 
 	virtual bool Initialize(void)=0;
@@ -47,7 +46,7 @@ public:
 	DecodedMux *m_pDecodedMux;
 protected:
 	CColorCombiner(CRender *pRender) : 
-		m_bCycleChanged(false),m_bTex0Enabled(false),m_bTex1Enabled(false), 
+		m_bTex0Enabled(false),m_bTex1Enabled(false), 
 		m_pRender(pRender)
 	{
 	}
@@ -59,13 +58,9 @@ protected:
 	bool	m_bTex0Enabled;
 	bool	m_bTex1Enabled;
 
-	bool	m_bCycleChanged;	// A flag will be set if cycle is changed to FILL or COPY
-
 	CRender *m_pRender;
 
 	CSortedList<uint64, DecodedMux> m_DecodedMuxList;
 };
-
-D3DCOLOR CalculateConstFactor(uint32 colorOp, uint32 alphaOp, uint32 curCol=0);
 
 #endif
