@@ -126,8 +126,7 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleCopy(void)
 
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,FALSE);
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE);
-	
-	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = true;
+
 	m_pD3DRender->m_curCombineInfo.nStages = 1;
 
 	gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
@@ -318,8 +317,6 @@ void CDirectXPixelShaderCombiner::InitCombinerCycle12(void)
 	m_pD3DRender->m_curCombineInfo.nStages = 2;
 	m_pD3DRender->m_curCombineInfo.stages[0].dwTexture = 0;
 	m_pD3DRender->m_curCombineInfo.stages[1].dwTexture = 1;
-	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = m_bTex0Enabled;
-	m_pD3DRender->m_curCombineInfo.stages[1].bTextureUsed = m_bTex1Enabled;
 
 	// Step 3: set textures
 	if( m_bTex0Enabled ) 
@@ -344,8 +341,6 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleFill(void)
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_DISABLE );
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_ALPHAOP, D3DTOP_DISABLE );
 
-	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = true;
-
 	gD3DDevWrapper.SetTexture( 0, NULL );
 	gD3DDevWrapper.SetTexture( 1, NULL );
 	gD3DDevWrapper.SetPixelShader( NULL );
@@ -355,23 +350,6 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleFill(void)
 
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
-}
-
-D3DCOLOR D3DRender::PostProcessDiffuseColor(D3DCOLOR curDiffuseColor)
-{
-	uint32 mask = (m_curCombineInfo.blendingFunc != DISABLE_COLOR?0xFFFFFFFF:0xFF000000);
-
-	if( m_curCombineInfo.m_dwShadeColorChannelFlag + m_curCombineInfo.m_dwShadeAlphaChannelFlag == 0 )
-	{
-		return (curDiffuseColor&mask);
-	}
-
-	if( (m_curCombineInfo.m_dwShadeColorChannelFlag & 0xFFFFFF00) == 0 )
-	{
-		return (m_pColorCombiner->GetConstFactor(m_curCombineInfo.m_dwShadeColorChannelFlag, m_curCombineInfo.m_dwShadeAlphaChannelFlag, curDiffuseColor)&mask);
-	}
-	else
-		return (CalculateConstFactor(m_curCombineInfo.m_dwShadeColorChannelFlag, m_curCombineInfo.m_dwShadeAlphaChannelFlag, curDiffuseColor)&mask);
 }
 
 void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32 tile)
@@ -389,17 +367,12 @@ void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE);
 	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,FALSE);
 	
-	m_pD3DRender->m_curCombineInfo.stages[0].bTextureUsed = true;
-
 	gD3DDevWrapper.SetTexture( 0, g_textures[tile].m_lpsTexturePtr );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG1 );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-
-	m_pD3DRender->m_curCombineInfo.m_dwShadeColorChannelFlag = 0;
-	m_pD3DRender->m_curCombineInfo.m_dwShadeAlphaChannelFlag = 0;
 
 	m_pD3DRender->SetAddressUAllStages( 0, D3DTADDRESS_CLAMP );
 	m_pD3DRender->SetAddressVAllStages( 0, D3DTADDRESS_CLAMP );

@@ -82,7 +82,6 @@
 
 #include "resource.h"
 
-#include "./Utility/icolor.h"
 #include "./Utility/CritSect.h"
 
 extern WindowSettingStruct windowSetting;

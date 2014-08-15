@@ -110,8 +110,6 @@ protected:
 
 protected:
 
-	D3DCOLOR PostProcessDiffuseColor(D3DCOLOR curDiffuseColor);
-
 	// Basic render drawing functions
 	bool RenderFlushTris();
 	bool RenderTexRect();

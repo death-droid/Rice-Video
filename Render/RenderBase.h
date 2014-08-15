@@ -125,8 +125,6 @@ typedef __declspec(align(16)) struct
 	bool	bNearClip;
 	bool	bRejectVtx;
 
-	bool	bProcessDiffuseColor;
-	bool	bProcessSpecularColor;
 
 	// For DirectX only
 	float	vtxXMul;

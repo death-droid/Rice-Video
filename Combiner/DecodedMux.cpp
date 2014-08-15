@@ -148,8 +148,6 @@ void DecodedMux::Decode(uint32 dwMux0, uint32 dwMux1)
 	m_bTexel0IsUsed = isUsed(MUX_TEXEL0);
 	m_bTexel1IsUsed = isUsed(MUX_TEXEL1);
 
-	m_dwShadeColorChannelFlag = 0;
-	m_dwShadeAlphaChannelFlag = 0;
 	m_ColorTextureFlag[0] = 0;
 	m_ColorTextureFlag[1] = 0;
 }
@@ -276,33 +274,6 @@ void DecodedMux::DisplaySimpliedMuxString(const char *prompt)
 {
 	DebuggerAppendMsg("//Simplied Mux=0x%08x%08x\t%s in %s\n", m_dwMux0, m_dwMux1, prompt, g_curRomInfo.szGameName);
 //	Display(true);
-
-	if( m_dwShadeColorChannelFlag != 0 )
-	{
-		if( m_dwShadeColorChannelFlag == MUX_ENV )
-			TRACE0("Shade = ENV in color channel")
-		else if( m_dwShadeColorChannelFlag == MUX_PRIM )
-			TRACE0("Shade = PRIM in color channel")
-		else if( m_dwShadeColorChannelFlag == MUX_LODFRAC )
-			TRACE0("Shade = MUX_LODFRAC in color channel")
-		else if( m_dwShadeColorChannelFlag == MUX_PRIMLODFRAC )
-			TRACE0("Shade = MUX_PRIMLODFRAC in color channel")
-		else
-			DisplayConstantsWithShade(m_dwShadeColorChannelFlag,COLOR_CHANNEL);
-	}
-	if( m_dwShadeAlphaChannelFlag != 0 )
-	{
-		if( m_dwShadeAlphaChannelFlag == MUX_ENV )
-			TRACE0("Shade = ENV in alpha channel")
-		else if( m_dwShadeAlphaChannelFlag == MUX_PRIM )
-			TRACE0("Shade = PRIM in alpha channel")
-		else if( m_dwShadeAlphaChannelFlag == MUX_LODFRAC )
-			TRACE0("Shade = MUX_LODFRAC in alpha channel")
-		else if( m_dwShadeAlphaChannelFlag == MUX_PRIMLODFRAC )
-			TRACE0("Shade = MUX_PRIMLODFRAC in alpha channel")
-		else
-			DisplayConstantsWithShade(m_dwShadeAlphaChannelFlag,ALPHA_CHANNEL);
-	}
 
 	for( int i=0; i<2; i++ )
 	{

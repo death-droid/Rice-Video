@@ -88,7 +88,6 @@ public:
 	StageOperate colorOp;
 	StageOperate alphaOp;
 	uint32 dwTexture;	//Which texture to apply, 0 or 1
-	bool  bTextureUsed;	
 	
 	BOOL operator!=(const CombineStage & cs) const { return !(operator==(cs)); }
 	BOOL operator==(const CombineStage & cs) const 
@@ -125,9 +124,7 @@ public:
 	
 	CombineStage stages[8];
 	uint32 TFactor;
-	uint32 m_dwShadeColorChannelFlag;
-	uint32 m_dwShadeAlphaChannelFlag;
-	
+
 	BOOL operator!=(const SetCombineInfo & sci) const { return !(operator==(sci)); }
 	BOOL operator==(const SetCombineInfo & sci) const 
 	{
@@ -145,10 +142,6 @@ public:
 		}
 
 		if( sci.TFactor != TFactor )
-			return FALSE;
-		if( sci.m_dwShadeColorChannelFlag != m_dwShadeColorChannelFlag )
-			return FALSE;
-		if( sci.m_dwShadeAlphaChannelFlag != m_dwShadeAlphaChannelFlag )
 			return FALSE;
 
 		return TRUE;

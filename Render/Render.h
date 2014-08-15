@@ -164,8 +164,7 @@ public:
 
 	void SetVertexTextureUVCoord(TLITVERTEX &v, float fTex0S, float fTex0T, float fTex1S, float fTex1T);
 	void SetVertexTextureUVCoord(TLITVERTEX &v, float fTex0S, float fTex0T);
-	virtual D3DCOLOR PostProcessDiffuseColor(D3DCOLOR curDiffuseColor)=0;
-	
+
 	bool DrawTriangles();
 	virtual bool RenderFlushTris()=0;
 

@@ -55,9 +55,6 @@ public:
 		uint64 m_u64Mux;
 	};
 
-
-	uint32 m_dwShadeColorChannelFlag;
-	uint32 m_dwShadeAlphaChannelFlag;
 	uint32 m_ColorTextureFlag[2];	// I may use a texture to represent a constant color
 									// when there are more constant colors are used than	
 									// the system can support

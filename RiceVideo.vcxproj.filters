@@ -125,9 +125,6 @@
     <ClInclude Include="Utility\CSortedList.h">
       <Filter>Graphics\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\IColor.h">
-      <Filter>Graphics\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Texture\ConvertImage.h">
       <Filter>Graphics\Texture</Filter>
     </ClInclude>
