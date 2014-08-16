@@ -33,7 +33,6 @@ static bool gFirstCall = true;
 
 #define SetCommand( cmd, func, name )	gCustomInstruction[ cmd ] = func;
 
-static u32 gVertexStride = 0;
 static u32 gRDPHalf1 = 0;
 static u32 gLastUcodeBase = 0;
 const MicroCodeInstruction *gUcodeFunc = NULL;
@@ -233,11 +232,10 @@ static void DLParser_SetCustom(u32 ucode, u32 offset)
 //*****************************************************************************
 void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 data_size)
 {
-	u32 ucode = GBIMicrocode_DetectVersion(code_base, code_size, data_base, data_size, &DLParser_SetCustom);
-	gVertexStride = ucode_stride[ucode];
-	gRSP.vertexMult = gVertexStride;
+	gRSP.ucode = GBIMicrocode_DetectVersion(code_base, code_size, data_base, data_size, &DLParser_SetCustom);
+	gRSP.vertexMult = ucode_stride[gRSP.ucode];
 	gLastUcodeBase = code_base;
-	gUcodeFunc = IS_CUSTOM_UCODE(ucode) ? gCustomInstruction : gNormalInstruction[ucode];
+	gUcodeFunc = IS_CUSTOM_UCODE(gRSP.ucode) ? gCustomInstruction : gNormalInstruction[gRSP.ucode];
 
 	// Used for fetching ucode names (Debug Only)
 //#if defined(DAEDALUS_DEBUG_DISPLAYLIST) || defined(DAEDALUS_ENABLE_PROFILING)
@@ -305,6 +303,7 @@ void DLParser_Process()
 
 	SetVIScales();
 	CRender::g_pRender->RenderReset();
+	CRender::g_pRender->ResetMatrices(stack_size);
 	CRender::g_pRender->BeginRendering();
 	CRender::g_pRender->SetViewport(0, 0, windowSetting.uViWidth, windowSetting.uViHeight, 0x3FF);
 	CRender::g_pRender->SetFillMode(options.bWinFrameMode? RICE_FILLMODE_WINFRAME : RICE_FILLMODE_SOLID);

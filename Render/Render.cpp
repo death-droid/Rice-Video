@@ -95,9 +95,13 @@ CRender::~CRender()
 	}	
 }
 
-void CRender::ResetMatrices()
+void CRender::ResetMatrices(uint32 size)
 {
 	Matrix mat;
+
+	//Tigger's Honey Hunt
+	if (size == 0)
+		size = RICE_MATRIX_STACK;
 
 	mat.m[0][1] = mat.m[0][2] = mat.m[0][3] =
 	mat.m[1][0] = mat.m[1][2] = mat.m[1][3] =
@@ -110,6 +114,7 @@ void CRender::ResetMatrices()
 	gRSP.modelViewMtxTop = 0;
 	gRSP.projectionMtxs[0] = mat;
 	gRSP.modelviewMtxs[0] = mat;
+	gRSP.mMatStackSize = (size > RICE_MATRIX_STACK) ? RICE_MATRIX_STACK : size;
 
 	gRSP.bMatrixIsUpdated = true;
 	gRSP.bWorldMatrixIsUpdated = true;
@@ -143,12 +148,9 @@ void CRender::SetProjection(const Matrix & mat, bool bPush, bool bReplace)
 bool mtxPopUpError = false;
 void CRender::SetWorldView(const Matrix & mat, bool bPush, bool bReplace)
 {
-	if (bPush)
+	if (bPush && (gRSP.modelViewMtxTop < gRSP.mMatStackSize))
 	{
-		if (gRSP.modelViewMtxTop >= (RICE_MATRIX_STACK-1))
-			DebuggerAppendMsg("Pushing past modelview stack limits! %s", bReplace?"Load":"Mul");
-		else
-			gRSP.modelViewMtxTop++;
+		gRSP.modelViewMtxTop++;
 
 		// We should store the current projection matrix...
 		if (bReplace)
@@ -272,7 +274,6 @@ void CRender::SetCombinerAndBlender()
 void CRender::RenderReset()
 {
 	UpdateClipRectangle();
-	ResetMatrices();
 	SetZBias(0);
 	gRSP.numVertices = 0;
 	gRSP.maxVertexID = 0;
