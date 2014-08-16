@@ -140,7 +140,8 @@ void RSP_MoveMem_Conker(MicroCodeCommand command)
 			}
 			light_index -= 2;
 
-				RSP_MoveMemLight(light_index, dwAddr);
+			N64Light *light = (N64Light*)(g_pu8RamBase + dwAddr);
+			RSP_MoveMemLight(light_index, light);
 	
 			DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_SET_LIGHT, 
 			{

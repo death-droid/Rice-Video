@@ -521,6 +521,8 @@ typedef struct
 } RDP_OtherMode;
 
 
+
+
 typedef enum 
 { 
 	CMD_SETTILE, 
@@ -589,7 +591,7 @@ void RDP_DLParser_Process(void);
 void PrepareTextures();
 void RDP_InitRenderState();
 void DisplayVertexInfo(uint32 dwAddr, uint32 dwV0, uint32 dwN);
-void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr);
+void RSP_MoveMemLight(uint32 dwLight, const N64Light *light);
 void RSP_MoveMemViewport(uint32 dwAddr);
 void RDP_NOIMPL_WARN(LPCTSTR op);
 void RSP_GFX_Force_Matrix(uint32 dwAddr);

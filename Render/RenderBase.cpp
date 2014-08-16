@@ -479,63 +479,23 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	VTX_DUMP(TRACE0(""));
 }
 
-uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
+uint32 LightVert(D3DXVECTOR4 & norm)
 {
-	float fCosT;
-
 	// Do ambient
 	float r = gRSPlights[gRSP.ambientLightIndex].colour.r;
 	float g = gRSPlights[gRSP.ambientLightIndex].colour.g;
 	float b = gRSPlights[gRSP.ambientLightIndex].colour.b;
 
-	D3DXVECTOR4 v;
-	bool transformed = false;
-
 	for (unsigned int l=0; l < gRSPnumLights; l++)
 	{
-		//Are we a normal light?
-		if (!gRDP.tnl.PointLight)
+		// Regular directional light
+		float fCosT = norm.x*gRSPlights[l].direction.x + norm.y*gRSPlights[l].direction.y + norm.z*gRSPlights[l].direction.z;
+
+		if (fCosT > 0.0f)
 		{
-			// Regular directional light
-			fCosT = norm.x*gRSPlights[l].direction.x + norm.y*gRSPlights[l].direction.y + norm.z*gRSPlights[l].direction.z;
-
-			if (fCosT > 0 )
-			{
-				r += gRSPlights[l].colour.fr * fCosT;
-				g += gRSPlights[l].colour.fg * fCosT;
-				b += gRSPlights[l].colour.fb * fCosT;
-			}
-		}
-		else
-		{
-			//Ok where a Point light, lets handle it
-			if( !transformed )
-			{
-				D3DXVec3Transform(&v, (D3DXVECTOR3*)&g_vtxNonTransformed[vidx], &gRSPmodelViewTop);	// Convert to w=1
-				transformed = true;
-			}
-
-			D3DXVECTOR3 dir(gRSPlights[l].direction.x - v.x, gRSPlights[l].direction.y - v.y, gRSPlights[l].direction.z - v.z);
-
-			float d2 = sqrtf(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z);
-			dir.x /= d2;
-			dir.y /= d2;
-			dir.z /= d2;
-
-			fCosT = norm.x*dir.x + norm.y*dir.y + norm.z*dir.z; 
-
-			if (fCosT > 0 )
-			{
-				//float f = d2/gRSPlights[l].range*50;
-				float f = d2/15000*50;
-				f = 1 - min(f,1);
-				fCosT *= f*f;
-
-				r += gRSPlights[l].colour.fr * fCosT;
-				g += gRSPlights[l].colour.fg * fCosT;
-				b += gRSPlights[l].colour.fb * fCosT;
-			}
-
+			r += gRSPlights[l].colour.fr * fCosT;
+			g += gRSPlights[l].colour.fg * fCosT;
+			b += gRSPlights[l].colour.fb * fCosT;
 		}
 	}
 
@@ -545,6 +505,39 @@ uint32 LightVert(D3DXVECTOR4 & norm, int vidx)
 	return ((0xff000000)|(((uint32)r)<<16)|(((uint32)g)<<8)|((uint32)b));
 }
 
+uint32 LightPointVert(D3DXVECTOR4 & w)
+{
+	// Do ambient
+	float r = gRSPlights[gRSP.ambientLightIndex].colour.r;
+	float g = gRSPlights[gRSP.ambientLightIndex].colour.g;
+	float b = gRSPlights[gRSP.ambientLightIndex].colour.b;
+
+	for (unsigned int l = 0; l < gRSPnumLights; l++)
+	{
+		if (gRSPlights[l].SkipIfZero)
+		{
+			// Regular directional light
+			D3DXVECTOR3 dir(gRSPlights[l].Position.x - w.x, gRSPlights[l].Position.y - w.y, gRSPlights[l].Position.z - w.z);
+
+			float light_qlen = D3DXVec3LengthSq(&dir);
+			float light_llen = sqrtf(light_qlen);
+
+			float at = gRSPlights[l].ca + gRSPlights[l].la * light_llen + gRSPlights[l].qa * light_qlen;
+			if (at > 0.0f)
+			{
+				float fCosT = 1.0f / at;
+				r += gRSPlights[l].colour.fr * fCosT;
+				g += gRSPlights[l].colour.fg * fCosT;
+				b += gRSPlights[l].colour.fb * fCosT;
+			}
+		}
+	}
+
+	if (r > 255) r = 255;
+	if (g > 255) g = 255;
+	if (b > 255) b = 255;
+	return ((0xff000000) | (((uint32)r) << 16) | (((uint32)g) << 8) | ((uint32)b));
+}
 inline void ReplaceAlphaWithFogFactor(int i)
 {
 	if( gRDP.tnl.Fog )
@@ -630,7 +623,16 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			g_normal.z = (float)vert.norma.nz;
 
 			Vec3TransformNormal(g_normal, gRSPmodelViewTop);
-			g_dwVtxDifColor[i] = LightVert(g_normal, i);
+
+			if (gRDP.tnl.PointLight)
+			{
+				g_dwVtxDifColor[i] = LightPointVert(D3DXVECTOR4(vert.x,vert.y,vert.z, 1.0f));
+			}
+			else
+			{
+				g_dwVtxDifColor[i] = LightVert(g_normal);
+			}
+			
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = vert.rgba.a;	// still use alpha from the vertex
 		}
 		else
@@ -978,7 +980,7 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			g_normal.z = (char)b; //norma.nz;
 
 			Vec3TransformNormal(g_normal, matWorldProject);
-			g_dwVtxDifColor[i] = LightVert(g_normal, i);
+			g_dwVtxDifColor[i] = LightVert(g_normal);
 		}
 		else
 		{
@@ -1045,7 +1047,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 
 			Vec3TransformNormal(g_normal, gRSPmodelViewTop);
-			g_dwVtxDifColor[i] = LightVert(g_normal, i);
+			g_dwVtxDifColor[i] = LightVert(g_normal);
 
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = (uint8)a;	// still use alpha from the vertex
 		}
@@ -1224,6 +1226,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 {
 	
+	gRSPlights[dwLight].SkipIfZero = (r + g + b);
 	gRSPlights[dwLight].colour.r = r;
 	gRSPlights[dwLight].colour.g = g;
 	gRSPlights[dwLight].colour.b = b;
@@ -1239,13 +1242,35 @@ void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 
 void SetLightDirection(uint32 dwLight, float x, float y, float z, float range)
 {
-	float w = range == 0 ? sqrt(x*x+y*y+z*z) : 1;
+	float w =  sqrt(x*x + y*y + z*z);
 	gRSPlights[dwLight].direction.x = x/w;
 	gRSPlights[dwLight].direction.y = y/w;
 	gRSPlights[dwLight].direction.z = z/w;
 	gRSPlights[dwLight].direction.range = range; 
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f, %.4f", dwLight, x, y, z, range));
+}
+
+void SetLightPosition(uint32 dwLight, float x, float y, float z, float w)
+{
+	gRSPlights[dwLight].Position.x = x;
+	gRSPlights[dwLight].Position.y = y;
+	gRSPlights[dwLight].Position.z = z;
+	gRSPlights[dwLight].Position.w = w;
+}
+
+void SetLightCBFD(uint32 dwLight, short nonzero)
+{
+	gRSPlights[dwLight].Iscale = (float)(nonzero << 12);
+	gRSPlights[dwLight].SkipIfZero = gRSPlights[dwLight].SkipIfZero&&nonzero;
+}
+
+
+void SetLightEx(uint32 dwLight, float ca, float la, float qa)
+{
+	gRSPlights[dwLight].ca = ca / 16.0f;
+	gRSPlights[dwLight].la = la / 65535.0f;
+	gRSPlights[dwLight].qa = qa / (8.0f*65535.0f);
 }
 
 void ForceMainTextureIndex(int dwTile) 

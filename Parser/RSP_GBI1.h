@@ -17,20 +17,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 //Clean me
-struct N64Light
-{
-    u8 pad0, b, g, r;		// Colour
-    u8 pad1, b2, g2, r2;	// Unused..
-    s8 pad2, z, y, x;		// Direction
-};
-
-struct N64LightMM
-{
-    u8 pad0, b, g, r;
-    u8 pad1, b2, g2, r2;
-    s16 y, x, range, z;		// What to do with range?
-};
-
 void RSP_GBI1_Vtx(MicroCodeCommand command)
 {
 	uint32 addr = RSPSegmentAddr(command.vtx1.addr);
@@ -164,7 +150,7 @@ void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 	u32 data_base = gRDPHalf1 & 0x1fffffff;         // Preceeding RDP_HALF1 sets this up
 	u32 data_size = (command.inst.cmd0 & 0xFFFF) + 1;
 
-	DLParser_InitMicrocode(code_base, code_size, data_base, data_size);
+	//DLParser_InitMicrocode(code_base, code_size, data_base, data_size);
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SWITCH_UCODE,{DebuggerAppendMsg("Pause at loading ucode");});
 }
@@ -225,7 +211,7 @@ void DisplayVertexInfo(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 #endif
 }
 
-void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
+void RSP_MoveMemLight(uint32 dwLight, const N64Light *light)
 {
 	if( dwLight >= 16 )
 	{
@@ -233,45 +219,25 @@ void RSP_MoveMemLight(uint32 dwLight, uint32 dwAddr)
 		return;
 	}
 
-	u8 * base = g_pu8RamBase + dwAddr;
-	u8 r, g, b;
-	s16 x, y, z, range;
+	u8 r = light->r;
+	u8 g = light->g;
+	u8 b = light->b;
 
-	if( options.enableHackForGames == HACK_FOR_ZELDA_MM && (base[0] == 0x08) && (base[4] == 0xFF ))
-	{
-		N64LightMM *light = (N64LightMM*)base;
+	s8 dir_x = light->dir_x;
+	s8 dir_y = light->dir_y;
+	s8 dir_z = light->dir_z;
+//	s8 range = light->range;
 
-		r = light->r;
-		g = light->g;
-		b = light->b;
-
-		x = light->x;
-		y = light->y;
-		z = light->z;
-		range = light->range;
-	}
-	else
-	{
-		N64Light *light = (N64Light*)base;
-		r = light->r;
-		g = light->g;
-		b = light->b;
-
-		x = light->x;
-		y = light->y;
-		z = light->z;
-		range = 0;
-	}
-
-	bool valid = (x | y | z) != 0;
+	bool valid = (dir_x | dir_y | dir_z) != 0;
 
 	LIGHT_DUMP(TRACE4("  Light[%d] RGB[%d, %d, %d]", dwLight, r, g, b));
 	LIGHT_DUMP(TRACE4("  x[%d] y[%d] z[%d] %s direction", x, y, z, valid ? "Valid" : "Invalid"));
 	
+	//Set the light color
 	SetLightCol(dwLight, r, g, b);
 
-	if(valid != 0)
-		SetLightDirection(dwLight, x, y, z, range);
+	//Set direction
+	SetLightDirection(dwLight, dir_x, dir_y, dir_z, 0);
 }
 
 void RSP_MoveMemViewport(uint32 dwAddr)
@@ -371,8 +337,8 @@ void RSP_GBI1_MoveMem(MicroCodeCommand command)
 				uint32 dwLight = (type-RSP_GBI1_MV_MEM_L0)/2;
 				LOG_UCODE("    RSP_GBI1_MV_MEM_L%d", dwLight);
 				LOG_UCODE("    Light%d: Length:0x%04x, Address: 0x%08x", dwLight, dwLength, addr);
-
-				RSP_MoveMemLight(dwLight, addr);
+				N64Light *light = (N64Light*)(g_pu8RamBase + addr);
+				RSP_MoveMemLight(dwLight, light);
 			}
 			break;
 		case RSP_GBI1_MV_MEM_TXTATT:

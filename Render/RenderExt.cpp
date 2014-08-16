@@ -835,34 +835,15 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 
 	if( sprite.txtr.block.type == S2DEX_OBJLT_TXTRBLOCK )
 	{
-		gti.WidthToCreate		= sprite.sprite.imageW/32;
-		if( sprite.sprite.imageW >= 0x8000 )
-		{
-			gti.WidthToCreate = (0x10000-sprite.sprite.imageW)/32;
-		}
-		gti.HeightToCreate	= sprite.sprite.imageH/32;
-		if( sprite.sprite.imageH >= 0x8000 )
-		{
-			gti.HeightToCreate	= (0x10000-sprite.sprite.imageH)/32;
-		}
-		gti.Pitch		= (2047/(sprite.txtr.block.tline-1)) << 3;
+		gti.WidthToCreate	= (((sprite.sprite.imageW >= 0x8000) ? (0x10000 - sprite.sprite.imageW) : sprite.sprite.imageW)/ 32);
+		gti.HeightToCreate	= (((sprite.sprite.imageH >= 0x8000) ? (0x10000 - sprite.sprite.imageH) : sprite.sprite.imageH)/32 );
+		gti.Pitch			= (2047/(sprite.txtr.block.tline-1)) << 3;
 	}
 	else if( sprite.txtr.block.type == S2DEX_OBJLT_TXTRTILE )
 	{
-//#define	GS_PIX2TMEM(pix, siz)	((pix)>>(4-(siz)))
-//#define	GS_TT_TWIDTH(pix,siz)	((GS_PIX2TMEM((pix), (siz))<<2)-1)
-//#define	GS_TT_THEIGHT(pix,siz)	(((pix)<<2)-1)
-
-		gti.WidthToCreate		= ((sprite.txtr.tile.twidth+1)>>2)<<(4-gti.Size);
-		gti.HeightToCreate	= (sprite.txtr.tile.theight+1)>>2;
-
-		if( gti.Size == TXT_SIZE_4b )
-		{
-			gti.Pitch = gti.WidthToCreate >> 1;
-		}
-		else
-			//gti.Pitch		= (sprite.txtr.tile.twidth+1) << 3;
-			gti.Pitch		= gti.WidthToCreate << (gti.Size-1);
+		gti.WidthToCreate	= (((sprite.txtr.tile.twidth+1)>>2)<<(4-gti.Size));
+		gti.HeightToCreate	= ((sprite.txtr.tile.theight+1)>>2);
+		gti.Pitch			= ((gti.Size == TXT_SIZE_4b) ? (gti.WidthToCreate >> 1) : (gti.WidthToCreate << (gti.Size - 1)));
 	}
 
 	if( gti.Address + gti.Pitch*gti.HeightToCreate > g_dwRamSize )

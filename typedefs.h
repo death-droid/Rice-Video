@@ -48,6 +48,26 @@ typedef D3DLOCKED_RECT LockRectType;
 
 #define COLOR_RGBA D3DCOLOR_RGBA
 
+//Move me, just putting it here for now
+struct N64Light
+{
+	u8 ca, b, g, r;					// Colour and ca (ca is different for conker)
+	u8 la, b2, g2, r2;
+	union
+	{
+		struct
+		{
+			s8 pad0, dir_z, dir_y, dir_x;	// Direction
+			u8 pad1, qa, pad2, nonzero;
+		};
+		struct
+		{
+			s16 y1, x1, w1, z1;		// Position, GBI2 ex Majora's Mask
+		};
+	};
+	s32 pad4, pad5, pad6, pad7;		// Padding..
+	s16 y, x, w, z; 				// Position, Conker
+};
 
 typedef struct
 {
@@ -259,16 +279,15 @@ struct Direction
 struct Light
 {
 	Direction direction;
-	u32 skipIfZero; //Needed by CBFD and MM
+	u32 SkipIfZero; //Needed by CBFD and MM
 	Color colour; // HOlds the colours
-	float Iscale;
+	float Iscale; // Used by CBFD
+	D3DXVECTOR4 Position; // Position -32768 to 32767
 	float ca; //Used by point lights
 	float la; //Used by point lights
 	float qa; //Used by point lights
-
+	u32 Pad0;
 };
-
-
 
 typedef struct
 {

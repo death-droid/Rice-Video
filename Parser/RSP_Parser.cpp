@@ -236,7 +236,7 @@ void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 dat
 	gRSP.vertexMult = ucode_stride[gRSP.ucode];
 	gLastUcodeBase = code_base;
 	gUcodeFunc = IS_CUSTOM_UCODE(gRSP.ucode) ? gCustomInstruction : gNormalInstruction[gRSP.ucode];
-
+	ErrorMsg("%d", gRSP.ucode);
 	// Used for fetching ucode names (Debug Only)
 //#if defined(DAEDALUS_DEBUG_DISPLAYLIST) || defined(DAEDALUS_ENABLE_PROFILING)
 	//gUcodeName = IS_CUSTOM_UCODE(ucode) ? gCustomInstructionName : gNormalInstructionName[ucode];

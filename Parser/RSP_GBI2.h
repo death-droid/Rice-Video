@@ -587,39 +587,25 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 		break;
 	case RSP_GBI2_MV_MEM__LIGHT:
 		{
-			uint32 dwOffset2 = ((command.inst.cmd0) >> 5) & 0x3FFF;
-		switch (dwOffset2)
-		{
-		case 0x00:
+			 uint32 dwOffset2 = ((command.inst.cmd0) >> 5) & 0x7F8;
+	
+			uint32 dwLight = (dwOffset2)/24;
+			if (dwLight < 2)
 			{
-				s8 * pcBase = g_ps8RamBase + addr;
-				LOG_UCODE("    RSP_GBI1_MV_MEM_LOOKATX %f %f %f",
-					(float)pcBase[8 ^ 0x3],
-					(float)pcBase[9 ^ 0x3],
-					(float)pcBase[10 ^ 0x3]);
+				return;
+			}
 
-			}
-			break;
-		case 0x18:
-			{
-				s8 * pcBase = g_ps8RamBase + addr;
-				LOG_UCODE("    RSP_GBI1_MV_MEM_LOOKATY %f %f %f",
-					(float)pcBase[8 ^ 0x3],
-					(float)pcBase[9 ^ 0x3],
-					(float)pcBase[10 ^ 0x3]);
-			}
-			break;
-		default:		//0x30/48/60
-			{
-				uint32 dwLight = (dwOffset2 - 0x30)/0x18;
-				LOG_UCODE("    Light %d:", dwLight);
-					RSP_MoveMemLight(dwLight, addr);
-			}
+			dwLight -= 2;
+			N64Light *light = (N64Light*)(g_pu8RamBase + addr);
+			RSP_MoveMemLight(dwLight, light);
+
+			SetLightPosition(dwLight, light->x1, light->y1, light->z1, 1.0f);
+			SetLightEx(dwLight, light->ca, light->la, light->qa);
+
+			LOG_UCODE("    Light %d:", dwLight);
 			break;
 		}
 		break;
-
-		}
 	case RSP_GBI2_MV_MEM__MATRIX:
 		LOG_UCODE("Force Matrix: addr=%08X", addr);
 		RSP_GFX_Force_Matrix(addr);
