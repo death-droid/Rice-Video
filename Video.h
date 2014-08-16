@@ -86,10 +86,6 @@ typedef struct {
 	BOOL	ToToggleFullScreen;
 	bool	bDisableFPS;
 
-	bool	bUseModifiedUcodeMap;
-	bool	ucodeHasBeenSet;
-	bool	bUcodeIsKnown;
-
 	uint32	curRenderBuffer;
 	uint32	curDisplayBuffer;
 	uint32	curVIOriginReg;

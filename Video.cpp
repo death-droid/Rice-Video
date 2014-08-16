@@ -705,7 +705,7 @@ FUNC_TYPE(void) NAME_DEFINE(ProcessDList)(void)
 
 	try
 	{
-		DLParser_Process((OSTask *)(g_GraphicsInfo.DMEM + 0x0FC0));
+		DLParser_Process();
 	}
 	catch (...)
 	{

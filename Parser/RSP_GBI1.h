@@ -149,11 +149,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 	if( vtxdepth <= (s32)(command.inst.cmd1) || g_curRomInfo.bForceDepthBuffer )
 #endif
 	{
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-		uint32 dwDL = *(uint32 *)(g_pu8RamBase + dwPC-12);
-		uint32 dwAddr = RSPSegmentAddr(dwDL);
-
-		dwAddr = RSPSegmentAddr(dwDL);
+		uint32 dwAddr = RSPSegmentAddr(gRDPHalf1);
 
 		LOG_UCODE("BranchZ to DisplayList 0x%08x", dwAddr);
 		gDlistStack[gDlistStackPointer].pc = dwAddr;
@@ -161,28 +157,14 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 	}
 }
 
-#ifdef _DEBUG
-void DumpUcodeInfo(UcodeInfo &info)
-{
-	DebuggerAppendMsg("Loading Unknown Ucode:\n%08X-%08X-%08X-%08X, Size=0x%X, CRC=0x%08X\nCode:\n",
-		info.ucDWORD1, info.ucDWORD2, info.ucDWORD3, info.ucDWORD4, 
-		info.ucSize, info.ucCRC);
-	DumpHex(info.ucStart,20);
-	TRACE0("Data:\n");
-	DumpHex(info.ucDStart,20);
-}
-#endif
-
 void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 {
-	//TRACE0("Load ucode");
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-	uint32 dwUcStart = RSPSegmentAddr(command.inst.cmd1);
-	uint32 dwSize = ((command.inst.cmd0)&0xFFFF)+1;
-	uint32 dwUcDStart = RSPSegmentAddr(*(uint32 *)(g_pu8RamBase + dwPC-12));
+	u32 code_base = (command.inst.cmd1 & 0x1fffffff);
+	u32 code_size = 0x1000;
+	u32 data_base = gRDPHalf1 & 0x1fffffff;         // Preceeding RDP_HALF1 sets this up
+	u32 data_size = (command.inst.cmd0 & 0xFFFF) + 1;
 
-	uint32 ucode = DLParser_CheckUcode(dwUcStart, dwUcDStart, dwSize, 8);
-	RSP_SetUcode(ucode, dwUcStart, dwUcDStart, dwSize);
+	DLParser_InitMicrocode(code_base, code_size, data_base, data_size);
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SWITCH_UCODE,{DebuggerAppendMsg("Pause at loading ucode");});
 }
@@ -340,21 +322,6 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 }
 
 // S2DEX uses this - 0xc1
-void RSP_S2DEX_SPObjLoadTxtr_Ucode1(MicroCodeCommand command)
-{
-	// Add S2DEX ucode supporting to F3DEX, see game DT and others
-	status.bUseModifiedUcodeMap = true;
-	RSP_SetUcode(1);
-	memcpy( &LoadedUcodeMap, &ucodeMap1, sizeof(UcodeMap));
-	
-	LoadedUcodeMap[S2DEX_OBJ_MOVEMEM] = &RSP_S2DEX_OBJ_MOVEMEM;
-	LoadedUcodeMap[S2DEX_OBJ_LOADTXTR] = &RSP_S2DEX_SPObjLoadTxtr;
-	LoadedUcodeMap[S2DEX_OBJ_LDTX_SPRITE] = &RSP_S2DEX_SPObjLoadTxSprite;
-	LoadedUcodeMap[S2DEX_OBJ_LDTX_RECT] = &RSP_S2DEX_SPObjLoadTxRect;
-	LoadedUcodeMap[S2DEX_OBJ_LDTX_RECT_R] = &RSP_S2DEX_SPObjLoadTxRectR;
-
-	RSP_S2DEX_SPObjLoadTxtr(command);
-}
 
 void RSP_GBI1_SpNoop(MicroCodeCommand command)
 {

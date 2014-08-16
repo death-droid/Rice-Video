@@ -32,9 +32,6 @@ void RSP_GBI2_DL_Count(MicroCodeCommand command)
 
 void RSP_GBI2_0x8(MicroCodeCommand command)
 {
-	
-	
-
 	if( ((command.inst.cmd0)&0x00FFFFFF) == 0x2F && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
 	{
 		// V-Rally 64

@@ -367,27 +367,6 @@ typedef union {
 #define MAX_DL_STACK_SIZE	32
 #define MAX_DL_COUNT		1000000
 
-typedef struct {
-	bool	used;
-	uint32	crc_size;
-	uint32	crc_800;
-	uint32	ucode;
-	uint32	minor_ver;
-	uint32	variant;
-	char	rspstr[200];
-	
-	uint32	ucStart;
-	uint32	ucSize;
-	uint32	ucDStart;
-	uint32	ucDSize;
-	uint32	ucCRC;
-	uint32	ucDWORD1;
-	uint32	ucDWORD2;
-	uint32	ucDWORD3;
-	uint32	ucDWORD4;
-} UcodeInfo;
-
-
 typedef struct
 {
 	uint32		ucode;
@@ -604,7 +583,7 @@ extern int				gDlistStackPointer;
 void DLParser_Init();
 void RDP_GFX_Reset();
 void RDP_Cleanup();
-void DLParser_Process(OSTask * pTask);
+void DLParser_Process();
 void RDP_DLParser_Process(void);
 
 void PrepareTextures();
@@ -617,7 +596,6 @@ void RSP_GFX_Force_Matrix(uint32 dwAddr);
 inline void DLParser_FetchNextCommand(MicroCodeCommand *p_command); 
 void RSP_GFX_InitGeometryMode();
 void RSP_SetUcode(int ucode, uint32 ucStart=0, uint32 ucDStart=0, uint32 cdSize=0);
-uint32 CalcalateCRC(uint32* srcPtr, uint32 srcSize);
 void RDP_GFX_PopDL();
 
 extern Matrix matToLoad;
@@ -626,7 +604,6 @@ void LoadMatrix(uint32 addr);
 ULONG ComputeCRC32(ULONG crc, const uint8 *buf, UINT len);
 
 void TriggerDPInterrupt();
-uint32 DLParser_CheckUcode(uint32 ucStart, uint32 ucDStart, uint32 ucSize, uint32 ucDSize);
 
 bool IsUsedAsDI(uint32 addr);
 

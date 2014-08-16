@@ -200,6 +200,12 @@
     <ClInclude Include="SimpleIni.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Parser\Microcode.h">
+      <Filter>Graphics\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\gbi.h">
+      <Filter>Graphics\Parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">
@@ -282,6 +288,9 @@
     </ClCompile>
     <ClCompile Include="Parser\RSP_S2DEX.cpp">
       <Filter>Graphics\Parser\Ucodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser\Microcode.cpp">
+      <Filter>Graphics\Parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
