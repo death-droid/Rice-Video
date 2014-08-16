@@ -243,7 +243,6 @@ void InitRenderBase()
 	gRDP.originalFillColor	=0;
 
 	gRSP.ucode		= 1;
-	gRSP.vertexMult = 10;
 	gRSP.bNearClip	= false;
 	gRSP.bRejectVtx	= false;
 
