@@ -203,9 +203,6 @@
     <ClInclude Include="Parser\Microcode.h">
       <Filter>Graphics\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="Parser\gbi.h">
-      <Filter>Graphics\Parser</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">

@@ -157,7 +157,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Parser\gbi.h" />
     <ClInclude Include="Parser\Microcode.h" />
     <ClInclude Include="SimpleIni.h" />
     <ClInclude Include="_BldNum.h" />

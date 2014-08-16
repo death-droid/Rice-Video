@@ -236,7 +236,7 @@ void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 dat
 	u32 ucode = GBIMicrocode_DetectVersion(code_base, code_size, data_base, data_size, &DLParser_SetCustom);
 
 	gVertexStride = ucode_stride[ucode];
-	
+	gRSP.vertexMult = gVertexStride;
 	gLastUcodeBase = code_base;
 	gUcodeFunc = IS_CUSTOM_UCODE(ucode) ? gCustomInstruction : gNormalInstruction[ucode];
 
