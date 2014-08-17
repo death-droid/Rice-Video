@@ -150,7 +150,7 @@ void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 	u32 data_base = gRDPHalf1 & 0x1fffffff;         // Preceeding RDP_HALF1 sets this up
 	u32 data_size = (command.inst.cmd0 & 0xFFFF) + 1;
 
-	//DLParser_InitMicrocode(code_base, code_size, data_base, data_size);
+	DLParser_InitMicrocode(code_base, code_size, data_base, data_size);
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SWITCH_UCODE,{DebuggerAppendMsg("Pause at loading ucode");});
 }
@@ -370,7 +370,7 @@ void RSP_GBI1_RDPHalf_2(MicroCodeCommand command)
 
 void RSP_GBI1_RDPHalf_1(MicroCodeCommand command)		
 {
-	LOG_UCODE("RDPHalf_1: (Ignored)"); 
+	gRDPHalf1 = command.inst.cmd1;
 }
 
 void RSP_GBI1_Line3D(MicroCodeCommand command)
