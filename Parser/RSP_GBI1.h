@@ -231,7 +231,7 @@ void RSP_MoveMemLight(uint32 dwLight, const N64Light *light)
 	bool valid = (dir_x | dir_y | dir_z) != 0;
 
 	LIGHT_DUMP(TRACE4("  Light[%d] RGB[%d, %d, %d]", dwLight, r, g, b));
-	LIGHT_DUMP(TRACE4("  x[%d] y[%d] z[%d] %s direction", x, y, z, valid ? "Valid" : "Invalid"));
+//	LIGHT_DUMP(TRACE4("  x[%d] y[%d] z[%d] %s direction", x, y, z, valid ? "Valid" : "Invalid"));
 	
 	//Set the light color
 	SetLightCol(dwLight, r, g, b);

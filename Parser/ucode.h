@@ -74,7 +74,6 @@ UcodeFunc(RSP_Vtx_Conker);
 UcodeFunc(RSP_MoveWord_Conker);
 UcodeFunc(RSP_Tri4_Conker);
 UcodeFunc(RSP_MoveMem_Conker);
-UcodeFunc(RSP_Quad_Conker);
 
 UcodeFunc(RSP_Vtx_Gemini);
 

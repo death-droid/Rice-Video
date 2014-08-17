@@ -26,7 +26,7 @@ void RSP_Vtx_Conker(MicroCodeCommand command)
 {
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	uint32 dwVEnd   = ((command.inst.cmd0 >> 1 )&0x7F);
-	uint32 dwN      = ((command.inst.cmd0 >> 12)&0xFFF);
+	uint32 dwN      = ((command.inst.cmd0 >> 12)&0xFF);
 	uint32 dwV0		= dwVEnd - dwN;
 
 	LOG_UCODE("    Vtx: Address 0x%08x, vEnd: %d, v0: %d, Num: %d", dwAddr, dwVEnd, dwV0, dwN);
@@ -96,24 +96,7 @@ void RSP_Tri4_Conker(MicroCodeCommand command)
 	DEBUG_TRIANGLE(TRACE0("Pause at Conker Tri4"));
 }
 
-void RDP_GFX_Force_Vertex_Z_Conker(uint32 dwAddr)
-{
-	VTX_DUMP( 
-	{
-		s8 * pcBase = g_ps8RamBase + (dwAddr&(g_dwRamSize-1));
-		uint32 * pdwBase = (uint32 *)pcBase;
-		LONG i;
 
-		for (i = 0; i < 4; i++)
-		{
-			DebuggerAppendMsg("    %08x %08x %08x %08x", pdwBase[0], pdwBase[1], pdwBase[2], pdwBase[3]);
-			pdwBase+=4;
-		}
-	});
-
-	dwConkerVtxZAddr = dwAddr;
-	DEBUGGER_PAUSE_AND_DUMP(NEXT_VERTEX_CMD,{TRACE0("Paused at RDP_GFX_Force_Matrix_Conker Cmd");});
-}
 
 void RSP_MoveMem_Conker(MicroCodeCommand command)
 {
@@ -125,7 +108,7 @@ void RSP_MoveMem_Conker(MicroCodeCommand command)
 	case RSP_GBI2_MV_MEM__MATRIX:
 		{
 			LOG_UCODE("    DLParser_MoveMem_Conker");
-			RDP_GFX_Force_Vertex_Z_Conker(dwAddr);
+			dwConkerVtxZAddr = dwAddr;
 		}
 		break;
 	case RSP_GBI2_MV_MEM__LIGHT:
@@ -143,6 +126,9 @@ void RSP_MoveMem_Conker(MicroCodeCommand command)
 			N64Light *light = (N64Light*)(g_pu8RamBase + dwAddr);
 			RSP_MoveMemLight(light_index, light);
 	
+			SetLightPosition(light_index, light->x, light->y, light->z, light->w);
+			SetLightCBFD(light_index, light->nonzero);
+
 			DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_SET_LIGHT, 
 			{
 				DebuggerAppendMsg("RSP_MoveMemLight: Addr=%08X, cmd0=%08X", dwAddr, (command.inst.cmd0));
@@ -156,46 +142,57 @@ void RSP_MoveMem_Conker(MicroCodeCommand command)
 	}
 }
 
-void RSP_Quad_Conker (MicroCodeCommand command)
-{
-	if ((command.inst.cmd0 & 0x00FFFFFF) == 0x2F)
-	{
-		uint32 p_command = command.inst.cmd0>>24;
-		if (p_command == 0x6)
-		{
-			RSP_S2DEX_SPObjLoadTxSprite(command);
-			return;
-		}
-		if (p_command == 0x7)
-		{
-			RSP_S2DEX_SPObjLoadTxSprite(command);
-			return;
-		}
-	}
-	uint32 v0 = ((command.inst.cmd0 >> 17) & 0x7F);
-	uint32 v1 = ((command.inst.cmd0 >> 9) & 0x7F);
-	uint32 v2 = ((command.inst.cmd0 >> 1) & 0x7F);
-	PrepareTriangle(v0,v1,v2);
-}
-
 void RSP_MoveWord_Conker(MicroCodeCommand command)
 {
 	uint32 dwType   = ((command.inst.cmd0) >> 16) & 0xFF;
-	if( dwType != RSP_MOVE_WORD_NUMLIGHT )
+	switch (dwType)
 	{
-		RSP_GBI2_MoveWord(command);
-	}
-	else
-	{
-		uint32 dwNumLights = ((command.inst.cmd1)/48);
-		LOG_UCODE("Conker RSP_MOVE_WORD_NUMLIGHT: %d", dwNumLights);
-		gRSP.ambientLightIndex = dwNumLights+1;
-		SetNumLights(dwNumLights);
-		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_SET_LIGHT, 
+		case RSP_MOVE_WORD_NUMLIGHT:
 		{
-			DebuggerAppendMsg("SetNumLights: %d", dwNumLights);
-			TRACE0("Pause after SetNumLights");
-		});
+			uint32 dwNumLights = ((command.inst.cmd1) / 48);
+			gRSP.ambientLightIndex = dwNumLights + 1;
+			SetNumLights(dwNumLights);
+		}
+		break;
+
+		case RSP_MOVE_WORD_SEGMENT:
+		{
+			uint32 dwSeg = command.mw2.offset >> 2;
+			uint32 dwAddr = command.mw2.value & 0x00FFFFFF;			// Hack - convert to physical
+
+			LOG_UCODE("      RSP_MOVE_WORD_SEGMENT Segment[%d] = 0x%08x", dwSeg, dwAddr);
+
+			gRSP.segments[dwSeg] = dwAddr;
+		}
+		break;
+
+		case 0x10:
+		{
+			if ((command.inst.cmd0 & 8) == 0)
+			{
+				uint32 idx = (command.inst.cmd0 >> 1) & 3;
+				uint32 pos = command.inst.cmd0 & 0x30;
+
+				switch (pos)
+				{
+				case 0:
+					gRDP.CoordMod[0 + idx] = (s16)(command.inst.cmd1 >> 16);
+					gRDP.CoordMod[1 + idx] = (s16)(command.inst.cmd1 & 0xFFFF);
+					break;
+				case 0x10:
+					gRDP.CoordMod[4 + idx] = (command.inst.cmd1 >> 16) / 65536.0f;
+					gRDP.CoordMod[5 + idx] = (command.inst.cmd1 & 0xFFFF) / 65536.0f;
+					gRDP.CoordMod[12 + idx] = gRDP.CoordMod[0 + idx] + gRDP.CoordMod[4 + idx];
+					gRDP.CoordMod[13 + idx] = gRDP.CoordMod[1 + idx] + gRDP.CoordMod[5 + idx];
+					break;
+				case 0x20:
+					gRDP.CoordMod[8 + idx] = (s16)(command.inst.cmd1 >> 16);
+					gRDP.CoordMod[9 + idx] = (s16)(command.inst.cmd1 & 0xFFFF);
+					break;
+				}
+			}
+		}
+		break;
 	}
 }
 #endif //RSP_CONKER_H__
