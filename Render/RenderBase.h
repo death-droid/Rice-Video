@@ -233,7 +233,7 @@ void SetVertexXYZ(uint32 vertex, float x, float y, float z);
 void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val);
 void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b);
-void SetLightDirection(uint32 dwLight, float x, float y, float z, float range);
+void SetLightDirection(uint32 dwLight, float x, float y, float z);
 void SetLightPosition(uint32 dwLight, float x, float y, float z, float w);
 void SetLightCBFD(uint32 dwLight, short nonzero);
 void SetLightEx(uint32 dwLight, float ca, float la, float qa);

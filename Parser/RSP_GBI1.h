@@ -237,7 +237,7 @@ void RSP_MoveMemLight(uint32 dwLight, const N64Light *light)
 	SetLightCol(dwLight, r, g, b);
 
 	//Set direction
-	SetLightDirection(dwLight, dir_x, dir_y, dir_z, 0);
+	SetLightDirection(dwLight, dir_x, dir_y, dir_z);
 }
 
 void RSP_MoveMemViewport(uint32 dwAddr)
