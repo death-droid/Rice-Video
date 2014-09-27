@@ -43,7 +43,7 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 
 	DrawInfo srcInfo;	
 	//Start the draw update
-	if( pEntry->pTexture->StartUpdate(&srcInfo) == false )
+	if(!pEntry->pTexture->StartUpdate(&srcInfo))
 	{
 		//If we get here we were unable to start the draw update
 		//Delete any allocated memory for the enhanced texture
@@ -51,6 +51,7 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 		return;
 	}
 
+	//Set our enhancement flag
 	pEntry->dwEnhancementFlag = options.textureEnhancement;
 
 	// Don't enhance for large textures
@@ -60,15 +61,13 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 		pEntry->pTexture->EndUpdate(&srcInfo);
 		//Delete any data allocated for the enhanced texture
 		SAFE_DELETE(pEntry->pEnhancedTexture);
-		//Set the enhancement flag so the texture wont be processed again
+		//Set the enhancement flag so the texture wont be processed again - WHUT THATS WRONG
 		pEntry->dwEnhancementFlag = TEXTURE_NO_ENHANCEMENT;
 		return;
 	}
 
-	CTexture* pSurfaceHandler = NULL;
-
 	//Create the surface for the texture
-	pSurfaceHandler = new CTexture(srcInfo.dwCreatedWidth*2, srcInfo.dwCreatedHeight*2);
+	CTexture* pSurfaceHandler = new CTexture(srcInfo.dwCreatedWidth * 2, srcInfo.dwCreatedHeight * 2);
 
 	DrawInfo destInfo;
 	if(pSurfaceHandler)
@@ -137,6 +136,7 @@ typedef struct {
 	unsigned char	*pHiresTextureRGB;
 	unsigned char	*pHiresTextureAlpha;
 } ExtTxtrInfo;
+
 
 void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo );
 
@@ -631,7 +631,6 @@ bool CheckAndCreateFolder(const char* pathname)
 
 // microdev: THIS HAS TO BE CLEANED UP...
 
-
 // Texture dumping filenaming
 // GameName_FrameCount_CRC_Fmt_Siz.bmp
 // File format:		BMP
@@ -642,11 +641,9 @@ bool CheckAndCreateFolder(const char* pathname)
 
 char *subfolders[] = {
 	"png_all\\",
-	"png_by_rgb_a\\",
 	"ci_by_png\\",
 };
 
-//
 void FindAllDumpedTextures(void)
 {
 	char	foldername[256];
@@ -660,30 +657,17 @@ void FindAllDumpedTextures(void)
 	strcat(foldername,"\\");
 
 	gTxtrDumpInfos.clear();
-	if( !PathFileExists(foldername) )
-	{
-		CheckAndCreateFolder(foldername);
-		char	foldername2[256];
-		for( int i=0; i<3; i++)
-		{
-			strcpy(foldername2,foldername);
-			strcat(foldername2, subfolders[i]);
-			CheckAndCreateFolder(foldername2);
-		}
-		return;
-	}
-	else
-	{
-		gTxtrDumpInfos.clear();
-		FindAllTexturesFromFolder(foldername,gTxtrDumpInfos, false, true);
 
-		char	foldername2[256];
-		for( int i=0; i<3; i++)
-		{
-			strcpy(foldername2,foldername);
-			strcat(foldername2,subfolders[i]);
-			CheckAndCreateFolder(foldername2);
-		}
+	CheckAndCreateFolder(foldername);
+
+	FindAllTexturesFromFolder(foldername,gTxtrDumpInfos, false, true);
+
+	char	foldername2[256];
+	for( int i=0; i<2; i++)
+	{
+		strcpy(foldername2,foldername);
+		strcat(foldername2,subfolders[i]);
+		CheckAndCreateFolder(foldername2);
 	}
 }
 
@@ -1040,18 +1024,13 @@ int FindScaleFactor(ExtTxtrInfo &info, TxtrCacheEntry &entry)
  ********************************************************************************************************************/
 int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &entry, int &indexa, bool bForDump = false )
 {
-	if( (entry.ti.WidthToLoad  != 0 && entry.ti.WidthToCreate/entry.ti.WidthToLoad > 2) || 
-		(entry.ti.HeightToLoad  != 0 &&entry.ti.HeightToCreate/entry.ti.HeightToLoad > 2))
-	{
-		//TRACE0("Hires texture does not support extreme texture replication");
-		return -1;
-	}
 	// determine if texture is a color-indexed (CI) texture
 	bool bCI = (gRDP.otherMode.text_tlut>=2 || entry.ti.Format == TXT_FMT_CI || entry.ti.Format == TXT_FMT_RGBA) && entry.ti.Size <= TXT_SIZE_8b;
 
 	// generate two alternative ids
 	uint64 crc64a = entry.dwCRC;
 	crc64a <<= 32;
+
 	uint64 crc64b = crc64a;
 	// crc64a = <DRAM-CRC-8bytes><FFFFFF><format-1byte><size-1byte>
 	crc64a |= (0xFFFFFFFF);
@@ -1114,29 +1093,29 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 	{
 		// Check the vector table
 		int ciidx;
-		if( CheckTextureInfos(gHiresTxtrInfos,entry,ciidx,true) >= 0 )
+		if( CheckTextureInfos(gHiresTxtrInfos, entry, ciidx, true) >= 0 )
 			return;		// This texture already exists as a hires version, thus don't redump it.
-		else if( CheckTextureInfos(gTxtrDumpInfos,entry,ciidx,true) >= 0 )
+		else if( CheckTextureInfos(gTxtrDumpInfos, entry, ciidx, true) >= 0 )
 			return;		// This texture has been dumped
 
-		char filename1[256];
+		char filename[256];
 		char gamefolder[256];
+
 		GetPluginDir(gamefolder);
 		strcat(gamefolder,"texture_dump\\");
 		strcat(gamefolder,g_curRomInfo.szGameName);
 		strcat(gamefolder,"\\");
 
-		sprintf(filename1, "%s%s#%08X#%d#%d", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
-
+		//If the texture requires the extra pal CRC, then dump it as so
 		if( (gRDP.otherMode.text_tlut>=2 || entry.ti.Format == TXT_FMT_CI || entry.ti.Format == TXT_FMT_RGBA) && entry.ti.Size <= TXT_SIZE_8b )
 		{
-			sprintf(filename1, "%sci_by_png\\%s#%08X#%d#%d#%08X_ciByRGBA", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
-			D3DXSaveTextureToFile(filename1, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
+			sprintf(filename, "%sci_by_png\\%s#%08X#%d#%d#%08X_ciByRGBA.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
+			D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
 		}
 		else
 		{
-			sprintf(filename1, "%spng_all\\%s#%08X#%d#%d_all.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
-			D3DXSaveTextureToFile(filename1, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
+			sprintf(filename, "%spng_all\\%s#%08X#%d#%d_all.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
+			D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
 		}
 
 		ExtTxtrInfo newinfo;
@@ -1155,7 +1134,7 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 		uint64 crc64 = newinfo.crc32;
 		crc64 <<= 32;
 		crc64 |= newinfo.pal_crc32&0xFFFFFFFF;
-		gTxtrDumpInfos.add(crc64,newinfo);
+		gTxtrDumpInfos.add(crc64, newinfo);
 
 	}
 }
