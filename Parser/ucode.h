@@ -22,27 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _UCODE_H_
 #define _UCODE_H_
 
-//*************************************************************************************
-//
-//*************************************************************************************
-// This is the multiplier applied to vertex indices
-const u32 ucode_stride[] =
-{
-	10,		// Super Mario 64, Tetrisphere, Demos
-	2,		// Mario Kart, Star Fox
-	2,		// Zelda, and newer games
-	2,		// Yoshi's Story, Pokemon Puzzle League
-	2,		// Neon Evangelion, Kirby
-	5,		// Wave Racer USA
-	10,		// Diddy Kong Racing, Gemini, and Mickey
-	2,		// Last Legion, Toukon, Toukon 2
-	5,		// Shadows of the Empire (SOTE)
-	10,		// Golden Eye
-	2,		// Conker BFD
-	10,		// Perfect Dark
-};
-
-
 typedef void (*RDPInstruction)(MicroCodeCommand);
 
 #define UcodeFunc(name)	void name(MicroCodeCommand)
@@ -60,6 +39,10 @@ UcodeFunc(RSP_Vtx_WRUS);
 UcodeFunc(RSP_Vtx_ShadowOfEmpire);
 UcodeFunc(RSP_Tri1_ShadowOfEmpire);
 UcodeFunc(RSP_Quad3d_ShadowOfEmpire);
+UcodeFunc(DLParser_RSP_Last_Legion_0x80);
+UcodeFunc(DLParser_TexRect_Last_Legion);
+UcodeFunc(RDP_GFX_DLInMem);
+
 
 UcodeFunc(RSP_GBI0_Tri4);
 UcodeFunc(RSP_DMA_Tri_DKR);

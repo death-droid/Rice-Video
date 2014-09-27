@@ -47,7 +47,7 @@ void RSP_GBI1_Vtx(MicroCodeCommand command)
 
 void RSP_GBI1_ModifyVtx(MicroCodeCommand command)
 {
-	if( gRSP.ucode == 5 && ((command.inst.cmd0)&0x00FFFFFF) == 0 && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
+	if( ((command.inst.cmd0)&0x00FFFFFF) == 0 && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
 	{
 		DLParser_Bomberman2TextRect(command);
 	}
@@ -546,11 +546,11 @@ void RSP_GBI1_Texture(MicroCodeCommand command)
 	}
 #endif
 
-	if( gRSP.ucode == 6 )
-	{
-		if( fTextureScaleS == 0 )	fTextureScaleS = 1.0f/32.0f;
-		if( fTextureScaleT == 0 )	fTextureScaleT = 1.0f/32.0f;
-	}
+	//if( gRSP.ucode == 6 )
+	//{
+//		if( fTextureScaleS == 0 )	fTextureScaleS = 1.0f/32.0f;
+	//	if( fTextureScaleT == 0 )	fTextureScaleT = 1.0f/32.0f;
+//	}
 
 	CRender::g_pRender->SetTextureScale(command.texture.tile, fTextureScaleS, fTextureScaleT);
 

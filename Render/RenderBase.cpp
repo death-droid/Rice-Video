@@ -242,7 +242,6 @@ void InitRenderBase()
 	gRDP.fillColor		= 0xFFFFFFFF;
 	gRDP.originalFillColor	=0;
 
-	gRSP.ucode		= 1;
 	gRSP.bNearClip	= false;
 	gRSP.bRejectVtx	= false;
 
@@ -637,7 +636,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		}
 		else
 		{
-			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
+			if( (gRDP.tnl.Shade) == 0 )	//Shade is disabled
 			{
 				//FLAT shade
 				g_dwVtxDifColor[i] = gRDP.primitiveColor;
@@ -675,7 +674,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 bool PrepareTriangle(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 {
-	bool textureFlag = (CRender::g_pRender->IsTextureEnabled() || gRSP.ucode == 6 );
+	bool textureFlag = (CRender::g_pRender->IsTextureEnabled());
 
 	InitVertex(dwV0, gRSP.numVertices, textureFlag);
 	InitVertex(dwV1, gRSP.numVertices+1, textureFlag);
@@ -1053,7 +1052,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		}
 		else
 		{
-			if( (gRDP.tnl.Shade) == 0 && gRSP.ucode < 5 )	//Shade is disabled
+			if( (gRDP.tnl.Shade) == 0)	//Shade is disabled
 			{
 				g_dwVtxDifColor[i] = gRDP.primitiveColor;
 			}

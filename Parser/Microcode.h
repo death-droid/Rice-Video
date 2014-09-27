@@ -20,6 +20,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef HLEGRAPHICS_MICROCODE_H_
 #define HLEGRAPHICS_MICROCODE_H_
 
+#include "ucode.h"
+
+//*****************************************************************************
+// Struct to keep track of used ucode entries
+//*****************************************************************************
+struct UcodeInfo
+{
+	//Pointer to correct ucode table
+	const MicroCodeInstruction * func;
+
+	u32  address; // ucode_base + data_base
+	u32  stride;  // Multiplier applied to vertex index's
+	bool set;	  // This returns false when current entry is free to use
+};
+
 //*****************************************************************************
 // Enum
 //*****************************************************************************
@@ -38,14 +53,14 @@ enum GBIVersion
 	GBI_CONKER,
 	GBI_PD
 };
+
 //*****************************************************************************
 // Function
 //*****************************************************************************
 typedef void (*CustomMicrocodeCallback)( u32 ucode, u32 offset );
 
-u32	 GBIMicrocode_DetectVersion( u32 code_base, u32 code_size,
-								 u32 data_base, u32 data_size,
-								 CustomMicrocodeCallback custom_callback );
+UcodeInfo	 GBIMicrocode_DetectVersion( u32 code_base, u32 code_size,
+								 u32 data_base, u32 data_size);
 void GBIMicrocode_Reset();
 
 #endif // HLEGRAPHICS_MICROCODE_H_

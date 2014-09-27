@@ -31,12 +31,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Used to keep track of when we're processing the first display list
 static bool gFirstCall = true;
 
-#define SetCommand( cmd, func, name )	gCustomInstruction[ cmd ] = func;
-
 static u32 gRDPHalf1 = 0;
 static u32 gLastUcodeBase = 0;
 const MicroCodeInstruction *gUcodeFunc = NULL;
-MicroCodeInstruction gCustomInstruction[256];
 
 void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 data_size);
 
@@ -154,88 +151,15 @@ void RDP_Cleanup()
 extern int dlistMtxCount;
 extern bool bHalfTxtScale;
 
-
-//*************************************************************************************
-// This is called from Microcode.cpp after a custom ucode has been detected and cached
-// This function is only called once per custom ucode set
-// Main resaon for this function is to save memory since custom ucodes share a common table
-//	ucode:			custom ucode (ucode>= MAX_UCODE)
-//	offset:			offset to normal ucode this custom ucode is based of ex GBI0
-//*************************************************************************************
-static void DLParser_SetCustom(u32 ucode, u32 offset)
-{
-	memcpy(&gCustomInstruction, &gNormalInstruction[offset], 1024); // sizeof(gNormalInstruction)/MAX_UCODE
-
-#if defined(DAEDALUS_DEBUG_DISPLAYLIST) || defined(DAEDALUS_ENABLE_PROFILING)
-	memcpy(gCustomInstructionName, gNormalInstructionName[offset], 1024);
-#endif
-
-	// Start patching to create our custom ucode table ;)
-	switch (ucode)
-	{
-	case GBI_GE:
-		SetCommand(0xb4, DLParser_RDPHalf1_GoldenEye, "G_RDPHalf1_GoldenEye");
-		break;
-	case GBI_WR:
-		SetCommand(0x04, RSP_Vtx_WRUS, "G_Vtx_WRUS");
-		SetCommand(0xb1, RSP_RDP_Nothing, "G_Nothing"); // Just in case
-		break;
-	case GBI_SE:
-		SetCommand(0x04, RSP_Vtx_ShadowOfEmpire, "G_Vtx_SOTE");
-		break;
-	case GBI_LL:
-		SetCommand(0x80, DLParser_RSP_Last_Legion_0x80, "G_Last_Legion_0x80");
-		SetCommand(0x00, DLParser_RSP_Last_Legion_0x80, "G_Last_Legion_0x00");
-		SetCommand(0xe4, DLParser_TexRect_Last_Legion, "G_TexRect_Last_Legion");
-		break;
-	case GBI_PD:
-		SetCommand(0x04, RSP_Vtx_PD, "G_Vtx_PD");
-		SetCommand(0x07, RSP_Set_Vtx_CI_PD, "G_Set_Vtx_CI_PD");
-		SetCommand(0xb4, DLParser_RDPHalf1_GoldenEye, "G_RDPHalf1_GoldenEye");
-		break;
-	case GBI_DKR:
-		SetCommand(0x01, RSP_Mtx_DKR, "G_Mtx_DKR");
-		SetCommand(0x04, RSP_Vtx_DKR, "G_Vtx_DKR");
-		SetCommand(0x05, RSP_DMA_Tri_DKR, "G_DMA_Tri_DKR");
-		SetCommand(0x07, RDP_GFX_DLInMem, "G_DLInMem");
-		SetCommand(0xbc, RSP_MoveWord_DKR, "G_MoveWord_DKR");
-		SetCommand(0xbf, DLParser_Set_Addr_DKR, "G_Set_Addr_DKR");
-		break;
-	case GBI_CONKER:
-		SetCommand(0x01, RSP_Vtx_Conker, "G_Vtx_Conker");
-		//SetCommand(0x05, RSP_Tri1_Conker, "G_Tri1_Conker");
-		//SetCommand(0x06, DLParser_Tri2_Conker, "G_Tri2_Conker");
-		SetCommand(0x10, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x11, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x12, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x13, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x14, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x15, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x16, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x17, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x18, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x19, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x1a, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x1b, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x1c, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x1d, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x1e, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0x1f, RSP_Tri4_Conker, "G_Tri4_Conker");
-		SetCommand(0xdb, RSP_MoveWord_Conker, "G_MoveWord_Conker");
-		SetCommand(0xdc, RSP_MoveMem_Conker, "G_MoveMem_Conker");
-		break;
-	}
-}
-
 //*****************************************************************************
 //
 //*****************************************************************************
 void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 data_size)
 {
-	gRSP.ucode = GBIMicrocode_DetectVersion(code_base, code_size, data_base, data_size, &DLParser_SetCustom);
-	gRSP.vertexMult = ucode_stride[gRSP.ucode];
+	UcodeInfo info = GBIMicrocode_DetectVersion(code_base, code_size, data_base, data_size);
+	gRSP.vertexMult = info.stride;
 	gLastUcodeBase = code_base;
-	gUcodeFunc = IS_CUSTOM_UCODE(gRSP.ucode) ? gCustomInstruction : gNormalInstruction[gRSP.ucode];
+	gUcodeFunc = info.func;
 	// Used for fetching ucode names (Debug Only)
 //#if defined(DAEDALUS_DEBUG_DISPLAYLIST) || defined(DAEDALUS_ENABLE_PROFILING)
 	//gUcodeName = IS_CUSTOM_UCODE(ucode) ? gCustomInstructionName : gNormalInstructionName[ucode];

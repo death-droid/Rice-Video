@@ -19,10 +19,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "..\stdafx.h"
 #include "Microcode.h"
 
+
 // Limit cache ucode entries to 6
 // In theory we should never reach this max
 #define MAX_UCODE_CACHE_ENTRIES 6
 
+#define SetCommand( cmd, func, name )	gCustomInstruction[ cmd ] = func;
+
+MicroCodeInstruction gCustomInstruction[256];
+
+void GBIMicrocode_SetCustom(u32 ucode, u32 offset);
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -38,18 +44,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //F3DLX.Rej: No clipping, rejection instead. Vertex cache is 64
 //F3FLP.Rej: Like F3DLX.Rej. Vertex cache is 80
 //L3DEX: Line processing, Vertex cache is 32.
-
-
-//
-// Used to keep track of used ucode entries
-//
-struct UcodeInfo
-{
-	u32	ucode;
-	u32	index;
-
-	bool set;
-};
 
 static UcodeInfo gUcodeInfo[ MAX_UCODE_CACHE_ENTRIES ];
 
@@ -112,6 +106,7 @@ struct MicrocodeData
 {
 	u32	ucode;
 	u32 offset;
+	u32 stride;
 	u32	hash;
 };
 
@@ -122,23 +117,23 @@ static const MicrocodeData gMicrocodeData[] =
 	//	If you believe a title should be here post the line for it from ucodes.txt @ http://www.daedalusx64.com
 	//	Note - Games are in alphabetical order by game title
 	//
-	{ GBI_CONKER,	GBI_2,	0x60256efc	},	//"RSP Gfx ucode F3DEXBG.NoN fifo 2.08  Yoshitaka Yasumoto 1999 Nintendo.", "Conker's Bad Fur Day"}, 
-	{ GBI_LL,		GBI_1,	0x6d8bec3e	},	//"", "Dark Rift"},
-	{ GBI_DKR,		GBI_0,	0x0c10181a	},	//"", "Diddy Kong Racing (v1.0)"}, 
-	{ GBI_DKR,		GBI_0,	0x713311dc	},	//"", "Diddy Kong Racing (v1.1)"}, 
-	{ GBI_GE,		GBI_0,	0x23f92542	},	//"RSP SW Version: 2.0G, 09-30-96", "GoldenEye 007"}, 
-	{ GBI_DKR,		GBI_0,	0x169dcc9d	},	//"", "Jet Force Gemini"},														
-	{ GBI_LL,		GBI_1,	0x26da8a4c	},	//"", "Last Legion UX"},							
-	{ GBI_PD,		GBI_0,	0xcac47dc4	},	//"", "Perfect Dark (v1.1)"}, 
-	{ GBI_SE,		GBI_0,	0x6cbb521d	},	//"RSP SW Version: 2.0D, 04-01-96", "Star Wars - Shadows of the Empire (v1.0)"}, 
-	{ GBI_LL,		GBI_1,	0xdd560323	},	//"", "Toukon Road - Brave Spirits"},											
-	{ GBI_WR,		GBI_0,	0x64cc729d	},	//"RSP SW Version: 2.0D, 04-01-96", "Wave Race 64"},
+	{ GBI_CONKER,	GBI_2,  2,	0x60256efc	},	//"RSP Gfx ucode F3DEXBG.NoN fifo 2.08  Yoshitaka Yasumoto 1999 Nintendo.", "Conker's Bad Fur Day"}, 
+	{ GBI_LL,		GBI_1,  2,	0x6d8bec3e	},	//"", "Dark Rift"},
+	{ GBI_DKR,		GBI_0, 10,	0x0c10181a	},	//"", "Diddy Kong Racing (v1.0)"}, 
+	{ GBI_DKR,		GBI_0, 10,	0x713311dc	},	//"", "Diddy Kong Racing (v1.1)"}, 
+	{ GBI_GE,		GBI_0, 10,	0x23f92542	},	//"RSP SW Version: 2.0G, 09-30-96", "GoldenEye 007"}, 
+	{ GBI_DKR,		GBI_0, 10,	0x169dcc9d	},	//"", "Jet Force Gemini"},														
+	{ GBI_LL,		GBI_1,  2,	0x26da8a4c	},	//"", "Last Legion UX"},							
+	{ GBI_PD,		GBI_0, 10,	0xcac47dc4	},	//"", "Perfect Dark (v1.1)"}, 
+	{ GBI_SE,		GBI_0,  5,	0x6cbb521d	},	//"RSP SW Version: 2.0D, 04-01-96", "Star Wars - Shadows of the Empire (v1.0)"}, 
+	{ GBI_LL,		GBI_1,	2,  0xdd560323	},	//"", "Toukon Road - Brave Spirits"},											
+	{ GBI_WR,		GBI_0,	5,  0x64cc729d	},	//"RSP SW Version: 2.0D, 04-01-96", "Wave Race 64"},
 };
 
-u32	GBIMicrocode_DetectVersion( u32 code_base, u32 code_size, u32 data_base, u32 data_size, CustomMicrocodeCallback custom_callback )
+UcodeInfo	GBIMicrocode_DetectVersion( u32 code_base, u32 code_size, u32 data_base, u32 data_size )
 {
 	// I think only checking code_base should be enough..
-	u32 idx = code_base + data_base;
+	u32 address = code_base + data_base;
 
 	// Cheap way to cache ucodes, don't check for strings (too slow!) but check last used ucode entries which is alot faster than string comparison.
 	// This only needed for GBI1/2/SDEX ucodes that use LoadUcode, else we only check when code_base changes, which usually never happens
@@ -146,14 +141,12 @@ u32	GBIMicrocode_DetectVersion( u32 code_base, u32 code_size, u32 data_base, u32
 	u32 i;
 	for( i = 0; i < MAX_UCODE_CACHE_ENTRIES; i++ )
 	{
-		const UcodeInfo &used( gUcodeInfo[ i ] );
-
 		// If this returns false, it means this entry is free to use
-		if( used.set == false )
+		if (gUcodeInfo[i].set == false)
 			break;
 
-		if( used.index == idx )
-			return used.ucode;
+		if (gUcodeInfo[i].address == address)
+			return gUcodeInfo[i];
 	}
 
 	//
@@ -165,65 +158,142 @@ u32	GBIMicrocode_DetectVersion( u32 code_base, u32 code_size, u32 data_base, u32
 	// It wasn't the same as the last time around, we'll hash it and check if is a custom ucode.
 	//
 	u32 code_hash = GBIMicrocode_MicrocodeHash( code_base, code_size );
-	u32 ucode_version = GBI_0;
-	u32 ucode_offset = ~0;
 
-	for ( u32 i = 0; i < ARRAYSIZE(gMicrocodeData); i++ )
+	for ( u32 x = 0; x < ARRAYSIZE(gMicrocodeData); x++ )
 	{
-		if ( code_hash == gMicrocodeData[i].hash )
+		if ( code_hash == gMicrocodeData[x].hash )
 		{
 			//DBGConsole_Msg(0, "Ucode has been Detected in Array :[M\"%s\", Ucode %d]", str, gMicrocodeData[ i ].ucode);
-			ucode_version = gMicrocodeData[ i ].ucode;
-			ucode_offset = gMicrocodeData[ i ].offset;
+			GBIMicrocode_SetCustom(gMicrocodeData[x].ucode, gMicrocodeData[x].offset);
+			
+			gUcodeInfo[i].set = true;
+			gUcodeInfo[i].func = gCustomInstruction;
+			gUcodeInfo[i].stride = gMicrocodeData[x].stride;
+			gUcodeInfo[i].address = address;
+
+			return gUcodeInfo[i];
 		}
 	}
 
-	if( ucode_version != GBI_0 )
+	//
+	// If it wasn't a custom ucode
+	// See if we can identify it by string, if no match was found set default for Fast3D ucode
+	//
+	const char  *ucodes[] = { "F3", "L3", "S2DEX" };
+	char 		*match = 0;
+
+	for(u32 j = 0; j<3;j++)
 	{
-		// If this a custom ucode, let's build an array based from ucode_offset
-		custom_callback( ucode_version, ucode_offset );
+		if( (match = strstr(str, ucodes[j])) )
+			break;
+	}
+
+	u32 ucode_stride;
+	u32 ucode_version;
+
+	if (!match)
+	{
+		ucode_stride = 10;
+		ucode_version = GBI_0;
 	}
 	else
 	{
-		//
-		// If it wasn't a custom ucode
-		// See if we can identify it by string, if no match was found set default for Fast3D ucode
-		//
-		const char  *ucodes[] = { "F3", "L3", "S2DEX" };
-		char 		*match = 0;
+		ucode_stride = 2;
 
-		for(u32 j = 0; j<3;j++)
+		if( strstr(match, "fifo") || strstr(match, "xbus") )
 		{
-			if( (match = strstr(str, ucodes[j])) )
-				break;
-		}
-
-		if( match )
-		{
-			if( strstr(match, "fifo") || strstr(match, "xbus") )
-			{
-				if( !strncmp(match, "S2DEX", 5) )
-					ucode_version = GBI_2_S2DEX;
-				else
-					ucode_version = GBI_2;
-			}
+			if( !strncmp(match, "S2DEX", 5) )
+				ucode_version = GBI_2_S2DEX;
 			else
-			{
-				if( !strncmp(match, "S2DEX", 5) )
-					ucode_version = GBI_1_S2DEX;
-				else
-					ucode_version = GBI_1;
-			}
+				ucode_version = GBI_2;
+		}
+		else
+		{
+			if( !strncmp(match, "S2DEX", 5) )
+				ucode_version = GBI_1_S2DEX;
+			else
+				ucode_version = GBI_1;
 		}
 	}
 
-	//
-	// Retain used ucode info which will be cached
-	//
-	gUcodeInfo[ i ].index = idx;
-	gUcodeInfo[ i ].ucode = ucode_version;
-	gUcodeInfo[ i ].set = true;
+	gUcodeInfo[i].set = true;
+	gUcodeInfo[i].func = gNormalInstruction[ucode_version];
+	gUcodeInfo[i].stride = ucode_stride;
+	gUcodeInfo[i].address = address;
 
 //	DBGConsole_Msg(0,"Detected %s Ucode is: [M Ucode %d, 0x%08x, \"%s\", \"%s\"]",ucode_offset == u32(~0) ? "" :"Custom", ucode_version, code_hash, str, g_ROM.settings.GameName.c_str() );
-	return ucode_version;
+	return gUcodeInfo[i];
+}
+
+
+//*************************************************************************************
+// This is called from Microcode.cpp after a custom ucode has been detected and cached
+// This function is only called once per custom ucode set
+// Main resaon for this function is to save memory since custom ucodes share a common table
+//	ucode:			custom ucode (ucode>= MAX_UCODE)
+//	offset:			offset to normal ucode this custom ucode is based of ex GBI0
+//*************************************************************************************
+static void GBIMicrocode_SetCustom(u32 ucode, u32 offset)
+{
+	memcpy(&gCustomInstruction, &gNormalInstruction[offset], 1024); // sizeof(gNormalInstruction)/MAX_UCODE
+
+#if defined(DAEDALUS_DEBUG_DISPLAYLIST) || defined(DAEDALUS_ENABLE_PROFILING)
+	memcpy(gCustomInstructionName, gNormalInstructionName[offset], 1024);
+#endif
+
+	// Start patching to create our custom ucode table ;)
+	switch (ucode)
+	{
+	case GBI_GE:
+		SetCommand(0xb4, DLParser_RDPHalf1_GoldenEye, "G_RDPHalf1_GoldenEye");
+		break;
+	case GBI_WR:
+		SetCommand(0x04, RSP_Vtx_WRUS, "G_Vtx_WRUS");
+		SetCommand(0xb1, RSP_RDP_Nothing, "G_Nothing"); // Just in case
+		break;
+	case GBI_SE:
+		SetCommand(0x04, RSP_Vtx_ShadowOfEmpire, "G_Vtx_SOTE");
+		break;
+	case GBI_LL:
+		SetCommand(0x80, DLParser_RSP_Last_Legion_0x80, "G_Last_Legion_0x80");
+		SetCommand(0x00, DLParser_RSP_Last_Legion_0x80, "G_Last_Legion_0x00");
+		SetCommand(0xe4, DLParser_TexRect_Last_Legion,  "G_TexRect_Last_Legion");
+		break;
+	case GBI_PD:
+		SetCommand(0x04, RSP_Vtx_PD, "G_Vtx_PD");
+		SetCommand(0x07, RSP_Set_Vtx_CI_PD, "G_Set_Vtx_CI_PD");
+		SetCommand(0xb4, DLParser_RDPHalf1_GoldenEye, "G_RDPHalf1_GoldenEye");
+		break;
+	case GBI_DKR:
+		SetCommand(0x01, RSP_Mtx_DKR, "G_Mtx_DKR");
+		SetCommand(0x04, RSP_Vtx_DKR, "G_Vtx_DKR");
+		SetCommand(0x05, RSP_DMA_Tri_DKR, "G_DMA_Tri_DKR");
+		SetCommand(0x07, RDP_GFX_DLInMem, "G_DLInMem");
+		SetCommand(0xbc, RSP_MoveWord_DKR, "G_MoveWord_DKR");
+		SetCommand(0xbf, DLParser_Set_Addr_DKR, "G_Set_Addr_DKR");
+		break;
+	case GBI_CONKER:
+		SetCommand(0x01, RSP_Vtx_Conker, "G_Vtx_Conker");
+		//SetCommand(0x05, RSP_Tri1_Conker, "G_Tri1_Conker");
+		//SetCommand(0x06, DLParser_Tri2_Conker, "G_Tri2_Conker");
+		SetCommand(0x10, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x11, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x12, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x13, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x14, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x15, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x16, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x17, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x18, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x19, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x1a, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x1b, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x1c, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x1d, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x1e, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0x1f, RSP_Tri4_Conker, "G_Tri4_Conker");
+		SetCommand(0xdb, RSP_MoveWord_Conker, "G_MoveWord_Conker");
+		SetCommand(0xdc, RSP_MoveMem_Conker, "G_MoveMem_Conker");
+		break;
+	}
 }

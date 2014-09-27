@@ -121,7 +121,6 @@ typedef __declspec(align(16)) struct
 	Matrix	DKRMatrixes[4];
 	D3DXVECTOR4		DKRBaseVec;
 
-	int		ucode;
 	int		vertexMult;
 
 	bool	bNearClip;
