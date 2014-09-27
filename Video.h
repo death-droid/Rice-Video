@@ -93,9 +93,6 @@ typedef struct {
 
 	uint32	lastPurgeTimeTime;		// Time textures were last purged
 
-	bool	UseLargerTile[2];		// This is a speed up for large tile loading,
-	uint32	LargerTileRealLeft[2];	// works only for TexRect, LoadTile, large width, large pitch
-
 	bool	bVIOriginIsUpdated;
 	bool	bCIBufferIsRendered;
 	int		leftRendered,topRendered,rightRendered,bottomRendered;

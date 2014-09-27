@@ -790,16 +790,6 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 		DebuggerAppendMsg("Pitch: %d, Addr: 0x%08x", gti.Pitch, gti.Address);
 	});
 
-	// Option for faster loading tiles
-	if( g_curRomInfo.bFastLoadTile && info->bSetBy == CMD_LOADTILE && ((gti.Pitch<<1)>>gti.Size) <= 0x400)
-	{
-		uint32 idx = tileno-gRSP.curTile;
-		status.LargerTileRealLeft[idx] = gti.LeftToLoad;
-		gti.LeftToLoad=0;
-		gti.WidthToLoad = gti.WidthToCreate = ((gti.Pitch<<1)>>gti.Size);
-		status.UseLargerTile[idx]=true;
-	}
-
 	// Loading the textures by using texture cache manager
 	return gTextureManager.GetTexture(&gti, true, true);	// Load the texture by using texture cache
 }
@@ -808,9 +798,6 @@ void PrepareTextures()
 {
 	if( gRDP.textureIsChanged)
 	{
-		status.UseLargerTile[0]=false;
-		status.UseLargerTile[1]=false;
-
 		int tilenos[2];
 		if( CRender::g_pRender->IsTexel0Enable() || gRDP.otherMode.cycle_type  == CYCLE_TYPE_COPY )
 			tilenos[0] = gRSP.curTile;

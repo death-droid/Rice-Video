@@ -601,18 +601,10 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 	}
 
 
-	if( status.UseLargerTile[0] )
-	{
-		m_texRectTex1UV[0].u = (t0u0+status.LargerTileRealLeft[0])/widthDiv;
-		m_texRectTex1UV[1].u = (t0u1+status.LargerTileRealLeft[0])/widthDiv;
-	}
-	else
-	{
-		m_texRectTex1UV[0].u = t0u0/widthDiv;
-		m_texRectTex1UV[1].u = t0u1/widthDiv;
-		if(!tile0.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex0.m_dwTileWidth, tile0.dwMaskS, widthDiv, m_texRectTex1UV[0].u, m_texRectTex1UV[1].u) )
-			SetTextureUFlag(D3DTADDRESS_CLAMP, gRSP.curTile);
-	}
+	m_texRectTex1UV[0].u = t0u0/widthDiv;
+	m_texRectTex1UV[1].u = t0u1/widthDiv;
+	if(!tile0.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex0.m_dwTileWidth, tile0.dwMaskS, widthDiv, m_texRectTex1UV[0].u, m_texRectTex1UV[1].u) )
+		SetTextureUFlag(D3DTADDRESS_CLAMP, gRSP.curTile);
 
 	float t0v0;
 	if( options.enableHackForGames == HACK_FOR_ALL_STAR_BASEBALL || options.enableHackForGames == HACK_FOR_MLB )
@@ -692,18 +684,10 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 			t0v1 = t0v0 + (fScaleT * (nY1 - nY0))*tile1.fShiftScaleT;
 		}
 
-		if( status.UseLargerTile[1] )
-		{
-			m_texRectTex2UV[0].u = (t0u0+status.LargerTileRealLeft[1])/widthDiv;
-			m_texRectTex2UV[1].u = (t0u1+status.LargerTileRealLeft[1])/widthDiv;
-		}
-		else
-		{
-			m_texRectTex2UV[0].u = t0u0/widthDiv;
-			m_texRectTex2UV[1].u = t0u1/widthDiv;
-			if(!tile1.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex1.m_dwTileWidth, tile1.dwMaskS, widthDiv, m_texRectTex2UV[0].u, m_texRectTex2UV[1].u) )
-				SetTextureUFlag(D3DTADDRESS_CLAMP, (gRSP.curTile+1)&7);
-		}
+		m_texRectTex2UV[0].u = t0u0/widthDiv;
+		m_texRectTex2UV[1].u = t0u1/widthDiv;
+		if(!tile1.bMirrorS && RemapTextureCoordinate(t0u0, t0u1, tex1.m_dwTileWidth, tile1.dwMaskS, widthDiv, m_texRectTex2UV[0].u, m_texRectTex2UV[1].u) )
+			SetTextureUFlag(D3DTADDRESS_CLAMP, (gRSP.curTile+1)&7);
 
 		m_texRectTex2UV[0].v = t0v0/heightDiv;
 		m_texRectTex2UV[1].v = t0v1/heightDiv;

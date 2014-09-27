@@ -258,7 +258,6 @@ typedef struct
 	BOOL	bIncTexRectEdge;
 	BOOL	bZHack;
 	BOOL	bTextureScaleHack;
-	BOOL	bFastLoadTile;
 	BOOL	bPrimaryDepthHack;
 	BOOL	bTexture1Hack;
 	BOOL 	bDisableCulling;

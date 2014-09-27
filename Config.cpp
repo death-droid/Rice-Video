@@ -575,8 +575,7 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->bTextureScaleHack		= perRomIni.GetBoolValue(szCRC, "bTextureScaleHack", false);
 	pGameSetting->bPrimaryDepthHack		= perRomIni.GetBoolValue(szCRC, "bPrimaryDepthHack", false);
 	pGameSetting->bTexture1Hack			= perRomIni.GetBoolValue(szCRC, "bTexture1Hack", false);
-	pGameSetting->bFastLoadTile			= perRomIni.GetBoolValue(szCRC, "bFastLoadTile", false);
-	
+
 	pGameSetting->VIWidth				= perRomIni.GetLongValue(szCRC, "VIWidth", -1);
 	pGameSetting->VIHeight				= perRomIni.GetLongValue(szCRC, "VIHeight", -1);
 	pGameSetting->UseCIWidthAndRatio	= perRomIni.GetLongValue(szCRC, "UseCIWidthAndRatio", NOT_USE_CI_WIDTH_AND_RATIO);
@@ -617,7 +616,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	perRomIni.SetLongValue(szCRC, "bTextureScaleHack", pGameSetting->bTextureScaleHack);
 	perRomIni.SetLongValue(szCRC, "bPrimaryDepthHack", pGameSetting->bPrimaryDepthHack);
 	perRomIni.SetLongValue(szCRC, "bTexture1Hack", pGameSetting->bTexture1Hack);
-	perRomIni.SetLongValue(szCRC, "bFastLoadTile", pGameSetting->bFastLoadTile);
 	perRomIni.SetLongValue(szCRC, "VIWidth", pGameSetting->VIWidth);
 	perRomIni.SetLongValue(szCRC, "VIHeight", pGameSetting->VIHeight);
 	perRomIni.SetLongValue(szCRC, "UseCIWidthAndRatio", pGameSetting->UseCIWidthAndRatio);
@@ -830,12 +828,6 @@ ToolTipMsg ttmsg[] = {
 			"Hack Texture Scale",
 			"This is an advanced option. Don't bother if you have no idea what it is. It is only "
 			"a hack for a few games."
-	},
-	{ 
-		IDC_FASTER_LOADING_TILE, //Make this a forced feature?
-			"Faster Texture Tile Loading Algorithm",
-			"This is an advanced option. It may increase texture loading if textures are loaded "
-			"by LoadTile ucodes."
 	},
 	{ 
 		IDC_PRIMARY_DEPTH_HACK,
@@ -1903,7 +1895,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		SendDlgItemMessage(hDlg, IDC_INCREASE_TEXTRECT_EDGE, BM_SETCHECK,	g_curRomInfo.bIncTexRectEdge?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_Z_HACK, BM_SETCHECK,	g_curRomInfo.bZHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_SCALE_HACK, BM_SETCHECK,		g_curRomInfo.bTextureScaleHack?BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_FASTER_LOADING_TILE, BM_SETCHECK,		g_curRomInfo.bFastLoadTile?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_SETCHECK,		g_curRomInfo.bPrimaryDepthHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_SETCHECK,			g_curRomInfo.bTexture1Hack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_SETCHECK,			g_curRomInfo.bDisableCulling?BST_CHECKED:BST_UNCHECKED, 0);
@@ -1975,7 +1966,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			g_curRomInfo.bIncTexRectEdge	= (SendDlgItemMessage(hDlg, IDC_INCREASE_TEXTRECT_EDGE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bZHack	= (SendDlgItemMessage(hDlg, IDC_Z_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bTextureScaleHack	= (SendDlgItemMessage(hDlg, IDC_TEXTURE_SCALE_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			g_curRomInfo.bFastLoadTile		= (SendDlgItemMessage(hDlg, IDC_FASTER_LOADING_TILE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bPrimaryDepthHack	= (SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bTexture1Hack		= (SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bDisableCulling	= (SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_GETCHECK, 0, 0) == BST_CHECKED);
