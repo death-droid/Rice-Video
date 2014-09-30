@@ -61,7 +61,7 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 		pEntry->pTexture->EndUpdate(&srcInfo);
 		//Delete any data allocated for the enhanced texture
 		SAFE_DELETE(pEntry->pEnhancedTexture);
-		//Set the enhancement flag so the texture wont be processed again - WHUT THATS WRONG
+		//Set the enhancement flag so the texture wont be processed again - WHUT THATS WRONG, texture will be continually processed
 		pEntry->dwEnhancementFlag = TEXTURE_NO_ENHANCEMENT;
 		return;
 	}
@@ -113,13 +113,10 @@ enum TextureType
 {
 	NO_TEXTURE,
 	RGB_PNG,
-	COLOR_INDEXED_BMP,
 	RGB_WITH_ALPHA_TOGETHER_PNG,
-	RGBA_PNG_FOR_CI,
-	RGBA_PNG_FOR_ALL_CI,
 };
 
-typedef struct {
+struct ExtTxtrInfo{
 	unsigned int width;
 	unsigned int height;
 	int fmt;
@@ -135,9 +132,7 @@ typedef struct {
 	// cached texture
 	unsigned char	*pHiresTextureRGB;
 	unsigned char	*pHiresTextureAlpha;
-} ExtTxtrInfo;
-
-
+};
 void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo );
 
 CSortedList<uint64,ExtTxtrInfo> gTxtrDumpInfos;
@@ -172,42 +167,7 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
     fclose(f);
 
 	//Now lets do some header anaylsis
-
-	//bitmaps have a magic word of BMP (obviously XD), so lets check the first 2 bytes for any signs of this
-    if(sig[0] == 'B' && sig[1] == 'M') // BMP
-    {
-		//Define out BMGImageStruct where we will store our info
-        struct BMGImageStruct img;
-		//Set our new struct to the proper size
-        memset(&img, 0, sizeof(BMGImageStruct));
-		//Read the information we need from the BMP into our BMGImageStruct
-        BMG_Error code = ReadBMPInfo(pSrcFile, &img);
-
-		//If we retrieved the data fine, then continue
-        if( code == BMG_OK )
-        {
-			//Store the image width in our own image info
-            pSrcInfo->Width = img.width;
-			//Store the iamge height in our own image info
-            pSrcInfo->Height = img.height;
-			//Store the bits per pixel as our depth
-            pSrcInfo->Depth = img.bits_per_pixel;
-			//Store the amount of mip levels as 1, since png's do not contain mip map data
-            pSrcInfo->MipLevels = 1;
-			//Set our image format based on the amount of bits per pixel there is
-            if(img.bits_per_pixel == 32)
-                pSrcInfo->Format = D3DFMT_A8R8G8B8;
-            else if(img.bits_per_pixel == 8)
-                pSrcInfo->Format = D3DFMT_P8;
-            // Resource and File Format ignored
-            FreeBMGImage(&img);
-            return 0;
-        }
-		//If we get here it means we were unable to read the BMP
-	    TRACE2("Couldn't read BMP file '%s'; error = %i", pSrcFile, code);
-        return 1;
-    }
-    else if(sig[0] == 137 && sig[1] == 'P' && sig[2] == 'N' && sig[3] == 'G' && sig[4] == '\r' && sig[5] == '\n' &&
+	if(sig[0] == 137 && sig[1] == 'P' && sig[2] == 'N' && sig[3] == 'G' && sig[4] == '\r' && sig[5] == '\n' &&
                sig[6] == 26 && sig[7] == '\n') // PNG
     {
 		//Define out BMGImageStruct where we will store our info
@@ -373,37 +333,11 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 
 		// detect the texture type by it's extention
 		// microdev: this is not the smartest way. Should be done by header analysis if possible
-		if( _stricmp(right(libaa.cFileName,7), "_ci.bmp") == 0 )
+		if( _stricmp(right(libaa.cFileName, 13),  "_ciByRGBA.png"  ) == 0 || 
+			_stricmp(right(libaa.cFileName, 16), "_allciByRGBA.png") == 0 ||
+			_stricmp(right(libaa.cFileName,  8), "_all.png")         == 0)
 		{
-			// indentify type
-			if( imgInfo.Format == D3DFMT_P8 )
-				// and store it to the record
-				type = COLOR_INDEXED_BMP;
-			else
-				// type is not supported, go on with next one
-				continue;
-		}
-		// detect the texture type by it's extention
-		else if( _stricmp(right(libaa.cFileName,13), "_ciByRGBA.png") == 0)
-		{
-			// indentify type
-			if( imgInfo.Format == D3DFMT_A8R8G8B8 )
-				// and store it to the record
-				type = RGBA_PNG_FOR_CI;
-			else
-				// type is not supported, go on with next one
-				continue;
-		}
-		// detect the texture type by it's extention
-		else if( _stricmp(right(libaa.cFileName,16), "_allciByRGBA.png") == 0)
-		{
-			// indentify type
-			if( imgInfo.Format == D3DFMT_A8R8G8B8 )
-				// and store it to the record
-				type = RGBA_PNG_FOR_ALL_CI;
-			else
-				// type is not supported, go on with next one
-				continue;
+			type = RGB_WITH_ALPHA_TOGETHER_PNG;
 		}
 		// detect the texture type by it's extention
 		else if( _stricmp(right(libaa.cFileName,8), "_rgb.png") == 0)
@@ -414,7 +348,8 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			char filename2[256];
 			// assemble the file name for the separate alpha channel file
 			strcpy(filename2,texturefilename);
-			strcpy(filename2+strlen(filename2)-8,"_a.png");
+			strcpy(filename2 + strlen(filename2) -8,"_a.png");
+
 			// check if this file actually exists
 			if( PathFileExists(filename2) )
 			{
@@ -436,12 +371,6 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				// Indicate that the file has a sperated alpha channel
 				bSeparatedAlpha = true; 
 			}
-		}
-		// detect the texture type by it's extention
-		else if( _stricmp(right(libaa.cFileName,8), "_all.png") == 0)
-		{
-			// indicate file type
-			type = RGB_WITH_ALPHA_TOGETHER_PNG;
 		}
 		// if a known texture format has been detected...
 		if( type != NO_TEXTURE )
@@ -467,27 +396,17 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			// terminate the string ('0' means end of string - or in this case begin of string)
 			*ptr++ = 0;
 
-			if( type == RGBA_PNG_FOR_CI )//Needs the extra PAL CRC.
-			{
-				// extract the information from the file name; information is:
-				// <DRAM(or texture)-CRC><texture type><texture format><PAL(or palette)-CRC>
-				sscanf(ptr,"%8c#%d#%d#%8c", crcstr, &fmt, &siz,crcstr2);
-				// terminate the ascii represntation of the palette crc
-				crcstr2[8] = 0;
-				// transform the ascii presentation of the hex value to an unsigned integer
-				palcrc32 = strtoul(crcstr2,NULL,16);
-			}
-			else
-			{
-				// extract the information from the file name - this file does not have a palette crc; information is:
-				// <DRAM(or texture)-CRC><texture type><texture format>
-				// o gosh, commenting source code is really boring - but necessary!! Thus do it! (and don't use drugs ;-))
-				sscanf(ptr,"%8c#%d#%d", crcstr, &fmt, &siz);
-				// use dummy for palette crc - that way each texture can be handled in a heterogeneous way
+
+			// extract the information from the file name - this file does not have a palette crc; information is:
+			// <DRAM(or texture)-CRC><texture type><texture format>
+			// o gosh, commenting source code is really boring - but necessary!! Thus do it! (and don't use drugs ;-))
+			if (sscanf(ptr, "%8c#%d#%d#%8c", crcstr, &fmt, &siz, crcstr2) == 4)
+				palcrc32 = strtoul(crcstr2, NULL, 16);
+			else if (sscanf(ptr, "%8c#%d#%d", crcstr, &fmt, &siz) == 3)
 				palcrc32 = 0xFFFFFFFF;
-			}
-			// terminate the ascii represntation of the texture crc
-			crcstr[8]=0;
+			else
+				return;
+
 			// transform the ascii presentation of the hex value to an unsigned integer
 			crc = strtoul(crcstr,NULL,16);
 
@@ -524,6 +443,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			{
 				// create a new entry
 				ExtTxtrInfo *newinfo;
+
 				// if WIP folder check is active, and a texture already exists,
 				if(foundIdx >= 0 && type == infos[foundIdx].type && bWIPFolder)
 				{
@@ -533,11 +453,11 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					SAFE_DELETE(newinfo->pHiresTextureRGB);
 					SAFE_DELETE(newinfo->pHiresTextureAlpha);
 				}
-				//else
+				else
 					// otherwise create a new one
 					newinfo = new ExtTxtrInfo;
 
-					// store the width
+				// store the width
 				newinfo->width = imgInfo.Width;
 				// store the height
 				newinfo->height = imgInfo.Height;
@@ -560,7 +480,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				// store the texture type
 				newinfo->type = type;
 				// indicate if there is a separate alpha file that has to be loaded
-				newinfo->bSeparatedAlpha	= bSeparatedAlpha;
+				newinfo->bSeparatedAlpha = bSeparatedAlpha;
 
 				// store the extention of the texture and also the extention of the alpha channel (if existing)
 				if(bSeparatedAlpha)
@@ -990,7 +910,6 @@ void InitExternalTextures(void)
  ********************************************************************************************************************/
 int FindScaleFactor(ExtTxtrInfo &info, TxtrCacheEntry &entry)
 {
-
 	// init scale shift
 	info.scaleShift = 0;
 
@@ -1012,6 +931,7 @@ int FindScaleFactor(ExtTxtrInfo &info, TxtrCacheEntry &entry)
 }
 
 
+//Rethink me :S
 /********************************************************************************************************************
  * Checks if a hires replacement for a texture is available.
  * parameter: 
@@ -1045,7 +965,7 @@ int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &e
 	// corresponds to the original texture
 	indexa = infos.find(crc64a);		// For CI without pal CRC, and for RGBA_PNG_FOR_ALL_CI
 	if( bCI )	
-		// and also for textures with separate alpha channel
+		// If this is a color index texture, search for it.
 		indexb = infos.find(crc64b);	// For CI or PNG with pal CRC
 
 	// did not found the ext. text.
@@ -1076,6 +996,7 @@ int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &e
 	// texture has no separate alpha channel, try to find it in the ext. text. list
 	if( indexa >= 0 )	
 		scaleShift = FindScaleFactor(infos[indexa], entry);
+
 	// ok. the scale factor is supported. A valid replacement has been found
 	// this is a texture without ext. alpha channel
 	if( scaleShift >= 0 )
@@ -1164,20 +1085,27 @@ bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, 
 			TRACE3("new[] returned NULL for image width=%i height=%i bpp=%i", img.width, img.height, bits_per_pixel);
 			return false;
 		}
+		//Ok if the image bits per pixel is same as what we are after we dont have to do anything.
 		if( img.bits_per_pixel == bits_per_pixel )
 		{
+			//Copy our image bits into our buffer
 			memcpy(*pbuf, img.bits, img.width*img.height*bits_per_pixel/8);
 		}
+		//Bits per pixel are 24 but we want 32, convert it by adding an alpha channel to the data
 		else if (img.bits_per_pixel == 24 && bits_per_pixel == 32)
         {
 			unsigned char *pSrc = img.bits;
 			unsigned char *pDst = *pbuf;
 			for (int i = 0; i < (int)(img.width*img.height); i++)
 			{
+				//Copy  R
 				*pDst++ = *pSrc++;
+				//Copy G
 				*pDst++ = *pSrc++;
+				//Copy B
 				*pDst++ = *pSrc++;
-				*pDst++ = 0;
+				//Set alpha as 0
+				*pDst++ = 0xFF;
 			}
 		}
 		// loaded image has alpha, needed image has to be without alpha channel
@@ -1259,7 +1187,7 @@ bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, 
 //DXT compression will also make storing textures into memory more feasible.
 void LoadHiresTexture( TxtrCacheEntry &entry )
 {
-	// check if the external texture has already been loaded
+	// check if the external texture has already been checked
 	if( entry.bExternalTxtrChecked )
 		return;
 
@@ -1289,13 +1217,14 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 
 	if( !gHiresTxtrInfos[idx].pHiresTextureRGB )
 	{
-//		TRACE1("RGBBuffer creation failed for file '%s'.", filename_rgb);
+		
+		TRACE1("RGBBuffer creation failed for file '%s'.", gHiresTxtrInfos[idx].filename);
 		return;
 	}
 	// check if the alpha channel has been loaded if the texture has a separate alpha channel
 	else if( gHiresTxtrInfos[idx].bSeparatedAlpha && !gHiresTxtrInfos[idx].pHiresTextureAlpha )
 	{
-//		TRACE1("Alpha buffer creation failed for file '%s'.", filename_a);
+		TRACE1("Alpha buffer creation failed for file '%s'.", gHiresTxtrInfos[idx].filename_a);
 		return;
 	}
 
@@ -1353,7 +1282,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 			for( int i=gHiresTxtrInfos[idx].height-1; i>=0; i--)
 			{
 				uint32 *pRGB = (uint32*)(gHiresTxtrInfos[idx].pHiresTextureRGB + (input_height_shift + i) * input_pitch_rgb);
-				 uint32 *pdst = (uint32*)((unsigned char*)info.lpSurface + (gHiresTxtrInfos[idx].height - i - 1)*info.lPitch);
+				uint32 *pdst = (uint32*)((unsigned char*)info.lpSurface + (gHiresTxtrInfos[idx].height - i - 1)*info.lPitch);
 				for( unsigned int j=0; j<gHiresTxtrInfos[idx].width; j++)
 				{
 					*pdst++ = *pRGB++;		// RGBA
@@ -1442,44 +1371,19 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	// a color indexed texture has to (??? or color indexed format or the RGB format) and has to be 8 bit at most per pixel
 	bool bCI = ((gRDP.otherMode.text_tlut>=2 || ExtTexInfo.fmt == TXT_FMT_CI || ExtTexInfo.fmt == TXT_FMT_RGBA) && ExtTexInfo.siz <= TXT_SIZE_8b );
 
-	// load texture according to it's type
-	switch( ExtTexInfo.type )
+	//We need to seperate these as they rely on not having a alpha channel / we need to strip it out by converting them to 24 bits
+	if (ExtTexInfo.type == RGB_PNG)
 	{
-	case RGB_PNG:
-		// color indexed RGB is not supported
-		if( bCI )	
-			return;
-		else
-		{
-			// load the RGB texture to pHiresTextureRGB and set its proportions to the vars width and height  
-			bResRGBA = LoadRGBBufferFromPNGFile(filename_rgb, &ExtTexInfo.pHiresTextureRGB, width, height);
-			// if loading was successful and if there is a separate alpha channel
-			if( bResRGBA && ExtTexInfo.bSeparatedAlpha )
-				// load the alpha channel as well
-				bResA = LoadRGBBufferFromPNGFile(filename_alpha, &ExtTexInfo.pHiresTextureAlpha, width, height);
-		}
-		break;
-	case RGBA_PNG_FOR_CI:
-	case RGBA_PNG_FOR_ALL_CI:
-		if( bCI ) 
-		{
-			// load the CI texture with 32bit/pixel
-			bResRGBA = LoadRGBBufferFromPNGFile(filename_rgb, &ExtTexInfo.pHiresTextureRGB, width, height, 32);
-		}
-		else
-			return;
-		break;
-	case RGB_WITH_ALPHA_TOGETHER_PNG:
-		if( bCI ) 
-			return;
-		else 
-		{
-			// load the RGB texture with alpha channel
-			bResRGBA = LoadRGBBufferFromPNGFile(filename_rgb, &ExtTexInfo.pHiresTextureRGB, width, height, 32);
-		}
-		break;
-	default:
-		return;
+		// load the RGB texture to pHiresTextureRGB and set its proportions to the vars width and height  
+		bResRGBA = LoadRGBBufferFromPNGFile(filename_rgb, &ExtTexInfo.pHiresTextureRGB, width, height);
+		// if loading was successful and if there is a separate alpha channel
+		if (bResRGBA && ExtTexInfo.bSeparatedAlpha)
+			// load the alpha channel as well
+			bResA = LoadRGBBufferFromPNGFile(filename_alpha, &ExtTexInfo.pHiresTextureAlpha, width, height);
+	}
+	else
+	{
+		bResRGBA = LoadRGBBufferFromPNGFile(filename_rgb, &ExtTexInfo.pHiresTextureRGB, width, height, 32);
 	}
 
 	// remember dimensions
