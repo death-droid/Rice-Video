@@ -1635,10 +1635,10 @@ void FrameBufferManager::ActiveTextureBuffer(void)
 			gD3DDevWrapper.SetViewport(&vp);
 
 			// If needed, draw RDRAM into the render_texture
-			//if( frameBufferOptions.bLoadRDRAMIntoRenderTexture )
-			//{
-			//	CRender::GetRender()->LoadTxtrBufFromRDRAM();
-			//}
+			if( frameBufferOptions.bLoadRDRAMIntoRenderTexture )
+			{
+				CRender::GetRender()->LoadTxtrBufFromRDRAM();
+			}
 		}
 		else
 		{

@@ -79,7 +79,6 @@ public:
 	static  int			m_maxFSAA;
 	static  int			m_maxAnisotropy;
 	static  UINT		m_FullScreenRefreshRates[40];
-	static  UINT		m_ColorBufferDepths[4];
 	static  int			m_FullScreenResolutions[40][2];
 	static  int			m_numOfResolutions;
 
@@ -88,7 +87,6 @@ protected:
     static	uint32      m_dwWindowExStyle;   // Saved window style for mode switches
 	static	uint32      m_dwStatusWindowStyle;     // Saved window style for mode switches
 
-	static  bool		m_deviceCapsIsInitialized;
 
 	bool				m_bReady;
 	bool				m_bActive;

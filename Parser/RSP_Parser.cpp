@@ -48,7 +48,6 @@ RenderTextureInfo g_ZI_saves[2];
 DListStack	gDlistStack[MAX_DL_STACK_SIZE];
 int		gDlistStackPointer= -1;
 
-
 TMEMLoadMapInfo g_tmemLoadAddrMap[0x200];	// Totally 4KB TMEM
 TMEMLoadMapInfo g_tmemInfo0;				// Info for Tmem=0
 TMEMLoadMapInfo g_tmemInfo1;				// Info for Tmem=0x100
@@ -103,8 +102,6 @@ void DLParser_Init()
 
 	status.lastPurgeTimeTime = 0;		// Time textures were last purged
 
-	status.UseLargerTile[0] = false;
-	status.LargerTileRealLeft[0] = status.LargerTileRealLeft[1] = 0;
 	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)*2);
 
 	for( i=0; i<8; i++ )
@@ -128,8 +125,6 @@ void DLParser_Init()
 	memset(&g_CI, 0, sizeof(SetImgInfo));
 	memset(&g_TI, 0, sizeof(SetImgInfo));
 
-	status.UseLargerTile[0] = status.UseLargerTile[1] = false;
-	status.LargerTileRealLeft[0] = status.LargerTileRealLeft[1] = 0;
 }
 
 
@@ -540,7 +535,6 @@ void DLParser_FillRect(MicroCodeCommand command)
 		x1 >>= 1;
 
 		u32 zi_width_in_dwords = g_CI.dwWidth >> 1;
-
 		u32 * dst = (u32*)(g_pu8RamBase + g_CI.dwAddr) + y0 * zi_width_in_dwords;
 
 		for (int y = y0; y < y1; y++)

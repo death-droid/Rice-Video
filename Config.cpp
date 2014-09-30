@@ -900,7 +900,7 @@ ToolTipMsg ttmsg[] = {
 	{
 	   IDC_DUMP_TEXTURE_TO_FILES,
 	   "Dump textures to files",
-	   "This option dumps the textures in the game to normal JPG/BMP/PNG files.\n\nThis can be very useful "
+	   "This option dumps the textures in the game to normal PNG files.\n\nThis can be very useful "
 	   "for custom game art, high resolution textures, and other graphics modifications to games."
 	},
 	{

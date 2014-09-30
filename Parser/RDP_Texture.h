@@ -403,12 +403,10 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		dwTileHeight--;
 	}
 
-	ComputeTileDimension(tile.dwMaskS, tile.bClampS,
-		tile.bMirrorS, dwTileWidth, gti.WidthToCreate, gti.WidthToLoad);
+	ComputeTileDimension(tile.dwMaskS, tile.bClampS, tile.bMirrorS, dwTileWidth, gti.WidthToCreate, gti.WidthToLoad);
 	tile.dwWidth = gti.WidthToCreate;
 
-	ComputeTileDimension(tile.dwMaskT, tile.bClampT,
-		tile.bMirrorT, dwTileHeight, gti.HeightToCreate, gti.HeightToLoad);
+	ComputeTileDimension(tile.dwMaskT, tile.bClampT, tile.bMirrorT, dwTileHeight, gti.HeightToCreate, gti.HeightToLoad);
 	tile.dwHeight = gti.HeightToCreate;
 
 #ifdef _DEBUG
@@ -1536,73 +1534,57 @@ void DLParser_TexRect(MicroCodeCommand command)
 	ForceMainTextureIndex(curTile);
 }
 
-
 void DLParser_TexRectFlip(MicroCodeCommand command)
 { 
 
 	status.bCIBufferIsRendered = true;
+	MicroCodeCommand command2;
+	MicroCodeCommand command3;
 
-	// This command used 128bits, and not 64 bits. This means that we have to look one 
-	// Command ahead in the buffer, and update the PC.
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
-	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC+4);
-	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4+8);
+	DLParser_FetchNextCommand(&command2);
+	DLParser_FetchNextCommand(&command3);
 
-	// Increment PC so that it points to the right place
-	gDlistStack[gDlistStackPointer].pc += 16;
+	RDP_TexRect tex_rect;
 
-	uint32 dwXH		= (((command.inst.cmd0)>>12)&0x0FFF)/4;
-	uint32 dwYH		= (((command.inst.cmd0)    )&0x0FFF)/4;
-	uint32 tileno	= ((command.inst.cmd1)>>24)&0x07;
-	uint32 dwXL		= (((command.inst.cmd1)>>12)&0x0FFF)/4;
-	uint32 dwYL		= (((command.inst.cmd1)    )&0x0FFF)/4;
-	uint32 dwS		= (  dwCmd2>>16)&0xFFFF;
-	uint32 dwT		= (  dwCmd2    )&0xFFFF;
-	LONG  nDSDX 	= (LONG)(short)((  dwCmd3>>16)&0xFFFF);
-	LONG  nDTDY	    = (LONG)(short)((  dwCmd3    )&0xFFFF);
+	tex_rect.cmd0 = command.inst.cmd0;
+	tex_rect.cmd1 = command.inst.cmd1;
+	tex_rect.cmd2 = command2.inst.cmd1;
+	tex_rect.cmd3 = command3.inst.cmd1;
+
+	s16 rect_s0 = tex_rect.s;
+	s16 rect_t0 = tex_rect.t;
+
+	s32 rect_dsdx = tex_rect.dsdx;
+	s32 rect_dtdy = tex_rect.dtdy;
+
+	rect_s0 += (((u32)rect_dsdx >> 31) << 5);
+	rect_t0 += (((u32)rect_dtdy >> 31) << 5);
+
 
 	uint32 curTile = gRSP.curTile;
-	ForceMainTextureIndex(tileno);
-	
-	float fS0 = (float)dwS / 32.0f;
-	float fT0 = (float)dwT / 32.0f;
-
-	float fDSDX = (float)nDSDX / 1024.0f;
-	float fDTDY = (float)nDTDY / 1024.0f;
-
 	uint32 cycletype = gRDP.otherMode.cycle_type;
+
+	ForceMainTextureIndex(curTile);
 
 	// In Fill/Copy mode the coordinates are inclusive (i.e. add 1<<2 to the w/h)
 	if (cycletype >= CYCLE_TYPE_COPY)
 	{
 		// In copy mode 4 pixels are copied at once
 		if( cycletype == CYCLE_TYPE_COPY)
-			fDSDX /= 4.0f;	// In copy mode 4 pixels are copied at once.
+			rect_dsdx = rect_dsdx >> 2;	// In copy mode 4 pixels are copied at once.
 
-		dwXH++;
-		dwYH++;
+		tex_rect.x1 += 4;
+		tex_rect.y1 += 4;
 	}
-
-	float fS1 = fS0 + (fDSDX * (dwYH - dwYL));
-	float fT1 = fT0 + (fDTDY * (dwXH - dwXL));
 	
-	LOG_UCODE("    Tile:%d (%d,%d) -> (%d,%d)",
-		tileno, dwXL, dwYL, dwXH, dwYH);
-	LOG_UCODE("    Tex:(%#5f,%#5f) -> (%#5f,%#5f) (DSDX:%#5f DTDY:%#5f)",
-		fS0, fT0, fS1, fT1, fDSDX, fDTDY);
-	LOG_UCODE("");
+	s16 rect_s1 = rect_s0 + (rect_dsdx * (tex_rect.y1 - tex_rect.y0) >> 7);	// Flip - use y
+	s16 rect_t1 = rect_t0 + (rect_dtdy * (tex_rect.x1 - tex_rect.x0) >> 7);	// Flip - use x
 
-	float t0u0 = (fS0) * gRDP.tiles[tileno].fShiftScaleS-gRDP.tiles[tileno].sl;
-	float t0v0 = (fT0) * gRDP.tiles[tileno].fShiftScaleT-gRDP.tiles[tileno].tl;
-	float t0u1 = t0u0 + (fDSDX * (dwYH - dwYL))*gRDP.tiles[tileno].fShiftScaleS;
-	float t0v1 = t0v0 + (fDTDY * (dwXH - dwXL))*gRDP.tiles[tileno].fShiftScaleT;
-
-	CRender::g_pRender->TexRectFlip(dwXL, dwYL, dwXH, dwYH, t0u0, t0v0, t0u1, t0v1);
+	CRender::g_pRender->TexRectFlip(tex_rect.x0 / 4.0f, tex_rect.y0 / 4.0f, tex_rect.x1 / 4.0f, tex_rect.y1 /4.0f, rect_s0, rect_t0, rect_s1, rect_t1);
 	status.dwNumTrisRendered += 2;
 
-	if( status.bHandleN64RenderTexture )	g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,int(dwYL+(dwXH-dwXL)));
-
-	ForceMainTextureIndex(curTile);
+//	if( status.bHandleN64RenderTexture )	g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,int(dwYL+(dwXH-dwXL)));
+	ForceMainTextureIndex(tex_rect.tile_idx);
 }
 
 /************************************************************************/
@@ -1618,120 +1600,6 @@ void DLParser_TexRectFlip(MicroCodeCommand command)
  *  We don't want to emulate TMEM by creating a block of memory for TMEM and load
  *  everything into the block of memory, this will be slow.
  */
-typedef struct TmemInfoEntry{
-	uint32 start;
-	uint32 length;
-	uint32 rdramAddr;
-	TmemInfoEntry* next;
-} TmemInfoEntry;
-
-const int tmenMaxEntry=20;
-TmemInfoEntry tmenEntryBuffer[20]={0};
-TmemInfoEntry *g_pTMEMInfo=NULL;
-TmemInfoEntry *g_pTMEMFreeList=tmenEntryBuffer;
-
-void TMEM_Init()
-{
-	g_pTMEMInfo=NULL;
-	g_pTMEMFreeList=tmenEntryBuffer;
-
-	int i;
-	for( i=0; i<tmenMaxEntry; i++ )
-	{
-		tmenEntryBuffer[i].start=0;
-		tmenEntryBuffer[i].length=0;
-		tmenEntryBuffer[i].rdramAddr=0;
-		tmenEntryBuffer[i].next = &(tmenEntryBuffer[i+1]);
-	}
-	tmenEntryBuffer[i-1].next = NULL;
-}
-
-void TMEM_SetBlock(uint32 tmemstart, uint32 length, uint32 rdramaddr)
-{
-	TmemInfoEntry *p=g_pTMEMInfo;
-
-	if( p == NULL )
-	{
-		// Move an entry from freelist and link it to the header
-		p = g_pTMEMFreeList;
-		g_pTMEMFreeList = g_pTMEMFreeList->next;
-
-		p->start = tmemstart;
-		p->length = length;
-		p->rdramAddr = rdramaddr;
-		p->next = NULL;
-	}
-	else
-	{
-		while ( tmemstart > (p->start+p->length) )
-		{
-			if( p->next != NULL ) {
-				p = p->next;
-				continue;
-			}
-			else {
-				break;
-			}
-		}
-
-		if ( p->start == tmemstart ) 
-		{
-			// need to replace the block of 'p'
-			// or append a new block depend the block lengths
-			if( length == p->length )
-			{
-				p->rdramAddr = rdramaddr;
-				return;
-			}
-			else if( length < p->length )
-			{
-				TmemInfoEntry *newentry = g_pTMEMFreeList;
-				g_pTMEMFreeList = g_pTMEMFreeList->next;
-
-				newentry->length = p->length - length;
-				newentry->next = p->next;
-				newentry->rdramAddr = p->rdramAddr + p->length;
-				newentry->start = p->start + p->length;
-
-				p->length = length;
-				p->next = newentry;
-				p->rdramAddr = rdramaddr;
-			}
-		}
-		else if( p->start > tmemstart )
-		{
-			// p->start > tmemstart, need to insert the new block before 'p'
-			TmemInfoEntry *newentry = g_pTMEMFreeList;
-			g_pTMEMFreeList = g_pTMEMFreeList->next;
-
-			if( length+tmemstart < p->start+p->length )
-			{
-				newentry->length = p->length - length;
-				newentry->next = p->next;
-				newentry->rdramAddr = p->rdramAddr + p->length;
-				newentry->start = p->start + p->length;
-
-				p->length = length;
-				p->next = newentry;
-				p->rdramAddr = rdramaddr;
-				p->start = tmemstart;
-			}
-			else if( length+tmemstart == p->start+p->length )
-			{
-
-			}
-		}
-		else
-		{
-		}
-	}
-}
-
-uint32 TMEM_GetRdramAddr(uint32 tmemstart, uint32 length)
-{
-	return 0;
-}
-
 
 /*
  *  New implementation of texture loading

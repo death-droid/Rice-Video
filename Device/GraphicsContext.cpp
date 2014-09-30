@@ -21,7 +21,6 @@
 #include "..\stdafx.h"
 
 CGraphicsContext* CGraphicsContext::g_pGraphicsContext = NULL;
-bool CGraphicsContext::m_deviceCapsIsInitialized = false;
 bool CGraphicsContext::needCleanScene = false;
 int	CGraphicsContext::m_maxFSAA = 16;
 int	CGraphicsContext::m_maxAnisotropy = 16;
@@ -31,7 +30,6 @@ int CGraphicsContext::m_FullScreenResolutions[40][2] = {
 	{800,600}, {1024,768}, {1152,864}, {1280,960}, 
 	{1400,1050}, {1600,1200}, {1920,1440}, {2048,1536}};
 int CGraphicsContext::m_numOfResolutions = 0;
-UINT CGraphicsContext::m_ColorBufferDepths[4] = {16, 32, 0, 0};
 
 CGraphicsContext * CGraphicsContext::Get(void)
 {	
@@ -218,25 +216,13 @@ void CGraphicsContext::InitDeviceParameters(void)
 
 	int i=0, j;
 	DEVMODE deviceMode;
-	int	numOfFrequency=0, numOfColorDepth = 0;
+	int	numOfFrequency=0;
 	CGraphicsContext::m_numOfResolutions=0;
 	memset(&CGraphicsContext::m_FullScreenRefreshRates,0,40*sizeof(UINT));
 	memset(&CGraphicsContext::m_FullScreenResolutions, 0, 40*2*sizeof(int));
-	memset(&CGraphicsContext::m_ColorBufferDepths, 0, 4*sizeof(UINT));
 
 	while (EnumDisplaySettings( NULL, i, &deviceMode ) != 0)
 	{
-		for (j = 0; j < numOfColorDepth; j++)
-		{
-			if (deviceMode.dmBitsPerPel == CGraphicsContext::m_ColorBufferDepths[j])
-				break;
-		}
-
-		if( j == numOfColorDepth && deviceMode.dmBitsPerPel > 8 )
-		{
-			CGraphicsContext::m_ColorBufferDepths[numOfColorDepth++] = deviceMode.dmBitsPerPel;
-		}
-
 		for (j = 0; j < CGraphicsContext::m_numOfResolutions; j++)
 		{
 			if ((deviceMode.dmPelsWidth == CGraphicsContext::m_FullScreenResolutions[j][0]) &&

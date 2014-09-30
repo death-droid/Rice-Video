@@ -811,13 +811,6 @@ HRESULT CD3DDevWrapper::SetViewport(D3DVIEWPORT9* pViewport)
 		if( pViewport->Width <= 0 )	pViewport->Width = 1;
 		if( pViewport->Height <= 0 )	pViewport->Height = 1;
 
-		m_savedViewport.X		= pViewport->X;
-		m_savedViewport.Y		= pViewport->Y;
-		m_savedViewport.Width	= pViewport->Width;
-		m_savedViewport.Height	= pViewport->Height;
-		m_savedViewport.MinZ	= pViewport->MinZ;
-		m_savedViewport.MaxZ	= pViewport->MaxZ;
-
 		//Preliminary support for pillarboxing
 		if(windowSetting.uScreenScaleMode == 1)
 		{
@@ -890,7 +883,6 @@ void CD3DDevWrapper::Initalize(void)
 	m_savedFVF = ~0;
 	memset(&m_savedRenderStates, 0xEE, sizeof(m_savedRenderStates));
 	memset(&m_savedPixelShaderConstants, 0xEE, sizeof(m_savedPixelShaderConstants));
-	memset(&m_savedViewport, 0xEE, sizeof(m_savedViewport));
 	memset(&m_savedTextureStageStates, 0xEE, sizeof(m_savedTextureStageStates));
 	memset(&m_savedTexturePointers, 0xEE, sizeof(m_savedTexturePointers));
 

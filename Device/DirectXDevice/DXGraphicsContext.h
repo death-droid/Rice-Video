@@ -123,7 +123,6 @@ private:
 	IDirect3DPixelShader9* m_savedPixelShader;
 	DWORD m_savedFVF;
 	float m_savedPixelShaderConstants[MAX_NUM_OF_PIXEL_SHADER_CONSTANT][4];
-	D3DVIEWPORT9 m_savedViewport;
 	IDirect3DBaseTexture9* m_savedTexturePointers[8];
 };
 
