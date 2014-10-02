@@ -326,7 +326,6 @@ void RSP_GBI1_Noop(MicroCodeCommand command)
 {
 }
 
-
 void RDP_GFX_PopDL()
 {
 	LOG_UCODE("Returning from DisplayList: level=%d", gDlistStackPointer+1);

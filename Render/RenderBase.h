@@ -81,7 +81,7 @@ extern float	gRSPfFogDivider;
 /************************************************************************/
 /*      Don't move                                                      */
 /************************************************************************/
-typedef __declspec(align(16)) struct 
+__declspec(align(16)) struct RSP_Options
 {
 	/************************************************************************/
 	/*      Don't move above                                                */
@@ -145,7 +145,7 @@ typedef __declspec(align(16)) struct
 	float	texGenYRatio;
 	float	texGenXRatio;
 
-} RSP_Options;
+};
 
 
 struct TnLMode
@@ -173,7 +173,7 @@ struct TnLMode
 extern RSP_Options gRSP;
 
 
-typedef __declspec(align(16)) struct {
+__declspec(align(16)) struct RDP_Options{
 	uint32	keyR;
 	uint32	keyG;
 	uint32	keyB;
@@ -211,7 +211,7 @@ typedef __declspec(align(16)) struct {
 	bool	textureIsChanged;
 	bool	texturesAreReloaded;
 	bool	colorsAreReloaded;
-} RDP_Options;
+};
 
 extern RDP_Options gRDP;
 

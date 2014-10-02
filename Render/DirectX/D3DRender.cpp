@@ -108,7 +108,7 @@ bool D3DRender::InitDeviceObjects()
 		if(options.bMipMaps)
 		{
 			D3DSetMipFilter( i, D3DTEXF_LINEAR );
-			g_pD3DDev->SetSamplerState(i, D3DSAMP_MIPMAPLODBIAS, 10.0f);
+			g_pD3DDev->SetSamplerState(i, D3DSAMP_MIPMAPLODBIAS, 10);
 		}
 		g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP ); 
 		g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP ); 
