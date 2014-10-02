@@ -23,7 +23,7 @@ extern uObjMtxReal gObjMtxReal;
 extern Matrix gD3DMtxReal;
 extern Matrix gD3DObjOffset;
 
-static BOOL bSavedZEnabled = TRUE;
+static bool bSavedZEnabled = true;
 static uint32 dwSavedMinFilter = 0;
 static uint32 dwSavedMagFilter = 0;
 
@@ -73,7 +73,7 @@ void D3DRender::DrawObjBGCopy(uObjBg &info)
 				info.frameW == 0x800 )
 		{
 			InitCombinerBlenderForSimpleTextureDraw();
-			ZBufferEnable( TRUE );
+			ZBufferEnable( true );
 			gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TFACTOR );
 			gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TFACTOR );
 			SetTextureFactor(0);

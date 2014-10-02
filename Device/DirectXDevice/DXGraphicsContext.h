@@ -44,7 +44,7 @@ public:
 	virtual ~CDXGraphicsContext();
 	
 	
-	bool Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, uint32 dwHeight, BOOL bWindowed );
+	bool Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, uint32 dwHeight, bool bWindowed );
 	void CleanUp();
 	
 	void Clear(ClearFlag dwFlags, uint32 color=0xFF000000, float depth=1.0f);
@@ -58,7 +58,7 @@ public:
 protected:
 	friend class DirectXDeviceBuilder;
 
-	HRESULT Create3D( BOOL bWindowed );
+	HRESULT Create3D( bool bWindowed );
 	HRESULT InitializeD3D();
 
 	HRESULT ResizeD3DEnvironment();

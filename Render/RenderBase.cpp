@@ -210,7 +210,7 @@ void InitRenderBase()
 
 	gRSP.fTexScaleX = 1/32.0f;
 	gRSP.fTexScaleY = 1/32.0f;
-	gRSP.bTextureEnabled = FALSE;
+	gRSP.bTextureEnabled = false;
 
 	gRSP.clip_ratio_left = 0;
 	gRSP.clip_ratio_top = 0;
@@ -706,11 +706,11 @@ bool AddTri(u32 v0, u32 v1, u32 v2, bool bTri4)
 	return false;
 }
 
-// Returns TRUE if it thinks the triangle is visible
-// Returns FALSE if it is clipped
+// Returns true if it thinks the triangle is visible
+// Returns false if it is clipped
 bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 {
-	DEBUGGER_ONLY_IF( (!debuggerEnableTestTris || !debuggerEnableCullFace), {return TRUE;});
+	DEBUGGER_ONLY_IF( (!debuggerEnableTestTris || !debuggerEnableCullFace), {return true;});
     
 #ifdef _DEBUG
 	// Check vertices are valid!

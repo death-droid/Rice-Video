@@ -55,8 +55,8 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 	pEntry->dwEnhancementFlag = options.textureEnhancement;
 
 	// Don't enhance for large textures
-	if( srcInfo.dwCreatedWidth + srcInfo.dwCreatedHeight > 1024/2 )
-	{
+	if( srcInfo.dwCreatedWidth + srcInfo.dwCreatedHeight > 1024/2 ) // 256 + 256 texture XD
+	{  
 		//End the draw update
 		pEntry->pTexture->EndUpdate(&srcInfo);
 		//Delete any data allocated for the enhanced texture
@@ -85,8 +85,6 @@ void EnhanceTexture(TxtrCacheEntry *pEntry)
 					break;
 				case TEXTURE_HQ2XS_ENHANCEMENT:
 					hq2xS((uint8*)(srcInfo.lpSurface), srcInfo.lPitch, (uint8*)(destInfo.lpSurface), destInfo.lPitch, srcInfo.dwCreatedWidth, srcInfo.dwCreatedHeight);
-					break;
-				default:
 					break;
 			}
 			//Tell it that we have finished updating the surface
@@ -313,7 +311,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			continue;
 		}
 
-		// well, the current file is actually no file (probably a directory & recursive scanning is not enabled)
+		// Make sure the file we are trying to load
 		if( strstr(libaa.cFileName,g_curRomInfo.szGameName) == 0 )
 			// go on with the next one
 			continue;
@@ -372,6 +370,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				bSeparatedAlpha = true; 
 			}
 		}
+
 		// if a known texture format has been detected...
 		if( type != NO_TEXTURE )
 		{
@@ -396,7 +395,6 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			// terminate the string ('0' means end of string - or in this case begin of string)
 			*ptr++ = 0;
 
-
 			// extract the information from the file name - this file does not have a palette crc; information is:
 			// <DRAM(or texture)-CRC><texture type><texture format>
 			// o gosh, commenting source code is really boring - but necessary!! Thus do it! (and don't use drugs ;-))
@@ -415,14 +413,13 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			// for the detection of the WIP folder
 			bool bWIPFolder = false;
 			// loop through the list of records of already fetched hires textures
-			for( int k=0; k<infos.size(); k++)
+			for( int k=0; k < infos.size(); k++)
 			{
 				// check if texture already exists in the list
 				// microdev: that's why I somehow love documenting code: that makes the implementation of a WIP folder check
 				// fucking easy :-)
 				if( infos[k].crc32 == crc && infos[k].pal_crc32 == palcrc32 )
 				{
-
 					foundIdx = k;
 
 					// indeeed, the texture already exists
@@ -434,10 +431,9 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 						bWIPFolder = true;
 					}
 					else
-						//ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName)); //Todo, finish me
+						//ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName)); //Todo, finish me.  make list of dupe texts
 						break;
 				}
-
 			}
 
 			// if the texture is not yet in the list or if it exists with another type or the current folder is the WIP folder
@@ -636,7 +632,7 @@ void FindAllHiResTextures(char* WIPFolderName = NULL)
 	else
 	{
 		// find all hires textures and also cache them if configured to do so
-		FindAllTexturesFromFolder(foldername,gHiresTxtrInfos, true, true, options.bCacheHiResTextures != FALSE);
+		FindAllTexturesFromFolder(foldername,gHiresTxtrInfos, true, true, options.bCacheHiResTextures != false);
 	}
 }
 
@@ -979,7 +975,6 @@ int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &e
 
 void DumpCachedTexture( TxtrCacheEntry &entry )
 {
-
 	CTexture *pSrcTexture = entry.pTexture;
 	if( pSrcTexture )
 	{
@@ -1009,6 +1004,7 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 			D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
 		}
 
+		//For dumping we really only need to know the two CRC's... we should rethink this
 		ExtTxtrInfo newinfo;
 		newinfo.width = entry.ti.WidthToLoad;
 		newinfo.height = entry.ti.HeightToLoad;
@@ -1146,8 +1142,8 @@ bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, 
  * none
  *******************************************************/
 //Fix me, we have two problems with our current method
-//One - If memory caching is enabled we have to load the texture from memory and convert it to data that we can use
-//this is quite a time consuming process considering we do it plenty of time, and if the pack uses very high resolution
+//One - If memory caching is not enabled we have to load the texture from disk into memory and convert it to data that we can use
+//this is quite a time consuming process considering we can potentially have to load in 500 textures all at once, and if the pack uses very high resolution
 //Textures it will slowly bog it down further
 //Two - Caching all the textures into memory requires a significant amount of memory as we do not do any compression on
 //textures.

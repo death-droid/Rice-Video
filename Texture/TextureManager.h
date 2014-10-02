@@ -48,15 +48,15 @@ public:
 	uint32 TLutFmt;
 	uint32 Palette;
 	
-	BOOL  bSwapped;
+	bool  bSwapped;
 	
 	uint32 maskS;
 	uint32 maskT;
 
-	BOOL  clampS;
-	BOOL  clampT;
-	BOOL  mirrorS;
-	BOOL  mirrorT;
+	bool  clampS;
+	bool  clampT;
+	bool  mirrorS;
+	bool  mirrorT;
 
 	int	  tileNo;
 

@@ -129,11 +129,7 @@ int DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
 int DialogToStartRomIsNotRunning = PSH_OPTIONS;
 HWND hPropSheetHwnd = NULL;
 
-extern "C" bool __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam);
-LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam);
-VOID OnWMNotify(LPARAM lParam);
-bool CreateDialogTooltip(void);
-bool EnumChildWndTooltip(void);
+extern "C" int __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam);
 
 inline void ShowItem(HWND hDlg, UINT item, bool flag)
 {
@@ -282,7 +278,6 @@ void WriteConfiguration(void)
 	ini.SetLongValue("MiscSettings", "EnableHacks", options.bEnableHacks);
 	ini.SetLongValue("MiscSettings", "ScreenUpdateSetting", defaultRomOptions.screenUpdateSetting);
 	ini.SetLongValue("MiscSettings", "FPSColor", options.FPSColor);
-	ini.SetLongValue("MiscSettings","DisplayTooltip", options.bDisplayTooltip);
 	ini.SetLongValue("MiscSettings","HideAdvancedOptions", options.bHideAdvancedOptions);
 	ini.SetLongValue("MiscSettings","DisplayOnscreenFPS", options.bDisplayOnscreenFPS);
 
@@ -297,7 +292,7 @@ void ReadConfiguration(void)
 	GetPluginDir(name);
 	strcat(name, CONFIG_FILE);
 
-	options.bEnableHacks = TRUE;
+	options.bEnableHacks = true;
 
 	defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_CHANGE;
 	//defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN;
@@ -308,19 +303,18 @@ void ReadConfiguration(void)
 	FILE *f = fopen(name, "rb");
 	if(!f)
 	{
-		options.bEnableFog = TRUE;
-		options.bWinFrameMode = FALSE;
-		options.bMipMaps = TRUE;
+		options.bEnableFog = true;
+		options.bWinFrameMode = false;
+		options.bMipMaps = true;
 		options.forceTextureFilter = 0;
-		options.bLoadHiResTextures = FALSE;
+		options.bLoadHiResTextures = false;
 		// set caching by default to "off"
-		options.bCacheHiResTextures = FALSE;
-		options.bDumpTexturesToFiles = FALSE;
+		options.bCacheHiResTextures = false;
+		options.bDumpTexturesToFiles = false;
 		options.textureEnhancement = 0;
 		options.textureEnhancementControl = 0;
-		options.bDisplayTooltip = FALSE;
-		options.bHideAdvancedOptions = TRUE;
-		options.bDisplayOnscreenFPS = FALSE;
+		options.bHideAdvancedOptions = true;
+		options.bDisplayOnscreenFPS = false;
 		options.DirectXAntiAliasingValue = 0;
 		options.DirectXDevice = 0;	// HAL device
 		options.DirectXAnisotropyValue = 0;
@@ -332,8 +326,8 @@ void ReadConfiguration(void)
 		defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
 		defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
 
-		defaultRomOptions.bNormalBlender = FALSE;
-		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
+		defaultRomOptions.bNormalBlender = false;
+		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = false;
 		windowSetting.uFullScreenRefreshRate = 0;	// 0 is the default value, means to use Window default frequency
 		windowSetting.uScreenScaleMode = 0;
 
@@ -377,7 +371,6 @@ void ReadConfiguration(void)
 		options.bWinFrameMode = ini.GetBoolValue("RenderSetting", "WinFrameMode");
 		options.bMipMaps = ini.GetBoolValue("RenderSetting", "MipMaps");
 
-		options.bDisplayTooltip = ini.GetBoolValue("MiscSettings", "DisplayTooltip");
 		options.bHideAdvancedOptions = ini.GetBoolValue("MiscSettings", "HideAdvancedOptions");
 		options.bDisplayOnscreenFPS = ini.GetBoolValue("MiscSettings", "DisplayOnscreenFPS");	
 		options.FPSColor = ini.GetLongValue("MiscSettings", "FPSColor");
@@ -386,7 +379,7 @@ void ReadConfiguration(void)
 }
 	
 //---------------------------------------------------------------------------------------
-BOOL InitConfiguration(void)
+bool InitConfiguration(void)
 {
 	//Initialize this DLL
 	GetPluginDir(szIniFileName);
@@ -396,17 +389,17 @@ BOOL InitConfiguration(void)
 	perRomIni.LoadFile(szIniFileName);
 
 	ReadConfiguration();
-	return TRUE;
+	return true;
 }
 
 
 void GenerateCurrentRomOptions()
 {
-	currentRomOptions.N64FrameBufferEmuType		=g_curRomInfo.dwFrameBufferOption;	
-	currentRomOptions.N64FrameBufferWriteBackControl		=defaultRomOptions.N64FrameBufferWriteBackControl;	
-	currentRomOptions.N64RenderToTextureEmuType	=g_curRomInfo.dwRenderToTextureOption;	
-	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
-	currentRomOptions.bNormalBlender			=g_curRomInfo.dwNormalBlender;
+	currentRomOptions.N64FrameBufferEmuType          = g_curRomInfo.dwFrameBufferOption;	
+	currentRomOptions.N64FrameBufferWriteBackControl = defaultRomOptions.N64FrameBufferWriteBackControl;	
+	currentRomOptions.N64RenderToTextureEmuType	     = g_curRomInfo.dwRenderToTextureOption;	
+	currentRomOptions.screenUpdateSetting		     = g_curRomInfo.dwScreenUpdateSetting;
+	currentRomOptions.bNormalBlender			     = g_curRomInfo.dwNormalBlender;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
 
@@ -547,13 +540,19 @@ void GenerateCurrentRomOptions()
 		options.enableHackForGames = HACK_FOR_MARIO_KART;
 	}
 
-	if( currentRomOptions.N64FrameBufferEmuType == 0 )		currentRomOptions.N64FrameBufferEmuType = defaultRomOptions.N64FrameBufferEmuType;
-	else currentRomOptions.N64FrameBufferEmuType--;
-	if( currentRomOptions.N64RenderToTextureEmuType == 0 )		currentRomOptions.N64RenderToTextureEmuType = defaultRomOptions.N64RenderToTextureEmuType;
+	if( currentRomOptions.N64FrameBufferEmuType == 0 )		
+		currentRomOptions.N64FrameBufferEmuType = defaultRomOptions.N64FrameBufferEmuType;
+	else 
+		currentRomOptions.N64FrameBufferEmuType--;
+	if( currentRomOptions.N64RenderToTextureEmuType == 0 )		
+		currentRomOptions.N64RenderToTextureEmuType = defaultRomOptions.N64RenderToTextureEmuType;
 	else currentRomOptions.N64RenderToTextureEmuType--;
-	if( currentRomOptions.screenUpdateSetting == 0 )		currentRomOptions.screenUpdateSetting = defaultRomOptions.screenUpdateSetting;
-	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
-	else currentRomOptions.bNormalBlender--;
+	if( currentRomOptions.screenUpdateSetting == 0 )		
+		currentRomOptions.screenUpdateSetting = defaultRomOptions.screenUpdateSetting;
+	if( currentRomOptions.bNormalBlender == 0 )			
+		currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
+	else
+		currentRomOptions.bNormalBlender;
 
 	GenerateFrameBufferOptions();
 
@@ -569,30 +568,30 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	// Generate the CRC-ID for this rom:
 	wsprintf(szCRC, "%08x%08x-%02x", pGameSetting->romheader.dwCRC1,  pGameSetting->romheader.dwCRC2, pGameSetting->romheader.nCountryID);
 
-	pGameSetting->bDisableCulling		= perRomIni.GetBoolValue(szCRC, "bDisableCulling", false);
-	pGameSetting->bIncTexRectEdge		= perRomIni.GetBoolValue(szCRC, "bIncTexRectEdge", false);
-	pGameSetting->bZHack				= perRomIni.GetBoolValue(szCRC, "bZHack", false);
-	pGameSetting->bTextureScaleHack		= perRomIni.GetBoolValue(szCRC, "bTextureScaleHack", false);
-	pGameSetting->bPrimaryDepthHack		= perRomIni.GetBoolValue(szCRC, "bPrimaryDepthHack", false);
-	pGameSetting->bTexture1Hack			= perRomIni.GetBoolValue(szCRC, "bTexture1Hack", false);
+	pGameSetting->bDisableCulling			= perRomIni.GetBoolValue(szCRC, "bDisableCulling", false);
+	pGameSetting->bIncTexRectEdge			= perRomIni.GetBoolValue(szCRC, "bIncTexRectEdge", false);
+	pGameSetting->bZHack					= perRomIni.GetBoolValue(szCRC, "bZHack", false);
+	pGameSetting->bTextureScaleHack			= perRomIni.GetBoolValue(szCRC, "bTextureScaleHack", false);
+	pGameSetting->bPrimaryDepthHack			= perRomIni.GetBoolValue(szCRC, "bPrimaryDepthHack", false);
+	pGameSetting->bTexture1Hack				= perRomIni.GetBoolValue(szCRC, "bTexture1Hack", false);
 
-	pGameSetting->VIWidth				= perRomIni.GetLongValue(szCRC, "VIWidth", -1);
-	pGameSetting->VIHeight				= perRomIni.GetLongValue(szCRC, "VIHeight", -1);
-	pGameSetting->UseCIWidthAndRatio	= perRomIni.GetLongValue(szCRC, "UseCIWidthAndRatio", NOT_USE_CI_WIDTH_AND_RATIO);
-	pGameSetting->bTxtSizeMethod2		= perRomIni.GetBoolValue(szCRC, "bTxtSizeMethod2", false);
-	pGameSetting->bEnableTxtLOD			= perRomIni.GetBoolValue(szCRC, "bEnableTxtLOD", false);
+	pGameSetting->VIWidth					= perRomIni.GetLongValue(szCRC, "VIWidth", -1);
+	pGameSetting->VIHeight					= perRomIni.GetLongValue(szCRC, "VIHeight", -1);
+	pGameSetting->UseCIWidthAndRatio		= perRomIni.GetLongValue(szCRC, "UseCIWidthAndRatio", NOT_USE_CI_WIDTH_AND_RATIO);
+	pGameSetting->bTxtSizeMethod2			= perRomIni.GetBoolValue(szCRC, "bTxtSizeMethod2", false);
+	pGameSetting->bEnableTxtLOD				= perRomIni.GetBoolValue(szCRC, "bEnableTxtLOD", false);
 
-	pGameSetting->bEmulateClear			= perRomIni.GetBoolValue(szCRC, "bEmulateClear", false);
-	pGameSetting->bForceScreenClear		= perRomIni.GetBoolValue(szCRC, "bForceScreenClear", false);
+	pGameSetting->bEmulateClear				= perRomIni.GetBoolValue(szCRC, "bEmulateClear", false);
+	pGameSetting->bForceScreenClear			= perRomIni.GetBoolValue(szCRC, "bForceScreenClear", false);
 
-	pGameSetting->bDisableBlender		= perRomIni.GetBoolValue(szCRC, "bDisableBlender", false);
-	pGameSetting->bForceDepthBuffer		= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
-	pGameSetting->bDisableObjBG			= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
+	pGameSetting->bDisableBlender			= perRomIni.GetBoolValue(szCRC, "bDisableBlender", false);
+	pGameSetting->bForceDepthBuffer			= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
+	pGameSetting->bDisableObjBG				= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
 
-	pGameSetting->dwNormalBlender		= perRomIni.GetLongValue(szCRC, "dwNormalBlender", 0);
-	pGameSetting->dwFrameBufferOption	= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
+	pGameSetting->dwNormalBlender			= perRomIni.GetLongValue(szCRC, "dwNormalBlender", 0);
+	pGameSetting->dwFrameBufferOption		= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
 	pGameSetting->dwRenderToTextureOption	= perRomIni.GetLongValue(szCRC, "dwRenderToTextureOption", 0);
-	pGameSetting->dwScreenUpdateSetting	= perRomIni.GetLongValue(szCRC, "dwScreenUpdateSetting", 0);
+	pGameSetting->dwScreenUpdateSetting	    = perRomIni.GetLongValue(szCRC, "dwScreenUpdateSetting", 0);
 }
 
 void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
@@ -601,471 +600,32 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	// Generate the CRC-ID for this rom:
 	wsprintf(szCRC, "%08x%08x-%02x", pGameSetting->romheader.dwCRC1,  pGameSetting->romheader.dwCRC2, pGameSetting->romheader.nCountryID);
 
-	perRomIni.SetLongValue(szCRC, "bDisableCulling", pGameSetting->bDisableCulling);
-	perRomIni.SetLongValue(szCRC, "bEmulateClear", pGameSetting->bEmulateClear);
-	perRomIni.SetLongValue(szCRC, "dwNormalBlender", pGameSetting->dwNormalBlender);
-	perRomIni.SetLongValue(szCRC, "bDisableBlender", pGameSetting->bDisableBlender);
-	perRomIni.SetLongValue(szCRC, "bForceScreenClear", pGameSetting->bForceScreenClear);
-	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer", pGameSetting->bForceDepthBuffer);
-	perRomIni.SetLongValue(szCRC, "bDisableObjBG", pGameSetting->bDisableObjBG);
-	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption", pGameSetting->dwFrameBufferOption);
+	perRomIni.SetLongValue(szCRC, "bDisableCulling",		 pGameSetting->bDisableCulling);
+	perRomIni.SetLongValue(szCRC, "bEmulateClear",		     pGameSetting->bEmulateClear);
+	perRomIni.SetLongValue(szCRC, "dwNormalBlender",		 pGameSetting->dwNormalBlender);
+	perRomIni.SetLongValue(szCRC, "bDisableBlender",		 pGameSetting->bDisableBlender);
+	perRomIni.SetLongValue(szCRC, "bForceScreenClear",		 pGameSetting->bForceScreenClear);
+	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer",		 pGameSetting->bForceDepthBuffer);
+	perRomIni.SetLongValue(szCRC, "bDisableObjBG",			 pGameSetting->bDisableObjBG);
+	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption",	 pGameSetting->dwFrameBufferOption);
 	perRomIni.SetLongValue(szCRC, "dwRenderToTextureOption", pGameSetting->dwRenderToTextureOption);
-	perRomIni.SetLongValue(szCRC, "dwScreenUpdateSetting", pGameSetting->dwScreenUpdateSetting);
-	perRomIni.SetLongValue(szCRC, "bIncTexRectEdge", pGameSetting->bIncTexRectEdge);
-	perRomIni.SetLongValue(szCRC, "bZHack", pGameSetting->bZHack);
-	perRomIni.SetLongValue(szCRC, "bTextureScaleHack", pGameSetting->bTextureScaleHack);
-	perRomIni.SetLongValue(szCRC, "bPrimaryDepthHack", pGameSetting->bPrimaryDepthHack);
-	perRomIni.SetLongValue(szCRC, "bTexture1Hack", pGameSetting->bTexture1Hack);
-	perRomIni.SetLongValue(szCRC, "VIWidth", pGameSetting->VIWidth);
-	perRomIni.SetLongValue(szCRC, "VIHeight", pGameSetting->VIHeight);
-	perRomIni.SetLongValue(szCRC, "UseCIWidthAndRatio", pGameSetting->UseCIWidthAndRatio);
-	perRomIni.SetLongValue(szCRC, "bTxtSizeMethod2", pGameSetting->bTxtSizeMethod2);
-	perRomIni.SetLongValue(szCRC, "bEnableTxtLOD", pGameSetting->bEnableTxtLOD);
+	perRomIni.SetLongValue(szCRC, "dwScreenUpdateSetting",	 pGameSetting->dwScreenUpdateSetting);
+	perRomIni.SetLongValue(szCRC, "bIncTexRectEdge",		 pGameSetting->bIncTexRectEdge);
+	perRomIni.SetLongValue(szCRC, "bZHack",					 pGameSetting->bZHack);
+	perRomIni.SetLongValue(szCRC, "bTextureScaleHack",		 pGameSetting->bTextureScaleHack);
+	perRomIni.SetLongValue(szCRC, "bPrimaryDepthHack",		 pGameSetting->bPrimaryDepthHack);
+	perRomIni.SetLongValue(szCRC, "bTexture1Hack",			 pGameSetting->bTexture1Hack);
+	perRomIni.SetLongValue(szCRC, "VIWidth",				 pGameSetting->VIWidth);
+	perRomIni.SetLongValue(szCRC, "VIHeight",				 pGameSetting->VIHeight);
+	perRomIni.SetLongValue(szCRC, "UseCIWidthAndRatio",		 pGameSetting->UseCIWidthAndRatio);
+	perRomIni.SetLongValue(szCRC, "bTxtSizeMethod2",		 pGameSetting->bTxtSizeMethod2);
+	perRomIni.SetLongValue(szCRC, "bEnableTxtLOD",			 pGameSetting->bEnableTxtLOD);
 	perRomIni.SaveFile(szIniFileName);
 
 	//Ensure that we now have the up to date settings stored in memory by flushing out the current ones and reloading the file
 	perRomIni.Reset();
 	perRomIni.LoadFile(szIniFileName);
 	TRACE0("Rom option is changed and saved");
-}
-
-
-
-// Tooltip functions from Glide64 project, original from MSDN library
-
-typedef struct {
-	int id;
-	char *title;
-	char *text;
-} ToolTipMsg;
-
-
-ToolTipMsg ttmsg[] = {
-	{ 
-		IDC_SLIDER_FSAA,
-			"DirectX Full Screen Mode Anti-Aliasing Setting",
-			"Please refer to your video card driver setting to determine the maximum supported FSAA value. The plugin will try to determine "
-			"the highest supported FSAA mode, but it may not work well enough since highest FSAA setting is also dependent on the full scrren "
-			"resolution. Using incorrect FSAA value will cause DirectX fail to initialize.\n\n"
-			"FSAA usage is not compatible with frame buffer effects. Frame buffer may fail to work if FSAA is used."
-	},
-	{ 
-		IDC_SLIDER_ANISO,
-			"DirectX Anisotropy Filtering Setting",
-			"Use this to set the amount of anisotropic filtering."
-	},
-	{ 
-		IDC_RESOLUTION_WINDOW_MODE,
-			"Window mode display resolution",
-			"Sets the resolution of the windowed image"
-	},
-	{ 
-		IDC_RESOLUTION_FULL_SCREEN_MODE,
-			"Full screen mode display resolution",
-			"Sets the fullscreen resolution"
-	},
-	{ 
-		IDC_TEXTURE_ENHANCEMENT,
-			"Texture enhancement",
-			"Enhances the texture when loading the texture.\n\n"
-			"- 2x        double the texture size\n"
-			"- 2x texture rectangle only,    double the texture size, only for textRect, not for triangle primitives\n"
-			"- 2xSai,    double the texture size and apply 2xSai algorithm\n"
-			"- 2xSai for texture rectangle only\n"
-			"- Sharpen,      apply sharpen filter (cool effects)\n"
-			"- Sharpen more, do more sharpening"
-	},
-	{ 
-		IDC_FORCE_TEXTURE_FILTER,
-			"Force texture filter",
-			"Force Nearest filter, or force bilinear filtering\n"
-	},
-	{ 
-		IDC_FOG,
-			"Enable/Disable Fog",
-			"Enable or disable fog emulation by this option\n"
-	},
-	{ 
-		IDC_SKIP_FRAME,
-			"Frame skipping",
-			"If this option is on, the plugin will skip frames, to maintain speed. This could help to improve "
-			"speed for some games, and could cause flickering for other games.\n"
-	},
-	{ 
-		IDC_ALPHA_BLENDER,
-			"Force to use normal alpha blender",
-			"Use this option if you have opaque/transparency problems with certain games.\n"
-			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
-			"When a game is running, it is the game setting. Three available setting are on/off/as default."
-	},
-	{ 
-		IDC_FORCE_BUFFER_CLEAR,
-			"Force Buffer Clear",
-			"Force to clear screen before drawing any primitives.\n"
-			"This is in fact a hack, only for a few games, including KI Gold, need this.\n"
-			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
-			"When a game is running, it is the game setting. Three available setting are on/off/as default."
-	},
-	{ 
-		IDC_DISABLE_BG,
-			"Disable BG primitives",
-			"Disable this option for Zelda MM, otherwise its intro will be covered by a black layer (by drawing of a black BG texture).\n"
-			"\nWhen a game is not running, it is the default value (for all games), available values are on/off.\n"
-			"When a game is running, it is the game setting. Three available setting are on/off/as default."
-	},
-	{ 
-		IDC_SCREEN_UPDATE_AT,
-			"Control when the screen will be updated",
-			"\n"
-			"At VI origin update (default)\n"
-			"At VI origin change\n"
-			"At CI change\n"
-			"At the 1st CI change\n"
-			"At the 1st drawing\n"
-			"\nWhen a game is not running, it is the default value (for all games).\n"
-			"When a game is running, it is the game setting."
-	},
-	{ 
-		IDC_SCREEN_UPDATE_LABEL,
-			"Control when the screen will be updated",
-			"This option is to prevent or reduce flicking in certain games by controlling when the screen will be updated\n\n"
-			"At VI origin update (default)\n"
-			"At VI origin change\n"
-			"At CI change\n"
-			"At the 1st CI change\n"
-			"At the 1st drawing\n"
-			"\nWhen a game is not running, it is the default value (for all games).\n"
-			"When a game is running, it is the game setting."
-	},
-	{ 
-		IDC_FRAME_BUFFER_SETTING,
-			"N64 CPU frame buffer emulation",
-			"The CPU frame buffer is referred to N64 drawing buffers in RDRAM."
-			"Games could draw into a frame buffer other than a displayed render buffer and use the result as textures for further drawing into rendering buffer. "
-			"It is very difficult to emulate N64 frame buffer through either DirectX or OpenGL\n\n"
-			"- None (default), don't do any frame buffer emulating\n"
-			"- Hide framebuffer effects,  ignore frame buffer drawing, at least such drawing won't draw to the current rendering buffer\n"
-			"- Basic framebuffer, will check texture loading address to see if the address is within the frame buffer\n"
-			"- Basic & Write back, will write the frame buffer back to RDRAM if a texture is loaded from it\n"
-			"- Write back & Reload, will load frame buffer from RDRAM at each frame\n"
-			"- Write Back Every Frame,       a complete emulation, very slow\n"
-			"- With Emulator,  new 1964 will inform the plugin about CPU frame buffer memory direct read/write, for Dr. Mario\n"
-	},
-	{ 
-		IDC_RENDER_TO_TEXTURE_SETTING,
-			"Render-to-texture emulation",
-			"- None (default), don't do any Render-to-texture emulation\n"
-			"- Hide Render-to-texture effects,  ignore Render-to-texture drawing, at least such drawing won't draw to the current rendering buffer\n"
-			"- Render-to-texture,    support self-render-texture\n"
-			"- Basic Render-to-texture, will check texture loading address to see if the address is within the frame buffer\n"
-			"- Basic & Write back, will write the Render-to-render_texture back when rendering is finished\n"
-			"- Write back & Reload, will load Render-to-render_texture from RDRAM before the buffer is rendered.\n"
-	},
-	{ 
-		IDC_FRAME_BUFFER_WRITE_BACK_CONTROL,
-			"Frame Buffer Write Back Control",
-			"Control the frequency of frame buffer writing back to RDRAM\n"
-	},
-	{ 
-		IDC_OPTION_GROUP,
-			"Default options or Rom specific settings",
-			"\nWhen a game is not running, it is the default value (for all games).\n"
-			"When a game is running, it is the game setting."
-	},
-	{ 
-		IDC_EMULATE_CLEAR,
-			"Emulate Memory Clear",
-			"\nA few games need this option to work better, including DK64."
-	},
-	{ 
-		IDC_FULLSCREEN_FREQUENCY,
-			"Monitor Refresh Frequency in Fullscreen Mode",
-			"Select the frequency for your full screen mode.\n\n"
-			"You should know what's the highest frequency your monitor can display for each screen resolution. If you select a higher frequency "
-			"then your monitor can display, you will get black screen or full screen just does not work. At the time, you can press [ALT-Enter] key again to go back to windowed mode."
-	},
-	{ 
-		IDC_TOOLTIP,
-			"Display tooltips",
-			"Enable/Disable tooltip display in the configuration dialog box\n\n"
-	},
-	{ 
-		IDC_FORCE_DEPTH_COMPARE,
-			"Force Using Depth Buffer",
-			"Force to enable depth buffer compare and update.\n\n"
-	},
-	{ 
-		IDC_DISABLE_BLENDER,
-			"Disable Alpha Blender",
-			"Enable / Disable Alpha Blender\n\n"
-			"This option is different from the Normal Blender option. If this option is on, the alpha blender "
-			"will be disabled completely. All transparency effects are disabled. "
-	},
-	{ 
-		IDC_EDIT_WIDTH,
-			"Manually Set the N64 Screen Resolution Width",
-			"Manually set the N64 screen width, the value will overwrite the screen resolution auto detection"
-	},
-	{ 
-		IDC_EDIT_HEIGHT,
-			"Manually Set the N64 Screen Resolution Height",
-			"Manually set the N64 screen height, the value will overwrite the screen resolution auto detection"
-	},
-	{ 
-		IDC_INCREASE_TEXTRECT_EDGE,
-			"Increase TextRect Edge by 1",
-			"This is an advanced option. Try it if you see there are horizonal or vertical thin "
-			"lines across big texture blocks in menu or logo."
-	},
-	{ 
-		IDC_Z_HACK,
-			"Hack the z value",
-			"This is an advanced option. If enabled, range of vertex Z values will be adjusted "
-			" so that vertexes before the near plane can be rendered without clipped."
-	},
-	{ 
-		IDC_TEXTURE_SCALE_HACK,
-			"Hack Texture Scale",
-			"This is an advanced option. Don't bother if you have no idea what it is. It is only "
-			"a hack for a few games."
-	},
-	{ 
-		IDC_PRIMARY_DEPTH_HACK,
-			"Primary Depth Hack",
-			"This is an advanced option. This is a hack for a few games, don't bother with it."
-	},
-	{ 
-		IDC_TEXTURE_1_HACK,
-			"Texture 1 Hack",
-			"This is an advanced option. This is a hack for a few games, don't bother with it."
-	},
-	{ 
-		IDC_DISABLE_CULLING,
-			"Disable DL Culling",
-			"This is an advanced option. If enabled, it will disable the CullDL ucode."
-	},
-	{ 
-		IDC_SHOW_FPS,
-			"Display OnScreen FPS",
-			"If enabled, current FPS (frame per second) will be displayed at the right-bottom corner of the screen "
-			"in selected color"
-	},
-	{ 
-		IDC_FPS_COLOR,
-			"Onscreen FPS Display Text Color",
-			"Color must be in 32bit HEX format, as AARRGGBB, AA=alpha, RR=red, GG=green, BB=Blue\n"
-			"Data must be entered exactly in 8 hex numbers, or the entered value won't be accepted."
-	},
-	{ 
-		IDC_AUTO_WRITE_BACK,
-			"Automatically write overlapped texture back to RDRAM",
-			"If enabled, such render-to-textures or saved back buffer textures will be written back "
-			"to RDRAM if they are to be covered partially by new textures.\n"
-	},
-	{ 
-		IDC_TXTR_BUF_DOUBLE_SIZE,
-			"Double Texture Buffer Size for Small Render-to-Textures",
-			"Enable this option to have better render-to-texture quality, of course this requires "
-			"more video RAM."
-	},
-	{ 
-		IDC_HIDE_ADVANCED_OPTIONS,
-			"Hide Advanced Options",
-			"If enabled, all advanced options will be hidden. Per game settings, default games settings "
-			"and texture filter settings will be all hidden."
-	},
-	{ 
-		IDC_WINFRAME_MODE,
-			"Enable wireframes (WinFrame)",
-			"If enabled, graphics will be drawn in wireframe mode instead of solid and texture mode."
-	},
-	{
-		IDC_MIPMAPS,
-			"Enables automatic mipmaping.",
-			"This will allow textures to look nicer when viewed far away and increase performance in some cases."
-	},
-	{ 
-	   IDC_LOAD_HIRES_TEXTURE,
-	   "Load custom hi-res textures",
-	   "Loads custom game textures, which were dumped from the game. This option is used extensively for custom "
-	   "game graphics projects by fans."
-	},
-	{ 
-	   IDC_CACHE_HIRES_TEXTURE,
-	   "Cache custom hi-res textures",
-	   "Caches all custom game textures before the game is started. This produces smoother gameplay - especially for "
-	   "large textures.\n\n But be aware that the memory occupation might become very high for large texture packs."
-	   "Furthermore it will delay the game start as the textures have to be actually loaded first."
-	},
-	{
-	   IDC_DUMP_TEXTURE_TO_FILES,
-	   "Dump textures to files",
-	   "This option dumps the textures in the game to normal PNG files.\n\nThis can be very useful "
-	   "for custom game art, high resolution textures, and other graphics modifications to games."
-	},
-	{
-	   IDC_TXT_SIZE_METHOD_2,
-	   "Alternate texture size calculation",
-	   "This option uses a different method when calculating textures then what is normally used. "
-	   "Use of this option is not normally needed."   
-	},
-   {
-	   IDC_USE_CI_WIDTH_AND_RATIO,
-	   "Sets CI width and ratio",
-	   "No - doesnt set CI ratio and width\n"
-	   "NTSC - sets CI width and ratio according to NTSC standards\n"
-	   "PAL - sets CI width and ratio according to PAL specs\n"
-	   },
-   {
-	   IDC_ENABLE_LOD,
-	   "Enables Texture LOD (Level of Detail)",
-	   "This is a advanced option. It doesnt need to be enabled in most cases."
-	   },
-};
-
-int numOfTTMsgs = sizeof(ttmsg)/sizeof(ToolTipMsg);
-
-
-// ** TOOLTIP CODE FROM MSDN LIBRARY SAMPLE WITH SEVERAL MODIFICATIONS **
-
-// DoCreateDialogTooltip - creates a tooltip control for a dialog box, 
-//     enumerates the child control windows, and installs a hook 
-//     procedure to monitor the message stream for mouse messages posted 
-//     to the control windows. 
-// Returns TRUE if successful, or FALSE otherwise. 
-// 
-// Global variables 
-// g_hinst - handle to the application instance. 
-// g_hwndTT - handle to the tooltip control. 
-// g_hwndDlg - handle to the dialog box. 
-// g_hhk - handle to the hook procedure. 
-
-bool CreateDialogTooltip(void) 
-{
-#ifdef ENABLE_CONFIG_DIALOG
-    // Ensure that the common control DLL is loaded, and create
-    // a tooltip control.
-    InitCommonControls();
-    g_hwndTT = CreateWindowEx(0, TOOLTIPS_CLASS, (LPSTR) NULL,
-        TTS_ALWAYSTIP|/*TTS_BALLOON*/0x40, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        CW_USEDEFAULT, g_hwndDlg, (HMENU) NULL, windowSetting.myhInst, NULL);
-	
-    if (g_hwndTT == NULL)
-        return FALSE;
-    // Install a hook procedure to monitor the message stream for mouse
-    // messages intended for the controls in the dialog box.
-    g_hhk = SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc,
-        (HINSTANCE) NULL, GetCurrentThreadId());
-	
-    if (g_hhk == (HHOOK) NULL)
-        return FALSE;
-#endif
-    return TRUE;
-} 
-
-bool EnumChildWndTooltip(void)
-{
-	return (!EnumChildWindows(g_hwndDlg, (WNDENUMPROC) EnumChildProc, 0));
-}
-
-// EmumChildProc - registers control windows with a tooltip control by
-//     using the TTM_ADDTOOL message to pass the address of a 
-//     TOOLINFO structure. 
-// Returns TRUE if successful, or FALSE otherwise. 
-// hwndCtrl - handle of a control window. 
-// lParam - application-defined value (not used). 
-extern "C"  bool __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam) 
-{ 
-    TOOLINFO ti; 
-	
-    ti.cbSize = sizeof(TOOLINFO); 
-    ti.uFlags = TTF_IDISHWND; 
-    ti.hwnd = g_hwndDlg; 
-    ti.uId = (UINT) hwndCtrl; 
-    ti.hinst = 0; 
-    ti.lpszText = LPSTR_TEXTCALLBACK; 
-    SendMessage(g_hwndTT, TTM_ADDTOOL, 0, 
-       (LPARAM) (LPTOOLINFO) &ti); 
-    return TRUE; 
-} 
-
-// GetMsgProc - monitors the message stream for mouse messages intended 
-//     for a control window in the dialog box. 
-// Returns a message-dependent value. 
-// nCode - hook code. 
-// wParam - message flag (not used). 
-// lParam - address of an MSG structure. 
-LRESULT CALLBACK GetMsgProc(int nCode, WPARAM wParam, LPARAM lParam) 
-{ 
-    MSG *lpmsg; 
-	
-    lpmsg = (MSG *) lParam; 
-    //if (nCode < 0 || !(IsChild(g_hwndDlg, lpmsg->hwnd))) 
-	if (nCode < 0 ) 
-        return (CallNextHookEx(g_hhk, nCode, wParam, lParam)); 
-	
-    switch (lpmsg->message) { 
-	case WM_MOUSEMOVE: 
-	case WM_LBUTTONDOWN: 
-	case WM_LBUTTONUP: 
-	case WM_RBUTTONDOWN: 
-	case WM_RBUTTONUP: 
-		if( options.bDisplayTooltip && g_hwndTT != NULL) 
-		{ 
-			MSG msg; 
-
-			int idCtrl = GetDlgCtrlID((HWND)lpmsg->hwnd);
-			
-			msg.lParam = lpmsg->lParam; 
-			msg.wParam = lpmsg->wParam; 
-			msg.message = lpmsg->message; 
-			msg.hwnd = lpmsg->hwnd; 
-			SendMessage(g_hwndTT, TTM_RELAYEVENT, 0, 
-				(LPARAM) (LPMSG) &msg); 
-			SendMessage(g_hwndTT, TTM_SETMAXTIPWIDTH, 0, 300);
-			SendMessage(g_hwndTT, TTM_SETDELAYTIME, TTDT_INITIAL, (LPARAM)MAKELONG(500,0));
-			SendMessage(g_hwndTT, TTM_SETDELAYTIME, TTDT_AUTOPOP, (LPARAM)MAKELONG(32000,0));
-
-			for (int i=0; i<numOfTTMsgs; i++)
-			{
-				if (idCtrl == ttmsg[i].id )
-				{
-					SendMessage(g_hwndTT, /*TTM_SETTITLE*/(WM_USER + 32), 1, (LPARAM)ttmsg[i].title);
-					break;
-				}
-			}
-		} 
-		break; 
-	default: 
-		break; 
-    } 
-    return (CallNextHookEx(g_hhk, nCode, wParam, lParam)); 
-} 
-
-
-// OnWMNotify - provides the tooltip control with the appropriate text 
-//     to display for a control window. This function is called by 
-//     the dialog box procedure in response to a WM_NOTIFY message. 
-// lParam - second message parameter of the WM_NOTIFY message. 
-VOID OnWMNotify(LPARAM lParam) 
-{ 
-	LPTOOLTIPTEXT lpttt; 
-	int idCtrl; 
-	
-	if ((((LPNMHDR) lParam)->code) == TTN_NEEDTEXT) { 
-		idCtrl = GetDlgCtrlID((HWND) ((LPNMHDR) lParam)->idFrom); 
-		lpttt = (LPTOOLTIPTEXT) lParam; 
-
-		for (int i=0; i<numOfTTMsgs; i++)
-		{
-			if (idCtrl == ttmsg[i].id )
-			{
-				lpttt->lpszText = ttmsg[i].text;
-				return;
-			}
-		}
-	} 
-	return;
 }
 
 ///////////////////////////////////////////////
@@ -1200,13 +760,11 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 	{
 	case WM_INITDIALOG:
 		g_hwndDlg = hDlg;
-		EnumChildWndTooltip();
 
 		SendDlgItemMessage(hDlg, IDC_FOG, BM_SETCHECK, options.bEnableFog ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_SETCHECK, options.bMipMaps ? BST_CHECKED : BST_UNCHECKED, 0);
 
-		SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_SETCHECK, options.bDisplayTooltip ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_SETCHECK, options.bHideAdvancedOptions ? BST_CHECKED : BST_UNCHECKED, 0);
 
 		SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_RESETCONTENT, 0, 0);
@@ -1271,10 +829,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		if( status.bGameIsRunning )
 		{
 			item = GetDlgItem(hDlg, IDC_RESOLUTION_WINDOW_MODE);
-			EnableWindow(item, FALSE);
+			EnableWindow(item, false);
 		}
 
-        return(TRUE);
+        return(true);
 
     case WM_DESTROY:
 		if (g_hhk) UnhookWindowsHookEx (g_hhk);
@@ -1291,25 +849,23 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 			case PSN_SETACTIVE :
 				if( options.bHideAdvancedOptions )
 				{
-					ShowItem(hDlg, IDC_FOG, FALSE);
-					ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
-					ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
+					ShowItem(hDlg, IDC_FOG, false);
+					ShowItem(hDlg, IDC_WINFRAME_MODE, false);
 				}
 				else
 				{
-					ShowItem(hDlg, IDC_FOG, TRUE);
-					ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
-					ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
+					ShowItem(hDlg, IDC_FOG, true);
+					ShowItem(hDlg, IDC_WINFRAME_MODE, true);
 				}
 
 				if(status.bGameIsRunning)
@@ -1319,39 +875,31 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 				break;
 			default:
-				OnWMNotify (lParam);
 				return 0;
 			}
 		}
-		return(TRUE);
+		return(true);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
- 		case IDC_TOOLTIP: 
-			options.bDisplayTooltip = (SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			WriteConfiguration();
-			break;
 		case IDC_HIDE_ADVANCED_OPTIONS:
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			if( options.bHideAdvancedOptions )
 			{
-				ShowItem(hDlg, IDC_FOG, FALSE);
-				ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
-				ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
+				ShowItem(hDlg, IDC_FOG, false);
+				ShowItem(hDlg, IDC_WINFRAME_MODE, false);
 			}
 			else
 			{
-				ShowItem(hDlg, IDC_FOG, TRUE);
-				ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
-				ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
+				ShowItem(hDlg, IDC_FOG, true);
+				ShowItem(hDlg, IDC_WINFRAME_MODE, true);
 			}
 			WriteConfiguration();
 			break;
 		case IDOK:
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bDisplayTooltip = (SendDlgItemMessage(hDlg, IDC_TOOLTIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
@@ -1379,20 +927,20 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
 
 			WriteConfiguration();
-			EndDialog(hDlg, TRUE);
+			EndDialog(hDlg, true);
 
-			return(TRUE);
+			return(true);
 
 		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 		case IDC_ABOUT:
 			DllAbout ( hDlg );
 			break;
 	    }
     }
 
-    return FALSE;
+    return false;
 }
 LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
@@ -1405,7 +953,6 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 	{
 	case WM_INITDIALOG:
 		g_hwndDlg = hDlg;
-		EnumChildWndTooltip();
 
 		SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_RESETCONTENT, 0, 0);
 		for( i=0; i<sizeof(OnScreenDisplaySettings)/sizeof(SettingInfo); i++ )
@@ -1416,13 +963,13 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		}
 
 		item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-		SendMessage(item,TBM_SETRANGE,(WPARAM) TRUE,(LPARAM) MAKELONG(0, options.DirectXMaxFSAA));
+		SendMessage(item,TBM_SETRANGE,(WPARAM) true,(LPARAM) MAKELONG(0, options.DirectXMaxFSAA));
 		step = max(options.DirectXMaxFSAA/4, 1);
 		SendMessage(item,TBM_SETPAGESIZE,0,(LPARAM) step);
 
 		step = max(options.DirectXMaxAnisotropy/4, 1);
 		item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-		SendMessage(item,TBM_SETRANGE,(WPARAM) TRUE,(LPARAM) MAKELONG(0, options.DirectXMaxAnisotropy));
+		SendMessage(item,TBM_SETRANGE,(WPARAM) true,(LPARAM) MAKELONG(0, options.DirectXMaxAnisotropy));
 		SendMessage(item,TBM_SETPAGESIZE,0,(LPARAM) step);
 
 		if( options.DirectXAntiAliasingValue > options.DirectXMaxFSAA )
@@ -1432,8 +979,8 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		}
 
 #ifndef _DEBUG
-		ShowItem(hDlg, IDC_DX_DEVICE, FALSE);
-		ShowItem(hDlg, IDC_DX_DEVICE_TEXT, FALSE);
+		ShowItem(hDlg, IDC_DX_DEVICE, false);
+		ShowItem(hDlg, IDC_DX_DEVICE_TEXT, false);
 #endif
 
 		sprintf(generalText,"%08X", options.FPSColor);
@@ -1445,10 +992,10 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		sprintf(generalText, "Full Screen Anti-Aliasing: %d X", options.DirectXAntiAliasingValue);
 		SetWindowText(item,generalText);
 		item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-		SendMessage(item, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAntiAliasingValue);
+		SendMessage(item, TBM_SETPOS, (WPARAM)true, (LPARAM)options.DirectXAntiAliasingValue);
 		if( options.DirectXMaxFSAA == 0 || status.bGameIsRunning )
 		{
-			EnableWindow(item, FALSE);
+			EnableWindow(item, false);
 		}
 
 		item = GetDlgItem(hDlg, IDC_ANTI_ALIASING_MAX_TEXT);
@@ -1466,16 +1013,16 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		sprintf(generalText, "Anisotropic Filtering: %d X", options.DirectXAnisotropyValue);
 		SetWindowText(item,generalText);
 		item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-		SendMessage(item, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAnisotropyValue);
+		SendMessage(item, TBM_SETPOS, (WPARAM)true, (LPARAM)options.DirectXAnisotropyValue);
 		if( options.DirectXMaxAnisotropy == 0 || status.bGameIsRunning )
 		{
-			EnableWindow(item, FALSE);
+			EnableWindow(item, false);
 		}
 		item = GetDlgItem(hDlg, IDC_ANISOTROPIC_MAX_TEXT);
 		sprintf(generalText, "%d X", options.DirectXMaxAnisotropy);
 		SetWindowText(item,generalText);
 
-		return(TRUE);
+		return(true);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1486,35 +1033,35 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			{
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-				EndDialog(lpnm->hwndFrom, TRUE);
+				EndDialog(lpnm->hwndFrom, true);
 				break;
 
 			case PSN_RESET :
 				//Handle a Cancel button click, if necessary
-				EndDialog(lpnm->hwndFrom, TRUE);
+				EndDialog(lpnm->hwndFrom, true);
 				break;
 			case PSN_SETACTIVE :
 				if( options.bHideAdvancedOptions )
 				{
-					ShowItem(hDlg, IDC_SHOW_FPS, FALSE);
-					ShowItem(hDlg, IDC_FPS_COLOR, FALSE);
-					ShowItem(hDlg, IDC_SETTING_LABEL2, FALSE);
-					ShowItem(hDlg, IDC_SETTING_LABEL3, FALSE);
-					ShowItem(hDlg, IDC_LABEL5, FALSE);
-					ShowItem(hDlg, IDC_LABEL6, FALSE);
-					ShowItem(hDlg, IDC_LABEL7, FALSE);
-					ShowItem(hDlg, IDC_LABEL8, FALSE);
+					ShowItem(hDlg, IDC_SHOW_FPS, false);
+					ShowItem(hDlg, IDC_FPS_COLOR, false);
+					ShowItem(hDlg, IDC_SETTING_LABEL2, false);
+					ShowItem(hDlg, IDC_SETTING_LABEL3, false);
+					ShowItem(hDlg, IDC_LABEL5, false);
+					ShowItem(hDlg, IDC_LABEL6, false);
+					ShowItem(hDlg, IDC_LABEL7, false);
+					ShowItem(hDlg, IDC_LABEL8, false);
 				}
 				else
 				{
-					ShowItem(hDlg, IDC_SHOW_FPS, TRUE);
-					ShowItem(hDlg, IDC_FPS_COLOR, TRUE);
-					ShowItem(hDlg, IDC_SETTING_LABEL2, TRUE);
-					ShowItem(hDlg, IDC_SETTING_LABEL3, TRUE);
-					ShowItem(hDlg, IDC_LABEL5, TRUE);
-					ShowItem(hDlg, IDC_LABEL6, TRUE);
-					ShowItem(hDlg, IDC_LABEL7, TRUE);
-					ShowItem(hDlg, IDC_LABEL8, TRUE);
+					ShowItem(hDlg, IDC_SHOW_FPS, true);
+					ShowItem(hDlg, IDC_FPS_COLOR, true);
+					ShowItem(hDlg, IDC_SETTING_LABEL2, true);
+					ShowItem(hDlg, IDC_SETTING_LABEL3, true);
+					ShowItem(hDlg, IDC_LABEL5, true);
+					ShowItem(hDlg, IDC_LABEL6, true);
+					ShowItem(hDlg, IDC_LABEL7, true);
+					ShowItem(hDlg, IDC_LABEL8, true);
 				}
 
 				if(status.bGameIsRunning)
@@ -1524,11 +1071,10 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 				break;
 			default:
-				OnWMNotify (lParam);
 				return 0;
 			}
 		}
-		return(TRUE);
+		return(true);
 	case WM_HSCROLL:
 		switch (LOWORD(wParam)) 
 		{
@@ -1590,20 +1136,20 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				options.FPSColor = strtoul(str,0,16);
 			}
 
-			EndDialog(hDlg, TRUE);
+			EndDialog(hDlg, true);
 			WriteConfiguration();
 
-			return(TRUE);
+			return(true);
 
 		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 	    }
     }
 
 
-    return FALSE;
-	return(TRUE);
+    return false;
+	return(true);
 }
 
 LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
@@ -1614,7 +1160,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 	{
 	case WM_INITDIALOG:
 		g_hwndDlg = hDlg;
-		EnumChildWndTooltip();
 
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_RESETCONTENT, 0, 0);
 		for( i=0; i<sizeof(TextureEnhancementSettings)/sizeof(SettingInfo); i++ )
@@ -1636,7 +1181,7 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_SETCHECK, options.bCacheHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_SETCHECK, options.bDumpTexturesToFiles ? BST_CHECKED : BST_UNCHECKED, 0);
 
-        return(TRUE);
+        return(true);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1647,12 +1192,12 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 			case PSN_SETACTIVE:
 				if(status.bGameIsRunning)
@@ -1661,11 +1206,10 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 					DialogToStartRomIsNotRunning = PSH_TEXTURE;
 				break;
 			default:
-				OnWMNotify (lParam);
 				return 0;
 			}
 		}
-		return(TRUE);
+		return(true);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -1677,9 +1221,9 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			options.forceTextureFilter = ForceTextureFilterSettings[i].setting;
 
 			{
-				BOOL bLoadHiResTextures = options.bLoadHiResTextures;
-				BOOL bCacheHiResTextures = options.bCacheHiResTextures;
-				BOOL bDumpTexturesToFiles = options.bDumpTexturesToFiles;
+				bool bLoadHiResTextures = options.bLoadHiResTextures;
+				bool bCacheHiResTextures = options.bCacheHiResTextures;
+				bool bDumpTexturesToFiles = options.bDumpTexturesToFiles;
 				options.bLoadHiResTextures = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				options.bCacheHiResTextures = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1730,18 +1274,18 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 				}
 			}
 
-			EndDialog(hDlg, TRUE);
+			EndDialog(hDlg, true);
 			WriteConfiguration();
 
-			return(TRUE);
+			return(true);
 
 		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 	    }
     }
 
-    return FALSE;
+    return false;
 }
 LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
@@ -1750,7 +1294,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 	{
 	case WM_INITDIALOG:
 		g_hwndDlg = hDlg;
-		EnumChildWndTooltip();
 
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_SETCHECK, defaultRomOptions.bDoubleSizeForSmallTxtrBuf ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -1775,7 +1318,7 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_INSERTSTRING, i, (LPARAM) renderToTextureSettings[i]);
 		}
 		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_SETCURSEL, defaultRomOptions.N64RenderToTextureEmuType, 0);
-        return(TRUE);
+        return(true);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1786,12 +1329,12 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 			case PSN_SETACTIVE:
 				if(status.bGameIsRunning)
@@ -1800,11 +1343,10 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 					DialogToStartRomIsNotRunning = PSH_DEFAULTS;
 				break;
 			default:
-				OnWMNotify (lParam);
 				return 0;
 			}
 		}
-		return(TRUE);
+		return(true);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -1817,17 +1359,17 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			defaultRomOptions.bDoubleSizeForSmallTxtrBuf = (SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			WriteConfiguration();
-			EndDialog(hDlg, TRUE);
+			EndDialog(hDlg, true);
 
-			return(TRUE);
+			return(true);
 
 		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 	    }
     }
 
-	return FALSE;
+	return false;
 }
 LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
@@ -1838,11 +1380,10 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 	{
 	case WM_INITDIALOG:
 		g_hwndDlg = hDlg;
-		EnumChildWndTooltip();
 
 		// Tri-state variables
 		state = g_curRomInfo.dwNormalBlender==2 ? BST_CHECKED : (g_curRomInfo.dwNormalBlender==1?BST_UNCHECKED:BST_INDETERMINATE);
-		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
+		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETSTYLE, BS_AUTO3STATE, true);
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, state, 0);
 
 
@@ -1884,10 +1425,10 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 
 		if( status.bGameIsRunning )
 		{
-			ShowItem(hDlg, IDC_SCREEN_UPDATE_AT, TRUE);
-			ShowItem(hDlg, IDC_FORCE_DEPTH_COMPARE, TRUE);
-			ShowItem(hDlg, IDC_DISABLE_BLENDER, TRUE);
-			ShowItem(hDlg, IDC_FORCE_BUFFER_CLEAR, TRUE);
+			ShowItem(hDlg, IDC_SCREEN_UPDATE_AT, true);
+			ShowItem(hDlg, IDC_FORCE_DEPTH_COMPARE, true);
+			ShowItem(hDlg, IDC_DISABLE_BLENDER, true);
+			ShowItem(hDlg, IDC_FORCE_BUFFER_CLEAR, true);
 		}
 
 		// Less useful options
@@ -1912,7 +1453,7 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			SetDlgItemText(hDlg,IDC_EDIT_HEIGHT,generalText);
 		}
 
-        return(TRUE);
+        return(true);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1923,23 +1464,22 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 			case PSN_SETACTIVE:
 				if(status.bGameIsRunning)
 					DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
 				break;
 			default:
-				OnWMNotify (lParam);
 				return 0;
 			}
 		}
-		return(TRUE);
+		return(true);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -1996,24 +1536,24 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			GenerateCurrentRomOptions();
 			Ini_StoreRomOptions(&g_curRomInfo);
 
-			EndDialog(hDlg, TRUE);
+			EndDialog(hDlg, true);
 
-			return(TRUE);
+			return(true);
 
 		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 	    }
     }
 
-    return FALSE;
+    return false;
 }
 LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	switch(message)
 	{
 	case WM_INITDIALOG:
-        return(TRUE);
+        return(true);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -2024,31 +1564,31 @@ LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG 
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, TRUE);
+                EndDialog(lpnm->hwndFrom, true);
 				break;
 			}
 		}
-		return(TRUE);
+		return(true);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
         case IDOK:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 
 		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 	    }
     }
 
-    return FALSE;
+    return false;
 }
 
 //Test: Creating property pages for all options
@@ -2149,14 +1689,6 @@ void CreateOptionsDialogs(HWND hParent)
 	else
 	{
 		psh.nStartPage = DialogToStartRomIsNotRunning;
-	}
-
-	// Create tooltip handle
-	if (!g_hhk)
-	{
-		g_hwndTT = NULL;
-		g_hhk = NULL;
-		CreateDialogTooltip();
 	}
 
 	hPropSheetHwnd = (HWND) PropertySheet(&psh);	// Start the Property Sheet

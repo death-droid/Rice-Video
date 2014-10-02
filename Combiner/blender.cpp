@@ -26,14 +26,14 @@ void CBlender::NormalAlphaBlender(void)
 {
 	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,true );
 }
 
 void CBlender::DisableAlphaBlender(void)
 {
 	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,true );
 }
 
 void CBlender::BlendFunc(uint32 srcFunc, uint32 desFunc)
@@ -44,12 +44,12 @@ void CBlender::BlendFunc(uint32 srcFunc, uint32 desFunc)
 
 void CBlender::Enable()
 {
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,true );
 }
 
 void CBlender::Disable()
 {
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,FALSE );
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,false );
 }
 
 //========================================================================
@@ -198,7 +198,7 @@ Possible Blending Factors:
 				Disable();
 			}
 
-			render->SetAlphaTestEnable( ((gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3)==1 ? TRUE : FALSE);
+			render->SetAlphaTestEnable( ((gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3)==1 ? true : false);
 			break;
 		case BLEND_PASS+(BLEND_OPA>>2):
 			// 0x0c19
@@ -435,7 +435,7 @@ Possible Blending Factors:
 #endif
 			BlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
 			Enable();
-			render->SetAlphaTestEnable(TRUE);
+			render->SetAlphaTestEnable(true);
 			break;
 		}
 	}

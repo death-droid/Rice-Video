@@ -59,39 +59,39 @@ bool D3DRender::ClearDeviceObjects()
 bool D3DRender::InitDeviceObjects()
 {
 	// We never change these
-	gD3DDevWrapper.SetRenderState( D3DRS_DITHERENABLE, FALSE ); //DIsabled, we shouldnt need to deal with 16-bit anymore
+	gD3DDevWrapper.SetRenderState( D3DRS_DITHERENABLE, false ); //DIsabled, we shouldnt need to deal with 16-bit anymore
 
 	// We do our own culling
 	gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_NONE );
 
 	// We do our own lighting
 	gD3DDevWrapper.SetRenderState( D3DRS_AMBIENT, COLOR_RGBA(255,255,255,255) );
-	gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING,	  FALSE);
+	gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING,	  false);
 
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,true );
 	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 
 	gD3DDevWrapper.SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-	gD3DDevWrapper.SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	gD3DDevWrapper.SetRenderState(D3DRS_ZWRITEENABLE, true);
 	
 	if( ((CDXGraphicsContext*)CGraphicsContext::g_pGraphicsContext)->IsFSAAEnable() )
-		gD3DDevWrapper.SetRenderState( D3DRS_MULTISAMPLEANTIALIAS , TRUE);
+		gD3DDevWrapper.SetRenderState( D3DRS_MULTISAMPLEANTIALIAS , true);
 	else
-		gD3DDevWrapper.SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+		gD3DDevWrapper.SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, false);
 
 	// Initialize all the renderstate to our defaults.
 	SetShadeMode( gRSP.shadeMode );
 	gD3DDevWrapper.SetRenderState( D3DRS_TEXTUREFACTOR, 0xFFFFFFFF );
 
-	gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
+	gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, false);
 	float density = 1.0f;
 	gD3DDevWrapper.SetRenderState(D3DRS_FOGDENSITY,   *(uint32 *)(&density));
-	gD3DDevWrapper.SetRenderState(D3DRS_RANGEFOGENABLE, TRUE);
+	gD3DDevWrapper.SetRenderState(D3DRS_RANGEFOGENABLE, true);
 
 	gD3DDevWrapper.SetRenderState( D3DRS_FOGTABLEMODE, D3DFOG_NONE );
 
-    gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE );
+    gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,true );
     gD3DDevWrapper.SetRenderState(D3DRS_ALPHAREF, 0x04);
     gD3DDevWrapper.SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL );
 
@@ -136,7 +136,7 @@ bool D3DRender::InitDeviceObjects()
 	clippingstatus.ClipIntersection = 0xFFFFFFFF;
 	g_pD3DDev->SetClipStatus(&clippingstatus);
 	g_pD3DDev->GetClipStatus(&clippingstatus);
-	g_pD3DDev->SetRenderState(D3DRS_CLIPPING, TRUE);
+	g_pD3DDev->SetRenderState(D3DRS_CLIPPING, true);
 
 	return true;	
 }
@@ -294,29 +294,29 @@ void D3DRender::SetAddressVAllStages(uint32 dwTile, int dwFlag)
 	SetTextureVFlag(dwFlag, dwTile);
 }
 
-void D3DRender::ZBufferEnable(BOOL bZBuffer)
+void D3DRender::ZBufferEnable(bool bZBuffer)
 {
 	if( g_curRomInfo.bForceDepthBuffer )
-		bZBuffer = TRUE;
+		bZBuffer = true;
 
 	SetZCompare(bZBuffer);
 	SetZUpdate(bZBuffer);
 }
  
-void D3DRender::SetZCompare(BOOL bZCompare)
+void D3DRender::SetZCompare(bool bZCompare)
 {
 	if( g_curRomInfo.bForceDepthBuffer )
-		bZCompare = TRUE;
+		bZCompare = true;
 
 	gRDP.tnl.Zbuffer = bZCompare;
 	m_bZCompare = bZCompare;
-	gD3DDevWrapper.SetRenderState(D3DRS_ZENABLE, bZCompare ? D3DZB_TRUE : D3DZB_FALSE );
+	gD3DDevWrapper.SetRenderState(D3DRS_ZENABLE, bZCompare ? D3DZB_TRUE : D3DZB_FALSE);
 }
 
-void D3DRender::SetZUpdate(BOOL bZUpdate)
+void D3DRender::SetZUpdate(bool bZUpdate)
 {
 	if( g_curRomInfo.bForceDepthBuffer )
-		bZUpdate = TRUE;
+		bZUpdate = true;
 
 	m_bZUpdate = bZUpdate;
 	if( bZUpdate )	
@@ -455,7 +455,7 @@ void D3DRender::SetFillMode(FillMode mode)
 	}
 }
 
-void D3DRender::SetAlphaTestEnable(BOOL bAlphaTestEnable)
+void D3DRender::SetAlphaTestEnable(bool bAlphaTestEnable)
 {
 #ifdef _DEBUG
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,(bAlphaTestEnable && debuggerEnableAlphaTest));
@@ -484,27 +484,27 @@ void D3DRender::SetFogMinMax(float fMin, float fMax)
 
 void D3DRender::TurnFogOnOff(bool flag)
 {
-	gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, flag?TRUE:FALSE);
+	gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, flag?true:false);
 }
 
 #define RSP_ZELDA_CULL_FRONT 0x00000400
 void D3DRender::SetFogEnable(bool bEnable)
 {
-	DEBUGGER_IF_DUMP( (gRDP.tnl.Fog != (bEnable==TRUE) && logFog ), TRACE1("Set Fog %s", bEnable? "enable":"disable"));
+	DEBUGGER_IF_DUMP( (gRDP.tnl.Fog != (bEnable==true) && logFog ), TRACE1("Set Fog %s", bEnable? "enable":"disable"));
 
-	if( options.enableHackForGames == HACK_FOR_TWINE && gRDP.tnl.Fog == FALSE && bEnable == FALSE && (gRDP.tnl.TriCull) )
+	if( options.enableHackForGames == HACK_FOR_TWINE && gRDP.tnl.Fog == false && bEnable == false && (gRDP.tnl.TriCull) )
 	{
 		g_pD3DDev->Clear(1, NULL, D3DCLEAR_ZBUFFER, 0xFF000000, 1.0, 0);
 	}
 
 	DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Set Fog %s", bEnable?"enable":"disable");});
 	
-	//gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
+	//gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, false);
 	//return;		//Fog does work, need to fix
 
 	if( gRDP.tnl.Fog )
 	{
-		gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, TRUE);
+		gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, true);
 		gD3DDevWrapper.SetRenderState(D3DRS_FOGCOLOR, gRDP.fogColor);
 		if( g_curRomInfo.bZHack )
 		{
@@ -521,7 +521,7 @@ void D3DRender::SetFogEnable(bool bEnable)
 	}
 	else
 	{
-		gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
+		gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, false);
 	}
 }
 

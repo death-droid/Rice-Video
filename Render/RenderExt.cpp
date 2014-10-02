@@ -36,7 +36,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 	gti.clampS = gti.clampT = 0;
 	gti.maskS = gti.maskT = gti.mirrorS = gti.mirrorT = 0;
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 	gti.Palette	= 0;
 
 	if( useVIreg && *g_GraphicsInfo.VI_ORIGIN_REG > VIwidth*2 )
@@ -129,7 +129,7 @@ void CRender::LoadTextureFromMemory(void *buf, uint32 left, uint32 top, uint32 w
 	gti.Palette	= 0;
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
 	gti.PalAddress = 0;
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 	gti.Address	= 0;
 	gti.LeftToLoad		= 0;
 	gti.TopToLoad		= 0;
@@ -178,7 +178,7 @@ void CRender::LoadObjBGCopy(uObjBg &info)
 	gti.Palette		= info.imagePal;
 
 	gti.PalAddress	= (uint32)(&g_wRDPTlut[0]);
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 	gti.TLutFmt		= TLUT_FMT_RGBA16;	//RGBA16
 
 	gti.WidthToCreate	= info.imageW/4;
@@ -245,7 +245,7 @@ void CRender::LoadTxtrBufIntoTexture(void)
 	gti.Palette	= 0;
 
 	gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 
 	gti.WidthToCreate		= g_pRenderTextureInfo->N64Width;
 	gti.HeightToCreate		= g_pRenderTextureInfo->N64Height;
@@ -300,7 +300,7 @@ void CRender::LoadSprite2D(Sprite2DInfo &info, uint32 ucode)
 	gti.WidthToLoad = gti.WidthToCreate;
 
 	gti.TLutFmt		= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 
 	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
 	gti.tileNo = -1;
@@ -440,12 +440,12 @@ void CRender::DrawFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 
 	m_pColorCombiner->InitCombinerBlenderForSimpleTextureDraw(0);
 
-	ZBufferEnable(FALSE);
-	SetZUpdate(FALSE);
+	ZBufferEnable(false);
+	SetZUpdate(false);
 	if( left == 0 )
-		SetAlphaTestEnable(FALSE);
+		SetAlphaTestEnable(false);
 	else
-		SetAlphaTestEnable(TRUE);	// use Alpha Test for partial frame buffer draw, for Dr. Mario 64
+		SetAlphaTestEnable(true);	// use Alpha Test for partial frame buffer draw, for Dr. Mario 64
 
 	CBlender::Disable();
 
@@ -623,7 +623,7 @@ void CRender::DrawObjBG1CYC(uObjScaleBg &bg, bool scaled)	//Without Ratation
 	float u1 = (x1-x2)*scaleX/g_textures[0].m_fTexWidth;
 	float v1 = (y1-y2)*scaleY/g_textures[0].m_fTexHeight;
 
-	SetAlphaTestEnable(FALSE);
+	SetAlphaTestEnable(false);
 
 	if( options.enableHackForGames != HACK_FOR_YOSHI )
 	{
@@ -781,7 +781,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 	}
 
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
@@ -851,7 +851,7 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 	}
 
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;

@@ -124,8 +124,8 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleCopy(void)
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_DISABLE );
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_ALPHAOP, D3DTOP_DISABLE );
 
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,FALSE);
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE);
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,false);
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,true);
 
 	m_pD3DRender->m_curCombineInfo.nStages = 1;
 
@@ -356,17 +356,17 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleFill(void)
 void CDirectXPixelShaderCombiner::InitCombinerBlenderForSimpleTextureDraw(uint32 tile)
 {
 	gD3DDevWrapper.SetPixelShader( NULL );
-	m_pD3DRender->ZBufferEnable( FALSE );
+	m_pD3DRender->ZBufferEnable( false );
 
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_DISABLE );
 	gD3DDevWrapper.SetTextureStageState( 1, D3DTSS_ALPHAOP, D3DTOP_DISABLE );
 
 	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND,D3DBLEND_ZERO);
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE);
-	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,FALSE);
-	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE);
-	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,FALSE);
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,true);
+	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,false);
+	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,true);
+	//gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,false);
 	
 	gD3DDevWrapper.SetTexture( 0, g_textures[tile].m_lpsTexturePtr );
 	gD3DDevWrapper.SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_SELECTARG1 );

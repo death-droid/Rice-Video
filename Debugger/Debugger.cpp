@@ -24,32 +24,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void DumpMatrix2(const Matrix &mtx, const char* prompt);
 
-bool debuggerWinOpened = FALSE;
-bool debuggerDrawRenderTexture = FALSE;
+bool debuggerWinOpened = false;
+bool debuggerDrawRenderTexture = false;
 int debuggerDrawRenderTextureNo = 0;
 
-BOOL logCombiners = FALSE;
-BOOL logWarning = TRUE;
-BOOL logTriangles = FALSE;
-BOOL logMatrix = FALSE;
-BOOL logVertex = FALSE;
-BOOL logTextures = FALSE;
-BOOL logTextureBuffer = FALSE;
-BOOL logToScreen = TRUE;
-BOOL logToFile = FALSE;
-BOOL logUcodes = false;
-BOOL logMicrocode = false;
-BOOL logFog = FALSE;
-BOOL logDetails = FALSE;
+bool logCombiners = false;
+bool logWarning = true;
+bool logTriangles = false;
+bool logMatrix = false;
+bool logVertex = false;
+bool logTextures = false;
+bool logTextureBuffer = false;
+bool logToScreen = true;
+bool logToFile = false;
+bool logUcodes = false;
+bool logMicrocode = false;
+bool logFog = false;
+bool logDetails = false;
 
 FILE *logFp = NULL;
 
-BOOL debuggerEnableTexture=TRUE;
-BOOL debuggerEnableZBuffer=TRUE;
-BOOL debuggerEnableCullFace=TRUE;
-BOOL debuggerEnableTestTris=TRUE;
-BOOL debuggerEnableAlphaTest=TRUE;
-BOOL debuggerContinueWithUnknown=FALSE;
+bool debuggerEnableTexture=true;
+bool debuggerEnableZBuffer=true;
+bool debuggerEnableCullFace=true;
+bool debuggerEnableTestTris=true;
+bool debuggerEnableAlphaTest=true;
+bool debuggerContinueWithUnknown=false;
 
 bool debuggerPause = false;
 bool pauseAtNext = false;
@@ -548,7 +548,7 @@ void DumpInfo(int thingToDump)
 }
 
 
-void SetLogToFile(BOOL log)
+void SetLogToFile(bool log)
 {
 	if( log )
 	{
@@ -620,108 +620,108 @@ LRESULT APIENTRY DebuggerDialog(HWND hDlg, unsigned message, LONG wParam, LONG l
 		SetLogToFile(logToFile);
 
 		msgBuf[0] = '\0';
-		return(TRUE);
+		return(true);
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
 		case IDC_LOG_COMBINERS:
 			logCombiners = (SendDlgItemMessage(hDlg, IDC_LOG_COMBINERS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_TRIANGLES:
 			logTriangles = (SendDlgItemMessage(hDlg, IDC_LOG_TRIANGLES, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_TEXTURE_BUFFER:
 			logTextureBuffer = (SendDlgItemMessage(hDlg, IDC_LOG_TEXTURE_BUFFER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_VTX:
 			logVertex = (SendDlgItemMessage(hDlg, IDC_LOG_VTX, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_TO_SCREEN:
 			logToScreen = (SendDlgItemMessage(hDlg, IDC_LOG_TO_SCREEN, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_TO_FILE:
 			logToFile = (SendDlgItemMessage(hDlg, IDC_LOG_TO_FILE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			SetLogToFile(logToFile);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_MATRIX:
 			logMatrix = (SendDlgItemMessage(hDlg, IDC_LOG_MATRIX, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_ENABLE_TEXTURE:
 			debuggerEnableTexture = (SendDlgItemMessage(hDlg, IDC_ENABLE_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_ZBUFFER:
 			debuggerEnableZBuffer = (SendDlgItemMessage(hDlg, IDC_ZBUFFER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_CULLFACE:
 			debuggerEnableCullFace = (SendDlgItemMessage(hDlg, IDC_CULLFACE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_TEST_TRIS:
 			debuggerEnableTestTris = (SendDlgItemMessage(hDlg, IDC_TEST_TRIS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_ALPHA_TEST:
 			debuggerEnableAlphaTest = (SendDlgItemMessage(hDlg, IDC_ALPHA_TEST, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			if( !debuggerEnableAlphaTest && CRender::g_pRender )	
-				CRender::g_pRender->SetAlphaTestEnable(FALSE);
-			return(TRUE);
+				CRender::g_pRender->SetAlphaTestEnable(false);
+			return(true);
 			break;
 		case IDC_LOG_WARNING:
 			logWarning = (SendDlgItemMessage(hDlg, IDC_LOG_WARNING, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_FOG:
 			logFog = (SendDlgItemMessage(hDlg, IDC_LOG_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_DETAILS:
 			logDetails = (SendDlgItemMessage(hDlg, IDC_DETAILS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_WINFRAME:
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_TEXTURES:
 			logTextures = (SendDlgItemMessage(hDlg, IDC_LOG_TEXTURES, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_UCODE:
 			logUcodes = (SendDlgItemMessage(hDlg, IDC_LOG_UCODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_LOG_MICROCODE:
 			logMicrocode = (SendDlgItemMessage(hDlg, IDC_LOG_MICROCODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_CONT_W_UNKNOWN:
 			debuggerContinueWithUnknown = (SendDlgItemMessage(hDlg, IDC_CONT_W_UNKNOWN, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			return(TRUE);
+			return(true);
 			break;
 		case IDC_CLEAR:
 			msgBuf[0] = '\0';
 			SetDlgItemText(hDlg, IDC_MSG, "");
 			break;
 		case IDOK:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
+			EndDialog(hDlg, true);
+			return(true);
 		}
 
 		if( !status.bGameIsRunning )
 		{
-			return(TRUE);
+			return(true);
 		}
 
 		switch(LOWORD(wParam))
@@ -732,12 +732,12 @@ LRESULT APIENTRY DebuggerDialog(HWND hDlg, unsigned message, LONG wParam, LONG l
 		case IDC_GO:
 			pauseAtNext = false;
 			debuggerPause = false;
-			logTriangles = FALSE;
-			logVertex = FALSE;
-			logMatrix = FALSE;
-			logTextures = FALSE;
-			logUcodes = FALSE;
-			logMicrocode = FALSE;
+			logTriangles = false;
+			logVertex = false;
+			logMatrix = false;
+			logTextures = false;
+			logUcodes = false;
+			logMicrocode = false;
 
 			SendDlgItemMessage(hDlg, IDC_LOG_TRIANGLES, BM_SETCHECK, BST_UNCHECKED, 0);
 			SendDlgItemMessage(hDlg, IDC_LOG_VTX, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -786,21 +786,21 @@ LRESULT APIENTRY DebuggerDialog(HWND hDlg, unsigned message, LONG wParam, LONG l
 			debuggerDropCombinerInfos = true;
 			break;
 		}
-		return(TRUE);
+		return(true);
 		break;
 	case WM_CLOSE:
-		EndDialog(hDlg, TRUE);
+		EndDialog(hDlg, true);
 		pauseAtNext = false;
 		debuggerPause = false;
-		logTriangles = FALSE;
-		logVertex = FALSE;
-		logMatrix = FALSE;
+		logTriangles = false;
+		logVertex = false;
+		logMatrix = false;
 		//debuggerWinOpened = false;
-		return(TRUE);
+		return(true);
 		break;
 	}
 
-	return(FALSE);
+	return(false);
 }
 
 void __cdecl DebugThreadFunc( void* )
@@ -882,12 +882,12 @@ void __cdecl DebuggerAppendMsg(const char * Message, ...)
 
 		INT nLength = SendMessage ( textBox, WM_GETTEXTLENGTH, 0, 0 ) ;
 		SendMessage ( textBox, EM_SETSEL, -1, nLength );
-		SendMessage ( textBox, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)Buf2 );
+		SendMessage ( textBox, EM_REPLACESEL, (WPARAM)false, (LPARAM)Buf2 );
 		INT nNewLength = SendMessage ( textBox, WM_GETTEXTLENGTH, 0, 0 ) ;
 		if( nLength == nNewLength )
 		{
 			SendMessage ( textBox, EM_SETSEL, 0, nLength ) ;
-			SendMessage ( textBox, EM_REPLACESEL, FALSE, (LPARAM) "\n"  ) ;
+			SendMessage ( textBox, EM_REPLACESEL, false, (LPARAM) "\n"  ) ;
 		}
 	}
 
@@ -908,7 +908,7 @@ void DebuggerPause()
 		if( debuggerDrawRenderTexture )
 		{
 			g_pFrameBufferManager->DisplayRenderTexture(debuggerDrawRenderTextureNo);
-			debuggerDrawRenderTexture = FALSE;
+			debuggerDrawRenderTexture = false;
 		}
 		Sleep(100);
 	}

@@ -140,12 +140,11 @@ enum {
 };
 
 typedef struct {
-	BOOL	bEnableHacks;
-	BOOL	bEnableFog;
-	BOOL	bWinFrameMode;
-	BOOL	bMipMaps;
-	BOOL	bDisplayTooltip;
-	BOOL	bHideAdvancedOptions;
+	bool	bEnableHacks;
+	bool	bEnableFog;
+	bool	bWinFrameMode;
+	bool	bMipMaps;
+	bool	bHideAdvancedOptions;
 
 	uint32	bDisplayOnscreenFPS;
 	uint32	FPSColor;
@@ -153,9 +152,9 @@ typedef struct {
 	uint32	forceTextureFilter;
 	uint32	textureEnhancement;
 	uint32	textureEnhancementControl;
-	BOOL	bDumpTexturesToFiles;
-	BOOL	bLoadHiResTextures;
-	BOOL	bCacheHiResTextures;
+	bool	bDumpTexturesToFiles;
+	bool	bLoadHiResTextures;
+	bool	bCacheHiResTextures;
 
 	uint32	DirectXAntiAliasingValue;
 	uint32	DirectXAnisotropyValue;
@@ -194,15 +193,15 @@ typedef struct {
 
 extern FrameBufferOptions frameBufferOptions;
 
-BOOL InitConfiguration(void);
+bool InitConfiguration(void);
 
 typedef struct {
 	uint32	N64FrameBufferEmuType;
 	uint32	N64FrameBufferWriteBackControl;
 	uint32	N64RenderToTextureEmuType;
 	uint32	screenUpdateSetting;
-	BOOL 	bNormalBlender;
-	BOOL 	bDoubleSizeForSmallTxtrBuf;
+	bool 	bNormalBlender;
+	bool 	bDoubleSizeForSmallTxtrBuf;
 } RomOptions;
 
 extern RomOptions defaultRomOptions;
@@ -247,26 +246,26 @@ typedef struct
 	uint32	dwRenderToTextureOption;
 	uint32	dwScreenUpdateSetting;
 
-	// With FALSE as its default values
-	BOOL	bForceScreenClear;
-	BOOL	bEmulateClear;
-	BOOL	bForceDepthBuffer;
-	BOOL	bDisableBlender;
+	// With false as its default values
+	bool	bForceScreenClear;
+	bool	bEmulateClear;
+	bool	bForceDepthBuffer;
+	bool	bDisableBlender;
 
 	// Less useful options
-	BOOL	bDisableObjBG;
-	BOOL	bIncTexRectEdge;
-	BOOL	bZHack;
-	BOOL	bTextureScaleHack;
-	BOOL	bPrimaryDepthHack;
-	BOOL	bTexture1Hack;
-	BOOL 	bDisableCulling;
+	bool	bDisableObjBG;
+	bool	bIncTexRectEdge;
+	bool	bZHack;
+	bool	bTextureScaleHack;
+	bool	bPrimaryDepthHack;
+	bool	bTexture1Hack;
+	bool 	bDisableCulling;
 	int		VIWidth;
 	int		VIHeight;
 	uint32	UseCIWidthAndRatio;
 
-	BOOL	bTxtSizeMethod2;
-	BOOL	bEnableTxtLOD;
+	bool	bTxtSizeMethod2;
+	bool	bEnableTxtLOD;
 } GameSetting, *LPGAMESETTING;
 
 typedef struct

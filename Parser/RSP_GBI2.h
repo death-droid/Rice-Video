@@ -260,7 +260,7 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 	}
 	else
 	{
-		bool bTrisAdded = FALSE;
+		bool bTrisAdded = false;
 
 		// While the next command pair is Tri2, add vertices
 		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;

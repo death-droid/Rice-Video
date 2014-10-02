@@ -99,11 +99,11 @@ void RSP_S2DEX_OBJ_SPRITE(MicroCodeCommand command)
 
 
 	/*
-	static BOOL bWarned = FALSE;
+	static bool bWarned = false;
 	//if (!bWarned)
 	{
 		RSP_RDP_NOIMPL("RDP: RSP_S2DEX_OBJ_SPRITE (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
-		bWarned = TRUE;
+		bWarned = true;
 	}
 	*/
 

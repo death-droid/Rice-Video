@@ -102,11 +102,8 @@
 #define IDC_FASTER_LOADING_TILE         1105
 #define IDC_TEXTURE_SCALE_HACK          1106
 #define IDC_EMULATE_CLEAR               1107
-#define IDC_TOOLTIP                     1108
 #define IDC_DISABLE_BLENDER             1109
-#define IDC_SKIP_FRAME                  1110
 #define IDC_INCREASE_TEXTRECT_EDGE      1112
-#define IDC_SKIP_FRAME2                 1113
 #define IDC_Z_HACK                      1114
 #define IDC_FRAME_BUFFER_SETTING2       1115
 #define IDC_SCREEN_UPDATE_AT            1116

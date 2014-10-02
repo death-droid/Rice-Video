@@ -89,8 +89,8 @@ public:
 	StageOperate alphaOp;
 	uint32 dwTexture;	//Which texture to apply, 0 or 1
 	
-	BOOL operator!=(const CombineStage & cs) const { return !(operator==(cs)); }
-	BOOL operator==(const CombineStage & cs) const 
+	bool operator!=(const CombineStage & cs) const { return !(operator==(cs)); }
+	bool operator==(const CombineStage & cs) const 
 	{
 		return (
 			cs.colorOp.Arg1 == colorOp.Arg1 &&
@@ -123,24 +123,24 @@ public:
 	CombineStage stages[8];
 	uint32 TFactor;
 
-	BOOL operator!=(const SetCombineInfo & sci) const { return !(operator==(sci)); }
-	BOOL operator==(const SetCombineInfo & sci) const 
+	bool operator!=(const SetCombineInfo & sci) const { return !(operator==(sci)); }
+	bool operator==(const SetCombineInfo & sci) const 
 	{
 		LONG i;
 		
 		if (sci.nStages != nStages)
-			return FALSE;
+			return false;
 		
 		for (i = 0; i < nStages; i++)
 		{
 			if (sci.stages[i] != stages[i])
-				return FALSE;
+				return false;
 		}
 
 		if( sci.TFactor != TFactor )
-			return FALSE;
+			return false;
 
-		return TRUE;
+		return true;
 	}
 };
 

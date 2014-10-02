@@ -38,10 +38,10 @@ typedef struct {
 	uint16 Type;           /* Set to PLUGIN_TYPE_GFX */
 	char Name[100];      /* Name of the DLL */
 
-	/* If DLL supports memory these memory options then set them to TRUE or FALSE
+	/* If DLL supports memory these memory options then set them to true or false
 	   if it does not support it */
-	BOOL NormalMemory;    /* a normal uint8 array */ 
-	BOOL MemoryBswaped;  /* a normal uint8 array where the memory has been pre
+	bool NormalMemory;    /* a normal uint8 array */ 
+	bool MemoryBswaped;  /* a normal uint8 array where the memory has been pre
 	                          bswap on a dword (32 bits) boundry */
 } PLUGIN_INFO;
 
@@ -49,7 +49,7 @@ typedef struct {
 	HWND hWnd;			/* Render window */
 	HWND hStatusBar;    /* if render window does not have a status bar then this is NULL */
 
-	BOOL MemoryBswaped;    // If this is set to TRUE, then the memory has been pre
+	bool MemoryBswaped;    // If this is set to true, then the memory has been pre
 	                       //   bswap on a dword (32 bits) boundry 
 						   //	eg. the first 8 bytes are stored like this:
 	                       //        4 3 2 1   8 7 6 5
@@ -180,15 +180,15 @@ FUNC_TYPE(void) NAME_DEFINE(GetDllInfo) ( PLUGIN_INFO * PluginInfo );
 			uses. This is not called from the emulation thread.
   Input:    Gfx_Info is passed to this function which is defined
             above.
-  Output:   TRUE on success
-            FALSE on failure to initialise
+  Output:   true on success
+            false on failure to initialise
              
   ** note on interrupts **:
   To generate an interrupt set the appropriate bit in MI_INTR_REG
   and then call the function CheckInterrupts to tell the emulator
   that there is a waiting interrupt.
 *******************************************************************/ 
-FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX) (GFX_INFO Gfx_Info);
+FUNC_TYPE(bool) NAME_DEFINE(InitiateGFX) (GFX_INFO Gfx_Info);
 
 /******************************************************************
   Function: MoveScreen
