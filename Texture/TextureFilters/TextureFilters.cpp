@@ -422,12 +422,14 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				// fucking easy :-)
 				if( infos[k].crc32 == crc && infos[k].pal_crc32 == palcrc32 )
 				{
+
+					foundIdx = k;
+
 					// indeeed, the texture already exists
 					// microdev: MAYBE ADD CODE TO MOVE IT TO A 'DUBLICATE' FOLDER TO EASE WORK OF RETEXTURERS
 					// check if the WIP folder is currently treated
-					if(strstr(foldername, '\\'+ WIP_FOLDER) != 0)
+					if(strstr(foldername, '\\'+ WIP_FOLDER) == 0)
 					{
-						foundIdx = k;
 						// indeed! => indicate that
 						bWIPFolder = true;
 					}
@@ -942,7 +944,7 @@ int FindScaleFactor(ExtTxtrInfo &info, TxtrCacheEntry &entry)
  *         palette crc or a RGBA_PNG_FOR_ALL_CI texture has been found
  * return value: the index in "infos" where the corresponding hires texture has been found
  ********************************************************************************************************************/
-int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &entry, int &indexa, bool bForDump = false )
+int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &entry)
 {
 	// determine if texture is a color-indexed (CI) texture
 	bool bCI = (gRDP.otherMode.text_tlut>=2 || entry.ti.Format == TXT_FMT_CI || entry.ti.Format == TXT_FMT_RGBA) && entry.ti.Size <= TXT_SIZE_8b;
@@ -959,48 +961,17 @@ int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &e
 
 	// infos is the list containing the references to the detected external textures
 	// get the number of items contained in this list
-	int infosize = infos.size();
-	int indexb=-1;
-	// try to identify the external texture that
-	// corresponds to the original texture
-	indexa = infos.find(crc64a);		// For CI without pal CRC, and for RGBA_PNG_FOR_ALL_CI
+	int index=-1;
+
+	// If this is a color index texture, search for it
 	if( bCI )	
-		// If this is a color index texture, search for it.
-		indexb = infos.find(crc64b);	// For CI or PNG with pal CRC
+		index = infos.find(crc64b);	// For CI or PNG with pal CRC
+	else
+		index = infos.find(crc64a); // For CI without pal CRC, and for RGBA_PNG_FOR_ALL_CI
 
-	// did not found the ext. text.
-	if( indexa >= infosize )	
-		indexa = -1;
-	// did not found the ext. text. w/ sep. alpha channel
-	if( indexb >= infosize )	
-		indexb = -1;
-
-	int scaleShift = -1;
-
-	// found texture with sep. alpha channel
-	if( indexb >= 0 )
-	{
-		// determine the factor for scaling
-		scaleShift = FindScaleFactor(infos[indexb], entry);
-
-		// ok. the scale factor is supported. A valid replacement has been found
-		if( scaleShift >= 0 )
-			return indexb;
-	}
-
-	// if texture is 4bit, should be dumped and there is no match in the list of external textures
-	if( bForDump && bCI && indexb < 0)
-		// than return that there is no replacement & therefore texture can be dumped (microdev: not sure about that...)
-		return -1;
-
-	// texture has no separate alpha channel, try to find it in the ext. text. list
-	if( indexa >= 0 )	
-		scaleShift = FindScaleFactor(infos[indexa], entry);
-
-	// ok. the scale factor is supported. A valid replacement has been found
-	// this is a texture without ext. alpha channel
-	if( scaleShift >= 0 )
-		return indexa;
+	// ok, we have a valid index, lets roll with it
+	if( index >= 0 )	
+		return index;
 	// no luck at all. there is no valid replacement
 	else
 		return -1;
@@ -1013,10 +984,9 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 	if( pSrcTexture )
 	{
 		// Check the vector table
-		int ciidx;
-		if( CheckTextureInfos(gHiresTxtrInfos, entry, ciidx, true) >= 0 )
+		if( CheckTextureInfos(gHiresTxtrInfos, entry) >= 0 )
 			return;		// This texture already exists as a hires version, thus don't redump it.
-		else if( CheckTextureInfos(gTxtrDumpInfos, entry, ciidx, true) >= 0 )
+		else if( CheckTextureInfos(gTxtrDumpInfos, entry) >= 0 )
 			return;		// This texture has been dumped
 
 		char filename[256];
@@ -1198,11 +1168,9 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 		SAFE_DELETE(entry.pEnhancedTexture);
 	}
 
-	int ciidx;
 	// search the index of the appropriate hires replacement texture
 	// in the list containing the infos of the external textures
-	// ciidx is not needed here (just needed for dumping)
-	int idx = CheckTextureInfos(gHiresTxtrInfos, entry, ciidx, false);//backtomenow
+	int idx = CheckTextureInfos(gHiresTxtrInfos, entry);//backtomenow
 	if( idx < 0 )
 	{
 		// there is no hires replacement => indicate that
@@ -1228,7 +1196,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 		return;
 	}
 
-	int scale = 1 <<gHiresTxtrInfos[idx].scaleShift;
+	int scale = 1 << FindScaleFactor(gHiresTxtrInfos[idx], entry);
 
 	int input_height_shift = gHiresTxtrInfos[idx].height - entry.ti.HeightToLoad * scale;
 	int input_pitch_a = gHiresTxtrInfos[idx].width;
@@ -1360,6 +1328,7 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	{
 		strcpy(filename_alpha, "");
 	}
+
 	// init the pointer to the RGB texture data
 	ExtTexInfo.pHiresTextureRGB = NULL;
 	// init the pointer to the alpha channel data
