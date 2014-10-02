@@ -723,7 +723,6 @@ void CTextureManager::ExpandTexture(TxtrCacheEntry * pEntry, uint32 sizeToLoad, 
 		return;
 	}
 
-
 	if( mask == 0 )
 	{
 		// Clamp

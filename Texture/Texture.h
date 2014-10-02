@@ -26,20 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ///////////////  created so far.
 class CTexture;
 
-typedef struct {
+struct DrawInfo{
 	unsigned int	dwWidth;			// Describes the width of the real texture area. Use lPitch to move between successive lines
 	unsigned int	dwHeight;			// Describes the height of the real texture area
 	unsigned int	dwCreatedWidth;		// Describes the width of the created texture area. Use lPitch to move between successive lines
 	unsigned int	dwCreatedHeight;	// Describes the height of the created texture area
 	LONG		lPitch;				// Specifies the number of bytes on each row (not necessarily bitdepth*width/8)
 	VOID		*lpSurface;			// Pointer to the top left pixel of the image
-} DrawInfo;
-
-
-enum TextureFmt {
-	TEXTURE_FMT_A8R8G8B8,
-	TEXTURE_FMT_A4R4G4B4,
-	TEXTURE_FMT_UNKNOWN,
 };
 
 enum TextureUsage {

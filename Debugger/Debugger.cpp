@@ -266,23 +266,11 @@ void DumpTlut(uint16* palAddr)
 	}
 }
 
-extern LPCSTR ucodeNames_GBI1[256];
-extern LPCSTR ucodeNames_GBI2[256];
-
 void DumpDlistAt(uint32 dwPC)
 {
 	uint32 word0, word1, opcode;
 	LPCSTR *name;
-	switch( gRSP.ucode )
-	{
-	case 2:
-	case 10:
-	//case 8:
-		name=ucodeNames_GBI2;
-		break;
-	default:
-		name=ucodeNames_GBI1;
-	}
+
 
 	DebuggerAppendMsg("\n\n");
 	//if( dwPC>100 ) dwPC -= 40;

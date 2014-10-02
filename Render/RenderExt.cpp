@@ -455,14 +455,12 @@ void CRender::DrawFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 		if( useVIreg )
 		{
 			// Draw the whole frame buffer
-			DrawSimple2DTexture(0, 0, windowSetting.uViWidth, windowSetting.uViHeight, 
-				0, 0, 1/pTexture->m_fXScale, 1/pTexture->m_fYScale, 0xFFFFFFFF, 0, 1);
+			DrawSimple2DTexture(0, 0, windowSetting.uViWidth, windowSetting.uViHeight, 0, 0, 1/pTexture->m_fXScale, 1/pTexture->m_fYScale, 0xFFFFFFFF, 0, 1);
 		}
 		else
 		{
 			// Draw a small texture in frame buffer
-			DrawSimple2DTexture((float)left, (float)top, (float)(left+width), (float)(top+height), 
-				0, 0, 1/pTexture->m_fXScale, 1/pTexture->m_fYScale, 0xFFFFFFFF, 0, 1);
+			DrawSimple2DTexture((float)left, (float)top, (float)(left+width), (float)(top+height), 0, 0, 1/pTexture->m_fXScale, 1/pTexture->m_fYScale, 0xFFFFFFFF, 0, 1);
 		}
 	}
 
