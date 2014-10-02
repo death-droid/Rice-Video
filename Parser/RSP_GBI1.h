@@ -130,7 +130,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 	float vtxdepth = g_vecProjected[vtx].z/g_vecProjected[vtx].w;
 
 #ifdef _DEBUG
-	if( debuggerEnableZBuffer==false || vtxdepth <= (s32)command.inst.cmd1 || g_curRomInfo.bForceDepthBuffer )
+	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)command.inst.cmd1 || g_curRomInfo.bForceDepthBuffer )
 #else
 	if( vtxdepth <= (s32)(command.inst.cmd1) || g_curRomInfo.bForceDepthBuffer )
 #endif
@@ -378,7 +378,7 @@ void RSP_GBI1_Line3D(MicroCodeCommand command)
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
-	bool bTrisAdded = false;
+	bool bTrisAdded = FALSE;
 
 	if( command.gbi1line3d.v3 == 0 )
 	{

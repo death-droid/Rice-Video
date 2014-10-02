@@ -55,7 +55,7 @@ uint32		CGraphicsContext::m_dwWindowStyle=0;     // Saved window style for mode 
 uint32		CGraphicsContext::m_dwWindowExStyle=0;   // Saved window style for mode switches
 uint32		CGraphicsContext::m_dwStatusWindowStyle=0;     // Saved window style for mode switches
 
-int CALLBACK MyEnumChildProc(HWND hwnd, LPARAM lParam)
+BOOL CALLBACK MyEnumChildProc(HWND hwnd, LPARAM lParam)
 {
 	int id = GetDlgCtrlID(hwnd);
 	if( id != 0 )
@@ -72,7 +72,7 @@ int CALLBACK MyEnumChildProc(HWND hwnd, LPARAM lParam)
 		}
 	}
 
-	return true;
+	return TRUE;
 }
 
 void CGraphicsContext::InitWindowInfo()
@@ -110,7 +110,7 @@ void CGraphicsContext::InitWindowInfo()
 }
 
 
-bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, uint32 dwHeight, bool bWindowed )
+bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, uint32 dwHeight, BOOL bWindowed )
 {
 	if( windowSetting.bDisplayFullscreen )
 	{
@@ -138,7 +138,7 @@ bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, ui
 	rcScreen.bottom += windowSetting.toolbarHeight;
 
 	// Calculate window size to give desired window size...
-	AdjustWindowRectEx(&rcScreen, m_dwWindowStyle & (~(WS_THICKFRAME|WS_MAXIMIZEBOX)), true, m_dwWindowExStyle);
+	AdjustWindowRectEx(&rcScreen, m_dwWindowStyle & (~(WS_THICKFRAME|WS_MAXIMIZEBOX)), TRUE, m_dwWindowExStyle);
 	SetWindowPos(m_hWnd, 0, rcScreen.left, rcScreen.top, rcScreen.right-rcScreen.left, rcScreen.bottom-rcScreen.top,
 		SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
 
@@ -148,11 +148,11 @@ bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, ui
 
 	if( !m_bWindowed )
 	{
-		ShowCursor( false );
+		ShowCursor( FALSE );
 	}
 	else
 	{
-		ShowCursor( true );
+		ShowCursor( TRUE );
 	}
 
 	g_pFrameBufferManager->Initialize();

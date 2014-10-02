@@ -49,16 +49,16 @@ bool CRender::IsAvailable()
 CRender::CRender() :
 	m_fScreenViewportMultX(2.0f),
 	m_fScreenViewportMultY(2.0f),
-	m_bZUpdate(false),
-	m_bZCompare(false),
+	m_bZUpdate(FALSE),
+	m_bZCompare(FALSE),
 	m_dwZBias(0),
 
-	m_dwTexturePerspective(false),
-	m_bAlphaTestEnable(false),
+	m_dwTexturePerspective(FALSE),
+	m_bAlphaTestEnable(FALSE),
 
 	m_dwAlpha(0xFF),
 
-	m_bBlendModeValid(false),
+	m_bBlendModeValid(FALSE),
 	
 	m_dwMinFilter(D3DTEXF_POINT),
 	m_dwMagFilter(D3DTEXF_POINT)
@@ -251,7 +251,7 @@ void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)
 	if( m_Mux != tempmux )
 	{
 		m_Mux = tempmux;
-		m_bBlendModeValid = false;
+		m_bBlendModeValid = FALSE;
 		m_pColorCombiner->UpdateCombiner(dwMux0, dwMux1);
 	}
 }
@@ -326,7 +326,7 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 	}
 	else
 	{
-		ZBufferEnable( false );
+		ZBufferEnable( FALSE );
 
 		m_fillRectVtx[0].x = ViewPortTranslatei_x(nX0);
 		m_fillRectVtx[0].y = ViewPortTranslatei_y(nY0);
@@ -336,7 +336,7 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 		SetCombinerAndBlender();
 
 		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			ZBufferEnable(false);
+			ZBufferEnable(FALSE);
 		else
 			dwColor = gRDP.primitiveColor;
 
@@ -570,7 +570,7 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY || !gRDP.otherMode.z_cmp )
 	{
-		ZBufferEnable(false);
+		ZBufferEnable(FALSE);
 	}
 
 
@@ -775,7 +775,7 @@ bool CRender::TexRectFlip(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, flo
 
 	PrepareTextures();
 
-	if( gRDP.otherMode.depth_source == 0 )	ZBufferEnable( false );
+	if( gRDP.otherMode.depth_source == 0 )	ZBufferEnable( FALSE );
 
 	float widthDiv = g_textures[gRSP.curTile].m_fTexWidth;
 	float heightDiv = g_textures[gRSP.curTile].m_fTexHeight;
@@ -1002,7 +1002,7 @@ void CRender::SetFogFlagForNegativeW()
 	for (uint32 i = 0; i < gRSP.numVertices; i++) 
 	{
 		if( g_vtxBuffer[i].rhw < 0 )
-			flag = false;
+			flag = FALSE;
 	}
 
 	TurnFogOnOff(flag);
@@ -1051,7 +1051,7 @@ bool CRender::DrawTriangles()
 {
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-	DEBUGGER_ONLY_IF( (!debuggerEnableZBuffer), {ZBufferEnable( false );} );
+	DEBUGGER_ONLY_IF( (!debuggerEnableZBuffer), {ZBufferEnable( FALSE );} );
 
 	if( status.bVIOriginIsUpdated == true && currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_1ST_PRIMITIVE )
 	{
@@ -1166,7 +1166,7 @@ bool CRender::DrawTriangles()
 
 	if( status.bHandleN64RenderTexture && g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_8b )
 	{
-		ZBufferEnable(false);
+		ZBufferEnable(FALSE);
 	}
 
 	ApplyScissorWithClipRatio();
@@ -1472,24 +1472,24 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 		{
 			ForceAlphaRef(128);	// Strange, I have to use value=2 for pixel shader combiner for Nvidia FX5200
 								// for other video cards, value=1 is good enough.
-			SetAlphaTestEnable(true);
+			SetAlphaTestEnable(TRUE);
 		}
 		else
 		{
-			SetAlphaTestEnable(false);
+			SetAlphaTestEnable(FALSE);
 		}
 	}
 	else if ( gRDP.otherMode.alpha_compare == 3 )
 	{
 		//RDP_ALPHA_COMPARE_DITHER
-		SetAlphaTestEnable(false);
+		SetAlphaTestEnable(FALSE);
 	}
 	else
 	{
 		if( (gRDP.otherMode.alpha_cvg_sel ) && !gRDP.otherMode.cvg_x_alpha )
 		{
 			// Use CVG for pixel alpha
-			SetAlphaTestEnable(false);
+			SetAlphaTestEnable(FALSE);
 		}
 		else
 		{
@@ -1498,21 +1498,21 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 				ForceAlphaRef(1);
 			else
 				ForceAlphaRef(m_dwAlpha);
-			SetAlphaTestEnable(true);
+			SetAlphaTestEnable(TRUE);
 		}
 	}
 
 	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
 		gRDP.tnl.TriCull && gRDP.otherMode.aa_en && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd)
 	{
-		SetZCompare(false);
+		SetZCompare(FALSE);
 	}
 
 
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
 		// Disable zbuffer for COPY and FILL mode
-		SetZCompare(false);
+		SetZCompare(FALSE);
 	}
 	else
 	{
@@ -1524,8 +1524,8 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
 		gRSP.bCullFront && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd )//&& gRDP.otherMode.aa_en )
 	{
-		SetZCompare(false);
-		SetZUpdate(false);
+		SetZCompare(FALSE);
+		SetZUpdate(FALSE);
 	}
 	*/
 }

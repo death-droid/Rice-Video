@@ -32,27 +32,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern bool debuggerWinOpened;
 
-extern bool logCombiners;
-extern bool logTriangles;
-extern bool logVertex;
-extern bool logWarning;
-extern bool logTextures;
-extern bool logTextureBuffer;
-extern bool logMatrix;
-extern bool logToScreen;
-extern bool logToFile;
-extern bool logUcodes;
-extern bool logMicrocode;
-extern bool logFog;
-extern bool logDetails;
+extern BOOL logCombiners;
+extern BOOL logTriangles;
+extern BOOL logVertex;
+extern BOOL logWarning;
+extern BOOL logTextures;
+extern BOOL logTextureBuffer;
+extern BOOL logMatrix;
+extern BOOL logToScreen;
+extern BOOL logToFile;
+extern BOOL logUcodes;
+extern BOOL logMicrocode;
+extern BOOL logFog;
+extern BOOL logDetails;
 
 
-extern bool debuggerEnableTexture;
-extern bool debuggerEnableZBuffer;
-extern bool debuggerEnableCullFace;
-extern bool debuggerEnableTestTris;
-extern bool debuggerEnableAlphaTest;
-extern bool debuggerContinueWithUnknown;
+extern BOOL debuggerEnableTexture;
+extern BOOL debuggerEnableZBuffer;
+extern BOOL debuggerEnableCullFace;
+extern BOOL debuggerEnableTestTris;
+extern BOOL debuggerEnableAlphaTest;
+extern BOOL debuggerContinueWithUnknown;
 
 extern bool debuggerPause;
 extern bool pauseAtNext;

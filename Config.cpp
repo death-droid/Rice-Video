@@ -123,13 +123,10 @@ void GenerateCurrentRomOptions();
 
 HWND	g_hwndTT=NULL;
 HWND	g_hwndDlg=NULL;
-HHOOK	g_hhk = NULL;
 
 int DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
 int DialogToStartRomIsNotRunning = PSH_OPTIONS;
 HWND hPropSheetHwnd = NULL;
-
-extern "C" int __stdcall EnumChildProc(HWND hwndCtrl, LPARAM lParam);
 
 inline void ShowItem(HWND hDlg, UINT item, bool flag)
 {
@@ -292,7 +289,7 @@ void ReadConfiguration(void)
 	GetPluginDir(name);
 	strcat(name, CONFIG_FILE);
 
-	options.bEnableHacks = true;
+	options.bEnableHacks = TRUE;
 
 	defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_CHANGE;
 	//defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN;
@@ -303,18 +300,18 @@ void ReadConfiguration(void)
 	FILE *f = fopen(name, "rb");
 	if(!f)
 	{
-		options.bEnableFog = true;
-		options.bWinFrameMode = false;
-		options.bMipMaps = true;
+		options.bEnableFog = TRUE;
+		options.bWinFrameMode = FALSE;
+		options.bMipMaps = TRUE;
 		options.forceTextureFilter = 0;
-		options.bLoadHiResTextures = false;
+		options.bLoadHiResTextures = FALSE;
 		// set caching by default to "off"
-		options.bCacheHiResTextures = false;
-		options.bDumpTexturesToFiles = false;
+		options.bCacheHiResTextures = FALSE;
+		options.bDumpTexturesToFiles = FALSE;
 		options.textureEnhancement = 0;
 		options.textureEnhancementControl = 0;
-		options.bHideAdvancedOptions = true;
-		options.bDisplayOnscreenFPS = false;
+		options.bHideAdvancedOptions = TRUE;
+		options.bDisplayOnscreenFPS = FALSE;
 		options.DirectXAntiAliasingValue = 0;
 		options.DirectXDevice = 0;	// HAL device
 		options.DirectXAnisotropyValue = 0;
@@ -326,8 +323,8 @@ void ReadConfiguration(void)
 		defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
 		defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
 
-		defaultRomOptions.bNormalBlender = false;
-		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = false;
+		defaultRomOptions.bNormalBlender = FALSE;
+		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
 		windowSetting.uFullScreenRefreshRate = 0;	// 0 is the default value, means to use Window default frequency
 		windowSetting.uScreenScaleMode = 0;
 
@@ -379,7 +376,7 @@ void ReadConfiguration(void)
 }
 	
 //---------------------------------------------------------------------------------------
-bool InitConfiguration(void)
+BOOL InitConfiguration(void)
 {
 	//Initialize this DLL
 	GetPluginDir(szIniFileName);
@@ -389,17 +386,17 @@ bool InitConfiguration(void)
 	perRomIni.LoadFile(szIniFileName);
 
 	ReadConfiguration();
-	return true;
+	return TRUE;
 }
 
 
 void GenerateCurrentRomOptions()
 {
-	currentRomOptions.N64FrameBufferEmuType          = g_curRomInfo.dwFrameBufferOption;	
-	currentRomOptions.N64FrameBufferWriteBackControl = defaultRomOptions.N64FrameBufferWriteBackControl;	
-	currentRomOptions.N64RenderToTextureEmuType	     = g_curRomInfo.dwRenderToTextureOption;	
-	currentRomOptions.screenUpdateSetting		     = g_curRomInfo.dwScreenUpdateSetting;
-	currentRomOptions.bNormalBlender			     = g_curRomInfo.dwNormalBlender;
+	currentRomOptions.N64FrameBufferEmuType		=g_curRomInfo.dwFrameBufferOption;	
+	currentRomOptions.N64FrameBufferWriteBackControl		=defaultRomOptions.N64FrameBufferWriteBackControl;	
+	currentRomOptions.N64RenderToTextureEmuType	=g_curRomInfo.dwRenderToTextureOption;	
+	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
+	currentRomOptions.bNormalBlender			=g_curRomInfo.dwNormalBlender;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
 
@@ -540,19 +537,13 @@ void GenerateCurrentRomOptions()
 		options.enableHackForGames = HACK_FOR_MARIO_KART;
 	}
 
-	if( currentRomOptions.N64FrameBufferEmuType == 0 )		
-		currentRomOptions.N64FrameBufferEmuType = defaultRomOptions.N64FrameBufferEmuType;
-	else 
-		currentRomOptions.N64FrameBufferEmuType--;
-	if( currentRomOptions.N64RenderToTextureEmuType == 0 )		
-		currentRomOptions.N64RenderToTextureEmuType = defaultRomOptions.N64RenderToTextureEmuType;
+	if( currentRomOptions.N64FrameBufferEmuType == 0 )		currentRomOptions.N64FrameBufferEmuType = defaultRomOptions.N64FrameBufferEmuType;
+	else currentRomOptions.N64FrameBufferEmuType--;
+	if( currentRomOptions.N64RenderToTextureEmuType == 0 )		currentRomOptions.N64RenderToTextureEmuType = defaultRomOptions.N64RenderToTextureEmuType;
 	else currentRomOptions.N64RenderToTextureEmuType--;
-	if( currentRomOptions.screenUpdateSetting == 0 )		
-		currentRomOptions.screenUpdateSetting = defaultRomOptions.screenUpdateSetting;
-	if( currentRomOptions.bNormalBlender == 0 )			
-		currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
-	else
-		currentRomOptions.bNormalBlender;
+	if( currentRomOptions.screenUpdateSetting == 0 )		currentRomOptions.screenUpdateSetting = defaultRomOptions.screenUpdateSetting;
+	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
+	else currentRomOptions.bNormalBlender--;
 
 	GenerateFrameBufferOptions();
 
@@ -568,30 +559,30 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	// Generate the CRC-ID for this rom:
 	wsprintf(szCRC, "%08x%08x-%02x", pGameSetting->romheader.dwCRC1,  pGameSetting->romheader.dwCRC2, pGameSetting->romheader.nCountryID);
 
-	pGameSetting->bDisableCulling			= perRomIni.GetBoolValue(szCRC, "bDisableCulling", false);
-	pGameSetting->bIncTexRectEdge			= perRomIni.GetBoolValue(szCRC, "bIncTexRectEdge", false);
-	pGameSetting->bZHack					= perRomIni.GetBoolValue(szCRC, "bZHack", false);
-	pGameSetting->bTextureScaleHack			= perRomIni.GetBoolValue(szCRC, "bTextureScaleHack", false);
-	pGameSetting->bPrimaryDepthHack			= perRomIni.GetBoolValue(szCRC, "bPrimaryDepthHack", false);
-	pGameSetting->bTexture1Hack				= perRomIni.GetBoolValue(szCRC, "bTexture1Hack", false);
+	pGameSetting->bDisableCulling		= perRomIni.GetBoolValue(szCRC, "bDisableCulling", false);
+	pGameSetting->bIncTexRectEdge		= perRomIni.GetBoolValue(szCRC, "bIncTexRectEdge", false);
+	pGameSetting->bZHack				= perRomIni.GetBoolValue(szCRC, "bZHack", false);
+	pGameSetting->bTextureScaleHack		= perRomIni.GetBoolValue(szCRC, "bTextureScaleHack", false);
+	pGameSetting->bPrimaryDepthHack		= perRomIni.GetBoolValue(szCRC, "bPrimaryDepthHack", false);
+	pGameSetting->bTexture1Hack			= perRomIni.GetBoolValue(szCRC, "bTexture1Hack", false);
 
-	pGameSetting->VIWidth					= perRomIni.GetLongValue(szCRC, "VIWidth", -1);
-	pGameSetting->VIHeight					= perRomIni.GetLongValue(szCRC, "VIHeight", -1);
-	pGameSetting->UseCIWidthAndRatio		= perRomIni.GetLongValue(szCRC, "UseCIWidthAndRatio", NOT_USE_CI_WIDTH_AND_RATIO);
-	pGameSetting->bTxtSizeMethod2			= perRomIni.GetBoolValue(szCRC, "bTxtSizeMethod2", false);
-	pGameSetting->bEnableTxtLOD				= perRomIni.GetBoolValue(szCRC, "bEnableTxtLOD", false);
+	pGameSetting->VIWidth				= perRomIni.GetLongValue(szCRC, "VIWidth", -1);
+	pGameSetting->VIHeight				= perRomIni.GetLongValue(szCRC, "VIHeight", -1);
+	pGameSetting->UseCIWidthAndRatio	= perRomIni.GetLongValue(szCRC, "UseCIWidthAndRatio", NOT_USE_CI_WIDTH_AND_RATIO);
+	pGameSetting->bTxtSizeMethod2		= perRomIni.GetBoolValue(szCRC, "bTxtSizeMethod2", false);
+	pGameSetting->bEnableTxtLOD			= perRomIni.GetBoolValue(szCRC, "bEnableTxtLOD", false);
 
-	pGameSetting->bEmulateClear				= perRomIni.GetBoolValue(szCRC, "bEmulateClear", false);
-	pGameSetting->bForceScreenClear			= perRomIni.GetBoolValue(szCRC, "bForceScreenClear", false);
+	pGameSetting->bEmulateClear			= perRomIni.GetBoolValue(szCRC, "bEmulateClear", false);
+	pGameSetting->bForceScreenClear		= perRomIni.GetBoolValue(szCRC, "bForceScreenClear", false);
 
-	pGameSetting->bDisableBlender			= perRomIni.GetBoolValue(szCRC, "bDisableBlender", false);
-	pGameSetting->bForceDepthBuffer			= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
-	pGameSetting->bDisableObjBG				= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
+	pGameSetting->bDisableBlender		= perRomIni.GetBoolValue(szCRC, "bDisableBlender", false);
+	pGameSetting->bForceDepthBuffer		= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
+	pGameSetting->bDisableObjBG			= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
 
-	pGameSetting->dwNormalBlender			= perRomIni.GetLongValue(szCRC, "dwNormalBlender", 0);
-	pGameSetting->dwFrameBufferOption		= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
+	pGameSetting->dwNormalBlender		= perRomIni.GetLongValue(szCRC, "dwNormalBlender", 0);
+	pGameSetting->dwFrameBufferOption	= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
 	pGameSetting->dwRenderToTextureOption	= perRomIni.GetLongValue(szCRC, "dwRenderToTextureOption", 0);
-	pGameSetting->dwScreenUpdateSetting	    = perRomIni.GetLongValue(szCRC, "dwScreenUpdateSetting", 0);
+	pGameSetting->dwScreenUpdateSetting	= perRomIni.GetLongValue(szCRC, "dwScreenUpdateSetting", 0);
 }
 
 void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
@@ -600,26 +591,26 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	// Generate the CRC-ID for this rom:
 	wsprintf(szCRC, "%08x%08x-%02x", pGameSetting->romheader.dwCRC1,  pGameSetting->romheader.dwCRC2, pGameSetting->romheader.nCountryID);
 
-	perRomIni.SetLongValue(szCRC, "bDisableCulling",		 pGameSetting->bDisableCulling);
-	perRomIni.SetLongValue(szCRC, "bEmulateClear",		     pGameSetting->bEmulateClear);
-	perRomIni.SetLongValue(szCRC, "dwNormalBlender",		 pGameSetting->dwNormalBlender);
-	perRomIni.SetLongValue(szCRC, "bDisableBlender",		 pGameSetting->bDisableBlender);
-	perRomIni.SetLongValue(szCRC, "bForceScreenClear",		 pGameSetting->bForceScreenClear);
-	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer",		 pGameSetting->bForceDepthBuffer);
-	perRomIni.SetLongValue(szCRC, "bDisableObjBG",			 pGameSetting->bDisableObjBG);
-	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption",	 pGameSetting->dwFrameBufferOption);
+	perRomIni.SetLongValue(szCRC, "bDisableCulling", pGameSetting->bDisableCulling);
+	perRomIni.SetLongValue(szCRC, "bEmulateClear", pGameSetting->bEmulateClear);
+	perRomIni.SetLongValue(szCRC, "dwNormalBlender", pGameSetting->dwNormalBlender);
+	perRomIni.SetLongValue(szCRC, "bDisableBlender", pGameSetting->bDisableBlender);
+	perRomIni.SetLongValue(szCRC, "bForceScreenClear", pGameSetting->bForceScreenClear);
+	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer", pGameSetting->bForceDepthBuffer);
+	perRomIni.SetLongValue(szCRC, "bDisableObjBG", pGameSetting->bDisableObjBG);
+	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption", pGameSetting->dwFrameBufferOption);
 	perRomIni.SetLongValue(szCRC, "dwRenderToTextureOption", pGameSetting->dwRenderToTextureOption);
-	perRomIni.SetLongValue(szCRC, "dwScreenUpdateSetting",	 pGameSetting->dwScreenUpdateSetting);
-	perRomIni.SetLongValue(szCRC, "bIncTexRectEdge",		 pGameSetting->bIncTexRectEdge);
-	perRomIni.SetLongValue(szCRC, "bZHack",					 pGameSetting->bZHack);
-	perRomIni.SetLongValue(szCRC, "bTextureScaleHack",		 pGameSetting->bTextureScaleHack);
-	perRomIni.SetLongValue(szCRC, "bPrimaryDepthHack",		 pGameSetting->bPrimaryDepthHack);
-	perRomIni.SetLongValue(szCRC, "bTexture1Hack",			 pGameSetting->bTexture1Hack);
-	perRomIni.SetLongValue(szCRC, "VIWidth",				 pGameSetting->VIWidth);
-	perRomIni.SetLongValue(szCRC, "VIHeight",				 pGameSetting->VIHeight);
-	perRomIni.SetLongValue(szCRC, "UseCIWidthAndRatio",		 pGameSetting->UseCIWidthAndRatio);
-	perRomIni.SetLongValue(szCRC, "bTxtSizeMethod2",		 pGameSetting->bTxtSizeMethod2);
-	perRomIni.SetLongValue(szCRC, "bEnableTxtLOD",			 pGameSetting->bEnableTxtLOD);
+	perRomIni.SetLongValue(szCRC, "dwScreenUpdateSetting", pGameSetting->dwScreenUpdateSetting);
+	perRomIni.SetLongValue(szCRC, "bIncTexRectEdge", pGameSetting->bIncTexRectEdge);
+	perRomIni.SetLongValue(szCRC, "bZHack", pGameSetting->bZHack);
+	perRomIni.SetLongValue(szCRC, "bTextureScaleHack", pGameSetting->bTextureScaleHack);
+	perRomIni.SetLongValue(szCRC, "bPrimaryDepthHack", pGameSetting->bPrimaryDepthHack);
+	perRomIni.SetLongValue(szCRC, "bTexture1Hack", pGameSetting->bTexture1Hack);
+	perRomIni.SetLongValue(szCRC, "VIWidth", pGameSetting->VIWidth);
+	perRomIni.SetLongValue(szCRC, "VIHeight", pGameSetting->VIHeight);
+	perRomIni.SetLongValue(szCRC, "UseCIWidthAndRatio", pGameSetting->UseCIWidthAndRatio);
+	perRomIni.SetLongValue(szCRC, "bTxtSizeMethod2", pGameSetting->bTxtSizeMethod2);
+	perRomIni.SetLongValue(szCRC, "bEnableTxtLOD", pGameSetting->bEnableTxtLOD);
 	perRomIni.SaveFile(szIniFileName);
 
 	//Ensure that we now have the up to date settings stored in memory by flushing out the current ones and reloading the file
@@ -628,7 +619,7 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	TRACE0("Rom option is changed and saved");
 }
 
-///////////////////////////////////////////////
+///////////////////////////////////////
 //// Constructors / Deconstructors
 ///////////////////////////////////////////////
 
@@ -829,14 +820,12 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		if( status.bGameIsRunning )
 		{
 			item = GetDlgItem(hDlg, IDC_RESOLUTION_WINDOW_MODE);
-			EnableWindow(item, false);
+			EnableWindow(item, FALSE);
 		}
 
-        return(true);
+        return(TRUE);
 
     case WM_DESTROY:
-		if (g_hhk) UnhookWindowsHookEx (g_hhk);
-		g_hhk = NULL;
 		g_hwndDlg = NULL;
 		return 0;
 
@@ -849,23 +838,25 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 			case PSN_SETACTIVE :
 				if( options.bHideAdvancedOptions )
 				{
-					ShowItem(hDlg, IDC_FOG, false);
-					ShowItem(hDlg, IDC_WINFRAME_MODE, false);
+					ShowItem(hDlg, IDC_FOG, FALSE);
+					ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
+					ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
 				}
 				else
 				{
-					ShowItem(hDlg, IDC_FOG, true);
-					ShowItem(hDlg, IDC_WINFRAME_MODE, true);
+					ShowItem(hDlg, IDC_FOG, TRUE);
+					ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
+					ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
 				}
 
 				if(status.bGameIsRunning)
@@ -878,7 +869,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				return 0;
 			}
 		}
-		return(true);
+		return(TRUE);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -887,13 +878,15 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			if( options.bHideAdvancedOptions )
 			{
-				ShowItem(hDlg, IDC_FOG, false);
-				ShowItem(hDlg, IDC_WINFRAME_MODE, false);
+				ShowItem(hDlg, IDC_FOG, FALSE);
+				ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
+				ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
 			}
 			else
 			{
-				ShowItem(hDlg, IDC_FOG, true);
-				ShowItem(hDlg, IDC_WINFRAME_MODE, true);
+				ShowItem(hDlg, IDC_FOG, TRUE);
+				ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
+				ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
 			}
 			WriteConfiguration();
 			break;
@@ -927,20 +920,20 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
 
 			WriteConfiguration();
-			EndDialog(hDlg, true);
+			EndDialog(hDlg, TRUE);
 
-			return(true);
+			return(TRUE);
 
 		case IDCANCEL:
-			EndDialog(hDlg, true);
-			return(true);
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 		case IDC_ABOUT:
 			DllAbout ( hDlg );
 			break;
 	    }
     }
 
-    return false;
+    return FALSE;
 }
 LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
@@ -963,13 +956,13 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		}
 
 		item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-		SendMessage(item,TBM_SETRANGE,(WPARAM) true,(LPARAM) MAKELONG(0, options.DirectXMaxFSAA));
+		SendMessage(item,TBM_SETRANGE,(WPARAM) TRUE,(LPARAM) MAKELONG(0, options.DirectXMaxFSAA));
 		step = max(options.DirectXMaxFSAA/4, 1);
 		SendMessage(item,TBM_SETPAGESIZE,0,(LPARAM) step);
 
 		step = max(options.DirectXMaxAnisotropy/4, 1);
 		item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-		SendMessage(item,TBM_SETRANGE,(WPARAM) true,(LPARAM) MAKELONG(0, options.DirectXMaxAnisotropy));
+		SendMessage(item,TBM_SETRANGE,(WPARAM) TRUE,(LPARAM) MAKELONG(0, options.DirectXMaxAnisotropy));
 		SendMessage(item,TBM_SETPAGESIZE,0,(LPARAM) step);
 
 		if( options.DirectXAntiAliasingValue > options.DirectXMaxFSAA )
@@ -979,8 +972,8 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		}
 
 #ifndef _DEBUG
-		ShowItem(hDlg, IDC_DX_DEVICE, false);
-		ShowItem(hDlg, IDC_DX_DEVICE_TEXT, false);
+		ShowItem(hDlg, IDC_DX_DEVICE, FALSE);
+		ShowItem(hDlg, IDC_DX_DEVICE_TEXT, FALSE);
 #endif
 
 		sprintf(generalText,"%08X", options.FPSColor);
@@ -992,10 +985,10 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		sprintf(generalText, "Full Screen Anti-Aliasing: %d X", options.DirectXAntiAliasingValue);
 		SetWindowText(item,generalText);
 		item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-		SendMessage(item, TBM_SETPOS, (WPARAM)true, (LPARAM)options.DirectXAntiAliasingValue);
+		SendMessage(item, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAntiAliasingValue);
 		if( options.DirectXMaxFSAA == 0 || status.bGameIsRunning )
 		{
-			EnableWindow(item, false);
+			EnableWindow(item, FALSE);
 		}
 
 		item = GetDlgItem(hDlg, IDC_ANTI_ALIASING_MAX_TEXT);
@@ -1013,16 +1006,16 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		sprintf(generalText, "Anisotropic Filtering: %d X", options.DirectXAnisotropyValue);
 		SetWindowText(item,generalText);
 		item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-		SendMessage(item, TBM_SETPOS, (WPARAM)true, (LPARAM)options.DirectXAnisotropyValue);
+		SendMessage(item, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAnisotropyValue);
 		if( options.DirectXMaxAnisotropy == 0 || status.bGameIsRunning )
 		{
-			EnableWindow(item, false);
+			EnableWindow(item, FALSE);
 		}
 		item = GetDlgItem(hDlg, IDC_ANISOTROPIC_MAX_TEXT);
 		sprintf(generalText, "%d X", options.DirectXMaxAnisotropy);
 		SetWindowText(item,generalText);
 
-		return(true);
+		return(TRUE);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1033,35 +1026,35 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			{
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-				EndDialog(lpnm->hwndFrom, true);
+				EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 
 			case PSN_RESET :
 				//Handle a Cancel button click, if necessary
-				EndDialog(lpnm->hwndFrom, true);
+				EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 			case PSN_SETACTIVE :
 				if( options.bHideAdvancedOptions )
 				{
-					ShowItem(hDlg, IDC_SHOW_FPS, false);
-					ShowItem(hDlg, IDC_FPS_COLOR, false);
-					ShowItem(hDlg, IDC_SETTING_LABEL2, false);
-					ShowItem(hDlg, IDC_SETTING_LABEL3, false);
-					ShowItem(hDlg, IDC_LABEL5, false);
-					ShowItem(hDlg, IDC_LABEL6, false);
-					ShowItem(hDlg, IDC_LABEL7, false);
-					ShowItem(hDlg, IDC_LABEL8, false);
+					ShowItem(hDlg, IDC_SHOW_FPS, FALSE);
+					ShowItem(hDlg, IDC_FPS_COLOR, FALSE);
+					ShowItem(hDlg, IDC_SETTING_LABEL2, FALSE);
+					ShowItem(hDlg, IDC_SETTING_LABEL3, FALSE);
+					ShowItem(hDlg, IDC_LABEL5, FALSE);
+					ShowItem(hDlg, IDC_LABEL6, FALSE);
+					ShowItem(hDlg, IDC_LABEL7, FALSE);
+					ShowItem(hDlg, IDC_LABEL8, FALSE);
 				}
 				else
 				{
-					ShowItem(hDlg, IDC_SHOW_FPS, true);
-					ShowItem(hDlg, IDC_FPS_COLOR, true);
-					ShowItem(hDlg, IDC_SETTING_LABEL2, true);
-					ShowItem(hDlg, IDC_SETTING_LABEL3, true);
-					ShowItem(hDlg, IDC_LABEL5, true);
-					ShowItem(hDlg, IDC_LABEL6, true);
-					ShowItem(hDlg, IDC_LABEL7, true);
-					ShowItem(hDlg, IDC_LABEL8, true);
+					ShowItem(hDlg, IDC_SHOW_FPS, TRUE);
+					ShowItem(hDlg, IDC_FPS_COLOR, TRUE);
+					ShowItem(hDlg, IDC_SETTING_LABEL2, TRUE);
+					ShowItem(hDlg, IDC_SETTING_LABEL3, TRUE);
+					ShowItem(hDlg, IDC_LABEL5, TRUE);
+					ShowItem(hDlg, IDC_LABEL6, TRUE);
+					ShowItem(hDlg, IDC_LABEL7, TRUE);
+					ShowItem(hDlg, IDC_LABEL8, TRUE);
 				}
 
 				if(status.bGameIsRunning)
@@ -1074,7 +1067,7 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				return 0;
 			}
 		}
-		return(true);
+		return(TRUE);
 	case WM_HSCROLL:
 		switch (LOWORD(wParam)) 
 		{
@@ -1136,20 +1129,20 @@ LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 				options.FPSColor = strtoul(str,0,16);
 			}
 
-			EndDialog(hDlg, true);
+			EndDialog(hDlg, TRUE);
 			WriteConfiguration();
 
-			return(true);
+			return(TRUE);
 
 		case IDCANCEL:
-			EndDialog(hDlg, true);
-			return(true);
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 	    }
     }
 
 
-    return false;
-	return(true);
+    return FALSE;
+	return(TRUE);
 }
 
 LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
@@ -1181,7 +1174,7 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 		SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_SETCHECK, options.bCacheHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_SETCHECK, options.bDumpTexturesToFiles ? BST_CHECKED : BST_UNCHECKED, 0);
 
-        return(true);
+        return(TRUE);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1192,12 +1185,12 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 			case PSN_SETACTIVE:
 				if(status.bGameIsRunning)
@@ -1209,7 +1202,7 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 				return 0;
 			}
 		}
-		return(true);
+		return(TRUE);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -1221,9 +1214,9 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			options.forceTextureFilter = ForceTextureFilterSettings[i].setting;
 
 			{
-				bool bLoadHiResTextures = options.bLoadHiResTextures;
-				bool bCacheHiResTextures = options.bCacheHiResTextures;
-				bool bDumpTexturesToFiles = options.bDumpTexturesToFiles;
+				BOOL bLoadHiResTextures = options.bLoadHiResTextures;
+				BOOL bCacheHiResTextures = options.bCacheHiResTextures;
+				BOOL bDumpTexturesToFiles = options.bDumpTexturesToFiles;
 				options.bLoadHiResTextures = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				options.bCacheHiResTextures = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1274,18 +1267,18 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 				}
 			}
 
-			EndDialog(hDlg, true);
+			EndDialog(hDlg, TRUE);
 			WriteConfiguration();
 
-			return(true);
+			return(TRUE);
 
 		case IDCANCEL:
-			EndDialog(hDlg, true);
-			return(true);
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 	    }
     }
 
-    return false;
+    return FALSE;
 }
 LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
@@ -1318,7 +1311,7 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_INSERTSTRING, i, (LPARAM) renderToTextureSettings[i]);
 		}
 		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_SETCURSEL, defaultRomOptions.N64RenderToTextureEmuType, 0);
-        return(true);
+        return(TRUE);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1329,12 +1322,12 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 			case PSN_SETACTIVE:
 				if(status.bGameIsRunning)
@@ -1346,7 +1339,7 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 				return 0;
 			}
 		}
-		return(true);
+		return(TRUE);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -1359,17 +1352,17 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 			defaultRomOptions.bDoubleSizeForSmallTxtrBuf = (SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			WriteConfiguration();
-			EndDialog(hDlg, true);
+			EndDialog(hDlg, TRUE);
 
-			return(true);
+			return(TRUE);
 
 		case IDCANCEL:
-			EndDialog(hDlg, true);
-			return(true);
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 	    }
     }
 
-	return false;
+	return FALSE;
 }
 LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
@@ -1383,7 +1376,7 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 
 		// Tri-state variables
 		state = g_curRomInfo.dwNormalBlender==2 ? BST_CHECKED : (g_curRomInfo.dwNormalBlender==1?BST_UNCHECKED:BST_INDETERMINATE);
-		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETSTYLE, BS_AUTO3STATE, true);
+		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, state, 0);
 
 
@@ -1425,10 +1418,10 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 
 		if( status.bGameIsRunning )
 		{
-			ShowItem(hDlg, IDC_SCREEN_UPDATE_AT, true);
-			ShowItem(hDlg, IDC_FORCE_DEPTH_COMPARE, true);
-			ShowItem(hDlg, IDC_DISABLE_BLENDER, true);
-			ShowItem(hDlg, IDC_FORCE_BUFFER_CLEAR, true);
+			ShowItem(hDlg, IDC_SCREEN_UPDATE_AT, TRUE);
+			ShowItem(hDlg, IDC_FORCE_DEPTH_COMPARE, TRUE);
+			ShowItem(hDlg, IDC_DISABLE_BLENDER, TRUE);
+			ShowItem(hDlg, IDC_FORCE_BUFFER_CLEAR, TRUE);
 		}
 
 		// Less useful options
@@ -1453,7 +1446,7 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			SetDlgItemText(hDlg,IDC_EDIT_HEIGHT,generalText);
 		}
 
-        return(true);
+        return(TRUE);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1464,12 +1457,12 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 			case PSN_SETACTIVE:
 				if(status.bGameIsRunning)
@@ -1479,7 +1472,7 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 				return 0;
 			}
 		}
-		return(true);
+		return(TRUE);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -1536,24 +1529,24 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 			GenerateCurrentRomOptions();
 			Ini_StoreRomOptions(&g_curRomInfo);
 
-			EndDialog(hDlg, true);
+			EndDialog(hDlg, TRUE);
 
-			return(true);
+			return(TRUE);
 
 		case IDCANCEL:
-			EndDialog(hDlg, true);
-			return(true);
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 	    }
     }
 
-    return false;
+    return FALSE;
 }
 LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	switch(message)
 	{
 	case WM_INITDIALOG:
-        return(true);
+        return(TRUE);
     
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -1564,31 +1557,31 @@ LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG 
             {
 			case PSN_APPLY:
 				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 
             case PSN_RESET :
                 //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, true);
+                EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 			}
 		}
-		return(true);
+		return(TRUE);
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
         case IDOK:
-			EndDialog(hDlg, true);
-			return(true);
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 
 		case IDCANCEL:
-			EndDialog(hDlg, true);
-			return(true);
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 	    }
     }
 
-    return false;
+    return FALSE;
 }
 
 //Test: Creating property pages for all options
@@ -1693,10 +1686,6 @@ void CreateOptionsDialogs(HWND hParent)
 
 	hPropSheetHwnd = (HWND) PropertySheet(&psh);	// Start the Property Sheet
 
-	//if (g_hhk) 
-	//	UnhookWindowsHookEx (g_hhk);
-
-	//g_hhk = NULL;
 	//g_hwndDlg = NULL;
 #endif
 }

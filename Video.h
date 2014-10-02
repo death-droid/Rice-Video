@@ -30,14 +30,14 @@ typedef struct {
 	unsigned __int16		uFullScreenDisplayWidth, uFullScreenDisplayHeight;
 	unsigned __int16		uWindowDisplayWidth, uWindowDisplayHeight;
 	
-	bool	bDisplayFullscreen;
+	BOOL	bDisplayFullscreen;
 	int		uFullScreenRefreshRate;
 	int		uScreenScaleMode;
 	float	fMultX, fMultY;
 	int		vpLeftW, vpTopW, vpRightW, vpBottomW, vpWidthW, vpHeightW;
 
 	int		statusBarHeight, statusBarHeightToUse, toolbarHeight, toolbarHeightToUse;
-	bool	screenSaverStatus;
+	BOOL	screenSaverStatus;
 
 	struct {
 		uint32		left;
@@ -70,7 +70,8 @@ typedef struct {
 	uint32	dwTvSystem;
 	float	fRatio;
 
-	bool	frameWriteByCPU;
+	BOOL	frameReadByCPU;
+	BOOL	frameWriteByCPU;
 
 	uint32	dwNumTrisRendered;
 	uint32	dwNumDListsCulled;
@@ -82,7 +83,7 @@ typedef struct {
 	uint32	gFrameCount;
 	uint32	gUcodeCount;
 	uint32	gRDPTime;
-	bool	ToToggleFullScreen;
+	BOOL	ToToggleFullScreen;
 	bool	bDisableFPS;
 
 	uint32	curRenderBuffer;

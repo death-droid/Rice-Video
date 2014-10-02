@@ -89,7 +89,8 @@ void DLParser_Init()
 	status.gRDPTime = 0;
 	status.gDlistCount = 0;
 	status.gUcodeCount = 0;
-	status.frameWriteByCPU = false;
+	status.frameReadByCPU = FALSE;
+	status.frameWriteByCPU = FALSE;
 	status.bN64IsDrawingTextureBuffer = false;
 	status.bHandleN64RenderTexture = false;
 
@@ -393,8 +394,8 @@ void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 
 		gRDP.otherMode.L = (command.inst.cmd1);
 
-		bool bZCompare		= (gRDP.otherMode.L & Z_COMPARE)			? true : false;
-		bool bZUpdate		= (gRDP.otherMode.L & Z_UPDATE)			? true : false;
+		BOOL bZCompare		= (gRDP.otherMode.L & Z_COMPARE)			? TRUE : FALSE;
+		BOOL bZUpdate		= (gRDP.otherMode.L & Z_UPDATE)			? TRUE : FALSE;
 
 		CRender::g_pRender->SetZCompare( bZCompare );
 		CRender::g_pRender->SetZUpdate( bZUpdate );
@@ -402,9 +403,9 @@ void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 		uint32 dwAlphaTestMode = (gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3;
 
 		if ((dwAlphaTestMode) != 0)
-			CRender::g_pRender->SetAlphaTestEnable( true );
+			CRender::g_pRender->SetAlphaTestEnable( TRUE );
 		else
-			CRender::g_pRender->SetAlphaTestEnable( false );
+			CRender::g_pRender->SetAlphaTestEnable( FALSE );
 	}
 
 	uint16 blender = gRDP.otherMode.blender;

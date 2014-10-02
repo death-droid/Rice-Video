@@ -56,13 +56,13 @@ void RSP_Tri4_PD(MicroCodeCommand command)
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 
-	bool bTrisAdded = false;
+	BOOL bTrisAdded = FALSE;
 
 	do {
 		uint32 dwFlag = (w0>>16)&0xFF;
 		LOG_UCODE("    PD Tri4: 0x%08x 0x%08x Flag: 0x%02x", w0, w1, dwFlag);
 
-		bool bVisible;
+		BOOL bVisible;
 		for( uint32 i=0; i<4; i++)
 		{
 			uint32 v0 = (w1>>(4+(i<<3))) & 0xF;

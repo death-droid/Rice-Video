@@ -148,7 +148,7 @@ exit:
 extern void WriteConfiguration(void);
 bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 									 uint32 dwWidth, uint32 dwHeight,
-									 bool bWindowed )
+									 BOOL bWindowed )
 {
 	HRESULT hr;
 
@@ -224,7 +224,7 @@ void CDXGraphicsContext::InitDeviceParameters()
 	// Determine the maximum FSAA
 	for( m_maxFSAA = 16; m_maxFSAA >= 2; m_maxFSAA-- )
 	{
-		if (SUCCEEDED(pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, false, D3DMULTISAMPLE_TYPE(D3DMULTISAMPLE_NONE + m_maxFSAA), NULL)))
+		if (SUCCEEDED(pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, FALSE, D3DMULTISAMPLE_TYPE(D3DMULTISAMPLE_NONE + m_maxFSAA), NULL)))
 		{
 			if (m_maxFSAA < 2)
 				m_maxFSAA = 0;
@@ -260,11 +260,11 @@ void CDXGraphicsContext::InitDeviceParameters()
 //*****************************************************************************
 //
 //*****************************************************************************
-HRESULT CDXGraphicsContext::Create3D( bool bWindowed )
+HRESULT CDXGraphicsContext::Create3D( BOOL bWindowed )
 {
     HRESULT hr;
 	
- 	m_bWindowed = (bWindowed==true);		// Make user Toggle manually for now!
+ 	m_bWindowed = (bWindowed==TRUE);		// Make user Toggle manually for now!
 
     // Initialize the 3D environment for the app
     if( FAILED( hr = InitializeD3D() ) )
@@ -299,7 +299,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 
     m_d3dpp.Windowed               = m_bWindowed;
     m_d3dpp.BackBufferCount        = 1;
-	m_d3dpp.EnableAutoDepthStencil = true; /*m_bUseDepthBuffer;*/
+	m_d3dpp.EnableAutoDepthStencil = TRUE; /*m_bUseDepthBuffer;*/
 	m_d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 	m_d3dpp.hDeviceWindow          = m_hWnd;
 	m_d3dpp.MultiSampleType        = D3DMULTISAMPLE_NONE;
@@ -666,11 +666,11 @@ int CDXGraphicsContext::ToggleFullscreen()
 
 	if( !m_bWindowed )
 	{
-		m_pd3dDevice->ShowCursor( false );
+		m_pd3dDevice->ShowCursor( FALSE );
 	}
 	else
 	{
-		m_pd3dDevice->ShowCursor( true );
+		m_pd3dDevice->ShowCursor( TRUE );
 	}
 
 	return m_bWindowed?0:1;

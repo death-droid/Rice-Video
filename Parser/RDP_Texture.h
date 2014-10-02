@@ -292,7 +292,7 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 	// Now Initialize the texture dimension
 	int dwTileWidth;
 	int dwTileHeight;
-	if( info->iSetBy == CMD_LOADTILE )
+	if( info->bSetBy == CMD_LOADTILE )
 	{
 		if( tile.sl >= tile.sh )
 		{
@@ -419,7 +419,7 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 
 	gti.bSwapped = info->bSwapped;
 
-	if( info->iSetBy == CMD_LOADTILE )
+	if( info->bSetBy == CMD_LOADTILE )
 	{
 		// It was a tile - the pitch is set by LoadTile
 		dwPitch = info->dwWidth<<(info->dwSize-1);
@@ -435,7 +435,7 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		if (info->dxt == 0 || info->dwTmem != tile.dwTMem )
 		{
 			dwPitch = tile.dwLine << 3;
-			gti.bSwapped = true;
+			gti.bSwapped = TRUE;
 			if( info->dwTmem != tile.dwTMem && info->dxt != 0 && info->dwSize == TXT_SIZE_16b && tile.dwSize == TXT_SIZE_4b )
 				conkerSwapHack = true;
 		}
@@ -456,9 +456,9 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 	gti.Pitch = tile.dwPitch = dwPitch;
 
 	if( (gti.WidthToLoad < gti.WidthToCreate || tile.bSizeIsValid == false) && tile.dwMaskS > 0 && gti.WidthToLoad != dwTileMaskWidth &&
-		info->iSetBy == CMD_LOADBLOCK )
+		info->bSetBy == CMD_LOADBLOCK )
 		//if( (gti.WidthToLoad < gti.WidthToCreate ) && tile.dwMaskS > 0 && gti.WidthToLoad != dwTileMaskWidth &&
-		//	info->iSetBy == CMD_LOADBLOCK )
+		//	info->bSetBy == CMD_LOADBLOCK )
 	{
 		// We have got the pitch now, recheck the width_to_load
 		uint32 pitchwidth = dwPitch<<1>>tile.dwSize;
@@ -468,9 +468,9 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		}
 	}
 	if( (gti.HeightToLoad < gti.HeightToCreate  || tile.bSizeIsValid == false) && tile.dwMaskT > 0 && gti.HeightToLoad != dwTileMaskHeight &&
-		info->iSetBy == CMD_LOADBLOCK )
+		info->bSetBy == CMD_LOADBLOCK )
 		//if( (gti.HeightToLoad < gti.HeightToCreate  ) && tile.dwMaskT > 0 && gti.HeightToLoad != dwTileMaskHeight &&
-		//	info->iSetBy == CMD_LOADBLOCK )
+		//	info->bSetBy == CMD_LOADBLOCK )
 	{
 		uint32 pitchwidth = dwPitch<<1>>tile.dwSize;
 		uint32 pitchHeight = (info->dwTotalWords<<1)/dwPitch;
@@ -482,7 +482,7 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 	if( gti.WidthToCreate < gti.WidthToLoad )	gti.WidthToCreate = gti.WidthToLoad;
 	if( gti.HeightToCreate < gti.HeightToLoad )		gti.HeightToCreate = gti.HeightToLoad;
 
-	if( info->iSetBy == CMD_LOADTILE )
+	if( info->bSetBy == CMD_LOADTILE )
 	{
 		gti.LeftToLoad = (info->sl<<info->dwSize)>>tile.dwSize;
 		gti.TopToLoad = info->tl;
@@ -551,7 +551,7 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 
 	gti.bSwapped = info->bSwapped;
 
-	if( info->iSetBy == CMD_LOADTILE )
+	if( info->bSetBy == CMD_LOADTILE )
 	{
 		loadwidth = (abs(info->sh - info->sl) + 1) << info->dwSize >> tile.dwSize;
 		loadheight = (abs(info->th - info->tl) + 1) << info->dwSize >> tile.dwSize;
@@ -583,7 +583,7 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		else if (info->dxt == 0 )
 		{
 			tile.dwPitch = tile.dwLine << 3;
-			gti.bSwapped = true;
+			gti.bSwapped = TRUE;
 			if( info->dwTmem != tile.dwTMem && info->dxt != 0 && info->dwSize == TXT_SIZE_16b && tile.dwSize == TXT_SIZE_4b )
 				conkerSwapHack = true;
 		}
@@ -959,7 +959,7 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 
 	TMEMLoadMapInfo &info = g_tmemLoadAddrMap[tile.dwTMem];
 
-	info.bSwapped = (dxt == 0? true : false);
+	info.bSwapped = (dxt == 0? TRUE : FALSE);
 
 	info.sl = tile.hilite_sl = tile.sl = uls;
 	info.sh = tile.hilite_sh = tile.sh = lrs;
@@ -976,7 +976,7 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 	}
 
 	info.dwLoadAddress = g_TI.dwAddr;
-	info.iSetBy = CMD_LOADBLOCK;
+	info.bSetBy = CMD_LOADBLOCK;
 	info.dxt = dxt;
 	info.dwLine = tile.dwLine;
 
@@ -1194,8 +1194,8 @@ void DLParser_LoadTile(MicroCodeCommand command)
 	info.dwTmem = tile.dwTMem;
 	info.dwTotalWords = size<<2;
 
-	info.iSetBy = CMD_LOADTILE;
-	info.bSwapped =false;
+	info.bSetBy = CMD_LOADTILE;
+	info.bSwapped =FALSE;
 
 	g_TxtLoadBy = CMD_LOADTILE;
 

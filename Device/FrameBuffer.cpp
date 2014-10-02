@@ -820,7 +820,7 @@ void FrameBufferManager::FrameBufferWriteByCPU(uint32 addr, uint32 size)
 {
 	if( !frameBufferOptions.bProcessCPUWrite )	return;
 	//WARNING(TRACE2("Frame Buffer Write, addr=%08X, CI Addr=%08X", addr, g_CI.dwAddr));
-	status.frameWriteByCPU = true;
+	status.frameWriteByCPU = TRUE;
 	frameWriteRecord.push_back(addr&(g_dwRamSize-1));
 }
 
@@ -1051,7 +1051,7 @@ void FrameBufferManager::UpdateFrameBufferBeforeUpdateFrame()
 				*/
 #endif
 			}
-			status.frameWriteByCPU = false;
+			status.frameWriteByCPU = FALSE;
 		}
 		else
 		{
@@ -1758,7 +1758,7 @@ void FrameBufferManager::Set_CI_addr(SetImgInfo &newCI)
 #ifdef _DEBUG
 			if( pauseAtNext && eventToPause == NEXT_RENDER_TEXTURE )
 			{
-				pauseAtNext = true;
+				pauseAtNext = TRUE;
 				eventToPause = NEXT_RENDER_TEXTURE;
 			}
 #endif

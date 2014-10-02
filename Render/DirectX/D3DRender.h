@@ -76,18 +76,18 @@ public:
 
 
 	void SetShadeMode(RenderShadeMode mode);
-	void ZBufferEnable(bool bZBuffer);
+	void ZBufferEnable(BOOL bZBuffer);
 	void ClearZBuffer(float depth);
 	void ClearBuffer(bool cbuffer, bool zbuffer);
 	void ClearBuffer(bool cbuffer, bool zbuffer, D3DRECT &rect);
 
-	void SetZCompare(bool bZCompare);
-	void SetZUpdate(bool bZUpdate);
+	void SetZCompare(BOOL bZCompare);
+	void SetZUpdate(BOOL bZUpdate);
 	void SetZBias(int bias);
 	void SetAlphaRef(uint32 dwAlpha);
 	void ForceAlphaRef(uint32 dwAlpha);
 	void SetFillMode(FillMode mode);
-	void SetAlphaTestEnable(bool bAlphaTestEnable);
+	void SetAlphaTestEnable(BOOL bAlphaTestEnable);
 
 	bool SetCurrentTexture(int tile, CTexture *handler,uint32 dwTileWidth, uint32 dwTileHeight, TxtrCacheEntry *pTextureEntry);
 	bool SetCurrentTexture(int tile, TxtrCacheEntry *pTextureEntry);

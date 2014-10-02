@@ -41,7 +41,7 @@ std::vector<uint32> frameWriteRecord;
 
 //---------------------------------------------------------------------------------------
 
-bool APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
+BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
                       uint32 fdwReason,              // reason called
                       LPVOID lpvReserved)           // reserved
 { 
@@ -61,7 +61,7 @@ bool APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
 		//Process has been detached
 		break; 
 	} 
-	return true; 
+	return TRUE; 
 } 
 
 void GetPluginDir( char * Directory ) 
@@ -83,8 +83,8 @@ FUNC_TYPE(void) NAME_DEFINE(GetDllInfo) ( PLUGIN_INFO * PluginInfo )
 
 	PluginInfo->Version        = 0x0103;
 	PluginInfo->Type           = PLUGIN_TYPE_GFX;
-	PluginInfo->NormalMemory   = false;
-	PluginInfo->MemoryBswaped  = true;
+	PluginInfo->NormalMemory   = FALSE;
+	PluginInfo->MemoryBswaped  = TRUE;
 }
 
 //---------------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ void ChangeWinSize( void )
 	}
 
     AdjustWindowRectEx( &rc1,GetWindowLong( g_GraphicsInfo.hWnd, GWL_STYLE ), GetMenu( g_GraphicsInfo.hWnd ) != NULL, GetWindowLong( g_GraphicsInfo.hWnd, GWL_EXSTYLE ) ); 
-    MoveWindow( g_GraphicsInfo.hWnd, wndpl.rcNormalPosition.left, wndpl.rcNormalPosition.top, rc1.right - rc1.left, rc1.bottom - rc1.top, true );
+    MoveWindow( g_GraphicsInfo.hWnd, wndpl.rcNormalPosition.left, wndpl.rcNormalPosition.top, rc1.right - rc1.left, rc1.bottom - rc1.top, TRUE );
 	Sleep(100);
 }
 //---------------------------------------------------------------------------------------
@@ -132,9 +132,9 @@ FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
 {
 	
 	if( status.ToToggleFullScreen )
-		status.ToToggleFullScreen = false;
+		status.ToToggleFullScreen = FALSE;
 	else
-		status.ToToggleFullScreen = true;
+		status.ToToggleFullScreen = TRUE;
 
 	status.bDisableFPS = true;
 	windowSetting.bDisplayFullscreen = !windowSetting.bDisplayFullscreen;
@@ -144,13 +144,13 @@ FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
 	if( g_GraphicsInfo.hStatusBar != NULL )
 		ShowWindow(g_GraphicsInfo.hStatusBar, windowSetting.bDisplayFullscreen ? SW_HIDE : SW_SHOW);
 
-	ShowCursor(windowSetting.bDisplayFullscreen ? false : true);
+	ShowCursor(windowSetting.bDisplayFullscreen ? FALSE : TRUE);
 
 	CGraphicsContext::Get()->Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
 	CGraphicsContext::Get()->UpdateFrame();
 	g_CritialSection.Unlock();
 	status.bDisableFPS = false;
-	status.ToToggleFullScreen = false;
+	status.ToToggleFullScreen = FALSE;
 }
 
 //---------------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ bool StartVideo(void)
 {
 	SystemParametersInfo(SPI_GETSCREENSAVEACTIVE, 0, &windowSetting.screenSaverStatus, 0);
 	if( windowSetting.screenSaverStatus )	
-		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, false, 0, 0);		// Disable screen saver
+		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, FALSE, 0, 0);		// Disable screen saver
 
 	windowSetting.timer = SetTimer(g_GraphicsInfo.hWnd, 100, 1000, (TIMERPROC)TimerProc);
 	windowSetting.dps = windowSetting.fps = -1;
@@ -238,7 +238,7 @@ bool StartVideo(void)
 		g_pFrameBufferManager = new DXFrameBufferManager;
 		CGraphicsContext::InitWindowInfo();
 		
-		windowSetting.bDisplayFullscreen = false;
+		windowSetting.bDisplayFullscreen = FALSE;
 		bool res = CGraphicsContext::Get()->Initialize(g_GraphicsInfo.hWnd, g_GraphicsInfo.hStatusBar, 640, 480, !windowSetting.bDisplayFullscreen);
 		
 		if(!res)
@@ -269,9 +269,9 @@ void StopVideo()
 {
 	if( CGraphicsContext::Get()->IsWindowed() == false )
 	{
-		status.ToToggleFullScreen = true;
+		status.ToToggleFullScreen = TRUE;
 		CGraphicsContext::Get()->ToggleFullscreen();
-		status.ToToggleFullScreen = false;
+		status.ToToggleFullScreen = FALSE;
 	}
 
 	g_CritialSection.Lock();
@@ -306,7 +306,7 @@ void StopVideo()
 	KillTimer(g_GraphicsInfo.hWnd, windowSetting.timer);
 
 	if( windowSetting.screenSaverStatus )	
-		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, true, 0, 0);	// Enable screen saver
+		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, 0, 0);	// Enable screen saver
 
 	DEBUGGER_ONLY({delete surfTlut;});
 }
@@ -348,7 +348,7 @@ FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void)
 #ifdef _DEBUG
 	if( debuggerPause )
 	{
-		debuggerPause = false;
+		debuggerPause = FALSE;
 		Sleep(100);
 	}
 #endif
@@ -612,7 +612,7 @@ FUNC_TYPE(void) NAME_DEFINE(ViWidthChanged) (void)
 	g_CritialSection.Unlock();
 }
 
-FUNC_TYPE(bool) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
+FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 {
 #ifdef _DEBUG
 	OpenDialogBox();
@@ -627,14 +627,14 @@ FUNC_TYPE(bool) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 	
 	windowSetting.fViWidth = 320;
 	windowSetting.fViHeight = 240;
-	status.ToToggleFullScreen = false;
+	status.ToToggleFullScreen = FALSE;
 	status.bDisableFPS=false;
 
 	InitConfiguration();
 	CGraphicsContext::InitWindowInfo();
 	CGraphicsContext::InitDeviceParameters();
 
-	return(true);
+	return(TRUE);
 }
 
 
