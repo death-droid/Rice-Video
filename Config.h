@@ -139,17 +139,17 @@ enum {
 };
 
 struct GlobalOptions{
-	BOOL	bEnableHacks;
-	BOOL	bEnableFog;
-	BOOL	bWinFrameMode;
-	BOOL	bMipMaps;
+	bool	bEnableHacks;
+	bool	bEnableFog;
+	bool	bWinFrameMode;
+	bool	bMipMaps;
 
 	uint32	forceTextureFilter;
 	uint32	textureEnhancement;
 	uint32	textureEnhancementControl;
-	BOOL	bDumpTexturesToFiles;
-	BOOL	bLoadHiResTextures;
-	BOOL	bCacheHiResTextures;
+	bool	bDumpTexturesToFiles;
+	bool	bLoadHiResTextures;
+	bool	bCacheHiResTextures;
 
 	uint32	DirectXAntiAliasingValue;
 	uint32	DirectXAnisotropyValue;

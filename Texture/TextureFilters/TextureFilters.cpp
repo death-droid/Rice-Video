@@ -642,38 +642,42 @@ void FindAllHiResTextures(char* WIPFolderName = NULL)
 
 void CloseHiresTextures(void)
 {
-	for( int i=0; i<gHiresTxtrInfos.size(); i++)
+	if (gHiresTxtrInfos.size() > 0)
 	{
-		if( gHiresTxtrInfos[i].foldername )
-			delete [] gHiresTxtrInfos[i].foldername;
-		if( gHiresTxtrInfos[i].filename )
-			delete []gHiresTxtrInfos[i].filename;
-		if( gHiresTxtrInfos[i].filename_a )
-			delete []gHiresTxtrInfos[i].filename_a;
+		for (int i = 0; i < gHiresTxtrInfos.size(); i++)
+		{
+			if (gHiresTxtrInfos[i].foldername)
+				delete[] gHiresTxtrInfos[i].foldername;
+			if (gHiresTxtrInfos[i].filename)
+				delete[]gHiresTxtrInfos[i].filename;
+			if (gHiresTxtrInfos[i].filename_a)
+				delete[]gHiresTxtrInfos[i].filename_a;
 
-		// don't forget to also free memory of cached textures
-		if(gHiresTxtrInfos[i].pHiresTextureRGB)
-			delete [] gHiresTxtrInfos[i].pHiresTextureRGB;
-		if(gHiresTxtrInfos[i].pHiresTextureAlpha)
-			delete [] gHiresTxtrInfos[i].pHiresTextureAlpha;
+			// don't forget to also free memory of cached textures
+			if (gHiresTxtrInfos[i].pHiresTextureRGB)
+				delete[] gHiresTxtrInfos[i].pHiresTextureRGB;
+			if (gHiresTxtrInfos[i].pHiresTextureAlpha)
+				delete[] gHiresTxtrInfos[i].pHiresTextureAlpha;
+		}
+		gHiresTxtrInfos.clear();
 	}
-
-	gHiresTxtrInfos.clear();
 }
 
 void CloseTextureDump(void)
 {
-	for( int i=0; i<gTxtrDumpInfos.size(); i++)
+	if (gTxtrDumpInfos.size() > 0)
 	{
-		if( gTxtrDumpInfos[i].foldername )	
-			delete [] gTxtrDumpInfos[i].foldername;
-		if( gTxtrDumpInfos[i].filename )
-			delete []gTxtrDumpInfos[i].filename;
-		if( gTxtrDumpInfos[i].filename_a )
-			delete []gTxtrDumpInfos[i].filename_a;
+		for (int i = 0; i < gTxtrDumpInfos.size(); i++)
+		{
+			if (gTxtrDumpInfos[i].foldername)
+				delete[] gTxtrDumpInfos[i].foldername;
+			if (gTxtrDumpInfos[i].filename)
+				delete[]gTxtrDumpInfos[i].filename;
+			if (gTxtrDumpInfos[i].filename_a)
+				delete[]gTxtrDumpInfos[i].filename_a;
+		}
+		gTxtrDumpInfos.clear();
 	}
-
-	gTxtrDumpInfos.clear();
 }
 
 
@@ -687,6 +691,7 @@ void CloseExternalTextures(void)
 	{
 		strcpy(currentRomName, g_curRomInfo.szGameName);
 		CloseHiresTextures();
+
 		CloseTextureDump();
 	}
 }
@@ -819,7 +824,7 @@ void InitHiresTextures(bool bWIPFolder)
 // load all hires textures into cache
 void InitHiresCache(void)
 {
-	if( options.bCacheHiResTextures )
+	if (options.bCacheHiResTextures && gHiresTxtrInfos.size() > 0)
 	{
 		for( int i=0; i<gHiresTxtrInfos.size(); i++)
 		{
@@ -838,7 +843,7 @@ void InitHiresCache(void)
 // clear hires texture cache
 void ClearHiresCache(void)
 {
-	if( !options.bCacheHiResTextures )
+	if (!options.bCacheHiResTextures && gHiresTxtrInfos.size() > 0)
 	{
 		for( int i=0; i<gHiresTxtrInfos.size(); i++)
 		{
@@ -850,7 +855,7 @@ void ClearHiresCache(void)
 
 void InitTextureDump(void)
 {
-	if( options.bDumpTexturesToFiles )
+	if (options.bDumpTexturesToFiles && gTxtrDumpInfos.size() <= 0)
 	{
 		RECT rect={0,100,windowSetting.uDisplayWidth,200};
 		OutputText("Texture dump option is enabled",&rect);
@@ -1014,7 +1019,7 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 		newinfo.height = entry.ti.HeightToLoad;
 		newinfo.fmt = entry.ti.Format;
 		newinfo.siz = entry.ti.Size;
-		newinfo.crc32 = entry.dwCRC;
+		newinfo.crc32 = entry.dwCRC; //We only need the crc's for this... maybe we should use a new struct
 		newinfo.pal_crc32 = entry.dwPalCRC;
 		newinfo.foldername = NULL;
 		newinfo.filename = NULL;

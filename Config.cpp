@@ -881,42 +881,34 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			//--------------------------------------------------------------
 			// Begin texture enhancement code
 			//--------------------------------------------------------------
-			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			
 			options.textureEnhancement = TextureEnhancementSettings[SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_GETCURSEL, 0, 0)].setting;
 			options.forceTextureFilter = ForceTextureFilterSettings[SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0)].setting;
+			options.bMipMaps			 = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bLoadHiResTextures   = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE,    BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bCacheHiResTextures  = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE,   BM_GETCHECK, 0, 0) == BST_CHECKED);
+
 			if (status.bGameIsRunning) //BACKTOME, NEEDS RETHINKING -- CLEAN ME
 			{
-				if (options.bLoadHiResTextures != SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				if (options.bLoadHiResTextures)
 				{
-					if (options.bLoadHiResTextures)
-					{
-						InitHiresTextures();
-						gTextureManager.RecheckHiresForAllTextures();
-					}
-					else
-						CloseHiresTextures();
+					InitHiresTextures();
+					gTextureManager.RecheckHiresForAllTextures();
 				}
+				else
+					CloseHiresTextures();
+	
+				if (options.bCacheHiResTextures)
+					InitHiresCache();
+				else
+					ClearHiresCache();
 
-				if (options.bCacheHiResTextures != SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED)
-				{
-					if (options.bCacheHiResTextures)
-						InitHiresCache();
-					else
-						ClearHiresCache();
-				}
-
-				if (options.bDumpTexturesToFiles != SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED)
-				{
-					if (options.bDumpTexturesToFiles)
-						InitTextureDump();
-					else
-						CloseTextureDump();
-				}
+				if (options.bDumpTexturesToFiles)
+					InitTextureDump();
+				else
+					CloseTextureDump();
 			}
-
-			options.bLoadHiResTextures = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bCacheHiResTextures = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			//--------------------------------------------------------------
 			// End texture enhancement code
