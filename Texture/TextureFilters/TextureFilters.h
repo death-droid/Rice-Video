@@ -22,13 +22,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // this is a subfolder of which the content will always be reloaded if a savestate is loaded 
 // or if there is a switch between window and fullscreen mode
-#define WIP_FOLDER "WIP"
+
 void Super2xSaI( uint32 *srcPtr, uint32 *destPtr, uint32 width, uint32 height, uint32 pitch);
 
 void hq2x(uint8 *srcPtr, uint32 srcPitch, uint8 *dstPtr, uint32 dstPitch, int width, int height);
 void hq2xS(uint8 *srcPtr, uint32 srcPitch, uint8 *dstPtr, uint32 dstPitch, int width, int height);
 
-void InitHiresTextures(bool bWIPFolder = false);
+void InitHiresTextures();
 void CloseHiresTextures(void);
 
 void InitHiresCache(void);

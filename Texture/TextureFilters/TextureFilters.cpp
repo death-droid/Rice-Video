@@ -412,52 +412,26 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 
 			// for the detection of an existing item
 			int foundIdx = -1;
-			// for the detection of the WIP folder
-			bool bWIPFolder = false;
+
 			// loop through the list of records of already fetched hires textures
 			for( int k=0; k<infos.size(); k++)
 			{
 				// check if texture already exists in the list
-				// microdev: that's why I somehow love documenting code: that makes the implementation of a WIP folder check
-				// fucking easy :-)
 				if( infos[k].crc32 == crc && infos[k].pal_crc32 == palcrc32 )
 				{
 
 					foundIdx = k;
-
-					// indeeed, the texture already exists
-					// microdev: MAYBE ADD CODE TO MOVE IT TO A 'DUBLICATE' FOLDER TO EASE WORK OF RETEXTURERS
-					// check if the WIP folder is currently treated
-					if(strstr(foldername, '\\'+ WIP_FOLDER) == 0)
-					{
-						// indeed! => indicate that
-						bWIPFolder = true;
-					}
-					else
-						//ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName)); //Todo, finish me
-						break;
+					//Duplicates
+					//ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName)); //Todo, finish me
 				}
 
 			}
 
-			// if the texture is not yet in the list or if it exists with another type or the current folder is the WIP folder
-			if(	foundIdx < 0 || type != infos[foundIdx].type || bWIPFolder)
+			// if the texture is not yet in the list or if it exists with another type
+			if(	foundIdx < 0 || type != infos[foundIdx].type)
 			{
 				// create a new entry
-				ExtTxtrInfo *newinfo;
-
-				// if WIP folder check is active, and a texture already exists,
-				if(foundIdx >= 0 && type == infos[foundIdx].type && bWIPFolder)
-				{
-					// modify the existing entry
-					newinfo = &infos[foundIdx];
-					// free memory for the existing texture
-					SAFE_DELETE(newinfo->pHiresTextureRGB);
-					SAFE_DELETE(newinfo->pHiresTextureAlpha);
-				}
-				else
-					// otherwise create a new one
-					newinfo = new ExtTxtrInfo;
+				ExtTxtrInfo *newinfo = new ExtTxtrInfo;
 
 				// store the width
 				newinfo->width = imgInfo.Width;
@@ -514,11 +488,8 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					// cache the actual texture to memory (and of course the alpha channel as well, if existing)
 					CacheHiresTexture(*newinfo);
 				}
-
-				// a new entry only has to be added to the list if it was not an already existing one
-				if(!(foundIdx >= 0 && type == infos[foundIdx].type && bWIPFolder))
-					// add the new record to the list 
-					infos.add(crc64,*newinfo);
+				// add the new record to the list 
+				infos.add(crc64,*newinfo);
 			}
 		}
 	// loop through all files of the current directory
@@ -601,7 +572,7 @@ void FindAllDumpedTextures(void)
  * return:
  * none
  ********************************************************************************************************************/
-void FindAllHiResTextures(char* WIPFolderName = NULL)
+void FindAllHiResTextures()
 {
 	CSimpleIniA ini;
 	char	foldername[256];
@@ -617,16 +588,10 @@ void FindAllHiResTextures(char* WIPFolderName = NULL)
 	// HOOK IN: PACK SELECT
 	strcat(foldername,g_curRomInfo.szGameName);
 	strcat(foldername,"\\");
-	if(WIPFolderName == NULL)
-	{
-		// trunkate the current list with hires texture infos
-		gHiresTxtrInfos.clear();
-	} 
-	else
-	{
-		strcat(foldername,WIPFolderName);
-		strcat(foldername,"\\");	
-	}
+
+	// trunkate the current list with hires texture infos
+	gHiresTxtrInfos.clear();
+
 	// check if there is a subfolder for this rom
 	if( !PathFileExists(foldername) )
 	{
@@ -700,123 +665,102 @@ void CloseExternalTextures(void)
  * Scans the hires folder for hires textures and creates a list with records of properties of the hires textures.
  * in case of enabled hires caching also the actual hires textures will be added to the record. Before textures will
  * be loaded, existing list of texture information will be truncated.
- * parameter: 
- * bWIPFolder: Indicates if all textures should be inited or just the WIP folder. Just the content of the WIP folder 
- *             will be reloaded if a savestate has been loaded or if there has been a switch between window and full-
- *             screen mode. 
  * return:
  * none
  ********************************************************************************************************************/
 
-void InitHiresTextures(bool bWIPFolder)
+void InitHiresTextures()
 {
 	CSimpleIniA ini;
-	if( options.bLoadHiResTextures )
+	if (options.bLoadHiResTextures && gHiresTxtrInfos.size() <= 0)
 	{
 		// create a box for displaying the message on screen
 		RECT rect={0,100,windowSetting.uDisplayWidth,200};
+
 		// write text
 		if(options.bCacheHiResTextures)
 			OutputText("Texture caching option is enabled",&rect);
 		else
 			OutputText("Texture loading option is enabled",&rect);
+
 		// create a box for displaying the message on screen
 		RECT rect2={0,150,windowSetting.uDisplayWidth,250};
 
-		// in case of loading save state or changing between window & fulscreen mode
-		if(bWIPFolder){
 		// write text
-			OutputText("Checking WIP folder for hires textures",&rect2);
-			SetWindowText(g_GraphicsInfo.hStatusBar,"Checking WIP folder for hires textures");
-		}
-		else
-		{
-		// write text
-			OutputText("Finding all hires textures",&rect2);
-			SetWindowText(g_GraphicsInfo.hStatusBar,"Finding all hires textures");
-		}
-		// check if all textures should be updated or just the ones located in the WIP folder
-		if(!bWIPFolder)
-		{
-			// Generate our cache directory filename that where after
-			char	inifilename[1024];
-			// get the path of the plugin directory
-			GetPluginDir(inifilename);
-			// add the relative path to the hires folder
-			strcat(inifilename,"hires_texture\\");
-			//Grab our proper folder name
-			strcat(inifilename, g_curRomInfo.szGameName);
-			strcat(inifilename, "\\Cache.ini");
+		OutputText("Finding all hires textures",&rect2);
+		SetWindowText(g_GraphicsInfo.hStatusBar,"Finding all hires textures");
 
-			//If we have already loaded this pack in then dont bother trying to get all the infomration again
-			if (PathFileExists(inifilename))
+		// Generate our cache directory filename that where after
+		char	inifilename[1024];
+		// get the path of the plugin directory
+		GetPluginDir(inifilename);
+		// add the relative path to the hires folder
+		strcat(inifilename,"hires_texture\\");
+		//Grab our proper folder name
+		strcat(inifilename, g_curRomInfo.szGameName);
+		strcat(inifilename, "\\Cache.ini");
+
+		//If we have already loaded this pack in then dont bother trying to get all the infomration again
+		if (PathFileExists(inifilename))
+		{
+			ini.LoadFile(inifilename); //Loud in our cache file
+			CSimpleIniA::TNamesDepend sections; //A place to store all the sections we find
+			ini.GetAllSections(sections); // Store all our sections
+			CSimpleIniA::TNamesDepend::const_iterator i; //Define out iterator so we can look through the sections we grabbed
+
+			//Define a new place to store our incoming new info
+			ExtTxtrInfo *newinfo;
+
+			//Since where just looping through
+			for (i = sections.begin(); i != sections.end(); ++i)
 			{
-				ini.LoadFile(inifilename); //Loud in our cache file
-				CSimpleIniA::TNamesDepend sections; //A place to store all the sections we find
-				ini.GetAllSections(sections); // Store all our sections
-				CSimpleIniA::TNamesDepend::const_iterator i; //Define out iterator so we can look through the sections we grabbed
-
-				//Define a new place to store our incoming new info
-				ExtTxtrInfo *newinfo;
-
-				//Since where just looping through
-				for (i = sections.begin(); i != sections.end(); ++i)
-				{
 		
-					//Where creating a new newinfo everytime we loop
-					newinfo = new ExtTxtrInfo;
+				//Where creating a new newinfo everytime we loop
+				newinfo = new ExtTxtrInfo;
 
-					//Grab the information we need straight out of the ini file, this is ten times faster than loading the information out of
-					//each and every darn png, specially with the community texture pack
-					newinfo->width		= ini.GetLongValue(i->pItem,     "width", 0);
-					newinfo->height		= ini.GetLongValue(i->pItem,    "height", 0);
-					newinfo->fmt		= ini.GetLongValue(i->pItem,    "format", 0);
-					newinfo->siz		= ini.GetLongValue(i->pItem,  "bit-size", 0);
-					newinfo->crc32		= ini.GetLongValue(i->pItem,     "crc32", 0);
-					newinfo->pal_crc32  = ini.GetLongValue(i->pItem, "pal_crc32", 0);
-					newinfo->type		= (TextureType)ini.GetLongValue(i->pItem,	  "type", 0);
-					newinfo->bSeparatedAlpha = ini.GetBoolValue(i->pItem, "seperated-alpha", 0);
-					newinfo->foldername = _strdup((char *)ini.GetValue(i->pItem, "foldername", ""));
-					newinfo->filename   = _strdup((char *)ini.GetValue(i->pItem,    "filename", ""));
-					newinfo->filename_a   =  _strdup((char *)ini.GetValue(i->pItem,  "filename_alpha", "NULL"));
-					if(newinfo->filename_a == "NULL")
-						newinfo->filename_a = NULL;
-					uint64 crc64 = newinfo->crc32;
-					crc64 <<= 32;
-					crc64 |= newinfo->pal_crc32&0xFFFFFFFF;
-					gHiresTxtrInfos.add(crc64,*newinfo);
-				}
-			}			
-			else
-			{
-				//Than find all hires textures
-				FindAllHiResTextures();
-
-
-				//And after we have foudn them all, loopthrough them and dump them to our cache file
-				for( int i=0; i<gHiresTxtrInfos.size(); i++)
-				{
-					ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "width", gHiresTxtrInfos[i].width);
-					ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "height", gHiresTxtrInfos[i].height);
-					ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "format", gHiresTxtrInfos[i].fmt);
-					ini.SetLongValue(gHiresTxtrInfos[i].filename,		   "bit-size", gHiresTxtrInfos[i].siz);
-					ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "crc32", gHiresTxtrInfos[i].crc32);
-					ini.SetLongValue(gHiresTxtrInfos[i].filename,		  "pal_crc32", gHiresTxtrInfos[i].pal_crc32);
-					//ini.SetLongValue(newinfo->filename,			  "crc64", crc64);
-					ini.SetLongValue(gHiresTxtrInfos[i].filename,	           "type", gHiresTxtrInfos[i].type);
-					ini.SetBoolValue(gHiresTxtrInfos[i].filename, "seperated-alpha", gHiresTxtrInfos[i].bSeparatedAlpha);
-					ini.SetValue(gHiresTxtrInfos[i].filename,        "filename", gHiresTxtrInfos[i].filename);
-					ini.SetValue(gHiresTxtrInfos[i].filename,  "filename_alpha",gHiresTxtrInfos[i].filename_a);
-					ini.SetValue(gHiresTxtrInfos[i].filename, "foldername", gHiresTxtrInfos[i].foldername);
-				}
-				//Save our cache file
-				ini.SaveFile(inifilename);
+				//Grab the information we need straight out of the ini file, this is ten times faster than loading the information out of
+				//each and every darn png, specially with the community texture pack
+				newinfo->width		= ini.GetLongValue(i->pItem,     "width", 0);
+				newinfo->height		= ini.GetLongValue(i->pItem,    "height", 0);
+				newinfo->fmt		= ini.GetLongValue(i->pItem,    "format", 0);
+				newinfo->siz		= ini.GetLongValue(i->pItem,  "bit-size", 0);
+				newinfo->crc32		= ini.GetLongValue(i->pItem,     "crc32", 0);
+				newinfo->pal_crc32  = ini.GetLongValue(i->pItem, "pal_crc32", 0);
+				newinfo->type		= (TextureType)ini.GetLongValue(i->pItem,	  "type", 0);
+				newinfo->bSeparatedAlpha = ini.GetBoolValue(i->pItem, "seperated-alpha", 0);
+				newinfo->foldername = _strdup((char *)ini.GetValue(i->pItem, "foldername", ""));
+				newinfo->filename   = _strdup((char *)ini.GetValue(i->pItem,    "filename", ""));
+				newinfo->filename_a   =  _strdup((char *)ini.GetValue(i->pItem,  "filename_alpha", "NULL"));
+				if(newinfo->filename_a == "NULL")
+					newinfo->filename_a = NULL;
+				uint64 crc64 = newinfo->crc32;
+				crc64 <<= 32;
+				crc64 |= newinfo->pal_crc32&0xFFFFFFFF;
+				gHiresTxtrInfos.add(crc64,*newinfo);
 			}
-		}
+		}			
 		else
 		{
-			// just update the textures found in the WIP folder
-			FindAllHiResTextures(WIP_FOLDER);
+			//Than find all hires textures
+			FindAllHiResTextures();
+
+			//And after we have foudn them all, loopthrough them and dump them to our cache file
+			for( int i=0; i<gHiresTxtrInfos.size(); i++)
+			{
+				ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "width", gHiresTxtrInfos[i].width);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "height", gHiresTxtrInfos[i].height);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "format", gHiresTxtrInfos[i].fmt);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename,		   "bit-size", gHiresTxtrInfos[i].siz);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "crc32", gHiresTxtrInfos[i].crc32);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename,		  "pal_crc32", gHiresTxtrInfos[i].pal_crc32);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename,	           "type", gHiresTxtrInfos[i].type);
+				ini.SetBoolValue(gHiresTxtrInfos[i].filename, "seperated-alpha", gHiresTxtrInfos[i].bSeparatedAlpha);
+				ini.SetValue(gHiresTxtrInfos[i].filename,        "filename", gHiresTxtrInfos[i].filename);
+				ini.SetValue(gHiresTxtrInfos[i].filename,  "filename_alpha",gHiresTxtrInfos[i].filename_a);
+				ini.SetValue(gHiresTxtrInfos[i].filename, "foldername", gHiresTxtrInfos[i].foldername);
+			}
+			//Save our cache file
+			ini.SaveFile(inifilename);
 		}
 	}
 }
