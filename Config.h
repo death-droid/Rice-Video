@@ -269,7 +269,6 @@ uint32 CountryCodeToTVSystem(uint32 countryCode);
 
 enum {
     PSH_OPTIONS,
-    PSH_TEXTURE,
     PSH_DEFAULTS,
     PSH_ROM_SETTINGS,
 };

@@ -29,10 +29,17 @@ void hq2x(uint8 *srcPtr, uint32 srcPitch, uint8 *dstPtr, uint32 dstPitch, int wi
 void hq2xS(uint8 *srcPtr, uint32 srcPitch, uint8 *dstPtr, uint32 dstPitch, int width, int height);
 
 void InitHiresTextures(bool bWIPFolder = false);
+void CloseHiresTextures(void);
+
+void InitHiresCache(void);
+void ClearHiresCache(void);
+
+void InitTextureDump(void);
+void CloseTextureDump(void);
 
 typedef enum _IMAGE_FILEFORMAT 
 {
-   XIFF_BMP = 0,
+     XIFF_BMP = 0,
      XIFF_JPG = 1,
      XIFF_TGA = 2,
      XIFF_PNG = 3,

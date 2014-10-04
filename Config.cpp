@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "stdafx.h"
 #include "_BldNum.h"
 #include "SimpleIni.h"
+#include "Texture\TextureFilters\TextureFilters.h"
 
 #define INI_FILE		"RiceVideo.ini"
 #define CONFIG_FILE     "RiceVideo.cfg"
@@ -709,9 +710,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		//General config op
 		SendDlgItemMessage(hDlg, IDC_FOG,		    BM_SETCHECK, options.bEnableFog	   ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_MIPMAPS,		BM_SETCHECK, options.bMipMaps	   ? BST_CHECKED : BST_UNCHECKED, 0);
 
-		//START OF RESOLUTION STUFF
+		//--------------------------------------------------------------
+		// Begin Resolution handling code
+		//--------------------------------------------------------------
 		SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE,	  CB_RESETCONTENT, 0, 0);
 		for(int maxres=0; maxres<CGraphicsContext::m_numOfResolutions; maxres++ ) // Really need to rethink this
@@ -738,7 +740,34 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 1, (LPARAM) "Pillarbox");
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 2, (LPARAM) "Extend");
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_SETCURSEL, windowSetting.uScreenScaleMode, 0);
-		//END OF RESOLUTION STUFF
+		//--------------------------------------------------------------
+		// End resolution handling code
+		//--------------------------------------------------------------
+
+		//--------------------------------------------------------------
+		// Begin texture enhancement code
+		//--------------------------------------------------------------
+		SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_RESETCONTENT, 0, 0);
+		for (i = 0; i<sizeof(TextureEnhancementSettings) / sizeof(SettingInfo); i++)
+		{
+			SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_INSERTSTRING, i, (LPARAM)TextureEnhancementSettings[i].description);				
+		}
+
+		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_RESETCONTENT, 0, 0);
+		for (i = 0; i<sizeof(ForceTextureFilterSettings) / sizeof(SettingInfo); i++)
+		{
+			SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_INSERTSTRING, i, (LPARAM)ForceTextureFilterSettings[i].description);
+		}
+
+		SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT,   CB_SETCURSEL, options.textureEnhancement, 0);
+		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER,  CB_SETCURSEL, options.forceTextureFilter, 0);
+		SendDlgItemMessage(hDlg, IDC_MIPMAPS,				BM_SETCHECK,  options.bMipMaps			   ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE,    BM_SETCHECK,  options.bLoadHiResTextures   ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE,   BM_SETCHECK,  options.bCacheHiResTextures  ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_SETCHECK,  options.bDumpTexturesToFiles ? BST_CHECKED : BST_UNCHECKED, 0);
+		//--------------------------------------------------------------
+		// End texture enhancement code
+		//--------------------------------------------------------------
 
 		//--------------------------------------------------------------
 		// Start of Direct X related settings
@@ -752,11 +781,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		sprintf(generalText, "Full Screen Anti-Aliasing: %d X", options.DirectXAntiAliasingValue);
 		SetWindowText(GetDlgItem(hDlg, IDC_ANTI_ALIASING_TEXT), generalText);
 
-		SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAntiAliasingValue);
-
 		sprintf(generalText, "Anisotropic Filtering: %d X", options.DirectXAnisotropyValue);
 		SetWindowText(GetDlgItem(hDlg, IDC_ANISOTROPIC_TEXT), generalText);
 
+		SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAntiAliasingValue);
 		SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAnisotropyValue);
 		//--------------------------------------------------------------
 		// End of Direct X related settings
@@ -797,7 +825,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 	case WM_NOTIFY:
 		{
 		LPNMHDR lpnm = (LPNMHDR) lParam;
-
         switch (lpnm->code)
             {
 			case PSN_APPLY:
@@ -829,7 +856,9 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		case IDOK:
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			
+			
+			//Begin Resolutioon Handling
 			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
 
 			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_GETCURSEL, 0, 0);
@@ -842,12 +871,56 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 			windowSetting.uDisplayWidth = windowSetting.uWindowDisplayWidth;
 			windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
+			//End Resolution Handling
 
 			options.DirectXAntiAliasingValue = SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_GETPOS, 0, 0);
 			if (options.DirectXAntiAliasingValue == 1)
 				options.DirectXAntiAliasingValue = 0;
 			options.DirectXAnisotropyValue = SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_GETPOS, 0, 0);
 
+			//--------------------------------------------------------------
+			// Begin texture enhancement code
+			//--------------------------------------------------------------
+			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.textureEnhancement = TextureEnhancementSettings[SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_GETCURSEL, 0, 0)].setting;
+			options.forceTextureFilter = ForceTextureFilterSettings[SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0)].setting;
+			if (status.bGameIsRunning) //BACKTOME, NEEDS RETHINKING -- CLEAN ME
+			{
+				if (options.bLoadHiResTextures != SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				{
+					if (options.bLoadHiResTextures)
+					{
+						InitHiresTextures();
+						gTextureManager.RecheckHiresForAllTextures();
+					}
+					else
+						CloseHiresTextures();
+				}
+
+				if (options.bCacheHiResTextures != SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				{
+					if (options.bCacheHiResTextures)
+						InitHiresCache();
+					else
+						ClearHiresCache();
+				}
+
+				if (options.bDumpTexturesToFiles != SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				{
+					if (options.bDumpTexturesToFiles)
+						InitTextureDump();
+					else
+						CloseTextureDump();
+				}
+			}
+
+			options.bLoadHiResTextures = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bCacheHiResTextures = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+			//--------------------------------------------------------------
+			// End texture enhancement code
+			//--------------------------------------------------------------
 
 			WriteConfiguration();
 			EndDialog(hDlg, TRUE);
@@ -866,140 +939,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
     return FALSE;
 }
 
-//REWRITE ME
-LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
-{
-	int i;
-
-	switch(message)
-	{
-	case WM_INITDIALOG:
-		SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(TextureEnhancementSettings)/sizeof(SettingInfo); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_INSERTSTRING, i, (LPARAM) TextureEnhancementSettings[i].description);
-			if( TextureEnhancementSettings[i].setting == options.textureEnhancement)
-				SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_SETCURSEL, i, 0);
-		}
-
-		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(ForceTextureFilterSettings)/sizeof(SettingInfo); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_INSERTSTRING, i, (LPARAM) ForceTextureFilterSettings[i].description);
-		}
-		SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_SETCURSEL, options.forceTextureFilter, 0);
-
-		SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_SETCHECK, options.bLoadHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
-		// fetch the value the user has set for caching from dialog
-		SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_SETCHECK, options.bCacheHiResTextures ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_SETCHECK, options.bDumpTexturesToFiles ? BST_CHECKED : BST_UNCHECKED, 0);
-
-        return(TRUE);
-    
-    //Propertysheet handling
-	case WM_NOTIFY:
-		{
-		LPNMHDR lpnm = (LPNMHDR) lParam;
-
-        switch (lpnm->code)
-            {
-			case PSN_APPLY:
-				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, TRUE);
-				break;
-
-            case PSN_RESET :
-                //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, TRUE);
-				break;
-			case PSN_SETACTIVE:
-				if(status.bGameIsRunning)
-					DialogToStartRomIsRunning = PSH_TEXTURE;
-				else
-					DialogToStartRomIsNotRunning = PSH_TEXTURE;
-				break;
-			default:
-				return 0;
-			}
-		}
-		return(TRUE);
-
-	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
-        case IDOK:
-			i = SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_GETCURSEL, 0, 0);
-			options.textureEnhancement = TextureEnhancementSettings[i].setting;
-			i = SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0);
-			options.forceTextureFilter = ForceTextureFilterSettings[i].setting;
-
-			{
-				BOOL bLoadHiResTextures = options.bLoadHiResTextures;
-				BOOL bCacheHiResTextures = options.bCacheHiResTextures;
-				BOOL bDumpTexturesToFiles = options.bDumpTexturesToFiles;
-				options.bLoadHiResTextures = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-				options.bCacheHiResTextures = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-				options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
-
-				if( status.bGameIsRunning && bLoadHiResTextures != options.bLoadHiResTextures)
-				{
-					void InitHiresTextures(bool bWIPFolder = false);
-					void CloseHiresTextures(void);
-					if( options.bLoadHiResTextures )
-					{
-						InitHiresTextures();
-						gTextureManager.RecheckHiresForAllTextures();
-					}
-					else
-					{
-						CloseHiresTextures();
-					}
-				}
-				// check if caching option has been changed
-				if( status.bGameIsRunning && bLoadHiResTextures && bCacheHiResTextures != options.bCacheHiResTextures)
-				{
-					void InitHiresCache(void);
-					void ClearHiresCache(void);
-					if( options.bCacheHiResTextures )
-					{
-						// caching has been enabled
-						InitHiresCache();
-					}
-					else
-					{
-						// caching has been disabled
-						ClearHiresCache();
-					}
-				}
-
-				if( status.bGameIsRunning && bDumpTexturesToFiles != options.bDumpTexturesToFiles)
-				{
-					void CloseTextureDump(void);
-					void InitTextureDump(void);
-					if( options.bDumpTexturesToFiles )
-					{
-						InitTextureDump();
-					}
-					else
-					{
-						CloseTextureDump();
-					}
-				}
-			}
-
-			EndDialog(hDlg, TRUE);
-			WriteConfiguration();
-
-			return(TRUE);
-
-		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
-	    }
-    }
-
-    return FALSE;
-}
 LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	int i;
@@ -1304,9 +1243,9 @@ LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG 
 void CreateOptionsDialogs(HWND hParent)
 {
 #ifdef ENABLE_CONFIG_DIALOG
-	PROPSHEETPAGE	psp[6]; //Change this array size if you change the number of pages.
+	PROPSHEETPAGE	psp[3]; //Change this array size if you change the number of pages.
 	PROPSHEETHEADER psh;
-	memset(&psp,0,sizeof(PROPSHEETPAGE)*6);
+	memset(&psp,0,sizeof(PROPSHEETPAGE)*3);
 	memset(&psh,0,sizeof(PROPSHEETHEADER));
 
 	psp[PSH_OPTIONS].dwSize			= sizeof(PROPSHEETPAGE);
@@ -1317,17 +1256,6 @@ void CreateOptionsDialogs(HWND hParent)
 	psp[PSH_OPTIONS].pfnDlgProc		= (DLGPROC)OptionsDialogProc;
 	psp[PSH_OPTIONS].pszTitle		= "General Options";
 	psp[PSH_OPTIONS].lParam			= 0;
-
-	//MOVE ME OUT OF HERE
-	psp[PSH_TEXTURE].dwSize			= sizeof(PROPSHEETPAGE);
-	psp[PSH_TEXTURE].dwFlags		= PSP_USETITLE;
-	psp[PSH_TEXTURE].hInstance		= windowSetting.myhInst;
-	psp[PSH_TEXTURE].pszIcon		= NULL;
-	psp[PSH_TEXTURE].pszTemplate	= "TEXTURES";
-    psp[PSH_TEXTURE].pfnDlgProc		= (DLGPROC)TextureSettingDialogProc;
-	psp[PSH_TEXTURE].pszTitle		= "Texture Enhancement";
-	psp[PSH_TEXTURE].lParam			= 0;
-	//END MOVE ME OUT OF HERE
 
 	psp[PSH_DEFAULTS].dwSize		= sizeof(PROPSHEETPAGE);
 	psp[PSH_DEFAULTS].dwFlags		= PSP_USETITLE;
@@ -1348,6 +1276,7 @@ void CreateOptionsDialogs(HWND hParent)
 		psp[PSH_ROM_SETTINGS].pszTemplate = "NOT_AVAILABLE";
 		psp[PSH_ROM_SETTINGS].pfnDlgProc = (DLGPROC) UnavailableProc;
 	}
+
 	psp[PSH_ROM_SETTINGS].dwSize		= sizeof(PROPSHEETPAGE);
 	psp[PSH_ROM_SETTINGS].dwFlags		= PSP_USETITLE;
 	psp[PSH_ROM_SETTINGS].hInstance		= windowSetting.myhInst;
