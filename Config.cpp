@@ -89,7 +89,7 @@ CSimpleIniA perRomIni;
 //=======================================================
 const SettingInfo ForceTextureFilterSettings[] =
 {
-	"N64 Default Texture Filter",	FORCE_DEFAULT_FILTER,
+	"N64 Default Texture Filter",					FORCE_DEFAULT_FILTER,
 	"Force Nearest Filter (faster, low quality)",	FORCE_POINT_FILTER,
 	"Force Linear Filter (slower, better quality)",	FORCE_LINEAR_FILTER,
 };
@@ -97,32 +97,13 @@ const SettingInfo ForceTextureFilterSettings[] =
 const SettingInfo TextureEnhancementSettings[] =
 {
 	"N64 original texture (No enhancement)",	TEXTURE_NO_ENHANCEMENT,
-	"2xSaI", TEXTURE_2XSAI_ENHANCEMENT,
-	"HQ2x", TEXTURE_HQ2X_ENHANCEMENT,
-	"HQ2xS", TEXTURE_HQ2XS_ENHANCEMENT,
-};
-
-
-/*
-*	Constants
-*/
-const SettingInfo OnScreenDisplaySettings[] =
-{
-	"Display Nothing",							ONSCREEN_DISPLAY_NOTHING,
-	"Display DList Per Second",					ONSCREEN_DISPLAY_DLIST_PER_SECOND,
-	"Display Frame Per Second",					ONSCREEN_DISPLAY_FRAME_PER_SECOND,
-	"Display Debug Information Only",			ONSCREEN_DISPLAY_DEBUG_INFORMATION_ONLY,
-	"Display Messages From CPU Core Only",		ONSCREEN_DISPLAY_TEXT_FROM_CORE_ONLY,
-	"Display DList Per Second With Core Msgs",	ONSCREEN_DISPLAY_DLIST_PER_SECOND_WITH_CORE_MSG,
-	"Display Frame Per Second With Core Msgs",	ONSCREEN_DISPLAY_FRAME_PER_SECOND_WITH_CORE_MSG,
-	"Display Debug Information With Core Msgs",	ONSCREEN_DISPLAY_DEBUG_INFORMATION_WITH_CORE_MSG,
+	"2xSaI",									TEXTURE_2XSAI_ENHANCEMENT,
+	"HQ2x",										TEXTURE_HQ2X_ENHANCEMENT,
+	"HQ2xS",									TEXTURE_HQ2XS_ENHANCEMENT,
 };
 
 void WriteConfiguration(void);
 void GenerateCurrentRomOptions();
-
-HWND	g_hwndTT=NULL;
-HWND	g_hwndDlg=NULL;
 
 int DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
 int DialogToStartRomIsNotRunning = PSH_OPTIONS;
@@ -145,15 +126,15 @@ void GenerateFrameBufferOptions(void)
 
 	frameBufferOptions.bIgnore					= true;
 
-	frameBufferOptions.bSupportRenderTextures			= false;
-	frameBufferOptions.bCheckRenderTextures			= false;
-	frameBufferOptions.bRenderTextureWriteBack			= false;
-	frameBufferOptions.bLoadRDRAMIntoRenderTexture		= false;
+	frameBufferOptions.bSupportRenderTextures	= false;
+	frameBufferOptions.bCheckRenderTextures		= false;
+	frameBufferOptions.bRenderTextureWriteBack	= false;
+	frameBufferOptions.bLoadRDRAMIntoRenderTexture = false;
 
 	frameBufferOptions.bProcessCPUWrite			= false;
 	frameBufferOptions.bProcessCPURead			= false;
 	frameBufferOptions.bAtEachFrameUpdate		= false;
-	frameBufferOptions.bIgnoreRenderTextureIfHeightUnknown		= false;
+	frameBufferOptions.bIgnoreRenderTextureIfHeightUnknown = false;
 
 	switch( currentRomOptions.N64FrameBufferEmuType )
 	{
@@ -243,14 +224,10 @@ void WriteConfiguration(void)
 	ini.SetLongValue("WindowSetting", "WindowedHeight", windowSetting.uWindowDisplayHeight);
 	ini.SetLongValue("WindowSetting", "FullscreenWidth", windowSetting.uFullScreenDisplayWidth);
 	ini.SetLongValue("WindowSetting", "FullscreenHeight", windowSetting.uFullScreenDisplayHeight);
-	ini.SetLongValue("WindowSetting", "FullScreenFrequency", (uint32)windowSetting.uFullScreenRefreshRate);
 	ini.SetLongValue("WindowSetting", "ScreenScaleMode", (uint32)windowSetting.uScreenScaleMode);
 
 	//Now rendering modes
-	ini.SetLongValue("RenderSetting", "DirectXDevice", (uint32)options.DirectXDevice);
 	ini.SetLongValue("RenderSetting", "DirectXAntiAliasingValue", (uint32)options.DirectXAntiAliasingValue);
-	ini.SetLongValue("RenderSetting", "DirectXMaxFSAA", (uint32)options.DirectXMaxFSAA);
-	ini.SetLongValue("RenderSetting", "DirectXMaxAnisotropy", (uint32)options.DirectXMaxAnisotropy);
 	ini.SetLongValue("RenderSetting", "DirectXAnisotropyValue", (uint32)options.DirectXAnisotropyValue);
 	ini.SetLongValue("RenderSetting", "NormalAlphaBlender", defaultRomOptions.bNormalBlender);
 	ini.SetLongValue("RenderSetting", "EnableFog", options.bEnableFog);
@@ -274,10 +251,6 @@ void WriteConfiguration(void)
 	//Now just some misc settings
 	ini.SetLongValue("MiscSettings", "EnableHacks", options.bEnableHacks);
 	ini.SetLongValue("MiscSettings", "ScreenUpdateSetting", defaultRomOptions.screenUpdateSetting);
-	ini.SetLongValue("MiscSettings", "FPSColor", options.FPSColor);
-	ini.SetLongValue("MiscSettings","HideAdvancedOptions", options.bHideAdvancedOptions);
-	ini.SetLongValue("MiscSettings","DisplayOnscreenFPS", options.bDisplayOnscreenFPS);
-
 	//Ok lets save the settings
 	ini.SaveFile(name);
 	ini.Reset();
@@ -310,14 +283,8 @@ void ReadConfiguration(void)
 		options.bDumpTexturesToFiles = FALSE;
 		options.textureEnhancement = 0;
 		options.textureEnhancementControl = 0;
-		options.bHideAdvancedOptions = TRUE;
-		options.bDisplayOnscreenFPS = FALSE;
 		options.DirectXAntiAliasingValue = 0;
-		options.DirectXDevice = 0;	// HAL device
 		options.DirectXAnisotropyValue = 0;
-		options.DirectXMaxFSAA = 16;
-		options.FPSColor = 0xFFFFFFFF;
-		options.DirectXMaxAnisotropy = 16;
 
 		defaultRomOptions.N64FrameBufferEmuType = FRM_BUF_NONE;
 		defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
@@ -325,7 +292,6 @@ void ReadConfiguration(void)
 
 		defaultRomOptions.bNormalBlender = FALSE;
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
-		windowSetting.uFullScreenRefreshRate = 0;	// 0 is the default value, means to use Window default frequency
 		windowSetting.uScreenScaleMode = 0;
 
 		WriteConfiguration();
@@ -342,13 +308,11 @@ void ReadConfiguration(void)
 		windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
 		windowSetting.uFullScreenDisplayWidth = (uint16)ini.GetLongValue("WindowSetting", "FullscreenWidth", 640);
 		windowSetting.uFullScreenDisplayHeight = (uint16)ini.GetLongValue("WindowSetting", "FullScreenHeight", 480);
-		windowSetting.uFullScreenRefreshRate = ini.GetLongValue("WindowSetting", "FullScreenFrequency");
 		windowSetting.uScreenScaleMode = ini.GetLongValue("WindowSetting", "ScreenScaleMode", 0);
 
 		defaultRomOptions.N64FrameBufferEmuType = ini.GetLongValue("FrameBufferSettings", "FrameBufferSetting");
 		defaultRomOptions.N64FrameBufferWriteBackControl = ini.GetLongValue("FrameBufferSettings", "FrameBufferWriteBackControl");
 		defaultRomOptions.N64RenderToTextureEmuType = ini.GetLongValue("FrameBufferSettings", "RenderToTexture");
-		
 
 		options.textureEnhancement = ini.GetLongValue("Texture Settings","TextureEnhancement");
 		options.textureEnhancementControl = ini.GetLongValue("Texture Settings","TextureEnhancementControl");
@@ -358,19 +322,13 @@ void ReadConfiguration(void)
 		options.bDumpTexturesToFiles = ini.GetBoolValue("Texture Settings","DumpTexturesToFiles");
 		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = ini.GetBoolValue("Texture Settings", "DoubleSizeForSmallTxtrBuf");
 
-		options.DirectXDevice = ini.GetLongValue("RenderSetting", "DirectXDevice");
 		options.DirectXAntiAliasingValue = ini.GetLongValue("RenderSetting", "DirectXAntiAliasingValue");
 		options.DirectXAnisotropyValue = ini.GetLongValue("RenderSetting", "DirectXAnisotropyValue");
-		options.DirectXMaxFSAA = ini.GetLongValue("RenderSetting", "DirectXMaxFSAA");
-		options.DirectXMaxAnisotropy = ini.GetLongValue("RenderSetting", "DirectXMaxAnisotropy");
 		defaultRomOptions.bNormalBlender = ini.GetBoolValue("RenderSetting", "NormalAlphaBlender");
 		options.bEnableFog = ini.GetBoolValue("RenderSetting", "EnableFog");
 		options.bWinFrameMode = ini.GetBoolValue("RenderSetting", "WinFrameMode");
 		options.bMipMaps = ini.GetBoolValue("RenderSetting", "MipMaps");
 
-		options.bHideAdvancedOptions = ini.GetBoolValue("MiscSettings", "HideAdvancedOptions");
-		options.bDisplayOnscreenFPS = ini.GetBoolValue("MiscSettings", "DisplayOnscreenFPS");	
-		options.FPSColor = ini.GetLongValue("MiscSettings", "FPSColor");
 		ini.Reset();
 	}
 }
@@ -744,70 +702,35 @@ uint32 CountryCodeToTVSystem(uint32 countryCode)
 LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	int i;
-	int maxres;
-	HWND item;
 
 	switch(message)
 	{
 	case WM_INITDIALOG:
-		g_hwndDlg = hDlg;
-
-		SendDlgItemMessage(hDlg, IDC_FOG, BM_SETCHECK, options.bEnableFog ? BST_CHECKED : BST_UNCHECKED, 0);
+		//General config op
+		SendDlgItemMessage(hDlg, IDC_FOG,		    BM_SETCHECK, options.bEnableFog	   ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_SETCHECK, options.bMipMaps ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hDlg, IDC_MIPMAPS,		BM_SETCHECK, options.bMipMaps	   ? BST_CHECKED : BST_UNCHECKED, 0);
 
-		SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_SETCHECK, options.bHideAdvancedOptions ? BST_CHECKED : BST_UNCHECKED, 0);
-
+		//START OF RESOLUTION STUFF
 		SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_RESETCONTENT, 0, 0);
-		for( maxres=0; maxres<CGraphicsContext::m_numOfResolutions; maxres++ )
+		SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE,	  CB_RESETCONTENT, 0, 0);
+		for(int maxres=0; maxres<CGraphicsContext::m_numOfResolutions; maxres++ ) // Really need to rethink this
 		{
 			sprintf(generalText, "%d x %d", CGraphicsContext::m_FullScreenResolutions[maxres][0], CGraphicsContext::m_FullScreenResolutions[maxres][1]);
 			SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_INSERTSTRING, maxres, (LPARAM) generalText);
-			if( windowSetting.uFullScreenDisplayWidth == CGraphicsContext::m_FullScreenResolutions[maxres][0] &&
+			SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE,	  CB_INSERTSTRING, maxres, (LPARAM) generalText);
+
+			if( windowSetting.uFullScreenDisplayWidth  == CGraphicsContext::m_FullScreenResolutions[maxres][0] &&
 				windowSetting.uFullScreenDisplayHeight == CGraphicsContext::m_FullScreenResolutions[maxres][1] )
 			{
 				SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_SETCURSEL, maxres, 0);
 			}
-		}
 
-		if( CGraphicsContext::m_FullScreenResolutions[CGraphicsContext::m_numOfResolutions - 1][0] <= windowSetting.uWindowDisplayWidth ||
-			CGraphicsContext::m_FullScreenResolutions[CGraphicsContext::m_numOfResolutions - 1][1] <= windowSetting.uWindowDisplayHeight )
-		{
-			windowSetting.uWindowDisplayWidth = 640;
-			windowSetting.uWindowDisplayHeight = 480;
-		}
-
-		SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<CGraphicsContext::m_numOfResolutions; i++ )
-		{
-
-			sprintf(generalText, "%d x %d", CGraphicsContext::m_FullScreenResolutions[i][0], CGraphicsContext::m_FullScreenResolutions[i][1]);
-			SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_INSERTSTRING, i, (LPARAM) generalText);
-			if( windowSetting.uWindowDisplayWidth == CGraphicsContext::m_FullScreenResolutions[i][0] &&
-				windowSetting.uWindowDisplayHeight == CGraphicsContext::m_FullScreenResolutions[i][1] )
+			if ( windowSetting.uWindowDisplayWidth  == CGraphicsContext::m_FullScreenResolutions[maxres][0] &&
+				 windowSetting.uWindowDisplayHeight == CGraphicsContext::m_FullScreenResolutions[maxres][1])
 			{
-				SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_SETCURSEL, i, 0);
+				SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_SETCURSEL, maxres, 0);
 			}
-		}
-
-		SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_RESETCONTENT, 0, 0);
-		SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_INSERTSTRING, 0, (LPARAM) "Default Hz");
-		for( i=0; i<40; i++ )
-		{ 
-			if( CGraphicsContext::m_FullScreenRefreshRates[i] == 0 )
-				break;
-
-			sprintf(generalText,"%d Hz", CGraphicsContext::m_FullScreenRefreshRates[i]);
-			SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_INSERTSTRING, i+1, (LPARAM) generalText);
-			if( windowSetting.uFullScreenRefreshRate == CGraphicsContext::m_FullScreenRefreshRates[i] )
-			{
-				SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_SETCURSEL, i+1, 0);
-			}
-		}
-
-		if( windowSetting.uFullScreenRefreshRate == 0 )
-		{
-			SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_SETCURSEL, 0, 0);
 		}
 
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_RESETCONTENT, 0, 0);
@@ -815,19 +738,60 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 1, (LPARAM) "Pillarbox");
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_INSERTSTRING, 2, (LPARAM) "Extend");
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_SETCURSEL, windowSetting.uScreenScaleMode, 0);
+		//END OF RESOLUTION STUFF
 
+		//--------------------------------------------------------------
+		// Start of Direct X related settings
+		//--------------------------------------------------------------
+		SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 8));
+		SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_SETPAGESIZE, 0, (LPARAM) 4);
+
+		SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 16));
+		SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_SETPAGESIZE, 0, (LPARAM)4);
+
+		sprintf(generalText, "Full Screen Anti-Aliasing: %d X", options.DirectXAntiAliasingValue);
+		SetWindowText(GetDlgItem(hDlg, IDC_ANTI_ALIASING_TEXT), generalText);
+
+		SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAntiAliasingValue);
+
+		sprintf(generalText, "Anisotropic Filtering: %d X", options.DirectXAnisotropyValue);
+		SetWindowText(GetDlgItem(hDlg, IDC_ANISOTROPIC_TEXT), generalText);
+
+		SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAnisotropyValue);
+		//--------------------------------------------------------------
+		// End of Direct X related settings
+		//--------------------------------------------------------------
 
 		if( status.bGameIsRunning )
 		{
-			item = GetDlgItem(hDlg, IDC_RESOLUTION_WINDOW_MODE);
-			EnableWindow(item, FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_RESOLUTION_WINDOW_MODE), FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_SLIDER_FSAA), FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_SLIDER_ANISO), FALSE);
 		}
-
         return(TRUE);
 
-    case WM_DESTROY:
-		g_hwndDlg = NULL;
-		return 0;
+
+	case WM_HSCROLL:
+		switch (LOWORD(wParam))
+		{
+		case TB_ENDTRACK:
+		case TB_THUMBTRACK:
+		case TB_PAGEDOWN:
+		case TB_PAGEUP:
+			if (lParam == (LONG)GetDlgItem(hDlg, IDC_SLIDER_FSAA))
+			{
+				sprintf(generalText, "Full Screen Anti-Aliasing: %d X", SendMessage(GetDlgItem(hDlg, IDC_SLIDER_FSAA), TBM_GETPOS, 0, 0));
+				SetWindowText(GetDlgItem(hDlg, IDC_ANTI_ALIASING_TEXT), generalText);
+			}
+			else if (lParam == (LONG)GetDlgItem(hDlg, IDC_SLIDER_ANISO))
+			{
+				sprintf(generalText, "Anisotropic Filtering: %d X", SendMessage(GetDlgItem(hDlg, IDC_SLIDER_ANISO), TBM_GETPOS, 0, 0));
+				SetWindowText(GetDlgItem(hDlg, IDC_ANISOTROPIC_TEXT), generalText);
+			}
+			break;
+		}
+
+		break;
 
     //Propertysheet handling
 	case WM_NOTIFY:
@@ -846,18 +810,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
                 EndDialog(lpnm->hwndFrom, TRUE);
 				break;
 			case PSN_SETACTIVE :
-				if( options.bHideAdvancedOptions )
-				{
-					ShowItem(hDlg, IDC_FOG, FALSE);
-					ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
-					ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
-				}
-				else
-				{
-					ShowItem(hDlg, IDC_FOG, TRUE);
-					ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
-					ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
-				}
 
 				if(status.bGameIsRunning)
 					DialogToStartRomIsRunning = PSH_OPTIONS;
@@ -872,40 +824,12 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		return(TRUE);
 
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
+		switch (LOWORD(wParam))
 		{
-		case IDC_HIDE_ADVANCED_OPTIONS:
-			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			if( options.bHideAdvancedOptions )
-			{
-				ShowItem(hDlg, IDC_FOG, FALSE);
-				ShowItem(hDlg, IDC_WINFRAME_MODE, FALSE);
-				ShowItem(hDlg, IDC_SKIP_FRAME, FALSE);
-			}
-			else
-			{
-				ShowItem(hDlg, IDC_FOG, TRUE);
-				ShowItem(hDlg, IDC_WINFRAME_MODE, TRUE);
-				ShowItem(hDlg, IDC_SKIP_FRAME, TRUE);
-			}
-			WriteConfiguration();
-			break;
 		case IDOK:
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bHideAdvancedOptions = (SendDlgItemMessage(hDlg, IDC_HIDE_ADVANCED_OPTIONS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-
-			i = SendDlgItemMessage(hDlg, IDC_FULLSCREEN_FREQUENCY, CB_GETCURSEL, 0, 0);
-			if( i<=0 )
-			{
-				windowSetting.uFullScreenRefreshRate = 0;
-			}
-			else
-			{
-				windowSetting.uFullScreenRefreshRate = CGraphicsContext::m_FullScreenRefreshRates[i-1];
-			}
-
 			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
 
 			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_GETCURSEL, 0, 0);
@@ -915,9 +839,15 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_GETCURSEL, 0, 0);
 			windowSetting.uFullScreenDisplayWidth = CGraphicsContext::m_FullScreenResolutions[i][0];
 			windowSetting.uFullScreenDisplayHeight = CGraphicsContext::m_FullScreenResolutions[i][1];
-			
+
 			windowSetting.uDisplayWidth = windowSetting.uWindowDisplayWidth;
 			windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
+
+			options.DirectXAntiAliasingValue = SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_GETPOS, 0, 0);
+			if (options.DirectXAntiAliasingValue == 1)
+				options.DirectXAntiAliasingValue = 0;
+			options.DirectXAnisotropyValue = SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_GETPOS, 0, 0);
+
 
 			WriteConfiguration();
 			EndDialog(hDlg, TRUE);
@@ -928,223 +858,15 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			EndDialog(hDlg, TRUE);
 			return(TRUE);
 		case IDC_ABOUT:
-			DllAbout ( hDlg );
+			DllAbout(hDlg);
 			break;
-	    }
+		}
     }
 
     return FALSE;
 }
-LRESULT APIENTRY DirectXDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
-{
-	int i;
-	HWND item;
-	uint32 dwPos;
-	int step;
 
-	switch(message)
-	{
-	case WM_INITDIALOG:
-		g_hwndDlg = hDlg;
-
-		SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(OnScreenDisplaySettings)/sizeof(SettingInfo); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_INSERTSTRING, i, (LPARAM) (OnScreenDisplaySettings[i].description));
-			if( options.bDisplayOnscreenFPS == OnScreenDisplaySettings[i].setting )
-				SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_SETCURSEL, i, 0);
-		}
-
-		item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-		SendMessage(item,TBM_SETRANGE,(WPARAM) TRUE,(LPARAM) MAKELONG(0, options.DirectXMaxFSAA));
-		step = max(options.DirectXMaxFSAA/4, 1);
-		SendMessage(item,TBM_SETPAGESIZE,0,(LPARAM) step);
-
-		step = max(options.DirectXMaxAnisotropy/4, 1);
-		item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-		SendMessage(item,TBM_SETRANGE,(WPARAM) TRUE,(LPARAM) MAKELONG(0, options.DirectXMaxAnisotropy));
-		SendMessage(item,TBM_SETPAGESIZE,0,(LPARAM) step);
-
-		if( options.DirectXAntiAliasingValue > options.DirectXMaxFSAA )
-		{
-			options.DirectXAntiAliasingValue = options.DirectXMaxFSAA;
-			WriteConfiguration();
-		}
-
-#ifndef _DEBUG
-		ShowItem(hDlg, IDC_DX_DEVICE, FALSE);
-		ShowItem(hDlg, IDC_DX_DEVICE_TEXT, FALSE);
-#endif
-
-		sprintf(generalText,"%08X", options.FPSColor);
-		item = GetDlgItem(hDlg, IDC_FPS_COLOR);
-		SetWindowText(item,generalText);
-
-
-		item = GetDlgItem(hDlg, IDC_ANTI_ALIASING_TEXT);
-		sprintf(generalText, "Full Screen Anti-Aliasing: %d X", options.DirectXAntiAliasingValue);
-		SetWindowText(item,generalText);
-		item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-		SendMessage(item, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAntiAliasingValue);
-		if( options.DirectXMaxFSAA == 0 || status.bGameIsRunning )
-		{
-			EnableWindow(item, FALSE);
-		}
-
-		item = GetDlgItem(hDlg, IDC_ANTI_ALIASING_MAX_TEXT);
-		sprintf(generalText, "%d X", options.DirectXMaxFSAA);
-		//TRACE1("Max FSAA=%d", options.DirectXMaxFSAA);
-		SetWindowText(item,generalText);
-
-		if( options.DirectXAnisotropyValue > options.DirectXMaxAnisotropy )
-		{
-			options.DirectXAnisotropyValue = options.DirectXMaxAnisotropy;
-			WriteConfiguration();
-		}
-
-		item = GetDlgItem(hDlg, IDC_ANISOTROPIC_TEXT);
-		sprintf(generalText, "Anisotropic Filtering: %d X", options.DirectXAnisotropyValue);
-		SetWindowText(item,generalText);
-		item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-		SendMessage(item, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)options.DirectXAnisotropyValue);
-		if( options.DirectXMaxAnisotropy == 0 || status.bGameIsRunning )
-		{
-			EnableWindow(item, FALSE);
-		}
-		item = GetDlgItem(hDlg, IDC_ANISOTROPIC_MAX_TEXT);
-		sprintf(generalText, "%d X", options.DirectXMaxAnisotropy);
-		SetWindowText(item,generalText);
-
-		return(TRUE);
-    
-    //Propertysheet handling
-	case WM_NOTIFY:
-		{
-			LPNMHDR lpnm = (LPNMHDR) lParam;
-
-			switch (lpnm->code)
-			{
-			case PSN_APPLY:
-				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-				EndDialog(lpnm->hwndFrom, TRUE);
-				break;
-
-			case PSN_RESET :
-				//Handle a Cancel button click, if necessary
-				EndDialog(lpnm->hwndFrom, TRUE);
-				break;
-			case PSN_SETACTIVE :
-				if( options.bHideAdvancedOptions )
-				{
-					ShowItem(hDlg, IDC_SHOW_FPS, FALSE);
-					ShowItem(hDlg, IDC_FPS_COLOR, FALSE);
-					ShowItem(hDlg, IDC_SETTING_LABEL2, FALSE);
-					ShowItem(hDlg, IDC_SETTING_LABEL3, FALSE);
-					ShowItem(hDlg, IDC_LABEL5, FALSE);
-					ShowItem(hDlg, IDC_LABEL6, FALSE);
-					ShowItem(hDlg, IDC_LABEL7, FALSE);
-					ShowItem(hDlg, IDC_LABEL8, FALSE);
-				}
-				else
-				{
-					ShowItem(hDlg, IDC_SHOW_FPS, TRUE);
-					ShowItem(hDlg, IDC_FPS_COLOR, TRUE);
-					ShowItem(hDlg, IDC_SETTING_LABEL2, TRUE);
-					ShowItem(hDlg, IDC_SETTING_LABEL3, TRUE);
-					ShowItem(hDlg, IDC_LABEL5, TRUE);
-					ShowItem(hDlg, IDC_LABEL6, TRUE);
-					ShowItem(hDlg, IDC_LABEL7, TRUE);
-					ShowItem(hDlg, IDC_LABEL8, TRUE);
-				}
-
-				if(status.bGameIsRunning)
-					DialogToStartRomIsRunning = PSH_DIRECTX;
-				else
-					DialogToStartRomIsNotRunning = PSH_DIRECTX;
-
-				break;
-			default:
-				return 0;
-			}
-		}
-		return(TRUE);
-	case WM_HSCROLL:
-		switch (LOWORD(wParam)) 
-		{
-		case TB_ENDTRACK: 
-		case TB_THUMBTRACK: 
-		case TB_PAGEDOWN: 
-		case TB_PAGEUP: 
-			item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-			if( lParam == (LONG)item )
-			{
-				dwPos = SendMessage(item, TBM_GETPOS, 0, 0);
-				item = GetDlgItem(hDlg, IDC_ANTI_ALIASING_TEXT);
-				sprintf(generalText, "Full Screen Anti-Aliasing: %d X", dwPos);
-				SetWindowText(item,generalText);
-			}
-			else
-			{
-				item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-				if( lParam == (LONG)item )
-				{
-					dwPos = SendMessage(item, TBM_GETPOS, 0, 0); 
-					item = GetDlgItem(hDlg, IDC_ANISOTROPIC_TEXT);
-					sprintf(generalText, "Anisotropic Filtering: %d X", dwPos);
-					SetWindowText(item,generalText);
-				}
-			}
-			break; 
-
-		default: 
-			break; 
-
-		} 
-
-		break;
-
-	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
-        case IDOK:
-
-			i = SendDlgItemMessage(hDlg, IDC_SHOW_FPS, CB_GETCURSEL, 0, 0);
-			options.bDisplayOnscreenFPS = OnScreenDisplaySettings[i].setting;
-
-			options.DirectXDevice = SendDlgItemMessage(hDlg, IDC_DX_DEVICE, CB_GETCURSEL, 0, 0);
-
-			item = GetDlgItem(hDlg, IDC_SLIDER_FSAA);
-			options.DirectXAntiAliasingValue = SendMessage(item, TBM_GETPOS, 0, 0);
-			if( options.DirectXAntiAliasingValue == 1 )
-				options.DirectXAntiAliasingValue = 0;
-			item = GetDlgItem(hDlg, IDC_SLIDER_ANISO);
-			options.DirectXAnisotropyValue = SendMessage(item, TBM_GETPOS, 0, 0); 
-
-			item = GetDlgItem(hDlg, IDC_FPS_COLOR);
-			GetWindowText(item,generalText,30);
-			if( strlen(generalText) == 8 )
-			{
-				char str[30];
-				sprintf(str,"0x%s",generalText);
-				options.FPSColor = strtoul(str,0,16);
-			}
-
-			EndDialog(hDlg, TRUE);
-			WriteConfiguration();
-
-			return(TRUE);
-
-		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
-	    }
-    }
-
-
-    return FALSE;
-	return(TRUE);
-}
-
+//REWRITE ME
 LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	int i;
@@ -1152,8 +874,6 @@ LRESULT APIENTRY TextureSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 	switch(message)
 	{
 	case WM_INITDIALOG:
-		g_hwndDlg = hDlg;
-
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_RESETCONTENT, 0, 0);
 		for( i=0; i<sizeof(TextureEnhancementSettings)/sizeof(SettingInfo); i++ )
 		{
@@ -1286,8 +1006,6 @@ LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wPar
 	switch(message)
 	{
 	case WM_INITDIALOG:
-		g_hwndDlg = hDlg;
-
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_SETCHECK, defaultRomOptions.bDoubleSizeForSmallTxtrBuf ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -1372,8 +1090,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 	switch(message)
 	{
 	case WM_INITDIALOG:
-		g_hwndDlg = hDlg;
-
 		// Tri-state variables
 		state = g_curRomInfo.dwNormalBlender==2 ? BST_CHECKED : (g_curRomInfo.dwNormalBlender==1?BST_UNCHECKED:BST_INDETERMINATE);
 		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
@@ -1602,15 +1318,7 @@ void CreateOptionsDialogs(HWND hParent)
 	psp[PSH_OPTIONS].pszTitle		= "General Options";
 	psp[PSH_OPTIONS].lParam			= 0;
 
-	psp[PSH_DIRECTX].dwSize			= sizeof(PROPSHEETPAGE);
-	psp[PSH_DIRECTX].dwFlags		= PSP_USETITLE;
-	psp[PSH_DIRECTX].hInstance		= windowSetting.myhInst;
-	psp[PSH_DIRECTX].pszTemplate	= "DIRECTX";
-	psp[PSH_DIRECTX].pszIcon		= NULL;
-	psp[PSH_DIRECTX].pfnDlgProc		= (DLGPROC)DirectXDialogProc;
-	psp[PSH_DIRECTX].pszTitle		= "DirectX";
-	psp[PSH_DIRECTX].lParam			= 0;
-
+	//MOVE ME OUT OF HERE
 	psp[PSH_TEXTURE].dwSize			= sizeof(PROPSHEETPAGE);
 	psp[PSH_TEXTURE].dwFlags		= PSP_USETITLE;
 	psp[PSH_TEXTURE].hInstance		= windowSetting.myhInst;
@@ -1619,36 +1327,18 @@ void CreateOptionsDialogs(HWND hParent)
     psp[PSH_TEXTURE].pfnDlgProc		= (DLGPROC)TextureSettingDialogProc;
 	psp[PSH_TEXTURE].pszTitle		= "Texture Enhancement";
 	psp[PSH_TEXTURE].lParam			= 0;
+	//END MOVE ME OUT OF HERE
 
-	if( options.bHideAdvancedOptions )
-	{
-		psp[PSH_DEFAULTS].dwSize		= sizeof(PROPSHEETPAGE);
-		psp[PSH_DEFAULTS].dwFlags		= PSP_USETITLE;
-		psp[PSH_DEFAULTS].hInstance		= windowSetting.myhInst;
-		psp[PSH_DEFAULTS].pszTemplate	= "HIDDEN";
-		psp[PSH_DEFAULTS].pszIcon		= NULL;
-		psp[PSH_DEFAULTS].pfnDlgProc	= (DLGPROC)UnavailableProc;
-		psp[PSH_DEFAULTS].pszTitle		= "Game Default Options";
-		psp[PSH_DEFAULTS].lParam		= 0;
-	}
-	else
-	{
-		psp[PSH_DEFAULTS].dwSize		= sizeof(PROPSHEETPAGE);
-		psp[PSH_DEFAULTS].dwFlags		= PSP_USETITLE;
-		psp[PSH_DEFAULTS].hInstance		= windowSetting.myhInst;
-		psp[PSH_DEFAULTS].pszTemplate	= "DEFAULTS";
-		psp[PSH_DEFAULTS].pszIcon		= NULL;
-		psp[PSH_DEFAULTS].pfnDlgProc	= (DLGPROC)DefaultSettingDialogProc;
-		psp[PSH_DEFAULTS].pszTitle		= "Game Default Options";
-		psp[PSH_DEFAULTS].lParam		= 0;
-	}
+	psp[PSH_DEFAULTS].dwSize		= sizeof(PROPSHEETPAGE);
+	psp[PSH_DEFAULTS].dwFlags		= PSP_USETITLE;
+	psp[PSH_DEFAULTS].hInstance		= windowSetting.myhInst;
+	psp[PSH_DEFAULTS].pszTemplate	= "DEFAULTS";
+	psp[PSH_DEFAULTS].pszIcon		= NULL;
+	psp[PSH_DEFAULTS].pfnDlgProc	= (DLGPROC)DefaultSettingDialogProc;
+	psp[PSH_DEFAULTS].pszTitle		= "Game Default Options";
+	psp[PSH_DEFAULTS].lParam		= 0;
 
-	if(options.bHideAdvancedOptions)
-	{
-		psp[PSH_ROM_SETTINGS].pszTemplate = "HIDDEN";
-		psp[PSH_ROM_SETTINGS].pfnDlgProc = (DLGPROC) UnavailableProc;
-	}
-	else if (status.bGameIsRunning )
+	if (status.bGameIsRunning )
 	{
 		psp[PSH_ROM_SETTINGS].pszTemplate = "ROM_SETTINGS";
 		psp[PSH_ROM_SETTINGS].pfnDlgProc = (DLGPROC) RomSettingProc;
@@ -1686,7 +1376,6 @@ void CreateOptionsDialogs(HWND hParent)
 
 	hPropSheetHwnd = (HWND) PropertySheet(&psh);	// Start the Property Sheet
 
-	//g_hwndDlg = NULL;
 #endif
 }
 

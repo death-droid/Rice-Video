@@ -682,7 +682,7 @@ void D3DRender::D3DSetMinFilter(uint32 dwStage, uint32 filter)
 	{
 		// Use Anisotropy filter instead of LINEAR filter
 		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC  );
-		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAXANISOTROPY, min(options.DirectXAnisotropyValue, (uint32)CGraphicsContext::m_maxAnisotropy) );
+		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAXANISOTROPY, options.DirectXAnisotropyValue );
 	}
 	else
 		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MINFILTER, filter );
@@ -694,7 +694,7 @@ void D3DRender::D3DSetMagFilter(uint32 dwStage, uint32 filter)
 	{
 		// Use Anisotropy filter instead of LINEAR filter
 		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC  );
-		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAXANISOTROPY, min(options.DirectXAnisotropyValue, (uint32)CGraphicsContext::m_maxAnisotropy) );
+		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAXANISOTROPY, options.DirectXAnisotropyValue);
 	}
 	else
 		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAGFILTER, filter );
@@ -706,7 +706,7 @@ void D3DRender::D3DSetMipFilter(uint32 dwStage, uint32 filter)
 	{
 		// Use Anisotropy filter instead of LINEAR filter
 		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC  );
-		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAXANISOTROPY, min(options.DirectXAnisotropyValue, (uint32)CGraphicsContext::m_maxAnisotropy) );
+		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MAXANISOTROPY, options.DirectXAnisotropyValue );
 	}
 	else
 		g_pD3DDev->SetSamplerState( dwStage, D3DSAMP_MIPFILTER, filter );

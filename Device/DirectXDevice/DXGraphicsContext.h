@@ -74,7 +74,6 @@ protected:
 
 	// Device information
 	static D3DCAPS9			m_d3dCaps;           // Caps for the device
-	static bool				m_bSupportAnisotropy;
 	static HRESULT			DisplayD3DErrorMsg( HRESULT hr, uint32 dwType );
 	static D3DDISPLAYMODE	m_displayMode;
 

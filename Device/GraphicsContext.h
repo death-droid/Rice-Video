@@ -76,9 +76,6 @@ public:
 	static	HWND		m_hWndStatus;
 	static	HWND		m_hWndToolbar;
 	static	HMENU		m_hMenu;
-	static  int			m_maxFSAA;
-	static  int			m_maxAnisotropy;
-	static  UINT		m_FullScreenRefreshRates[40];
 	static  int			m_FullScreenResolutions[40][2];
 	static  int			m_numOfResolutions;
 

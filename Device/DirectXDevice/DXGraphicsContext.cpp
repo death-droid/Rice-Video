@@ -28,7 +28,6 @@ D3DCAPS9 g_D3DDeviceCaps;
 //////////////////////////////////////////////////////////////////////
 D3DCAPS9		CDXGraphicsContext::m_d3dCaps;           // Caps for the device
 D3DDISPLAYMODE CDXGraphicsContext::m_displayMode;
-bool			CDXGraphicsContext::m_bSupportAnisotropy;
 
 CDXGraphicsContext::CDXGraphicsContext() :
 	m_pd3dDevice(NULL),
@@ -221,37 +220,6 @@ void CDXGraphicsContext::InitDeviceParameters()
 	// Get device caps
 	pD3D->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &m_d3dCaps);
 
-	// Determine the maximum FSAA
-	for( m_maxFSAA = 16; m_maxFSAA >= 2; m_maxFSAA-- )
-	{
-		if (SUCCEEDED(pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, FALSE, D3DMULTISAMPLE_TYPE(D3DMULTISAMPLE_NONE + m_maxFSAA), NULL)))
-		{
-			if (m_maxFSAA < 2)
-				m_maxFSAA = 0;
-			break;
-		}
-		else
-		{
-			continue;
-		}
-	}
-
-	if( options.DirectXMaxFSAA != m_maxFSAA )
-	{
-		options.DirectXMaxFSAA = m_maxFSAA;
-		WriteConfiguration();
-	}
-
-	// Check Anisotropy Filtering maximum
-	m_maxAnisotropy = m_d3dCaps.MaxAnisotropy;
-
-	if( options.DirectXMaxAnisotropy != m_maxAnisotropy )
-	{
-		options.DirectXMaxAnisotropy = m_maxAnisotropy;
-		WriteConfiguration();
-	}
-
-
 	// Release the Direct3D object
 	pD3D->Release();
 }
@@ -306,11 +274,10 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	m_d3dpp.BackBufferFormat	   = D3DFMT_X8R8G8B8;
 
 	m_FSAAIsEnabled = false;
-	if (options.DirectXAntiAliasingValue != 0 && m_maxFSAA > 0)
+	if (options.DirectXAntiAliasingValue != 0)
 	{
-		m_d3dpp.MultiSampleType = (D3DMULTISAMPLE_TYPE)(D3DMULTISAMPLE_NONE + min(m_maxFSAA, (int)options.DirectXAntiAliasingValue));
+		m_d3dpp.MultiSampleType = (D3DMULTISAMPLE_TYPE)(D3DMULTISAMPLE_NONE + (int)options.DirectXAntiAliasingValue);
 		m_FSAAIsEnabled = true;
-		//TRACE1("Start with FSAA=%d X", pDeviceInfo->MultiSampleType-D3DMULTISAMPLE_NONE);
 	}
 
 	if( currentRomOptions.N64FrameBufferEmuType != FRM_BUF_NONE && m_FSAAIsEnabled )
@@ -331,13 +298,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	windowSetting.uDisplayWidth = m_bWindowed ? windowSetting.uWindowDisplayWidth : windowSetting.uFullScreenDisplayWidth;
 	windowSetting.uDisplayHeight = m_bWindowed ? windowSetting.uWindowDisplayHeight : windowSetting.uFullScreenDisplayHeight;
 
-	m_d3dpp.FullScreen_RefreshRateInHz = m_bWindowed ? 0 : windowSetting.uFullScreenRefreshRate;
-
-	if (m_d3dpp.FullScreen_RefreshRateInHz > m_displayMode.RefreshRate && !m_bWindowed)
-	{
-		m_d3dpp.FullScreen_RefreshRateInHz = m_displayMode.RefreshRate;
-		windowSetting.uFullScreenRefreshRate = m_displayMode.RefreshRate;
-	}
+	m_d3dpp.FullScreen_RefreshRateInHz = m_bWindowed ? 0 : m_displayMode.RefreshRate;
 
 	m_d3dpp.BackBufferWidth = m_bWindowed ? 0 : windowSetting.uDisplayWidth;
 	m_d3dpp.BackBufferHeight = m_bWindowed ? 0 : windowSetting.uDisplayHeight;

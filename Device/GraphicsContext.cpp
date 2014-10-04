@@ -22,9 +22,6 @@
 
 CGraphicsContext* CGraphicsContext::g_pGraphicsContext = NULL;
 bool CGraphicsContext::needCleanScene = false;
-int	CGraphicsContext::m_maxFSAA = 16;
-int	CGraphicsContext::m_maxAnisotropy = 16;
-UINT CGraphicsContext::m_FullScreenRefreshRates[40] = {	0, 50, 55, 60, 65, 70, 72, 75, 80, 85, 90, 95, 100, 110, 120};
 int CGraphicsContext::m_FullScreenResolutions[40][2] = {
 	{320,200}, {400,300}, {480,360}, {512,384}, {640,480}, 
 	{800,600}, {1024,768}, {1152,864}, {1280,960}, 
@@ -216,9 +213,7 @@ void CGraphicsContext::InitDeviceParameters(void)
 
 	int i=0, j;
 	DEVMODE deviceMode;
-	int	numOfFrequency=0;
 	CGraphicsContext::m_numOfResolutions=0;
-	memset(&CGraphicsContext::m_FullScreenRefreshRates,0,40*sizeof(UINT));
 	memset(&CGraphicsContext::m_FullScreenResolutions, 0, 40*2*sizeof(int));
 
 	while (EnumDisplaySettings( NULL, i, &deviceMode ) != 0)
@@ -238,22 +233,9 @@ void CGraphicsContext::InitDeviceParameters(void)
 			CGraphicsContext::m_FullScreenResolutions[CGraphicsContext::m_numOfResolutions][1] = deviceMode.dmPelsHeight;
 			CGraphicsContext::m_numOfResolutions++;
 		}
-
-		for( j=0; j<numOfFrequency; j++)
-		{
-			if( CGraphicsContext::m_FullScreenRefreshRates[j] == deviceMode.dmDisplayFrequency )
-				break;
-		}
-
-		if( j == numOfFrequency && deviceMode.dmDisplayFrequency >= 50 )
-		{
-			CGraphicsContext::m_FullScreenRefreshRates[numOfFrequency++] = deviceMode.dmDisplayFrequency;
-		}
-
 		i++;
 	}
 
-	qsort( &CGraphicsContext::m_FullScreenRefreshRates, numOfFrequency, sizeof(UINT), SortFrequenciesCallback );
 	qsort( &CGraphicsContext::m_FullScreenResolutions, CGraphicsContext::m_numOfResolutions, sizeof(int)*2, SortResolutionsCallback );
 
 	// To initialze device parameters for DirectX

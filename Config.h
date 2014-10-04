@@ -143,10 +143,6 @@ struct GlobalOptions{
 	BOOL	bEnableFog;
 	BOOL	bWinFrameMode;
 	BOOL	bMipMaps;
-	BOOL	bHideAdvancedOptions;
-
-	uint32	bDisplayOnscreenFPS;
-	uint32	FPSColor;
 
 	uint32	forceTextureFilter;
 	uint32	textureEnhancement;
@@ -157,10 +153,6 @@ struct GlobalOptions{
 
 	uint32	DirectXAntiAliasingValue;
 	uint32	DirectXAnisotropyValue;
-
-	uint32	DirectXMaxFSAA;
-	uint32	DirectXMaxAnisotropy;
-	int		DirectXDevice;
 
 	HACK_FOR_GAMES	enableHackForGames;
 } ;
@@ -187,7 +179,6 @@ struct FrameBufferOptions{
 
 	bool	bFillRectNextTextureBuffer;
 	bool	bIgnoreRenderTextureIfHeightUnknown;
-	//bool	bFillColor;
 };
 
 extern FrameBufferOptions frameBufferOptions;
@@ -278,7 +269,6 @@ uint32 CountryCodeToTVSystem(uint32 countryCode);
 
 enum {
     PSH_OPTIONS,
-    PSH_DIRECTX,
     PSH_TEXTURE,
     PSH_DEFAULTS,
     PSH_ROM_SETTINGS,
