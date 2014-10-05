@@ -242,7 +242,6 @@ void WriteConfiguration(void)
 	ini.SetLongValue("Texture Settings", "DumpTexturesToFiles", (uint32)options.bDumpTexturesToFiles);
 	ini.SetLongValue("Texture Settings", "TextureEnhancement", (uint32)options.textureEnhancement);
 	ini.SetLongValue("Texture Settings", "TextureEnhancementControl", (uint32)options.textureEnhancementControl);
-	ini.SetLongValue("Texture Settings", "DoubleSizeForSmallTxtrBuf", (uint32)defaultRomOptions.bDoubleSizeForSmallTxtrBuf);
 
 	//Now framebuffer Settings
 	ini.SetLongValue("FrameBufferSettings", "FrameBufferType", defaultRomOptions.N64FrameBufferEmuType);
@@ -292,7 +291,6 @@ void ReadConfiguration(void)
 		defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
 
 		defaultRomOptions.bNormalBlender = FALSE;
-		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = FALSE;
 		windowSetting.uScreenScaleMode = 0;
 
 		WriteConfiguration();
@@ -321,7 +319,6 @@ void ReadConfiguration(void)
 		options.bLoadHiResTextures = ini.GetBoolValue("Texture Settings","LoadHiResTextures");
 		options.bCacheHiResTextures = ini.GetBoolValue("Texture Settings","CacheHiResTextures");
 		options.bDumpTexturesToFiles = ini.GetBoolValue("Texture Settings","DumpTexturesToFiles");
-		defaultRomOptions.bDoubleSizeForSmallTxtrBuf = ini.GetBoolValue("Texture Settings", "DoubleSizeForSmallTxtrBuf");
 
 		options.DirectXAntiAliasingValue = ini.GetLongValue("RenderSetting", "DirectXAntiAliasingValue");
 		options.DirectXAnisotropyValue = ini.GetLongValue("RenderSetting", "DirectXAnisotropyValue");
@@ -359,6 +356,7 @@ void GenerateCurrentRomOptions()
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
 
+	//URGHK Wish there was some way to clean all of this up
 	if ((strncmp(g_curRomInfo.szGameName, "BANJO TOOIE", 11) == 0))
 	{
 		options.enableHackForGames = HACK_FOR_BANJO_TOOIE;
@@ -710,13 +708,14 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		//General config op
 		SendDlgItemMessage(hDlg, IDC_FOG,		    BM_SETCHECK, options.bEnableFog	   ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
+		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender ? BST_CHECKED : BST_UNCHECKED, 0);
 
 		//--------------------------------------------------------------
 		// Begin Resolution handling code
 		//--------------------------------------------------------------
 		SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE,	  CB_RESETCONTENT, 0, 0);
-		for(int maxres=0; maxres<CGraphicsContext::m_numOfResolutions; maxres++ ) // Really need to rethink this
+		for(int maxres=0; maxres<CGraphicsContext::m_numOfResolutions; maxres++ ) // Really need to rethink this -CLEAN ME -FIX ME
 		{
 			sprintf(generalText, "%d x %d", CGraphicsContext::m_FullScreenResolutions[maxres][0], CGraphicsContext::m_FullScreenResolutions[maxres][1]);
 			SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_INSERTSTRING, maxres, (LPARAM) generalText);
@@ -742,6 +741,33 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_SETCURSEL, windowSetting.uScreenScaleMode, 0);
 		//--------------------------------------------------------------
 		// End resolution handling code
+		//--------------------------------------------------------------
+
+		//--------------------------------------------------------------
+		//	Begin framebuffer options
+		//--------------------------------------------------------------
+		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_RESETCONTENT, 0, 0);
+		for (i = 0; i<sizeof(frameBufferSettings) / sizeof(char*); i++)
+		{
+			SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_INSERTSTRING, i, (LPARAM)frameBufferSettings[i]);
+		}
+		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_SETCURSEL, defaultRomOptions.N64FrameBufferEmuType, 0);
+
+		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_RESETCONTENT, 0, 0);
+		for (i = 0; i<sizeof(frameBufferWriteBackControlSettings) / sizeof(char*); i++)
+		{
+			SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_INSERTSTRING, i, (LPARAM)frameBufferWriteBackControlSettings[i]);
+		}
+		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_SETCURSEL, defaultRomOptions.N64FrameBufferWriteBackControl, 0);
+
+		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_RESETCONTENT, 0, 0);
+		for (i = 0; i<sizeof(renderToTextureSettings) / sizeof(char*); i++)
+		{
+			SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_INSERTSTRING, i, (LPARAM)renderToTextureSettings[i]);
+		}
+		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_SETCURSEL, defaultRomOptions.N64RenderToTextureEmuType, 0);
+		//--------------------------------------------------------------
+		//	End framebuffer options
 		//--------------------------------------------------------------
 
 		//--------------------------------------------------------------
@@ -856,7 +882,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		case IDOK:
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			
+			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			
 			//Begin Resolutioon Handling
 			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
@@ -914,6 +940,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			// End texture enhancement code
 			//--------------------------------------------------------------
 
+			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
+			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
+			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
+
 			WriteConfiguration();
 			EndDialog(hDlg, TRUE);
 
@@ -931,88 +961,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
     return FALSE;
 }
 
-LRESULT APIENTRY DefaultSettingDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
-{
-	int i;
-	switch(message)
-	{
-	case WM_INITDIALOG:
-		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_SETCHECK, defaultRomOptions.bDoubleSizeForSmallTxtrBuf ? BST_CHECKED : BST_UNCHECKED, 0);
-
-		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(frameBufferSettings)/sizeof(char*); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_INSERTSTRING, i, (LPARAM) frameBufferSettings[i]);
-		}
-		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_SETCURSEL, defaultRomOptions.N64FrameBufferEmuType, 0);
-
-		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(frameBufferWriteBackControlSettings)/sizeof(char*); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_INSERTSTRING, i, (LPARAM) frameBufferWriteBackControlSettings[i]);
-		}
-		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_SETCURSEL, defaultRomOptions.N64FrameBufferWriteBackControl, 0);
-
-		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_RESETCONTENT, 0, 0);
-		for( i=0; i<sizeof(renderToTextureSettings)/sizeof(char*); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_INSERTSTRING, i, (LPARAM) renderToTextureSettings[i]);
-		}
-		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_SETCURSEL, defaultRomOptions.N64RenderToTextureEmuType, 0);
-        return(TRUE);
-    
-    //Propertysheet handling
-	case WM_NOTIFY:
-		{
-		LPNMHDR lpnm = (LPNMHDR) lParam;
-
-        switch (lpnm->code)
-            {
-			case PSN_APPLY:
-				SendMessage(hDlg, WM_COMMAND, IDOK, lParam);
-                EndDialog(lpnm->hwndFrom, TRUE);
-				break;
-
-            case PSN_RESET :
-                //Handle a Cancel button click, if necessary
-                EndDialog(lpnm->hwndFrom, TRUE);
-				break;
-			case PSN_SETACTIVE:
-				if(status.bGameIsRunning)
-					DialogToStartRomIsRunning = PSH_DEFAULTS;
-				else
-					DialogToStartRomIsNotRunning = PSH_DEFAULTS;
-				break;
-			default:
-				return 0;
-			}
-		}
-		return(TRUE);
-
-	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
-		case IDOK:
-			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.bDoubleSizeForSmallTxtrBuf = (SendDlgItemMessage(hDlg, IDC_TXTR_BUF_DOUBLE_SIZE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-
-			WriteConfiguration();
-			EndDialog(hDlg, TRUE);
-
-			return(TRUE);
-
-		case IDCANCEL:
-			EndDialog(hDlg, TRUE);
-			return(TRUE);
-	    }
-    }
-
-	return FALSE;
-}
+//We need to keep these rom setting page, they should ALWAYS overide any other option
 LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	int i;
@@ -1235,9 +1184,9 @@ LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG 
 void CreateOptionsDialogs(HWND hParent)
 {
 #ifdef ENABLE_CONFIG_DIALOG
-	PROPSHEETPAGE	psp[3]; //Change this array size if you change the number of pages.
+	PROPSHEETPAGE	psp[2]; //Change this array size if you change the number of pages.
 	PROPSHEETHEADER psh;
-	memset(&psp,0,sizeof(PROPSHEETPAGE)*3);
+	memset(&psp,0,sizeof(PROPSHEETPAGE)*2);
 	memset(&psh,0,sizeof(PROPSHEETHEADER));
 
 	psp[PSH_OPTIONS].dwSize			= sizeof(PROPSHEETPAGE);
@@ -1248,15 +1197,6 @@ void CreateOptionsDialogs(HWND hParent)
 	psp[PSH_OPTIONS].pfnDlgProc		= (DLGPROC)OptionsDialogProc;
 	psp[PSH_OPTIONS].pszTitle		= "General Options";
 	psp[PSH_OPTIONS].lParam			= 0;
-
-	psp[PSH_DEFAULTS].dwSize		= sizeof(PROPSHEETPAGE);
-	psp[PSH_DEFAULTS].dwFlags		= PSP_USETITLE;
-	psp[PSH_DEFAULTS].hInstance		= windowSetting.myhInst;
-	psp[PSH_DEFAULTS].pszTemplate	= "DEFAULTS";
-	psp[PSH_DEFAULTS].pszIcon		= NULL;
-	psp[PSH_DEFAULTS].pfnDlgProc	= (DLGPROC)DefaultSettingDialogProc;
-	psp[PSH_DEFAULTS].pszTitle		= "Game Default Options";
-	psp[PSH_DEFAULTS].lParam		= 0;
 
 	if (status.bGameIsRunning )
 	{

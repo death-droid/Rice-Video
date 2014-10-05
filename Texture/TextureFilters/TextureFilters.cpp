@@ -396,7 +396,6 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			// terminate the string ('0' means end of string - or in this case begin of string)
 			*ptr++ = 0;
 
-
 			// extract the information from the file name - this file does not have a palette crc; information is:
 			// <DRAM(or texture)-CRC><texture type><texture format>
 			// o gosh, commenting source code is really boring - but necessary!! Thus do it! (and don't use drugs ;-))
@@ -427,8 +426,8 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 
 			}
 
-			// if the texture is not yet in the list or if it exists with another type
-			if(	foundIdx < 0 || type != infos[foundIdx].type)
+			// if the texture is not yet in the list
+			if(	foundIdx < 0 )
 			{
 				// create a new entry
 				ExtTxtrInfo *newinfo = new ExtTxtrInfo;
@@ -838,10 +837,6 @@ void InitExternalTextures(void)
 		// also be excluded from dumping
 		InitTextureDump();
 	} 
-	else
-	{
-		InitHiresTextures(true);
-	}
 }
 
 

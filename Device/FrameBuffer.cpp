@@ -1283,16 +1283,8 @@ void FrameBufferManager::SetRenderTexture(void)
 	status.bHandleN64RenderTexture = true;
 	newRenderTextureInfo.maxUsedHeight = 0;
 
-	if( defaultRomOptions.bDoubleSizeForSmallTxtrBuf && newRenderTextureInfo.N64Width<=128 && newRenderTextureInfo.N64Height<=128)
-	{
-		newRenderTextureInfo.bufferWidth = newRenderTextureInfo.N64Width*2;
-		newRenderTextureInfo.bufferHeight = newRenderTextureInfo.N64Height*2;
-	}
-	else
-	{
-		newRenderTextureInfo.bufferWidth = newRenderTextureInfo.N64Width;
-		newRenderTextureInfo.bufferHeight = newRenderTextureInfo.N64Height;
-	}
+	newRenderTextureInfo.bufferWidth = newRenderTextureInfo.N64Width;
+	newRenderTextureInfo.bufferHeight = newRenderTextureInfo.N64Height;
 
 	newRenderTextureInfo.scaleX = newRenderTextureInfo.bufferWidth / float(newRenderTextureInfo.N64Width);
 	newRenderTextureInfo.scaleY = newRenderTextureInfo.bufferHeight / float(newRenderTextureInfo.N64Height);

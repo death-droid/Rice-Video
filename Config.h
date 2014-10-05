@@ -191,7 +191,6 @@ struct RomOptions{
 	uint32	N64RenderToTextureEmuType;
 	uint32	screenUpdateSetting;
 	BOOL 	bNormalBlender;
-	BOOL 	bDoubleSizeForSmallTxtrBuf;
 };
 
 extern RomOptions defaultRomOptions;
@@ -269,7 +268,6 @@ uint32 CountryCodeToTVSystem(uint32 countryCode);
 
 enum {
     PSH_OPTIONS,
-    PSH_DEFAULTS,
     PSH_ROM_SETTINGS,
 };
 
