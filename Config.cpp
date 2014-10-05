@@ -185,10 +185,10 @@ void GenerateFrameBufferOptions(void)
 	case TXT_BUF_WRITE_BACK:
 		frameBufferOptions.bRenderTextureWriteBack			= true;
 	case TXT_BUF_NORMAL:
-		frameBufferOptions.bCheckRenderTextures			= true;
-		frameBufferOptions.bIgnore					= false;
+		frameBufferOptions.bCheckRenderTextures				= true;
+		frameBufferOptions.bIgnore							= false;
 	case TXT_BUF_IGNORE:
-		frameBufferOptions.bUpdateCIInfo			= true;
+		frameBufferOptions.bUpdateCIInfo					= true;
 		frameBufferOptions.bSupportRenderTextures			= true;
 		break;
 	}
@@ -961,7 +961,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
     return FALSE;
 }
 
-//We need to keep these rom setting page, they should ALWAYS overide any other option
+//We need to keep these rom setting page, they should ALWAYS overide any other option --clean me --fix me
 LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
 	int i;

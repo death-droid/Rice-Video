@@ -23,9 +23,9 @@
 CGraphicsContext* CGraphicsContext::g_pGraphicsContext = NULL;
 bool CGraphicsContext::needCleanScene = false;
 int CGraphicsContext::m_FullScreenResolutions[40][2] = {
-	{320,200}, {400,300}, {480,360}, {512,384}, {640,480}, 
-	{800,600}, {1024,768}, {1152,864}, {1280,960}, 
-	{1400,1050}, {1600,1200}, {1920,1440}, {2048,1536}};
+	{ 320, 200 }, { 400, 300 }, { 480, 360 }, { 512, 384 }, { 640, 480 },
+	{ 800, 600 }, { 1024, 768 }, { 1152, 864 }, { 1280, 960 },
+	{ 1400, 1050 }, { 1600, 1200 }, { 1920, 1440 }, { 2048, 1536 } };;
 int CGraphicsContext::m_numOfResolutions = 0;
 
 CGraphicsContext * CGraphicsContext::Get(void)
@@ -116,19 +116,10 @@ bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, ui
 	}
 	else
 	{
-		int maxidx = CGraphicsContext::m_numOfResolutions - 1;
-		if( CGraphicsContext::m_FullScreenResolutions[maxidx][0] <= windowSetting.uWindowDisplayWidth ||
-			CGraphicsContext::m_FullScreenResolutions[maxidx][1] <= windowSetting.uWindowDisplayHeight )
-		{
-			windowSetting.uWindowDisplayWidth = 640;
-			windowSetting.uWindowDisplayHeight = 480;
-		}
-
 		windowSetting.uDisplayWidth = windowSetting.uWindowDisplayWidth;
 		windowSetting.uDisplayHeight= windowSetting.uWindowDisplayHeight;
 	}
 	
-
 	RECT rcScreen;
 	SetRect(&rcScreen, 0,0, windowSetting.uDisplayWidth, windowSetting.uDisplayHeight);
 	rcScreen.bottom += windowSetting.statusBarHeight;
@@ -211,23 +202,25 @@ void CGraphicsContext::InitDeviceParameters(void)
 {
 	// Initialize common device parameters
 
-	int i=0, j;
+	int i=0,j;
 	DEVMODE deviceMode;
 	CGraphicsContext::m_numOfResolutions=0;
 	memset(&CGraphicsContext::m_FullScreenResolutions, 0, 40*2*sizeof(int));
 
 	while (EnumDisplaySettings( NULL, i, &deviceMode ) != 0)
 	{
+		//Lets ensure that the current display resolution is not already in our list
 		for (j = 0; j < CGraphicsContext::m_numOfResolutions; j++)
 		{
-			if ((deviceMode.dmPelsWidth == CGraphicsContext::m_FullScreenResolutions[j][0]) &&
+			if ((deviceMode.dmPelsWidth  == CGraphicsContext::m_FullScreenResolutions[j][0]) &&
 				(deviceMode.dmPelsHeight == CGraphicsContext::m_FullScreenResolutions[j][1]))
 			{
 				break;
 			}
 		}
 
-		if( j == CGraphicsContext::m_numOfResolutions )
+		//If where currently in the top position, add to our list
+		if (j == CGraphicsContext::m_numOfResolutions)
 		{
 			CGraphicsContext::m_FullScreenResolutions[CGraphicsContext::m_numOfResolutions][0] = deviceMode.dmPelsWidth;
 			CGraphicsContext::m_FullScreenResolutions[CGraphicsContext::m_numOfResolutions][1] = deviceMode.dmPelsHeight;
