@@ -30,15 +30,15 @@ typedef struct {
 	unsigned __int16		uFullScreenDisplayWidth, uFullScreenDisplayHeight;
 	unsigned __int16		uWindowDisplayWidth, uWindowDisplayHeight;
 	
-	BOOL	bDisplayFullscreen;
+	bool	bDisplayFullscreen;
 	int		uScreenScaleMode;
 	float	fMultX, fMultY;
 	int		vpLeftW, vpTopW, vpRightW, vpBottomW, vpWidthW, vpHeightW;
 
 	int		statusBarHeight, statusBarHeightToUse, toolbarHeight, toolbarHeightToUse;
-	BOOL	screenSaverStatus;
+	bool	screenSaverStatus;
 
-	struct {
+	struct clipping{
 		uint32		left;
 		uint32		top;
 		uint32		right;
@@ -46,25 +46,19 @@ typedef struct {
 		uint32		width;
 		uint32		height;
 		bool		needToClip;
-	} clipping;
-
-	int		timer;
-	float	fps;	// frame per second
-	float	dps;	// dlist per second
-	uint32	lastSecFrameCount;
-	uint32	lastSecDlistCount;
+	};
 }WindowSettingStruct;
 
 extern WindowSettingStruct windowSetting;
 
-typedef enum 
+enum CurScissorType
 {
 	RSP_SCISSOR,
 	RDP_SCISSOR,
 	UNKNOWN_SCISSOR,
-} CurScissorType;
+};
 
-typedef struct {
+struct PluginStatus{
 	bool	bGameIsRunning;	  
 	uint32	dwTvSystem;
 	float	fRatio;
@@ -76,7 +70,6 @@ typedef struct {
 	uint32	dwNumDListsCulled;
 	uint32	dwNumTrisClipped;
 	uint32	dwNumVertices;
-	uint32  dwBiggestVertexIndex;
 
 	uint32	gDlistCount;
 	uint32	gFrameCount;
@@ -100,9 +93,6 @@ typedef struct {
 	bool	toCaptureScreen;
 	char	screenCaptureFilename[MAX_PATH];
 
-	char	CPUCoreMsgToDisplay[256];
-	bool	CPUCoreMsgIsSet;
-
 	bool	bAllowLoadFromTMEM;
 
 	// Frame buffer simulation related status variables
@@ -114,7 +104,7 @@ typedef struct {
 
 	bool    bScreenIsDrawn;
 
-} PluginStatus;
+};
 
 extern PluginStatus status;
 extern char generalText[];

@@ -168,7 +168,6 @@ void DLParser_Process()
 
 	if ( CRender::g_pRender == NULL)
 	{
-		TriggerDPInterrupt();
 		return;
 	}
 
@@ -211,8 +210,7 @@ void DLParser_Process()
 	status.dwNumTrisRendered = 0;
 	status.dwNumTrisClipped = 0;
 	status.dwNumVertices = 0;
-	status.dwBiggestVertexIndex = 0;
-
+	
 	if( g_curRomInfo.bForceScreenClear && CGraphicsContext::needCleanScene )
 	{
 		CRender::g_pRender->ClearBuffer(true,true);
@@ -240,14 +238,6 @@ void DLParser_Process()
 			}
 #endif
 
-#ifdef _DEBUG
-			if (gDlistStack[gDlistStackPointer].pc > g_dwRamSize)
-			{
-				DebuggerAppendMsg("Error: dwPC is %08X", gDlistStack[gDlistStackPointer].pc );
-				break;
-			}
-#endif
-
 			status.gUcodeCount++;
 
 			MicroCodeCommand command;
@@ -267,8 +257,10 @@ void DLParser_Process()
 	catch(...)
 	{
 		TRACE0("Unknown exception happens in ProcessDList");
-		TriggerDPInterrupt();
 	}
+
+	//Do this regardless
+	TriggerDPInterrupt();
 
 	CRender::g_pRender->EndRendering();
 		
@@ -434,7 +426,8 @@ void DLParser_RDPTileSync(MicroCodeCommand command)
 
 void DLParser_RDPFullSync(MicroCodeCommand command)
 { 
-	TriggerDPInterrupt();
+	//We do this regardless now
+	//This tends to be called after DLIST processing anyway
 }
 
 void DLParser_SetScissor(MicroCodeCommand command)
@@ -706,9 +699,6 @@ void RSP_RDP_Nothing(MicroCodeCommand command)
 		
 	if( options.bEnableHacks )
 		return;
-
-	TriggerDPInterrupt();
-
 	gDlistStackPointer=-1;
 }
 

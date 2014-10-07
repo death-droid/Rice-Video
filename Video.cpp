@@ -168,26 +168,6 @@ FUNC_TYPE(void) NAME_DEFINE(MoveScreen) (int xpos, int ypos)
 void Ini_GetRomOptions(LPGAMESETTING pGameSetting);
 void Ini_StoreRomOptions(LPGAMESETTING pGameSetting);
 void GenerateCurrentRomOptions();
-void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, uint32 dwTime)
-{
-	if( windowSetting.lastSecDlistCount != 0xFFFFFFFF )
-	{
-		if( windowSetting.dps < 0 )
-			windowSetting.dps = (float)(status.gDlistCount-windowSetting.lastSecDlistCount);
-		else
-			windowSetting.dps = windowSetting.dps * 0.2f + (status.gDlistCount-windowSetting.lastSecDlistCount)*0.8f;
-	}
-	windowSetting.lastSecDlistCount = status.gDlistCount;
-
-	if( windowSetting.lastSecFrameCount != 0xFFFFFFFF )
-	{
-		if( windowSetting.fps < 0 )
-			windowSetting.fps = (float)(status.gFrameCount-windowSetting.lastSecFrameCount);
-		else
-			windowSetting.fps = windowSetting.fps * 0.2f + (status.gFrameCount-windowSetting.lastSecFrameCount)*0.8f;
-	}
-	windowSetting.lastSecFrameCount = status.gFrameCount;
-}
 
 extern void InitExternalTextures(void);
 bool StartVideo(void)
@@ -195,10 +175,6 @@ bool StartVideo(void)
 	SystemParametersInfo(SPI_GETSCREENSAVEACTIVE, 0, &windowSetting.screenSaverStatus, 0);
 	if( windowSetting.screenSaverStatus )	
 		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, FALSE, 0, 0);		// Disable screen saver
-
-	windowSetting.timer = SetTimer(g_GraphicsInfo.hWnd, 100, 1000, (TIMERPROC)TimerProc);
-	windowSetting.dps = windowSetting.fps = -1;
-	windowSetting.lastSecDlistCount = windowSetting.lastSecFrameCount = 0xFFFFFFFF;
 
 	g_CritialSection.Lock();
 
@@ -299,11 +275,7 @@ void StopVideo()
 	}
 
 	g_CritialSection.Unlock();
-	windowSetting.dps = windowSetting.fps = -1;
-	windowSetting.lastSecDlistCount = windowSetting.lastSecFrameCount = 0xFFFFFFFF;
 	status.gDlistCount = status.gFrameCount = 0;
-
-	KillTimer(g_GraphicsInfo.hWnd, windowSetting.timer);
 
 	if( windowSetting.screenSaverStatus )	
 		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, 0, 0);	// Enable screen saver
@@ -690,7 +662,6 @@ FUNC_TYPE(void) NAME_DEFINE(ProcessRDPList)(void)
 	catch (...)
 	{
 		TRACE0("Unknown Error in ProcessRDPList");
-		TriggerDPInterrupt();
 	}
 }	
 
@@ -710,7 +681,6 @@ FUNC_TYPE(void) NAME_DEFINE(ProcessDList)(void)
 	catch (...)
 	{
 		TRACE0("Unknown Error in ProcessDList");
-		TriggerDPInterrupt();
 	}
 
 	g_CritialSection.Unlock();
@@ -730,6 +700,7 @@ FUNC_TYPE(void) NAME_DEFINE(ShowCFB) (void)
 	status.toShowCFB = true;
 }
 
+//REWRITE ME --FIX ME -- CLEAN ME
 FUNC_TYPE(void) NAME_DEFINE(CaptureScreen) ( char * Directory )
 {
 	if( status.bGameIsRunning && status.gDlistCount > 0 )
