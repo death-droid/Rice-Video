@@ -38,7 +38,7 @@ typedef struct {
 	int		statusBarHeight, statusBarHeightToUse, toolbarHeight, toolbarHeightToUse;
 	bool	screenSaverStatus;
 
-	struct clipping{
+	struct{
 		uint32		left;
 		uint32		top;
 		uint32		right;
@@ -46,7 +46,7 @@ typedef struct {
 		uint32		width;
 		uint32		height;
 		bool		needToClip;
-	};
+	}clipping;
 }WindowSettingStruct;
 
 extern WindowSettingStruct windowSetting;
