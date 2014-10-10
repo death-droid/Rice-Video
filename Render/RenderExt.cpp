@@ -447,7 +447,7 @@ void CRender::DrawFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 	else
 		SetAlphaTestEnable(TRUE);	// use Alpha Test for partial frame buffer draw, for Dr. Mario 64
 
-	CBlender::Disable();
+	//CBlender::Disable();
 
 	CTexture *pTexture = g_textures[0].m_pCTexture;
 	if( pTexture )

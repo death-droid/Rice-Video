@@ -19,23 +19,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _BLENDER_H_
 #define _BLENDER_H_
 
-class CRender;
-
 class CBlender
 {
 public:
 	
 	static void InitBlenderMode(void);
-	static void NormalAlphaBlender(void);
-	static void DisableAlphaBlender(void);
-	
-	static void BlendFunc(uint32 srcFunc, uint32 desFunc);
 
-	static void Enable();
-	static void Disable();
-protected:
-	CBlender(CRender *pRender) : m_pRender(pRender) {}
-	CRender *m_pRender;
 };
 
 #endif

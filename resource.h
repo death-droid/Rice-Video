@@ -62,7 +62,6 @@
 #define IDC_EMU_FRAME_BUFFER            1052
 #define IDC_SMART_SCREEN_UPDATE         1053
 #define IDC_BUFFER_TYPE                 1054
-#define IDC_ALPHA_BLENDER               1055
 #define IDC_ENABLE_BG                   1057
 #define IDC_LOG_SETTING                 1058
 #define IDC_FRAME_BUFFER_SETTING        1059
@@ -102,7 +101,6 @@
 #define IDC_FASTER_LOADING_TILE         1105
 #define IDC_TEXTURE_SCALE_HACK          1106
 #define IDC_EMULATE_CLEAR               1107
-#define IDC_DISABLE_BLENDER             1109
 #define IDC_SKIP_FRAME                  1110
 #define IDC_INCREASE_TEXTRECT_EDGE      1112
 #define IDC_SKIP_FRAME2                 1113

@@ -230,7 +230,6 @@ void WriteConfiguration(void)
 	//Now rendering modes
 	ini.SetLongValue("RenderSetting", "DirectXAntiAliasingValue", (uint32)options.DirectXAntiAliasingValue);
 	ini.SetLongValue("RenderSetting", "DirectXAnisotropyValue", (uint32)options.DirectXAnisotropyValue);
-	ini.SetLongValue("RenderSetting", "NormalAlphaBlender", defaultRomOptions.bNormalBlender);
 	ini.SetLongValue("RenderSetting", "EnableFog", options.bEnableFog);
 	ini.SetLongValue("RenderSetting", "WinFrameMode", options.bWinFrameMode);
 	ini.SetLongValue("RenderSetting", "MipMaps", options.bMipMaps);
@@ -290,7 +289,6 @@ void ReadConfiguration(void)
 		defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
 		defaultRomOptions.N64RenderToTextureEmuType = TXT_BUF_NONE;
 
-		defaultRomOptions.bNormalBlender = FALSE;
 		windowSetting.uScreenScaleMode = 0;
 
 		WriteConfiguration();
@@ -322,7 +320,6 @@ void ReadConfiguration(void)
 
 		options.DirectXAntiAliasingValue = ini.GetLongValue("RenderSetting", "DirectXAntiAliasingValue");
 		options.DirectXAnisotropyValue = ini.GetLongValue("RenderSetting", "DirectXAnisotropyValue");
-		defaultRomOptions.bNormalBlender = ini.GetBoolValue("RenderSetting", "NormalAlphaBlender");
 		options.bEnableFog = ini.GetBoolValue("RenderSetting", "EnableFog");
 		options.bWinFrameMode = ini.GetBoolValue("RenderSetting", "WinFrameMode");
 		options.bMipMaps = ini.GetBoolValue("RenderSetting", "MipMaps");
@@ -352,7 +349,6 @@ void GenerateCurrentRomOptions()
 	currentRomOptions.N64FrameBufferWriteBackControl		=defaultRomOptions.N64FrameBufferWriteBackControl;	
 	currentRomOptions.N64RenderToTextureEmuType	=g_curRomInfo.dwRenderToTextureOption;	
 	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
-	currentRomOptions.bNormalBlender			=g_curRomInfo.dwNormalBlender;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
 
@@ -499,8 +495,6 @@ void GenerateCurrentRomOptions()
 	if( currentRomOptions.N64RenderToTextureEmuType == 0 )		currentRomOptions.N64RenderToTextureEmuType = defaultRomOptions.N64RenderToTextureEmuType;
 	else currentRomOptions.N64RenderToTextureEmuType--;
 	if( currentRomOptions.screenUpdateSetting == 0 )		currentRomOptions.screenUpdateSetting = defaultRomOptions.screenUpdateSetting;
-	if( currentRomOptions.bNormalBlender == 0 )			currentRomOptions.bNormalBlender = defaultRomOptions.bNormalBlender;
-	else currentRomOptions.bNormalBlender--;
 
 	GenerateFrameBufferOptions();
 
@@ -532,11 +526,9 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->bEmulateClear			= perRomIni.GetBoolValue(szCRC, "bEmulateClear", false);
 	pGameSetting->bForceScreenClear		= perRomIni.GetBoolValue(szCRC, "bForceScreenClear", false);
 
-	pGameSetting->bDisableBlender		= perRomIni.GetBoolValue(szCRC, "bDisableBlender", false);
 	pGameSetting->bForceDepthBuffer		= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
 	pGameSetting->bDisableObjBG			= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
 
-	pGameSetting->dwNormalBlender		= perRomIni.GetLongValue(szCRC, "dwNormalBlender", 0);
 	pGameSetting->dwFrameBufferOption	= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
 	pGameSetting->dwRenderToTextureOption	= perRomIni.GetLongValue(szCRC, "dwRenderToTextureOption", 0);
 	pGameSetting->dwScreenUpdateSetting	= perRomIni.GetLongValue(szCRC, "dwScreenUpdateSetting", 0);
@@ -550,8 +542,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 
 	perRomIni.SetLongValue(szCRC, "bDisableCulling", pGameSetting->bDisableCulling);
 	perRomIni.SetLongValue(szCRC, "bEmulateClear", pGameSetting->bEmulateClear);
-	perRomIni.SetLongValue(szCRC, "dwNormalBlender", pGameSetting->dwNormalBlender);
-	perRomIni.SetLongValue(szCRC, "bDisableBlender", pGameSetting->bDisableBlender);
 	perRomIni.SetLongValue(szCRC, "bForceScreenClear", pGameSetting->bForceScreenClear);
 	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer", pGameSetting->bForceDepthBuffer);
 	perRomIni.SetLongValue(szCRC, "bDisableObjBG", pGameSetting->bDisableObjBG);
@@ -708,7 +698,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		//General config op
 		SendDlgItemMessage(hDlg, IDC_FOG,		    BM_SETCHECK, options.bEnableFog	   ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_SETCHECK, options.bWinFrameMode ? BST_CHECKED : BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, defaultRomOptions.bNormalBlender ? BST_CHECKED : BST_UNCHECKED, 0);
 
 		//--------------------------------------------------------------
 		// Begin Resolution handling code
@@ -882,7 +871,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		case IDOK:
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			defaultRomOptions.bNormalBlender = (SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			
 			//Begin Resolutioon Handling
 			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
@@ -970,14 +958,8 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 	switch(message)
 	{
 	case WM_INITDIALOG:
-		// Tri-state variables
-		state = g_curRomInfo.dwNormalBlender==2 ? BST_CHECKED : (g_curRomInfo.dwNormalBlender==1?BST_UNCHECKED:BST_INDETERMINATE);
-		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETSTYLE, BS_AUTO3STATE, TRUE);
-		SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_SETCHECK, state, 0);
-
 
 		// Normal bi-state variable
-		SendDlgItemMessage(hDlg, IDC_DISABLE_BLENDER, BM_SETCHECK, g_curRomInfo.bDisableBlender?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_FORCE_DEPTH_COMPARE, BM_SETCHECK, g_curRomInfo.bForceDepthBuffer?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_FORCE_BUFFER_CLEAR, BM_SETCHECK, g_curRomInfo.bForceScreenClear?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_EMULATE_CLEAR, BM_SETCHECK, g_curRomInfo.bEmulateClear?BST_CHECKED:BST_UNCHECKED, 0);
@@ -1016,7 +998,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		{
 			ShowItem(hDlg, IDC_SCREEN_UPDATE_AT, TRUE);
 			ShowItem(hDlg, IDC_FORCE_DEPTH_COMPARE, TRUE);
-			ShowItem(hDlg, IDC_DISABLE_BLENDER, TRUE);
 			ShowItem(hDlg, IDC_FORCE_BUFFER_CLEAR, TRUE);
 		}
 
@@ -1074,13 +1055,7 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		switch(LOWORD(wParam))
 		{
         case IDOK:
-			// Tri-stage options
-			uint32 state;
-			state = SendDlgItemMessage(hDlg, IDC_ALPHA_BLENDER, BM_GETCHECK, 0, 0);
-			g_curRomInfo.dwNormalBlender = (state==BST_CHECKED?2:(state==BST_UNCHECKED?1:0));
-			
 			// Bi-state options
-			g_curRomInfo.bDisableBlender = (SendDlgItemMessage(hDlg, IDC_DISABLE_BLENDER, BM_GETCHECK, 0, 0)==BST_CHECKED);
 			g_curRomInfo.bEmulateClear = (SendDlgItemMessage(hDlg, IDC_EMULATE_CLEAR, BM_GETCHECK, 0, 0)==BST_CHECKED);
 			g_curRomInfo.bForceDepthBuffer = (SendDlgItemMessage(hDlg, IDC_FORCE_DEPTH_COMPARE, BM_GETCHECK, 0, 0)==BST_CHECKED);
 			g_curRomInfo.bForceScreenClear = (SendDlgItemMessage(hDlg, IDC_FORCE_BUFFER_CLEAR, BM_GETCHECK, 0, 0)==BST_CHECKED);

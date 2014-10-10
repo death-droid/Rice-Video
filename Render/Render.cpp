@@ -261,12 +261,7 @@ void CRender::SetCombinerAndBlender()
 {
 	InitOtherModes();
 	
-	if( g_curRomInfo.bDisableBlender )
-		CBlender::DisableAlphaBlender();
-	else if( currentRomOptions.bNormalBlender )
-		CBlender::NormalAlphaBlender();
-	else
-		CBlender::InitBlenderMode();
+	CBlender::InitBlenderMode();
 
 	m_pColorCombiner->InitCombinerMode();
 }

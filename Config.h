@@ -190,7 +190,6 @@ struct RomOptions{
 	uint32	N64FrameBufferWriteBackControl;
 	uint32	N64RenderToTextureEmuType;
 	uint32	screenUpdateSetting;
-	BOOL 	bNormalBlender;
 };
 
 extern RomOptions defaultRomOptions;
@@ -230,7 +229,6 @@ typedef struct
 	ROMHeader	romheader;
 
 	// With changeable default values
-	uint32	dwNormalBlender;
 	uint32	dwFrameBufferOption;
 	uint32	dwRenderToTextureOption;
 	uint32	dwScreenUpdateSetting;
@@ -239,7 +237,6 @@ typedef struct
 	BOOL	bForceScreenClear;
 	BOOL	bEmulateClear;
 	BOOL	bForceDepthBuffer;
-	BOOL	bDisableBlender;
 
 	// Less useful options
 	BOOL	bDisableObjBG;

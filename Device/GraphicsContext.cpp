@@ -111,13 +111,13 @@ bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, ui
 {
 	if( windowSetting.bDisplayFullscreen )
 	{
-		windowSetting.uDisplayWidth = windowSetting.uFullScreenDisplayWidth;
+		windowSetting.uDisplayWidth  = windowSetting.uFullScreenDisplayWidth;
 		windowSetting.uDisplayHeight = windowSetting.uFullScreenDisplayHeight;
 	}
 	else
 	{
-		windowSetting.uDisplayWidth = windowSetting.uWindowDisplayWidth;
-		windowSetting.uDisplayHeight= windowSetting.uWindowDisplayHeight;
+		windowSetting.uDisplayWidth  = windowSetting.uWindowDisplayWidth;
+		windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
 	}
 	
 	RECT rcScreen;
@@ -164,19 +164,6 @@ void CGraphicsContext::CleanUp()
 	}
 }
 
-
-int _cdecl SortFrequenciesCallback( const VOID* arg1, const VOID* arg2 )
-{
-	UINT* p1 = (UINT*)arg1;
-	UINT* p2 = (UINT*)arg2;
-
-	if( *p1 < *p2 )   
-		return -1;
-	else if( *p1 > *p2 )   
-		return 1;
-	else 
-		return 0;
-}
 int _cdecl SortResolutionsCallback( const VOID* arg1, const VOID* arg2 )
 {
 	UINT* p1 = (UINT*)arg1;
