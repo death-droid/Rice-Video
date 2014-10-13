@@ -49,36 +49,17 @@ typedef D3DLOCKED_RECT LockRectType;
 #define COLOR_RGBA D3DCOLOR_RGBA
 
 //Move me, just putting it here for now
-struct N64Light
-{
-	u8 ca, b, g, r;					// Colour and ca (ca is different for conker)
-	u8 la, b2, g2, r2;
-	union
-	{
-		struct
-		{
-			s8 pad0, dir_z, dir_y, dir_x;	// Direction
-			u8 pad1, qa, pad2, nonzero;
-		};
-		struct
-		{
-			s16 y1, x1, w1, z1;		// Position, GBI2 ex Majora's Mask
-		};
-	};
-	s32 pad4, pad5, pad6, pad7;		// Padding..
-	s16 y, x, w, z; 				// Position, Conker
-};
 
-typedef struct
+struct SetImgInfo
 {
 	unsigned int	dwFormat:3;
 	unsigned int	dwSize:2;
 	unsigned int	dwWidth:10;
 	uint32			dwAddr;
 	uint32			bpl;
-} SetImgInfo;
+};
 
-typedef struct 
+struct  Tile
 {
 	// Set by RDP_SetTile
 	unsigned int dwFormat	:3;		// e.g. RGBA, YUV etc
@@ -136,7 +117,7 @@ typedef struct
 	bool bForceClampS;
 	bool bForceClampT;
 
-} Tile;
+};
 
 
 typedef struct

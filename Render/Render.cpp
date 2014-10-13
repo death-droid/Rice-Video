@@ -117,7 +117,6 @@ void CRender::ResetMatrices(uint32 size)
 	gRSP.mMatStackSize = (size > RICE_MATRIX_STACK) ? RICE_MATRIX_STACK : size;
 
 	gRSP.bMatrixIsUpdated = true;
-	gRSP.bWorldMatrixIsUpdated = true;
 	UpdateCombinedMatrix();
 }
 
@@ -189,7 +188,6 @@ void CRender::SetWorldView(const Matrix & mat, bool bPush, bool bReplace)
 	D3DXMatrixTranspose(&gRSPmodelViewTopTranspose, &gRSPmodelViewTop);
 
 	gRSP.bMatrixIsUpdated = true;
-	gRSP.bWorldMatrixIsUpdated = true;
 
 	DumpMatrix(mat,"Set WorldView Matrix");
 }
@@ -211,7 +209,6 @@ void CRender::PopWorldView(u32 num)
 		}
 		D3DXMatrixTranspose(&gRSPmodelViewTopTranspose, &gRSPmodelViewTop);
 		gRSP.bMatrixIsUpdated = true;
-		gRSP.bWorldMatrixIsUpdated = true;
 	}
 	else
 	{
@@ -242,7 +239,6 @@ void CRender::SetWorldProjectMatrix(Matrix &mtx)
 	gRSPworldProject = mtx;
 
 	gRSP.bMatrixIsUpdated = false;
-	gRSP.bCombinedMatrixIsUpdated = true;
 }
 
 void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)

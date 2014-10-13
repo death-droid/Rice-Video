@@ -705,8 +705,6 @@ void RSP_RDP_Nothing(MicroCodeCommand command)
 
 void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 {
-	float fraction;
-
 	UpdateCombinedMatrix();
 
 	int x = ((command.inst.cmd0) & 0x1F) >> 1;
@@ -716,23 +714,17 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 	//Float
 	if ((command.inst.cmd0) & 0x20)
 	{
-		fraction = ((command.inst.cmd1)>>16)/65536.0f;
-		gRSPworldProject.m[y][x] = (float)(int)gRSPworldProject.m[y][x];
-		gRSPworldProject.m[y][x] += fraction;
-
-		fraction = ((command.inst.cmd1)&0xFFFF)/65536.0f;
-		gRSPworldProject.m[y][x+1] = (float)(int)gRSPworldProject.m[y][x+1];
-		gRSPworldProject.m[y][x+1] += fraction;
+		gRSPworldProject.m[y][x] = (float)(int)gRSPworldProject.m[y][x] + ((float) (command.inst.cmd1 >> 16) / 65536.0f);
+		gRSPworldProject.m[y][x + 1] = (float)(int)gRSPworldProject.m[y][x + 1] + ((float) (command.inst.cmd1 & 0xFFFF) / 65536.0f);
 	}
 	else
 	{
 		//Integer
-		gRSPworldProject.m[y][x] = (short)((command.inst.cmd1)>>16);
-		gRSPworldProject.m[y][x+1] = (short)((command.inst.cmd1)&0xFFFF);
+		gRSPworldProject.m[y][x]     = (float)(short)((command.inst.cmd1)>>16);
+		gRSPworldProject.m[y][x + 1] = (float)(short)((command.inst.cmd1) & 0xFFFF);
 	}
 
 	gRSP.bMatrixIsUpdated = false;
-	gRSP.bCombinedMatrixIsUpdated = true;
 
 #ifdef _DEBUG
 	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
@@ -1002,18 +994,16 @@ void LoadMatrix(uint32 addr)
 		return;
 	}
 
-	int i, j;
+	const float fRecip = 1.0f / 65536.0f;
+	const N64mat *Imat = (N64mat *)(g_pu8RamBase + addr);
 
-	for (i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		for (j = 0; j < 4; j++) 
-		{
-			int     hi = *(short *)(g_pu8RamBase + ((addr+(i<<3)+(j<<1)     )^0x2));
-			uint16  lo = *(uint16  *)(g_pu8RamBase + ((addr+(i<<3)+(j<<1) + 32)^0x2));
-			matToLoad.m[i][j] = (float)((hi<<16) | (lo))/ 65536.0f;
-		}
+		matToLoad.m[i][0] = ((Imat->h[i].x << 16) | Imat->l[i].x) * fRecip;
+		matToLoad.m[i][1] = ((Imat->h[i].y << 16) | Imat->l[i].y) * fRecip;
+		matToLoad.m[i][2] = ((Imat->h[i].z << 16) | Imat->l[i].z) * fRecip;
+		matToLoad.m[i][3] = ((Imat->h[i].w << 16) | Imat->l[i].w) * fRecip;
 	}
-
 
 #ifdef _DEBUG
 	LOG_UCODE(

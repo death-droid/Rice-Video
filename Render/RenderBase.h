@@ -111,9 +111,7 @@ __declspec(align(16)) struct RSP_Options
 	Matrix	modelviewMtxs[RICE_MATRIX_STACK];
 	u32		mMatStackSize;
 
-	bool	bWorldMatrixIsUpdated;
 	bool	bMatrixIsUpdated;
-	bool	bCombinedMatrixIsUpdated;
 	bool	bLightIsUpdated;
 
 	uint32		segments[16];

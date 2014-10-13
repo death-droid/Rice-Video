@@ -371,6 +371,29 @@ struct SetOthermode
 	u32	data;
 };
 
+
+struct N64Viewport
+{
+	s16 scale_y, scale_x, scale_w, scale_z;
+	s16 trans_y, trans_x, trans_w, trans_z;
+};
+
+struct N64mat
+{
+	struct _s16
+	{
+		s16 y, x, w, z;
+	};
+
+	struct _u16
+	{
+		unsigned short y, x, w, z;
+	};
+
+	_s16 h[4];
+	_u16 l[4];
+};
+
 struct TriDKR
 {
     u8	v2, v1, v0, flag;
@@ -378,6 +401,27 @@ struct TriDKR
     signed short	t1, s1;
     signed short	t2, s2;
 };
+
+struct N64Light
+{
+	u8 ca, b, g, r;					// Colour and ca (ca is different for conker)
+	u8 la, b2, g2, r2;
+	union
+	{
+		struct
+		{
+			s8 pad0, dir_z, dir_y, dir_x;	// Direction
+			u8 pad1, qa, pad2, nonzero;
+		};
+		struct
+		{
+			s16 y1, x1, w1, z1;		// Position, GBI2 ex Majora's Mask
+		};
+	};
+	s32 pad4, pad5, pad6, pad7;		// Padding..
+	s16 y, x, w, z; 				// Position, Conker
+};
+
 
 union MicroCodeCommand
 {

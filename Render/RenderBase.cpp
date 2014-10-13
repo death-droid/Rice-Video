@@ -1382,23 +1382,7 @@ void UpdateCombinedMatrix()
 	{
 		gRSPworldProject = gRSP.modelviewMtxs[gRSP.modelViewMtxTop] * gRSP.projectionMtxs[gRSP.projectionMtxTop];
 		gRSP.bMatrixIsUpdated = false;
-		gRSP.bCombinedMatrixIsUpdated = true;
 	}
 
-	if( gRSP.bCombinedMatrixIsUpdated )
-	{
-		if( options.enableHackForGames == HACK_REVERSE_XY_COOR )
-		{
-			gRSPworldProject = gRSPworldProject * reverseXY;
-			gRSPmodelViewTop = gRSPmodelViewTop * reverseXY;
-		}
-		if( options.enableHackForGames == HACK_REVERSE_Y_COOR )
-		{
-			gRSPworldProject = gRSPworldProject * reverseY;
-			gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
-		}
-
-		gRSP.bCombinedMatrixIsUpdated = false;
-	}
 }
 
