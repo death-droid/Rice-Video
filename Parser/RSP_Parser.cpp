@@ -714,7 +714,7 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 	//Float
 	if ((command.inst.cmd0) & 0x20)
 	{
-		gRSPworldProject.m[y][x] = (float)(int)gRSPworldProject.m[y][x] + ((float) (command.inst.cmd1 >> 16) / 65536.0f);
+		gRSPworldProject.m[y][x]     = (float)(int)gRSPworldProject.m[y][x] + ((float) (command.inst.cmd1 >> 16) / 65536.0f);
 		gRSPworldProject.m[y][x + 1] = (float)(int)gRSPworldProject.m[y][x + 1] + ((float) (command.inst.cmd1 & 0xFFFF) / 65536.0f);
 	}
 	else

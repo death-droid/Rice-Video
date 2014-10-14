@@ -116,7 +116,6 @@ __declspec(align(16)) struct RSP_Options
 
 	uint32		segments[16];
 
-	Matrix	DKRMatrixes[4];
 	D3DXVECTOR4		DKRBaseVec;
 
 	int		vertexMult;

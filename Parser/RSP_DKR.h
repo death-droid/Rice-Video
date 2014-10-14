@@ -24,7 +24,6 @@ u32 gDKRMatrixAddr = 0;
 u32 gDKRVtxAddr = 0;
 u32 gDKRVtxCount = 0;
 bool gDKRBillBoard = false;
-extern Matrix dkrMatrixTransposed;
 
 // DKR verts are extra 4 bytes
 //*****************************************************************************
@@ -146,73 +145,37 @@ void RSP_DL_In_MEM_DKR(MicroCodeCommand command)
 //*****************************************************************************
 void RSP_Mtx_DKR(MicroCodeCommand command)
 {	
-	uint32 dwAddr = (command.inst.cmd1)+RSPSegmentAddr(gDKRMatrixAddr);
-	uint32 dwCommand = ((command.inst.cmd0)>>16)&0xFF;
-	uint32 dwLength  = ((command.inst.cmd0))    &0xFFFF;
+	uint32 address = (command.inst.cmd1)+RSPSegmentAddr(gDKRMatrixAddr);
+	uint32 mtx_command = ((command.inst.cmd0)>>16)&0x3;
+	//uint32 length  = ((command.inst.cmd0))    &0xFFFF;
 
 	bool mul=false;
-	int index;
-	switch( dwCommand )
+
+	if (mtx_command == 0)
 	{
-	case 0xC0:	// DKR
-		gDKRCMatrixIndex = index = 3;
-		break;
-	case 0x80:	// DKR
-		gDKRCMatrixIndex = index = 2;
-		break;
-	case 0x40:	// DKR
-		gDKRCMatrixIndex = index = 1;
-		break;
-	case 0x20:	// DKR
-		gDKRCMatrixIndex = index = 0;
-		break;
-	case 0x00:
-		gDKRCMatrixIndex = index = 0;
-		break;
-	case 0x01:
-		//mul = true;
-		gDKRCMatrixIndex = index = 1;
-		break;
-	case 0x02:
-		//mul = true;
-		gDKRCMatrixIndex = index = 2;
-		break;
-	case 0x03:
-		//mul = true;
-		gDKRCMatrixIndex = index = 3;
-		break;
-	case 0x81:
-		index = 1;
-		mul = true;
-		break;
-	case 0x82:
-		index = 2;
-		mul = true;
-		break;
-	case 0x83:
-		index = 3;
-		mul = true;
-		break;
-	default:
-		DebuggerAppendMsg("Fix me, mtx DKR, cmd=%08X", dwCommand);
-		break;
+		//DKR : No mult
+		gDKRCMatrixIndex = mtx_command = (command.inst.cmd0 >> 22) & 0x3;
+	}
+	else
+	{
+		//JFG : mult but only if bit is set
+		mul = ((command.inst.cmd0 >> 23) & 0x1);
 	}
 
-	// Load matrix from dwAddr
-	Matrix &mat = gRSP.DKRMatrixes[index];
-	LoadMatrix(dwAddr);
+	// Load matrix from address
+	Matrix &mat = gRSP.modelviewMtxs[mtx_command];
+	LoadMatrix(address);
 
+	//Perform any required modifications to the matrix (aka if it needs multiply)
 	if( mul )
 	{
-		mat = matToLoad*gRSP.DKRMatrixes[0];
+		mat = matToLoad* gRSP.modelviewMtxs[0];
 	}
 	else
 	{
 		mat = matToLoad;
 	}
 
-	DEBUGGER_IF_DUMP(logMatrix,TRACE3("DKR Matrix: cmd=0x%X, idx = %d, mul=%d", dwCommand, index, mul));
-	LOG_UCODE("    DKR Loading Mtx: %d, command=%d", index, dwCommand);
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_MATRIX_CMD,{TRACE0("Paused at DKR Matrix Cmd");});
 }
 
@@ -232,7 +195,7 @@ void RSP_MoveWord_DKR(MicroCodeCommand command)
 		break;
 
 	case RSP_MOVE_WORD_LIGHTCOL:
-		gDKRCMatrixIndex = (command.inst.cmd1 >> 6) & 0x7;
+		gDKRCMatrixIndex = (command.inst.cmd1 >> 6) & 0x3;
 		LOG_UCODE("    gDKRCMatrixIndex = %d", gDKRCMatrixIndex);
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_MATRIX_CMD, {DebuggerAppendMsg("DKR Moveword, select matrix %d, cmd0=%08X, cmd1=%08X", gDKRCMatrixIndex, (command.inst.cmd0), (command.inst.cmd1));});
 		break;
@@ -281,6 +244,7 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 		uint32 dwV0 = tri->v0;
 		uint32 dwV1 = tri->v1;
 		uint32 dwV2 = tri->v2;
+
 		CRender::g_pRender->SetCullMode(!(tri->flag & 0x40), false);
 
 		TRI_DUMP(TRACE5("DMATRI: %d, %d, %d (%08X-%08X)", dwV0,dwV1,dwV2,(command.inst.cmd0),(command.inst.cmd1)));
@@ -314,53 +278,4 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 	}
 	gDKRVtxCount=0;
 }
-
-//*****************************************************************************
-//
-//*****************************************************************************
-void RSP_Vtx_Gemini(MicroCodeCommand command)
-{
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uint32 dwV0 =  (((command.inst.cmd0)>>9)&0x1F);
-	uint32 dwN  = (((command.inst.cmd0) >>19 )&0x1F);
-
-	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d", dwAddr, dwV0, dwN);
-	DEBUGGER_ONLY_IF( (pauseAtNext && (eventToPause==NEXT_VERTEX_CMD||eventToPause==NEXT_MATRIX_CMD)), {DebuggerAppendMsg("DKR Vtx: Cmd0=%08X, Cmd1=%08X", (command.inst.cmd0), (command.inst.cmd1));});
-
-	VTX_DUMP(TRACE2("Vtx_DKR, cmd0=%08X cmd1=%08X", (command.inst.cmd0), (command.inst.cmd1)));
-
-	if (dwV0 >= 32)
-		dwV0 = 31;
-
-	if ((dwV0 + dwN) > 32)
-	{
-		TRACE0("Warning, attempting to load into invalid vertex positions");
-		dwN = 32 - dwV0;
-	}
-
-
-	//if( dwAddr == 0 || dwAddr < 0x2000)
-	{
-		dwAddr = (command.inst.cmd1)+RSPSegmentAddr(gDKRVtxAddr);
-	}
-
-	// Check that address is valid...
-	if ((dwAddr + (dwN*16)) > g_dwRamSize)
-	{
-		TRACE1("ProcessVertexData: Address out of range (0x%08x)", dwAddr);
-	}
-	else
-	{
-		ProcessVertexDataDKR(dwAddr, dwV0, dwN);
-
-#ifdef _DEBUG
-		status.dwNumVertices += dwN;
-		RDP_GFX_DumpVtxInfoDKR(dwAddr, dwV0, dwN);
-#endif
-	}
-}
-
-
-
-
 #endif //RSP_DKR_H__

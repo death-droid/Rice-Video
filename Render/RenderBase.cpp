@@ -98,8 +98,6 @@ __declspec(align(16)) Matrix	gRSPworldProjectTransported;
 __declspec(align(16)) Matrix	gRSPworldProject;
 __declspec(align(16)) Matrix	gRSPmodelViewTop;
 __declspec(align(16)) Matrix	gRSPmodelViewTopTranspose;
-__declspec(align(16)) Matrix	dkrMatrixTransposed;
-
 /*
  *	
  */
@@ -899,7 +897,7 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	uint32 pVtxBase = uint32(g_pu8RamBase + dwAddr);
 	g_pVtxBase = (FiddledVtx*)pVtxBase;
 
-	Matrix &matWorldProject(gRSP.DKRMatrixes[gDKRCMatrixIndex]);
+	Matrix &matWorldProject(gRSP.modelviewMtxs[gDKRCMatrixIndex]);
 
 	uint32 i;
 	LONG nOff;
