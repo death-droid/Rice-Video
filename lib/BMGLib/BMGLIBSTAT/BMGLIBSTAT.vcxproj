@@ -64,10 +64,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -95,7 +91,7 @@
       <OpenMPSupport>false</OpenMPSupport>
     </ClCompile>
     <Lib>
-      <OutputFile>../BMGlib.lib</OutputFile>
+      <OutputFile>../$(Platform)/$(Configuration)/BMGlib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <UseUnicodeResponseFiles>true</UseUnicodeResponseFiles>
       <TargetMachine>MachineX86</TargetMachine>
@@ -157,7 +153,7 @@
       <AdditionalIncludeDirectories>.\tiff-v3.5.7\libtiff;..\jpeg;..\lpng125;..\zlib114;..\libungif_v4_1_0b1\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
-      <OutputFile>../BMGlib.lib</OutputFile>
+      <OutputFile>../$(Platform)/$(Configuration)/BMGlib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetMachine>MachineX86</TargetMachine>
     </Lib>
