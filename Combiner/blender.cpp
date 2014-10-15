@@ -38,7 +38,7 @@ static inline void DebugBlender(u32 cycle_type, u32 blender, u32 alpha_cvg_sel, 
 			kBlendCl[(blender >> 6) & 0x3],
 			kBlendA2[(blender >> 2) & 0x3]);
 
-		if (cycle_type == CYCLE_2CYCLE)
+        if (cycle_type == CYCLE_TYPE_2)
 		{
 			TRACE4(" | %s * %s + %s * %s",
 				kBlendCl[(blender >> 12) & 0x3],
