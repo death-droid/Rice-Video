@@ -573,6 +573,7 @@ uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32
 	dwAsmCRC = 0;
 	dwAsmdwBytesPerLine = ((width<<size)+1)/2;
 
+
 	try{
 		dwAsmdwBytesPerLine = ((width<<size)+1)/2;
 
@@ -585,42 +586,62 @@ uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32
 
 		__asm 
 		{
-			push eax
-			push ebx
-			push ecx
-			push edx
-			push esi
+			push rax
+			push rbx
+			push rcx
+			push rdx
+			push rsi
 
-			mov	ecx, pAsmStart;	// = pStart
-			mov	edx, 0			// The CRC
+			mov	rcx, pAsmStart;	// = pStart
+			mov	rdx, 0			// The CRC
 			mov	eax, dwAsmHeight	// = y
 l2:				mov	ebx, dwAsmdwBytesPerLine	// = x
-			sub	ebx, 4
-l1:				mov	esi, [ecx+ebx]
-			xor esi, ebx
-			rol edx, 4
-			add edx, esi
-			sub	ebx, 4
+			sub	rbx, 4
+l1:				mov	rsi, [rcx+rbx]
+			xor rsi, rbx
+			rol rdx, 4
+			add rdx, rsi
+			sub	rbx, 4
 			jge l1
-			xor esi, eax
-			add edx, esi
+			xor rsi, rax
+			add rdx, rsi
 			add ecx, dwAsmPitch
-			dec eax
+			dec rax
 			jge l2
 
 			mov	dwAsmCRC, edx
 
-			pop esi
-			pop edx
-			pop ecx
-			pop ebx
-			pop	eax
+			pop rsi
+			pop rdx
+			pop rcx
+			pop rbx
+			pop	rax
 		}
 	}
 	catch(...)
 	{
 		TRACE0("Exception in texture CRC calculation");
 	}
+
+    /* Implementation in cpp in case the inline asm is bad
+    uint32 pitch = pitchInBytes>>2;
+    register uint32 *pStart = (uint32*)(pPhysicalAddress);
+    pStart += (top * pitch) + (((left<<size)+1)>>3);
+    uint32 realWidthInDWORD = dwAsmdwBytesPerLine >> 2;
+
+    uint32 x, y;
+    for (y = 0; y < height; y++)
+    {
+        for (x = 0; x < realWidthInDWORD; x++)
+        {
+            dwAsmCRC += *(pStart + x);
+            dwAsmCRC ^= x;
+        }
+        pStart += pitch;
+        dwAsmCRC ^= y;
+    }
+    */
+
 	return dwAsmCRC;
 }
 

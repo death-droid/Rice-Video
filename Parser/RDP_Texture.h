@@ -106,8 +106,8 @@ NotGreater:
 		mov		ecx, ebx
 			xor		esi, 3
 LeadingLoop:				// Copies leading bytes, in reverse order (un-swaps)
-		mov		al, byte ptr [esi]
-		mov		byte ptr [edi], al
+		mov		al, byte ptr [rsi]
+		mov		byte ptr [rdi], al
 		sub		esi, 1
 		add		edi, 1
 		loop	LeadingLoop
@@ -127,9 +127,9 @@ StartDWordLoop:
 
 		// Copies from source to destination, bswap-ing first
 DWordLoop:
-		mov		eax, dword ptr [esi]
+		mov		eax, dword ptr [rsi]
 		bswap	eax
-		mov		dword ptr [edi], eax
+		mov		dword ptr [rdi], eax
 		add		esi, 4
 		add		edi, 4
 		loop	DWordLoop
@@ -140,8 +140,8 @@ StartTrailingLoop:
 		xor		esi, 3
 
 TrailingLoop:
-		mov		al, byte ptr [esi]
-		mov		byte ptr [edi], al
+		mov		al, byte ptr [rsi]
+		mov		byte ptr [rdi], al
 		sub		esi, 1
 		add		edi, 1
 		loop	TrailingLoop
@@ -151,65 +151,34 @@ Done:
 
 inline void DWordInterleave( void *mem, uint32 numDWords )
 {
-	__asm {
-		mov		esi, dword ptr [mem]
-		mov		edi, dword ptr [mem]
-		add		edi, 4
-		mov		ecx, dword ptr [numDWords]
-DWordInterleaveLoop:
-		mov		eax, dword ptr [esi]
-		mov		ebx, dword ptr [edi]
-		mov		dword ptr [esi], ebx
-		mov		dword ptr [edi], eax
-		add		esi, 8
-		add		edi, 8
-		loop	DWordInterleaveLoop
-	}
+    uint32 addr = 0;
+    uint32* dwordptr = (uint32*)mem;
+    for (uint32 i = 0; i < numDWords; i++)
+    {
+        std::swap(dwordptr[addr], dwordptr[addr + 1]);
+        addr += 2;
+    }
 }
 
 inline void QWordInterleave( void *mem, uint32 numDWords )
 {
-	__asm
-	{
-		// Interleave the line on the qword
-		mov		esi, dword ptr [mem]
-		mov		edi, dword ptr [mem]
-		add		edi, 8
-		mov		ecx, dword ptr [numDWords]
-		shr		ecx, 1
-QWordInterleaveLoop:
-		mov		eax, dword ptr [esi]
-		mov		ebx, dword ptr [edi]
-		mov		dword ptr [esi], ebx
-		mov		dword ptr [edi], eax
-		add		esi, 4
-		add		edi, 4
-		mov		eax, dword ptr [esi]
-		mov		ebx, dword ptr [edi]
-		mov		dword ptr [esi], ebx
-		mov		dword ptr [edi], eax
-		add		esi, 12
-		add		edi, 12
-		loop	QWordInterleaveLoop
-	}
+    uint32 addr = 0;
+    uint64* qwordptr = (uint64*)mem;
+    for (uint32 i = 0; i < numDWords/2; i++)
+    {
+        std::swap(qwordptr[addr], qwordptr[addr + 1]);
+        addr += 2;
+    }
 }
 
 inline uint32 swapdword( uint32 value )
 {
-	__asm
-	{
-		mov		eax, dword ptr [value]
-		bswap	eax
-	}
+    return _byteswap_ulong(value);
 }
 
 inline uint16 swapword( uint16 value )
 {
-	__asm
-	{
-		mov		ax, word ptr [value]
-		xchg	ah, al
-	}
+    return _byteswap_ushort(value);
 }
 
 
