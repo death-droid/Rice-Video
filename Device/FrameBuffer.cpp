@@ -570,77 +570,39 @@ extern uint8* pAsmStart;
 
 uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes )
 {
-	dwAsmCRC = 0;
-	dwAsmdwBytesPerLine = ((width<<size)+1)/2;
+    /* implementation borrowed from mupen64plus-libretro/gles2n64 */
+    dwAsmdwBytesPerLine = ((width << size) + 1) / 2;
 
+    pAsmStart = (uint8*)(pPhysicalAddress);
+    pAsmStart += (top * pitchInBytes) + (((left << size) + 1) >> 1);
 
-	try{
-		dwAsmdwBytesPerLine = ((width<<size)+1)/2;
+    dwAsmHeight = height - 1;
+    dwAsmPitch = pitchInBytes;
 
-		pAsmStart = (uint8*)(pPhysicalAddress);
-		pAsmStart += (top * pitchInBytes) + (((left<<size)+1)>>1);
+    uint32 pitch = pitchInBytes >> 2;
+    uint32* pStart = (uint32*)pPhysicalAddress;
+    pStart += (top * pitch) + (((left << size) + 1) >> 3);
 
-		dwAsmHeight = height - 1;
-		dwAsmPitch = pitchInBytes;
+    int y = dwAsmHeight;
 
-
-		__asm 
-		{
-			push rax
-			push rbx
-			push rcx
-			push rdx
-			push rsi
-
-			mov	rcx, pAsmStart;	// = pStart
-			mov	rdx, 0			// The CRC
-			mov	eax, dwAsmHeight	// = y
-l2:				mov	ebx, dwAsmdwBytesPerLine	// = x
-			sub	rbx, 4
-l1:				mov	rsi, [rcx+rbx]
-			xor rsi, rbx
-			rol rdx, 4
-			add rdx, rsi
-			sub	rbx, 4
-			jge l1
-			xor rsi, rax
-			add rdx, rsi
-			add ecx, dwAsmPitch
-			dec rax
-			jge l2
-
-			mov	dwAsmCRC, edx
-
-			pop rsi
-			pop rdx
-			pop rcx
-			pop rbx
-			pop	rax
-		}
-	}
-	catch(...)
-	{
-		TRACE0("Exception in texture CRC calculation");
-	}
-
-    /* Implementation in cpp in case the inline asm is bad
-    uint32 pitch = pitchInBytes>>2;
-    register uint32 *pStart = (uint32*)(pPhysicalAddress);
-    pStart += (top * pitch) + (((left<<size)+1)>>3);
-    uint32 realWidthInDWORD = dwAsmdwBytesPerLine >> 2;
-
-    uint32 x, y;
-    for (y = 0; y < height; y++)
+    while (y >= 0)
     {
-        for (x = 0; x < realWidthInDWORD; x++)
+        uint32 esi = 0;
+        int x = dwAsmdwBytesPerLine - 4;
+        while (x >= 0)
         {
-            dwAsmCRC += *(pStart + x);
-            dwAsmCRC ^= x;
+            esi = *(uint32*)(pAsmStart + x);
+            esi ^= x;
+
+            dwAsmCRC = (dwAsmCRC << 4) + ((dwAsmCRC >> 28) & 15);
+            dwAsmCRC += esi;
+            x -= 4;
         }
-        pStart += pitch;
-        dwAsmCRC ^= y;
+        esi ^= y;
+        dwAsmCRC += esi;
+        pAsmStart += dwAsmPitch;
+        y--;
     }
-    */
 
 	return dwAsmCRC;
 }
