@@ -436,20 +436,13 @@ void DLParser_RDPFullSync(MicroCodeCommand command)
 
 void DLParser_SetScissor(MicroCodeCommand command)
 {
-	ScissorType tempScissor;
-	// The coords are all in 8:2 fixed point
-	tempScissor.x0   = ((command.inst.cmd0)>>12)&0xFFF;
-	tempScissor.y0   = ((command.inst.cmd0)>>0 )&0xFFF;
-	tempScissor.mode = ((command.inst.cmd1)>>24)&0x03;
-	tempScissor.x1   = ((command.inst.cmd1)>>12)&0xFFF;
-	tempScissor.y1   = ((command.inst.cmd1)>>0 )&0xFFF;
+	// The coords are all in 10:2 fixed point
+	gRDP.scissor.left = command.scissor.x0 >> 2;
+	gRDP.scissor.top = command.scissor.y0 >> 2;
+	gRDP.scissor.right = command.scissor.x1 >> 2;
+	gRDP.scissor.bottom = command.scissor.y1 >> 2;
 
-	tempScissor.left	= tempScissor.x0/4;
-	tempScissor.top		= tempScissor.y0/4;
-	tempScissor.right	= tempScissor.x1/4;
-	tempScissor.bottom	= tempScissor.y1/4;
-
-	if( options.bEnableHacks )
+	/*if( options.bEnableHacks )
 	{
 		if( g_CI.dwWidth == 0x200 && tempScissor.right == 0x200 )
 		{
@@ -463,25 +456,23 @@ void DLParser_SetScissor(MicroCodeCommand command)
 			}
 
 		}
+	}*/
+
+	if( !status.bHandleN64RenderTexture )
+		SetVIScales();
+
+	//Hack to correct Super bowluings right and left screens
+	if(  options.enableHackForGames == HACK_FOR_SUPER_BOWLING && g_CI.dwAddr%0x100 != 0 )
+	{
+		// right half screen
+		gRDP.scissor.left += 160;
+		gRDP.scissor.right += 160;
+		CRender::g_pRender->SetViewport(160, 0, 320, 240, 0xFFFF);
 	}
 
-	if( gRDP.scissor.left != tempScissor.left || gRDP.scissor.top != tempScissor.top ||
-		gRDP.scissor.right != tempScissor.right || gRDP.scissor.bottom != tempScissor.bottom ||
-		gRSP.real_clip_scissor_left != tempScissor.left || gRSP.real_clip_scissor_top != tempScissor.top ||
-		gRSP.real_clip_scissor_right != tempScissor.right || gRSP.real_clip_scissor_bottom != tempScissor.bottom)
+	//Set the cliprect
+	if (gRDP.scissor.left < gRDP.scissor.right && gRDP.scissor.top < gRDP.scissor.bottom)
 	{
-		memcpy(&(gRDP.scissor), &tempScissor, sizeof(ScissorType) );
-		if( !status.bHandleN64RenderTexture )
-			SetVIScales();
-
-		if(  options.enableHackForGames == HACK_FOR_SUPER_BOWLING && g_CI.dwAddr%0x100 != 0 )
-		{
-			// right half screen
-			gRDP.scissor.left += 160;
-			gRDP.scissor.right += 160;
-			CRender::g_pRender->SetViewport(160, 0, 320, 240, 0xFFFF);
-		}
-
 		CRender::g_pRender->UpdateClipRectangle();
 		CRender::g_pRender->UpdateScissor();
 	}

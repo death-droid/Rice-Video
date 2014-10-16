@@ -449,7 +449,7 @@ typedef struct{
 } Sprite2DInfo;
 
 
-typedef struct
+struct RDP_BlenderSetting
 {
 	unsigned int	c2_m2b:2;
 	unsigned int	c1_m2b:2;
@@ -459,9 +459,9 @@ typedef struct
 	unsigned int	c1_m1b:2;
 	unsigned int	c2_m1a:2;
 	unsigned int	c1_m1a:2;
-} RDP_BlenderSetting;
+};
 
-typedef struct
+struct RDP_OtherMode
 {
 	union
 	{
@@ -471,7 +471,6 @@ typedef struct
 			unsigned int		alpha_compare : 2;			// 0..1
 			unsigned int		depth_source : 1;			// 2..2
 
-		//	unsigned int		render_mode : 13;			// 3..15
 			unsigned int		aa_en : 1;					// 3
 			unsigned int		z_cmp : 1;					// 4
 			unsigned int		z_upd : 1;					// 5
@@ -493,7 +492,7 @@ typedef struct
 			unsigned int		alpha_dither : 2;			// 4..5
 			unsigned int		rgb_dither : 2;				// 6..7
 			
-			unsigned int		key_en : 1;				// 8..8
+			unsigned int		key_en : 1;					// 8..8
 			unsigned int		text_conv : 3;				// 9..11
 			unsigned int		text_filt : 2;				// 12..13
 			unsigned int		text_tlut : 2;				// 14..15
@@ -503,8 +502,8 @@ typedef struct
 			unsigned int		text_detail : 1;			// 17..18
 			unsigned int		text_persp : 1;				// 19..19
 			unsigned int		cycle_type : 2;				// 20..21
-			unsigned int		reserved : 1;				// 22..22 - not supported
-			unsigned int		atomic_prim : 1;				// 23..23
+			unsigned int		color_dither : 1;				// 22..22 - not supported
+			unsigned int		atomic_prim : 1;			// 23..23
 
 			unsigned int		pad : 8;					// 24..31 - padding
 
@@ -518,12 +517,12 @@ typedef struct
 		};
 
 	};
-} RDP_OtherMode;
+};
 
 
 
 
-typedef enum 
+enum SetTileCmdType
 { 
 	CMD_SETTILE, 
 	CMD_SETTILE_SIZE, 
@@ -532,23 +531,23 @@ typedef enum
 	CMD_LOADTLUT, 
 	CMD_SET_TEXTURE,
 	CMD_LOAD_OBJ_TXTR,
-} SetTileCmdType;
+};
 
 
 // The display list PC stack. Before this was an array of 10
 // items, but this way we can nest as deeply as necessary. 
 
-typedef struct 
+struct DListStack
 {
 	uint32 pc;
 	int countdown;
-} DListStack;
+};
 
-typedef struct
+struct ScissorType
 {
 	int x0, y0, x1, y1, mode;
 	int left, top, right, bottom;
-} ScissorType;
+};
 
 // Mask down to 0x003FFFFF?
 #define RSPSegmentAddr(seg) ( gRSP.segments[((seg)>>24)&0x0F] + ((seg)&0x00FFFFFF) )

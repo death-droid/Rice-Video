@@ -317,6 +317,17 @@ struct GGBI1_Dlist {
 	u32 addr;
 };
 
+struct SetScissor
+{
+	u32	y0 : 12;
+	u32	x0 : 12;
+	u32	cmd : 8;
+	u32	y1 : 12;
+	u32	x1 : 12;
+	u32	mode : 2;
+	u32	pad : 6;
+};
+
 struct Gsettile
 {
 	u32	tmem:9;
@@ -367,6 +378,7 @@ struct SetOthermode
 {
 	u32	len:8;
 	u32	sft:8;
+	u32	pad : 8;
 	u32	cmd:8;
 	u32	data;
 };
@@ -453,6 +465,7 @@ union MicroCodeCommand
 	GSetColor		setcolor;
 	SetTImg			img;
 
+	SetScissor		scissor;
 	LoadTile		loadtile;
 	SetFillRect		fillrect;
 	SetPrimDepth	primdepth;

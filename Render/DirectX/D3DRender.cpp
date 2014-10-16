@@ -612,8 +612,7 @@ void D3DRender::ApplyScissorWithClipRatio(bool force)
 
 	WindowSettingStruct &w = windowSetting;
 	D3DVIEWPORT9 vp = { w.clipping.left, w.clipping.top, w.clipping.width, w.clipping.height, 0, 1};
-	//if( !gRSP.bNearClip )
-		//	vp.MinZ = -10000;
+
 
 	if( vp.Width+vp.X > (DWORD)windowSetting.uDisplayWidth-1) vp.Width = windowSetting.uDisplayWidth-1-vp.X;
 	if( vp.Height+vp.Y > (DWORD)windowSetting.uDisplayHeight-1) vp.Height = windowSetting.uDisplayHeight-1-vp.Y;
