@@ -97,7 +97,6 @@ void DLParser_Init()
 	status.lastPurgeTimeTime = status.gRDPTime;
 
 	status.curRenderBuffer = NULL;
-	status.curDisplayBuffer = NULL;
 	status.curVIOriginReg = NULL;
 
 	status.lastPurgeTimeTime = 0;		// Time textures were last purged
@@ -366,31 +365,36 @@ void DLParser_SetPrimDepth(MicroCodeCommand command)
 
 void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 {
-	if( gRDP.otherMode.H != ((command.inst.cmd0) & 0x0FFFFFFF) )
+	if( gRDP.otherMode.H != ((command.inst.cmd0)) )
 	{
-		gRDP.otherMode.H = ((command.inst.cmd0) & 0x0FFFFFFF);
+		gRDP.otherMode.H = ((command.inst.cmd0));
 
 		uint32 dwTextFilt  = (gRDP.otherMode.H>>RSP_SETOTHERMODE_SHIFT_TEXTFILT)&0x3;
 		CRender::g_pRender->SetTextureFilter(dwTextFilt<<RSP_SETOTHERMODE_SHIFT_TEXTFILT);
 	}
+	//RDP_TFILTER_BILERP
 
 	if( gRDP.otherMode.L != (command.inst.cmd1) )
 	{
-		if( (gRDP.otherMode.L&ZMODE_DEC) != ((command.inst.cmd1)&ZMODE_DEC) )
-		{
-			if( ((command.inst.cmd1)&ZMODE_DEC) == ZMODE_DEC )
-				CRender::g_pRender->SetZBias( 2 );
-			else
-				CRender::g_pRender->SetZBias( 0 );
-		}
 
 		gRDP.otherMode.L = (command.inst.cmd1);
 
-		BOOL bZCompare		= (gRDP.otherMode.L & Z_COMPARE)			? TRUE : FALSE;
-		BOOL bZUpdate		= (gRDP.otherMode.L & Z_UPDATE)			? TRUE : FALSE;
+		if (gRDP.otherMode.zmode == 3) //DKR doesnt seem to like the zbias being set for some odd reason :S
+			CRender::g_pRender->SetZBias(2);
+		else
+			CRender::g_pRender->SetZBias(0);
 
-		CRender::g_pRender->SetZCompare( bZCompare );
-		CRender::g_pRender->SetZUpdate( bZUpdate );
+
+		if ((gRDP.tnl.Zbuffer * gRDP.otherMode.z_cmp) | gRDP.otherMode.z_upd)
+		{
+			CRender::g_pRender->SetZCompare(true);
+		}
+		else
+		{
+			CRender::g_pRender->SetZCompare(false);
+		}
+		
+		CRender::g_pRender->SetZUpdate( gRDP.otherMode.z_upd ? true : false );
 
 		uint32 dwAlphaTestMode = (gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3;
 
@@ -755,33 +759,6 @@ void DLParser_SetCImg(MicroCodeCommand command)
 
 	TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", dwNewAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth););
 
-	if( dwFmt == TXT_FMT_YUV || dwFmt == TXT_FMT_IA )
-	{
-		WARNING(TRACE4("Check me:  SetCImg Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
-			g_CI.dwAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth));
-	}
-
-	LOG_UCODE("    Image: 0x%08x", RSPSegmentAddr(command.inst.cmd1));
-	LOG_UCODE("    Fmt: %s Size: %s Width: %d",
-		pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth);
-
-	if( g_CI.dwAddr == dwNewAddr && g_CI.dwFormat == dwFmt && g_CI.dwSize == dwSiz && g_CI.dwWidth == dwWidth )
-	{
-		TXTRBUF_OR_CI_DETAIL_DUMP({
-			TRACE0("Set CIMG to the same address, no change, skipped");
-			DebuggerAppendMsg("Pause after SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
-				g_CI.dwAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth);
-		});
-		return;
-	}
-
-	if( status.bVIOriginIsUpdated == true && currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_1ST_CI_CHANGE )
-	{
-		status.bVIOriginIsUpdated=false;
-		CGraphicsContext::Get()->UpdateFrame();
-		TXTRBUF_OR_CI_DETAIL_DUMP(TRACE0("Screen Update at 1st CI change"););
-	}
-
 	if( options.enableHackForGames == HACK_FOR_SUPER_BOWLING )
 	{
 		if( dwNewAddr%0x100 == 0 )
@@ -848,46 +825,9 @@ void DLParser_SetCImg(MicroCodeCommand command)
 
 void DLParser_SetZImg(MicroCodeCommand command)
 {
-	LOG_UCODE("    Image: 0x%08x", RSPSegmentAddr(command.inst.cmd1));
+	LOG_UCODE("    ZImage: 0x%08x", RSPSegmentAddr(command.inst.cmd1));
 
-	uint32 dwFmt   = command.img.fmt;
-	uint32 dwSiz   = command.img.siz;
-	uint32 dwWidth = command.img.width + 1;
-	uint32 dwAddr = RSPSegmentAddr(command.img.addr);
-
-	if( dwAddr != g_ZI_saves[0].CI_Info.dwAddr )
-	{
-		g_ZI_saves[1].CI_Info.dwAddr	= g_ZI.dwAddr;
-		g_ZI_saves[1].CI_Info.dwFormat	= g_ZI.dwFormat;
-		g_ZI_saves[1].CI_Info.dwSize	= g_ZI.dwSize;
-		g_ZI_saves[1].CI_Info.dwWidth	= g_ZI.dwWidth;
-		g_ZI_saves[1].updateAtFrame = g_ZI_saves[0].updateAtFrame;
-
-		g_ZI_saves[0].CI_Info.dwAddr	= g_ZI.dwAddr	= dwAddr;
-		g_ZI_saves[0].CI_Info.dwFormat	= g_ZI.dwFormat = dwFmt;
-		g_ZI_saves[0].CI_Info.dwSize	= g_ZI.dwSize	= dwSiz;
-		g_ZI_saves[0].CI_Info.dwWidth	= g_ZI.dwWidth	= dwWidth;
-		g_ZI_saves[0].updateAtFrame		= status.gDlistCount;
-	}
-	else
-	{
-		g_ZI.dwAddr	= dwAddr;
-		g_ZI.dwFormat = dwFmt;
-		g_ZI.dwSize	= dwSiz;
-		g_ZI.dwWidth	= dwWidth;
-	}
-
-	DEBUGGER_IF_DUMP((pauseAtNext) ,
-	{DebuggerAppendMsg("SetZImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
-	g_ZI.dwAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth);}
-	);
-
-	DEBUGGER_PAUSE_AND_DUMP_NO_UPDATE(NEXT_SET_CIMG, 
-		{
-			DebuggerAppendMsg("Pause after SetZImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
-				g_ZI.dwAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth);
-		}
-	);
+	g_ZI.dwAddr = RSPSegmentAddr(command.inst.cmd1);
 }
 
 bool IsUsedAsDI(uint32 addr)

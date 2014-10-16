@@ -64,17 +64,6 @@ char *renderToTextureSettings[] =
 	"Write Back & Reload",
 };
 
-const char *screenUpdateSettings[] =
-{
-	"At VI origin update",
-	"At VI origin change",
-	"At CI change",
-	"At the 1st CI change",
-	"At the 1st drawing",
-	"Before clear the screen",
-	"At VI origin update after screen is drawn (default)",
-};
-
 WindowSettingStruct windowSetting;
 GlobalOptions options;
 RomOptions defaultRomOptions;
@@ -193,10 +182,6 @@ void GenerateFrameBufferOptions(void)
 		break;
 	}
 
-	if( currentRomOptions.screenUpdateSetting >= SCREEN_UPDATE_AT_CI_CHANGE )
-	{
-		frameBufferOptions.bUpdateCIInfo = true;
-	}
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -249,7 +234,6 @@ void WriteConfiguration(void)
 	
 	//Now just some misc settings
 	ini.SetLongValue("MiscSettings", "EnableHacks", options.bEnableHacks);
-	ini.SetLongValue("MiscSettings", "ScreenUpdateSetting", defaultRomOptions.screenUpdateSetting);
 	//Ok lets save the settings
 	ini.SaveFile(name);
 	ini.Reset();
@@ -262,9 +246,6 @@ void ReadConfiguration(void)
 	strcat(name, CONFIG_FILE);
 
 	options.bEnableHacks = TRUE;
-
-	defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_CHANGE;
-	//defaultRomOptions.screenUpdateSetting = SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN;
 
 	defaultRomOptions.N64FrameBufferEmuType = FRM_BUF_NONE;
 	defaultRomOptions.N64FrameBufferWriteBackControl = FRM_BUF_WRITEBACK_NORMAL;
@@ -348,7 +329,6 @@ void GenerateCurrentRomOptions()
 	currentRomOptions.N64FrameBufferEmuType		=g_curRomInfo.dwFrameBufferOption;	
 	currentRomOptions.N64FrameBufferWriteBackControl		=defaultRomOptions.N64FrameBufferWriteBackControl;	
 	currentRomOptions.N64RenderToTextureEmuType	=g_curRomInfo.dwRenderToTextureOption;	
-	currentRomOptions.screenUpdateSetting		=g_curRomInfo.dwScreenUpdateSetting;
 
 	options.enableHackForGames = NO_HACK_FOR_GAME;
 
@@ -494,7 +474,6 @@ void GenerateCurrentRomOptions()
 	else currentRomOptions.N64FrameBufferEmuType--;
 	if( currentRomOptions.N64RenderToTextureEmuType == 0 )		currentRomOptions.N64RenderToTextureEmuType = defaultRomOptions.N64RenderToTextureEmuType;
 	else currentRomOptions.N64RenderToTextureEmuType--;
-	if( currentRomOptions.screenUpdateSetting == 0 )		currentRomOptions.screenUpdateSetting = defaultRomOptions.screenUpdateSetting;
 
 	GenerateFrameBufferOptions();
 
@@ -531,7 +510,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 
 	pGameSetting->dwFrameBufferOption	= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
 	pGameSetting->dwRenderToTextureOption	= perRomIni.GetLongValue(szCRC, "dwRenderToTextureOption", 0);
-	pGameSetting->dwScreenUpdateSetting	= perRomIni.GetLongValue(szCRC, "dwScreenUpdateSetting", 0);
 }
 
 void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
@@ -547,7 +525,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	perRomIni.SetLongValue(szCRC, "bDisableObjBG", pGameSetting->bDisableObjBG);
 	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption", pGameSetting->dwFrameBufferOption);
 	perRomIni.SetLongValue(szCRC, "dwRenderToTextureOption", pGameSetting->dwRenderToTextureOption);
-	perRomIni.SetLongValue(szCRC, "dwScreenUpdateSetting", pGameSetting->dwScreenUpdateSetting);
 	perRomIni.SetLongValue(szCRC, "bIncTexRectEdge", pGameSetting->bIncTexRectEdge);
 	perRomIni.SetLongValue(szCRC, "bZHack", pGameSetting->bZHack);
 	perRomIni.SetLongValue(szCRC, "bTextureScaleHack", pGameSetting->bTextureScaleHack);
@@ -952,9 +929,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 //We need to keep these rom setting page, they should ALWAYS overide any other option --clean me --fix me
 LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
 {
-	int i;
-	uint32 state;
-
 	switch(message)
 	{
 	case WM_INITDIALOG:
@@ -966,7 +940,7 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 
 		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_INSERTSTRING, 0, (LPARAM) "Default");
-		for( i=0; i<sizeof(frameBufferSettings)/sizeof(char*); i++ )
+		for(int i=0; i<sizeof(frameBufferSettings)/sizeof(char*); i++ )
 		{
 			SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_INSERTSTRING, i+1, (LPARAM) frameBufferSettings[i]);
 		}
@@ -974,19 +948,11 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		
 		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_INSERTSTRING, 0, (LPARAM) "Default");
-		for( i=0; i<sizeof(renderToTextureSettings)/sizeof(char*); i++ )
+		for(int i=0; i<sizeof(renderToTextureSettings)/sizeof(char*); i++ )
 		{
 			SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_INSERTSTRING, i+1, (LPARAM) renderToTextureSettings[i]);
 		}
 		SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_SETCURSEL, g_curRomInfo.dwRenderToTextureOption, 0);
-
-		SendDlgItemMessage(hDlg, IDC_SCREEN_UPDATE_AT, CB_RESETCONTENT, 0, 0);
-		SendDlgItemMessage(hDlg, IDC_SCREEN_UPDATE_AT, CB_INSERTSTRING, 0, (LPARAM) "Default");
-		for( i=0; i<sizeof(screenUpdateSettings)/sizeof(char*); i++ )
-		{
-			SendDlgItemMessage(hDlg, IDC_SCREEN_UPDATE_AT, CB_INSERTSTRING, i+1, (LPARAM) screenUpdateSettings[i]);
-		}
-		SendDlgItemMessage(hDlg, IDC_SCREEN_UPDATE_AT, CB_SETCURSEL, g_curRomInfo.dwScreenUpdateSetting, 0);
 
 		SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_INSERTSTRING, 0, (LPARAM) "No");
@@ -996,7 +962,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 
 		if( status.bGameIsRunning )
 		{
-			ShowItem(hDlg, IDC_SCREEN_UPDATE_AT, TRUE);
 			ShowItem(hDlg, IDC_FORCE_DEPTH_COMPARE, TRUE);
 			ShowItem(hDlg, IDC_FORCE_BUFFER_CLEAR, TRUE);
 		}
@@ -1062,7 +1027,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 
 			g_curRomInfo.dwFrameBufferOption = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
 			g_curRomInfo.dwRenderToTextureOption = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
-			g_curRomInfo.dwScreenUpdateSetting = SendDlgItemMessage(hDlg, IDC_SCREEN_UPDATE_AT, CB_GETCURSEL, 0, 0);
 			g_curRomInfo.UseCIWidthAndRatio = SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_GETCURSEL, 0, 0);
 
 			// Less useful variables

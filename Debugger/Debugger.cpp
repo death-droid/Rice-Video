@@ -198,8 +198,8 @@ H_START:\t%08X\nV_START:\t%08X\nVI Width=%f(x %f), VI Height=%f(x %f)\n\n",
 		gRSP.nVPBottomN);
 	DebuggerAppendMsg("Current CImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
 		g_CI.dwAddr, pszImgFormat[g_CI.dwFormat], pszImgSize[g_CI.dwSize], g_CI.dwWidth);
-	DebuggerAppendMsg("Current ZImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
-		g_ZI.dwAddr, pszImgFormat[g_ZI.dwFormat], pszImgSize[g_ZI.dwSize], g_ZI.dwWidth);
+	DebuggerAppendMsg("Current ZImg: Addr=0x%08X\n", 
+		g_ZI.dwAddr);
 }
 
 void DumpVertexArray(void)

@@ -49,14 +49,13 @@ typedef D3DLOCKED_RECT LockRectType;
 #define COLOR_RGBA D3DCOLOR_RGBA
 
 //Move me, just putting it here for now
-
 struct SetImgInfo
 {
-	unsigned int	dwFormat:3;
-	unsigned int	dwSize:2;
-	unsigned int	dwWidth:10;
-	uint32			dwAddr;
-	uint32			bpl;
+	uint32	dwFormat : 3;
+	uint32	dwSize : 2;
+	uint32	dwWidth : 10;
+	uint32	dwAddr;
+	uint32	bpl;
 };
 
 struct  Tile

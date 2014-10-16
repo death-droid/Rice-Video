@@ -70,28 +70,6 @@ enum {
 	TEXTURE_EXTERNAL,
 };
 
-enum {
-	SCREEN_UPDATE_DEFAULT = 0,
-	SCREEN_UPDATE_AT_VI_UPDATE = 1,
-	SCREEN_UPDATE_AT_VI_CHANGE = 2,
-	SCREEN_UPDATE_AT_CI_CHANGE = 3,
-	SCREEN_UPDATE_AT_1ST_CI_CHANGE = 4,
-	SCREEN_UPDATE_AT_1ST_PRIMITIVE = 5,
-	SCREEN_UPDATE_BEFORE_SCREEN_CLEAR = 6,
-	SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN = 7,	// Update screen at VI origin is updated and the screen has been drawn
-};
-
-enum {
-	ONSCREEN_DISPLAY_NOTHING = 0,
-	ONSCREEN_DISPLAY_DLIST_PER_SECOND,
-	ONSCREEN_DISPLAY_FRAME_PER_SECOND,
-	ONSCREEN_DISPLAY_DEBUG_INFORMATION_ONLY,
-	ONSCREEN_DISPLAY_TEXT_FROM_CORE_ONLY,
-	ONSCREEN_DISPLAY_DLIST_PER_SECOND_WITH_CORE_MSG,
-	ONSCREEN_DISPLAY_FRAME_PER_SECOND_WITH_CORE_MSG,
-	ONSCREEN_DISPLAY_DEBUG_INFORMATION_WITH_CORE_MSG,
-};
-
 enum HACK_FOR_GAMES
 {
 	NO_HACK_FOR_GAME,
@@ -189,7 +167,6 @@ struct RomOptions{
 	uint32	N64FrameBufferEmuType;
 	uint32	N64FrameBufferWriteBackControl;
 	uint32	N64RenderToTextureEmuType;
-	uint32	screenUpdateSetting;
 };
 
 extern RomOptions defaultRomOptions;
@@ -231,7 +208,6 @@ typedef struct
 	// With changeable default values
 	uint32	dwFrameBufferOption;
 	uint32	dwRenderToTextureOption;
-	uint32	dwScreenUpdateSetting;
 
 	// With FALSE as its default values
 	BOOL	bForceScreenClear;

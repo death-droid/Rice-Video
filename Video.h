@@ -79,13 +79,11 @@ struct PluginStatus{
 	bool	bDisableFPS;
 
 	uint32	curRenderBuffer;
-	uint32	curDisplayBuffer;
 	uint32	curVIOriginReg;
 	CurScissorType  curScissor;
 
 	uint32	lastPurgeTimeTime;		// Time textures were last purged
 
-	bool	bVIOriginIsUpdated;
 	bool	bCIBufferIsRendered;
 	int		leftRendered,topRendered,rightRendered,bottomRendered;
 

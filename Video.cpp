@@ -457,8 +457,8 @@ void SetVIScales()
 //---------------------------------------------------------------------------------------
 FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
 {
-	status.bVIOriginIsUpdated = false;
 	g_CritialSection.Lock();
+
 	if( status.bHandleN64RenderTexture )
 		g_pFrameBufferManager->CloseRenderTexture(true);
 	
@@ -478,89 +478,24 @@ FUNC_TYPE(void) NAME_DEFINE(UpdateScreen) (void)
 		return;
 	}
 
-	if( status.toCaptureScreen )
-	{
-		status.toCaptureScreen = false;
-		// Capture screen here
-		CRender::g_pRender->CaptureScreen(status.screenCaptureFilename);
-	}
-
 	TXTRBUF_DETAIL_DUMP(TRACE1("VI ORIG is updated to %08X", *g_GraphicsInfo.VI_ORIGIN_REG));
 
-	if( currentRomOptions.screenUpdateSetting == SCREEN_UPDATE_AT_VI_UPDATE )
+	if( *g_GraphicsInfo.VI_ORIGIN_REG != status.curVIOriginReg )
 	{
+
+		status.curVIOriginReg = *g_GraphicsInfo.VI_ORIGIN_REG;
+
+		if (status.toCaptureScreen)
+		{
+			status.toCaptureScreen = false;
+			// Capture screen here
+			CRender::g_pRender->CaptureScreen(status.screenCaptureFilename);
+		}
+
 		CGraphicsContext::Get()->UpdateFrame();
-
 		DEBUGGER_IF_DUMP( pauseAtNext, TRACE1("Update Screen: VIORIG=%08X", *g_GraphicsInfo.VI_ORIGIN_REG));
-		DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_FRAME);
-		DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_SET_CIMG);
-		g_CritialSection.Unlock();
-		return;
 	}
 
-	TXTRBUF_DETAIL_DUMP(TRACE1("VI ORIG is updated to %08X", *g_GraphicsInfo.VI_ORIGIN_REG));
-
-	if( currentRomOptions.screenUpdateSetting == SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN )
-	{
-		if( status.bScreenIsDrawn )
-		{
-			CGraphicsContext::Get()->UpdateFrame();
-			DEBUGGER_IF_DUMP( pauseAtNext, TRACE1("Update Screen: VIORIG=%08X", *g_GraphicsInfo.VI_ORIGIN_REG));
-		}
-		else
-		{
-			DEBUGGER_IF_DUMP( pauseAtNext, TRACE1("Skip Screen Update: VIORIG=%08X", *g_GraphicsInfo.VI_ORIGIN_REG));
-		}
-
-		DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_FRAME);
-		DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_SET_CIMG);
-		g_CritialSection.Unlock();
-		return;
-	}
-
-	if( currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_VI_CHANGE )
-	{
-
-		if( *g_GraphicsInfo.VI_ORIGIN_REG != status.curVIOriginReg )
-		{
-			if( *g_GraphicsInfo.VI_ORIGIN_REG < status.curDisplayBuffer || *g_GraphicsInfo.VI_ORIGIN_REG > status.curDisplayBuffer+0x2000  )
-			{
-				status.curDisplayBuffer = *g_GraphicsInfo.VI_ORIGIN_REG;
-				status.curVIOriginReg = status.curDisplayBuffer;
-				//status.curRenderBuffer = NULL;
-
-				CGraphicsContext::Get()->UpdateFrame();
-				DEBUGGER_IF_DUMP( pauseAtNext, TRACE1("Update Screen: VIORIG=%08X", *g_GraphicsInfo.VI_ORIGIN_REG));
-				DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_FRAME);
-				DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_SET_CIMG);
-			}
-			else
-			{
-				status.curDisplayBuffer = *g_GraphicsInfo.VI_ORIGIN_REG;
-				status.curVIOriginReg = status.curDisplayBuffer;
-				DEBUGGER_PAUSE_AND_DUMP_NO_UPDATE(NEXT_FRAME, {DebuggerAppendMsg("Skip Screen Update, closed to the display buffer, VIORIG=%08X", *g_GraphicsInfo.VI_ORIGIN_REG);});
-			}
-		}
-		else
-		{
-			DEBUGGER_PAUSE_AND_DUMP_NO_UPDATE(NEXT_FRAME, {DebuggerAppendMsg("Skip Screen Update, the same VIORIG=%08X", *g_GraphicsInfo.VI_ORIGIN_REG);});
-		}
-
-		g_CritialSection.Unlock();
-		return;
-	}
-
-	if( currentRomOptions.screenUpdateSetting >= SCREEN_UPDATE_AT_1ST_CI_CHANGE )
-	{
-		status.bVIOriginIsUpdated=true;
-		DEBUGGER_PAUSE_AND_DUMP_NO_UPDATE(NEXT_FRAME, {DebuggerAppendMsg("VI ORIG is updated to %08X", *g_GraphicsInfo.VI_ORIGIN_REG);});
-		g_CritialSection.Unlock();
-		return;
-	}
-
-	DEBUGGER_IF_DUMP( pauseAtNext, TRACE1("VI is updated, No screen update: VIORIG=%08X", *g_GraphicsInfo.VI_ORIGIN_REG));
-	DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_FRAME);
-	DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(NEXT_SET_CIMG);
 
 	g_CritialSection.Unlock();
 }

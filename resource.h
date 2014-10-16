@@ -106,7 +106,6 @@
 #define IDC_SKIP_FRAME2                 1113
 #define IDC_Z_HACK                      1114
 #define IDC_FRAME_BUFFER_SETTING2       1115
-#define IDC_SCREEN_UPDATE_AT            1116
 #define IDC_DISABLE_BG                  1117
 #define IDC_WINFRAME_MODE               1118
 #define IDC_DISABLE_CULLING             1119

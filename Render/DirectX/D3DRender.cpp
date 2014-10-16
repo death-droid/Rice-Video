@@ -216,12 +216,6 @@ LPDIRECT3DSURFACE9 g_pLockableBackBuffer=NULL;
 
 void D3DRender::DrawSimple2DTexture(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, D3DCOLOR dif, float z, float rhw)
 {
-	if( status.bVIOriginIsUpdated == true && currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_1ST_PRIMITIVE )
-	{
-		status.bVIOriginIsUpdated=false;
-		CGraphicsContext::Get()->UpdateFrame();
-		DEBUGGER_PAUSE_AND_DUMP_NO_UPDATE(NEXT_SET_CIMG,{TRACE0("Screen Update at 1st Simple2DTexture");});
-	}
 
 	StartDrawSimple2DTexture(x0, y0, x1, y1, u0, v0, u1, v1, dif, z, rhw);
 	

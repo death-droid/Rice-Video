@@ -1703,20 +1703,6 @@ void FrameBufferManager::Set_CI_addr(SetImgInfo &newCI)
 	status.bCIBufferIsRendered = false;
 	status.leftRendered = status.topRendered = status.rightRendered = status.bottomRendered = -1;
 
-	if( currentRomOptions.screenUpdateSetting==SCREEN_UPDATE_AT_CI_CHANGE && !status.bN64IsDrawingTextureBuffer )
-	{
-		if( status.curRenderBuffer == NULL )
-		{
-			status.curRenderBuffer = g_CI.dwAddr;
-		}
-		else if( status.curRenderBuffer != g_CI.dwAddr )
-		{
-			status.curDisplayBuffer = status.curRenderBuffer;
-			CGraphicsContext::Get()->UpdateFrame();
-			status.curRenderBuffer = g_CI.dwAddr;
-			DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Screen Update because CI change to %08X, Display Buf=%08X", status.curRenderBuffer, status.curDisplayBuffer);});
-		}
-	}
 
 	if( frameBufferOptions.bAtEachFrameUpdate && !status.bHandleN64RenderTexture )
 	{
@@ -1730,7 +1716,6 @@ void FrameBufferManager::Set_CI_addr(SetImgInfo &newCI)
 			}
 		}
 
-		//status.curDisplayBuffer = status.curRenderBuffer;
 		status.curRenderBuffer = g_CI.dwAddr;
 	}
 
