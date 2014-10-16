@@ -716,7 +716,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	if (gti.Format == TXT_FMT_CI && gti.TLutFmt == TLUT_FMT_NONE )
 		gti.TLutFmt = TLUT_FMT_RGBA16;		// Force RGBA
 
-	gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
+	gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
 
 	//if( !options.bUseFullTMEM && tile.dwSize == TXT_SIZE_4b )
 	//	gti.PalAddress += 16  * 2 * tile.dwPalette; BACKTOME
