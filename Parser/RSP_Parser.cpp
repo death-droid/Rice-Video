@@ -738,80 +738,24 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 #endif
 }
 
-#define STORE_CI	{g_CI.dwAddr = dwNewAddr;g_CI.dwFormat = dwFmt;g_CI.dwSize = dwSiz;g_CI.dwWidth = dwWidth;g_CI.bpl=dwBpl;}
-
 void DLParser_SetCImg(MicroCodeCommand command)
 {
-	uint32 dwFmt		= command.img.fmt;
-	uint32 dwSiz		= command.img.siz;
-	uint32 dwWidth		= command.img.width + 1;
-	uint32 dwNewAddr	= RSPSegmentAddr(command.img.addr) & 0x00FFFFFF ;
-	uint32 dwBpl		= dwWidth << dwSiz >> 1;
+	g_CI.dwFormat = command.img.fmt;
+	g_CI.dwSize = command.img.siz;
+	g_CI.dwWidth = command.img.width + 1;
+	g_CI.dwAddr = RSPSegmentAddr(command.img.addr) & 0x00FFFFFF;
+	g_CI.bpl = g_CI.dwWidth << g_CI.dwSize >> 1;
 
-	TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", dwNewAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth););
-
-	if( options.enableHackForGames == HACK_FOR_SUPER_BOWLING )
-	{
-		if( dwNewAddr%0x100 == 0 )
-		{
-			if( dwWidth < 320 )
-			{
-				// Left half screen
-				gRDP.scissor.left = 0;
-				gRDP.scissor.right = 160;
-				CRender::g_pRender->SetViewport(0, 0, 160, 240, 0xFFFF);
-				CRender::g_pRender->UpdateClipRectangle();
-				CRender::g_pRender->UpdateScissor();
-			}
-			else
-			{
-				gRDP.scissor.left = 0;
-				gRDP.scissor.right = 320;
-				CRender::g_pRender->SetViewport(0, 0, 320, 240, 0xFFFF);
-				CRender::g_pRender->UpdateClipRectangle();
-				CRender::g_pRender->UpdateScissor();
-			}
-		}
-		else
-		{
-			// right half screen
-			gRDP.scissor.left = 160;
-			gRDP.scissor.right = 320;
-			gRSP.nVPLeftN = 160;
-			gRSP.nVPRightN = 320;
-			CRender::g_pRender->UpdateClipRectangle();
-			CRender::g_pRender->UpdateScissor();
-			CRender::g_pRender->SetViewport(160, 0, 320, 240, 0xFFFF);
-		}
-	}
-
+	TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", g_CI.dwAddr, pszImgFormat[g_CI.dwFormat], pszImgSize[g_CI.dwSize], g_CI.dwWidth););
 
 	if( !frameBufferOptions.bUpdateCIInfo )
 	{
-		STORE_CI;
 		status.bCIBufferIsRendered = false;
 		status.bN64IsDrawingTextureBuffer = false;
-
-		TXTRBUF_DUMP(TRACE4("SetCImg : Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
-			g_CI.dwAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth));
-
-		DEBUGGER_PAUSE_AND_DUMP_NO_UPDATE(NEXT_SET_CIMG, 
-		{
-			DebuggerAppendMsg("Pause after SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", 
-				dwNewAddr, pszImgFormat[dwFmt], pszImgSize[dwSiz], dwWidth);
-		}
-		);
 		return;
 	}
 
-	SetImgInfo newCI;
-	newCI.bpl = dwBpl;
-	newCI.dwAddr = dwNewAddr;
-	newCI.dwFormat = dwFmt;
-	newCI.dwSize = dwSiz;
-	newCI.dwWidth = dwWidth;
-
-	g_pFrameBufferManager->Set_CI_addr(newCI);
+	g_pFrameBufferManager->Set_CI_addr(g_CI);
 }
 
 void DLParser_SetZImg(MicroCodeCommand command)
