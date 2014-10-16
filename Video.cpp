@@ -24,7 +24,7 @@ char generalText[256];
 
 GFX_INFO g_GraphicsInfo;
 
-uint32 g_dwRamSize = 0x400000;
+uint32 g_dwRamSize = 0x800000;
 uint32* g_pu32RamBase = NULL;
 signed char *g_ps8RamBase = NULL;
 unsigned char *g_pu8RamBase = NULL;
@@ -304,19 +304,6 @@ FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void)
 
 	status.bDisableFPS=false;
 
-	__try{
-		uint32 dummy;
-		dummy = g_GraphicsInfo.RDRAM[0x400000];
-		dummy = g_GraphicsInfo.RDRAM[0x500000];
-		dummy = g_GraphicsInfo.RDRAM[0x600000];
-		dummy = g_GraphicsInfo.RDRAM[0x700000];
-		dummy = g_GraphicsInfo.RDRAM[0x7FFFFC];
-		g_dwRamSize = 0x800000;
-	}
-	__except(NULL, EXCEPTION_EXECUTE_HANDLER)
-	{
-		g_dwRamSize = 0x400000;
-	}
 #ifdef _DEBUG
 	if( debuggerPause )
 	{
@@ -330,7 +317,6 @@ FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void)
 	return 1;
 }
 
-
 void SetVIScales()
 {
 	if( g_curRomInfo.VIHeight>0 && g_curRomInfo.VIWidth>0 )
@@ -341,115 +327,43 @@ void SetVIScales()
 	else if( g_curRomInfo.UseCIWidthAndRatio && g_CI.dwWidth )
 	{
 		windowSetting.fViWidth = windowSetting.uViWidth = g_CI.dwWidth;
-		windowSetting.fViHeight = windowSetting.uViHeight = 
-			g_curRomInfo.UseCIWidthAndRatio == USE_CI_WIDTH_AND_RATIO_FOR_NTSC ? g_CI.dwWidth/4*3 : g_CI.dwWidth/11*9;
+		windowSetting.fViHeight = windowSetting.uViHeight = g_curRomInfo.UseCIWidthAndRatio == USE_CI_WIDTH_AND_RATIO_FOR_NTSC ? g_CI.dwWidth/4*3 : g_CI.dwWidth/11*9;
 	}
 	else
 	{
-		float xscale, yscale;
-		uint32 val = *g_GraphicsInfo.VI_X_SCALE_REG & 0xFFF;
-		xscale = (float)val / (1<<10);
-		uint32 start = *g_GraphicsInfo.VI_H_START_REG >> 16;
-		uint32 end = *g_GraphicsInfo.VI_H_START_REG&0xFFFF;
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG;
-		windowSetting.fViWidth = (end-start)*xscale;
-		if( abs(windowSetting.fViWidth - width ) < 8 ) 
-		{
-			windowSetting.fViWidth = (float)width;
-		}
-		else
-		{
-			//DebuggerAppendMsg("fViWidth = %f, Width Reg=%d", windowSetting.fViWidth, width);
-		}
 
-		val = (*g_GraphicsInfo.VI_Y_SCALE_REG & 0xFFF);// - ((*g_GraphicsInfo.VI_Y_SCALE_REG>>16) & 0xFFF);
-		if( val == 0x3FF )	val = 0x400;
-		yscale = (float)val / (1<<10);
-		start = *g_GraphicsInfo.VI_V_START_REG >> 16;
-		end = *g_GraphicsInfo.VI_V_START_REG&0xFFFF;
-		windowSetting.fViHeight = (end-start)/2*yscale;
+		uint32 ScaleX = *g_GraphicsInfo.VI_X_SCALE_REG & 0xFFF;
+		uint32 ScaleY = *g_GraphicsInfo.VI_Y_SCALE_REG & 0xFFF;
 
-		if( yscale == 0 )
-		{
-			windowSetting.fViHeight = windowSetting.fViWidth*status.fRatio;
-		}
-		else
-		{
-			if( *g_GraphicsInfo.VI_WIDTH_REG > 0x300 ) 
-				windowSetting.fViHeight *= 2;
+		float fScaleX = (float)ScaleX / 1024.0f;
+		float fScaleY = (float)ScaleY / 2048.0f;
 
-			if( windowSetting.fViWidth*status.fRatio > windowSetting.fViHeight && (*g_GraphicsInfo.VI_X_SCALE_REG & 0xFF) != 0 )
-			{
-				if( abs(int(windowSetting.fViWidth*status.fRatio - windowSetting.fViHeight)) < 8 )
-				{
-					windowSetting.fViHeight = windowSetting.fViWidth*status.fRatio;
-				}
-			}
-			
-			if( windowSetting.fViHeight<100 || windowSetting.fViWidth<100 )
-			{
-				//At sometime, value in VI_H_START_REG or VI_V_START_REG are 0
-				windowSetting.fViWidth = (float)*g_GraphicsInfo.VI_WIDTH_REG;
-				windowSetting.fViHeight = windowSetting.fViWidth*status.fRatio;
-			}
+		uint32 HStartReg = *g_GraphicsInfo.VI_H_START_REG;
+		uint32 VStartReg = *g_GraphicsInfo.VI_V_START_REG;
+
+		uint32 hstart = HStartReg >> 16;
+		uint32 hend   = HStartReg & 0xFFFF;
+
+		uint32 vstart = VStartReg >> 16;
+		uint32 vend   = VStartReg & 0xFFFF;
+
+		if (hend == hstart)
+		{
+			hend = (uint32)(width / fScaleX);
 		}
 
-		windowSetting.uViWidth = (unsigned short)(windowSetting.fViWidth/4);
+		windowSetting.fViWidth  = (hend - hstart) * fScaleX;
+		windowSetting.fViHeight = (vend - vstart) * fScaleY;
+
+		if (width > 0x300)
+			windowSetting.fViHeight *= 2.0f;
+
+		windowSetting.uViWidth = (unsigned short)(windowSetting.fViWidth / 4);
 		windowSetting.fViWidth = windowSetting.uViWidth *= 4;
 
-		windowSetting.uViHeight = (unsigned short)(windowSetting.fViHeight/4);
+		windowSetting.uViHeight = (unsigned short)(windowSetting.fViHeight / 4);
 		windowSetting.fViHeight = windowSetting.uViHeight *= 4;
-		uint16 optimizeHeight = uint16(windowSetting.uViWidth*status.fRatio);
-		optimizeHeight &= ~3;
-
-		uint16 optimizeHeight2 = uint16(windowSetting.uViWidth*3/4);
-		optimizeHeight2 &= ~3;
-
-		if( windowSetting.uViHeight != optimizeHeight && windowSetting.uViHeight != optimizeHeight2 )
-		{
-			if( abs(windowSetting.uViHeight-optimizeHeight) <= 8 )
-				windowSetting.fViHeight = windowSetting.uViHeight = optimizeHeight;
-			else if( abs(windowSetting.uViHeight-optimizeHeight2) <= 8 )
-				windowSetting.fViHeight = windowSetting.uViHeight = optimizeHeight2;
-		}
-
-
-		if( gRDP.scissor.left == 0 && gRDP.scissor.top == 0 && gRDP.scissor.right != 0 )
-		{
-			if( (*g_GraphicsInfo.VI_X_SCALE_REG & 0xFF) != 0x0 && gRDP.scissor.right == windowSetting.uViWidth )
-			{
-				// Mario Tennis
-				if( abs(int( windowSetting.fViHeight - gRDP.scissor.bottom )) < 8 )
-				{
-					windowSetting.fViHeight = windowSetting.uViHeight = gRDP.scissor.bottom;
-				}
-				else if( windowSetting.fViHeight < gRDP.scissor.bottom )
-				{
-					windowSetting.fViHeight = windowSetting.uViHeight = gRDP.scissor.bottom;
-				}
-				windowSetting.fViHeight = windowSetting.uViHeight = gRDP.scissor.bottom;
-			}
-			else if( gRDP.scissor.right == windowSetting.uViWidth - 1 && gRDP.scissor.bottom != 0 )
-			{
-				if( windowSetting.uViHeight != optimizeHeight && windowSetting.uViHeight != optimizeHeight2 )
-				{
-					if( status.fRatio != 0.75 && windowSetting.fViHeight > optimizeHeight/2 )
-					{
-						windowSetting.fViHeight = windowSetting.uViHeight = gRDP.scissor.bottom + gRDP.scissor.top + 1;
-					}
-				}
-			}
-			else if( gRDP.scissor.right == windowSetting.uViWidth && gRDP.scissor.bottom != 0  && status.fRatio != 0.75 )
-			{
-				if( windowSetting.uViHeight != optimizeHeight && windowSetting.uViHeight != optimizeHeight2 )
-				{
-					if( status.fRatio != 0.75 && windowSetting.fViHeight > optimizeHeight/2 )
-					{
-						windowSetting.fViHeight = windowSetting.uViHeight = gRDP.scissor.bottom + gRDP.scissor.top + 1;
-					}
-				}
-			}
-		}
 	}
 	SetScreenMult(windowSetting.uDisplayWidth/windowSetting.fViWidth, windowSetting.uDisplayHeight/windowSetting.fViHeight);
 }
