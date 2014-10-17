@@ -261,111 +261,7 @@ void CRender::LoadTxtrBufIntoTexture(void)
 	SetCurrentTexture(0,pEntry);
 }
 
-void CRender::LoadSprite2D(Sprite2DInfo &info, uint32 ucode)
-{
-	TxtrInfo gti;
 
-	gti.Format	= info.spritePtr->format;
-	gti.Size	= info.spritePtr->size;
-
-	gti.Address	= RSPSegmentAddr(info.spritePtr->address);
-	gti.Palette	= 0;
-	gti.PalAddress = (uint32)(g_pu8RamBase+RSPSegmentAddr(info.spritePtr->tlut));
-
-	if( options.enableHackForGames == HACK_FOR_NITRO )
-	{
-		gti.WidthToCreate	= uint32(info.spritePtr->width/info.scaleX);
-		gti.HeightToCreate	= uint32(info.spritePtr->height/info.scaleY);
-		gti.LeftToLoad		= uint32(info.spritePtr->imageX/info.scaleX);
-		gti.TopToLoad		= uint32(info.spritePtr->imageY/info.scaleY);
-		gti.Pitch	= info.spritePtr->Stride << gti.Size >> 1;
-		gti.Pitch	= uint32(gti.Pitch*info.scaleY);
-	}
-	else
-	{
-		gti.WidthToCreate	= info.spritePtr->width;
-		gti.HeightToCreate	= info.spritePtr->height;
-		gti.LeftToLoad		= info.spritePtr->imageX;
-		gti.TopToLoad		= info.spritePtr->imageY;
-		gti.Pitch	= info.spritePtr->Stride << gti.Size >> 1;
-	}
-
-	if( gti.Address + gti.Pitch*gti.HeightToCreate > g_dwRamSize )
-	{
-		TRACE0("Skip Sprite image decompress, memory out of bound");
-		return;
-	}
-
-	gti.HeightToLoad = gti.HeightToCreate;
-	gti.WidthToLoad = gti.WidthToCreate;
-
-	gti.TLutFmt		= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
-
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
-	gti.tileNo = -1;
-	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
-	SetCurrentTexture(0,pEntry);
-
-	DEBUGGER_IF_DUMP((pauseAtNext && (eventToPause == NEXT_OBJ_TXT_CMD||eventToPause == NEXT_FLUSH_TRI||eventToPause == NEXT_SPRITE_2D)),
-	{
-		TRACE0("Load Sprite 2D\n");
-		DebuggerAppendMsg("Addr=0x%08X, W=%d, H=%d, Left=%d, Top=%d\n", 
-			gti.Address, gti.WidthToCreate, gti.HeightToCreate, gti.LeftToLoad, gti.TopToLoad);
-		DebuggerAppendMsg("Fmt=%s-%db, Pal=%d, Pitch=%d\n",
-			pszImgFormat[gti.Format], pnImgSize[gti.Size], gti.Palette, gti.Pitch);
-	}
-	);
-}
-
-
-void CRender::DrawSprite2D(Sprite2DInfo &info, uint32 ucode)
-{
-	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
-
-	if( status.bHandleN64RenderTexture )
-	{
-		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
-		status.bFrameBufferIsDrawn = true;
-		status.bFrameBufferDrawnByTriangles = true;
-	}
-	LoadSprite2D(info, ucode);
-
-	info.scaleX = 1/info.scaleX;
-	info.scaleY = 1/info.scaleY;
-
-	int x0, y0, x1, y1;
-	float t0, s0, t1, s1;
-	x0 = info.px;
-    y0 = info.py;
-	x1 = info.px + int(info.spritePtr->width*info.scaleX);
-	y1 = info.py + int(info.spritePtr->height*info.scaleY);
-	
-	if( info.flipX )
-		std::swap(x0, x1);
-
-	if( info.flipY )
-		std::swap(y0, y1);
-
-	t0 = s0 = 0;
-	if( options.enableHackForGames == HACK_FOR_NITRO )
-	{
-		t1 = info.spritePtr->width*info.scaleX/g_textures[0].m_fTexWidth;
-		s1 = info.spritePtr->height*info.scaleY/g_textures[0].m_fTexHeight;
-	}
-	else
-	{
-		t1 = info.spritePtr->width/g_textures[0].m_fTexWidth;
-		s1 = info.spritePtr->height/g_textures[0].m_fTexHeight;
-	}
-
-	SetCombinerAndBlender();
-	SetAddressUAllStages( 0, D3DTADDRESS_CLAMP );
-	SetAddressVAllStages( 0, D3DTADDRESS_CLAMP );
-
-	float depth = ( gRDP.otherMode.depth_source == 1 ) ? gRDP.fPrimitiveDepth : 0;
-	DrawSimple2DTexture((float)x0, (float)y0, (float)x1, (float)y1, t0, s0, t1, s1, 0xffffffff, depth, 1.0f);
-}
 
 
 void CRender::DrawSpriteR(uObjTxSprite &sprite, bool initCombiner, uint32 tile, uint32 left, uint32 top, uint32 width, uint32 height)	// With Rotation
@@ -629,8 +525,7 @@ void CRender::DrawObjBG1CYC(uObjScaleBg &bg, bool scaled)	//Without Ratation
 	{
 		float s1 = (x1-x0)*scaleX + s0;
 		float t1 = (y1-y0)*scaleY + t0;
-		DrawSimple2DTexture(x0, y0, x1, y1, u0, v0, 
-			s1 / g_textures[0].m_fTexWidth, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
+		DrawSimple2DTexture(x0, y0, x1, y1, u0, v0, s1 / g_textures[0].m_fTexWidth, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
 	}
 	else if( x2 >= x1 )
 	{
@@ -638,15 +533,12 @@ void CRender::DrawObjBG1CYC(uObjScaleBg &bg, bool scaled)	//Without Ratation
 		if( y2 >= y1 )
 		{
 			float t1 = (y1-y0)*scaleY + t0;
-			DrawSimple2DTexture(x0, y0, x1, y1, u0, v0, 
-				s1 / g_textures[0].m_fTexWidth, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
+			DrawSimple2DTexture(x0, y0, x1, y1, u0, v0, s1 / g_textures[0].m_fTexWidth, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
 		}
 		else
 		{
-			DrawSimple2DTexture(x0, y0, x1, y2, u0, v0, 
-				s1 / g_textures[0].m_fTexWidth, maxv, 0xffffffff, depth, 1);
-			DrawSimple2DTexture(x0, y2, x1, y1, u0, 0, 
-				s1 / g_textures[0].m_fTexWidth, v1, 0xffffffff, depth, 1);
+			DrawSimple2DTexture(x0, y0, x1, y2, u0, v0, s1 / g_textures[0].m_fTexWidth, maxv, 0xffffffff, depth, 1);
+			DrawSimple2DTexture(x0, y2, x1, y1, u0, 0, s1 / g_textures[0].m_fTexWidth, v1, 0xffffffff, depth, 1);
 		}
 	}
 	else
@@ -654,10 +546,8 @@ void CRender::DrawObjBG1CYC(uObjScaleBg &bg, bool scaled)	//Without Ratation
 		if( y2 >= y1 )
 		{
 			float t1 = (y1-y0)*scaleY + t0;
-			DrawSimple2DTexture(x0, y0, x2, y1, u0, v0, 
-				maxu, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
-			DrawSimple2DTexture(x2, y0, x1, y1, 0, v0, 
-				u1, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
+			DrawSimple2DTexture(x0, y0, x2, y1, u0, v0, maxu, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
+			DrawSimple2DTexture(x2, y0, x1, y1, 0, v0, u1, t1 / g_textures[0].m_fTexHeight, 0xffffffff, depth, 1);
 		}
 		else
 		{

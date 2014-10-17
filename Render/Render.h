@@ -194,7 +194,6 @@ public:
 	virtual bool DrawTexture(int tex, TextureChannel channel = TXT_RGB );
 #endif
 
-	void LoadSprite2D(Sprite2DInfo &info, uint32 ucode);
 	void LoadObjBGCopy(uObjBg &info);
 	void LoadObjBG1CYC(uObjScaleBg &info);
 	void LoadObjSprite(uObjTxSprite &info, bool useTIAddr=false);
@@ -202,7 +201,6 @@ public:
 	void LoadFrameBuffer(bool useVIreg=false, uint32 left=0, uint32 top=0, uint32 width=0, uint32 height=0);
 	void LoadTextureFromMemory(void *buf, uint32 left, uint32 top, uint32 width, uint32 height, uint32 pitch, uint32 format);
 	void LoadTxtrBufIntoTexture(void);
-	void DrawSprite2D(Sprite2DInfo &info, uint32 ucode);
 	void DrawSpriteR(uObjTxSprite &sprite, bool initCombiner=true, uint32 tile=0, uint32 left=0, uint32 top=0, uint32 width=0, uint32 height=0);
 	void DrawSprite(uObjTxSprite &sprite, bool rectR = true);
 	void DrawObjBGCopy(uObjBg &info);

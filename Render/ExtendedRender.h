@@ -36,10 +36,6 @@ public:
 	virtual void LoadFrameBuffer(bool useVIreg=false, uint32 left=0, uint32 top=0, uint32 width=0, uint32 height=0) {};
 	virtual void LoadTxtrBufFromRDRAM(void) {};
 	virtual void LoadTxtrBufIntoTexture(void) {};
-
-	virtual void DrawSprite2D(Sprite2DInfo &info, uint32 ucode) {};
-	virtual void LoadSprite2D(Sprite2DInfo &info, uint32 ucode) {};
-
 	
 	virtual void DrawSprite(uObjTxSprite &sprite, bool rectR = true) {};
 	virtual void DrawObjBG1CYC(uObjScaleBg &bg, bool scaled=true) {};

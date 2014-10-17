@@ -61,9 +61,7 @@ UcodeFunc(RSP_MoveMem_Conker);
 UcodeFunc(RSP_Vtx_Gemini);
 
 UcodeFunc(RSP_GBI_Sprite2DBase);
-UcodeFunc(RSP_GBI0_Sprite2DDraw);
 UcodeFunc(RSP_GBI1_Sprite2DScaleFlip);
-UcodeFunc(RSP_GBI1_Sprite2DDraw);
 UcodeFunc(RSP_GBI_Sprite2DBase);
 UcodeFunc(RSP_GBI_Sprite2D_PuzzleMaster64);
 

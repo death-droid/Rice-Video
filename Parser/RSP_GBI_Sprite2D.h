@@ -17,15 +17,126 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+struct Sprite2DStruct
+{
+	uint32 address;
+	uint32 tlut;
+
+	short width;
+	short Stride;
+
+	char  size;
+	char  format;
+	short height;
+
+	short imageY;
+	short imageX;
+
+	char	dummy[4];
+};			//Converted Sprint struct in Intel format
+
+struct Sprite2DInfo{
+	float scaleX;
+	float scaleY;
+
+	uint8  flipX;
+	uint8  flipY;
+};
+
+void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStruct *sprite)
+{
+	// This ucode is shared by PopMtx and gSPSprite2DDraw
+	if (!status.bCIBufferIsRendered) g_pFrameBufferManager->ActiveTextureBuffer();
+
+	if (status.bHandleN64RenderTexture)
+	{
+		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;
+		status.bFrameBufferIsDrawn = true;
+		status.bFrameBufferDrawnByTriangles = true;
+	}
+
+	//Wipeout seems to have sprites with a width of 0, handle this
+	if (sprite->width == 0)
+		return;
+
+	TxtrInfo gti;
+
+	gti.Format = sprite->format;
+	gti.Size = sprite->size;
+
+	gti.Address = RSPSegmentAddr(sprite->address);
+
+	gti.PalAddress = (uint32)(g_pu8RamBase + RSPSegmentAddr(sprite->tlut));
+
+	gti.WidthToCreate = sprite->width;
+	gti.HeightToCreate = sprite->height;
+	gti.LeftToLoad = sprite->imageX;
+	gti.TopToLoad = sprite->imageY;
+	gti.Pitch = sprite->Stride << sprite->size >> 1;
+
+	gti.HeightToLoad = gti.HeightToCreate;
+	gti.WidthToLoad = gti.WidthToCreate;
+
+	gti.TLutFmt = TLUT_FMT_RGBA16;	//RGBA16
+	gti.Palette = 0;
+	gti.bSwapped = FALSE;
+
+	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase) + gti.Address;
+	gti.tileNo = -1;
+
+	CRender::GetRender()->SetCurrentTexture(0, gTextureManager.GetTexture(&gti, false));
+
+	short px = (short)(((command.inst.cmd1) >> 16) & 0xFFFF) / 4;
+	short py = (short)((command.inst.cmd1) & 0xFFFF) / 4;
+	unsigned short pw = (unsigned short)(sprite->width / info.scaleX);
+	unsigned short ph = (unsigned short)(sprite->height / info.scaleY);
+
+	s32 frameX = px;
+	s32 frameY = py;
+	s32 frameW = px + pw;
+	s32 frameH = py + ph;
+
+	if (info.flipX)
+		std::swap(frameX, frameW);
+
+	if (info.flipY)
+		std::swap(frameY, frameH);
+
+
+	float t1, s1 = 0;
+
+	t1 = sprite->width / g_textures[0].m_fTexWidth;
+	s1 = sprite->height / g_textures[0].m_fTexHeight;
+
+	CRender::GetRender()->SetCombinerAndBlender();
+	CRender::GetRender()->SetAddressUAllStages(0, D3DTADDRESS_CLAMP);
+	CRender::GetRender()->SetAddressVAllStages(0, D3DTADDRESS_CLAMP);
+
+	float depth = (gRDP.otherMode.depth_source == 1) ? gRDP.fPrimitiveDepth : 0;
+	CRender::GetRender()->DrawSimple2DTexture((float)frameX, (float)frameY, (float)frameW, (float)frameH, 0, 0, t1, s1, 0xffffffff, depth, 1.0f);
+
+}
+
+void RSP_Sprite2DScaleFlip(MicroCodeCommand command, Sprite2DInfo *info)
+{
+
+	info->scaleX = (((command.inst.cmd1) >> 16) & 0xFFFF) / 1024.0f;
+	info->scaleY = ((command.inst.cmd1) & 0xFFFF) / 1024.0f;
+
+	info->flipX = (uint8)(((command.inst.cmd0) >> 8) & 0xFF);
+	info->flipY = (uint8)((command.inst.cmd0) & 0xFF);
+
+	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D,
+	{ DebuggerAppendMsg("Pause after Sprite2DScaleFlip, Flip (%d,%d), Scale (%f, %f)\n", info->flipX, info->flipY,
+	info.scaleX, info.scaleY); });
+}
+
 // Sprite2D Ucodes
-
-
-Sprite2DInfo g_Sprite2DInfo;
-uint32 g_SavedUcode=1;
- 
 void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 {
 	u32 address;
+	Sprite2DInfo info;
+	Sprite2DStruct *sprite;
 
 	u32 pc = gDlistStack[gDlistStackPointer].pc;
 	u32 * pCmdBase = (u32 *)(g_pu8RamBase + pc);
@@ -35,7 +146,7 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 	do
 	{
 		address = RSPSegmentAddr(command.inst.cmd1) & (g_dwRamSize-1);
-		g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_ps8RamBase + address);
+		sprite = (Sprite2DStruct *)(g_ps8RamBase + address);
 
 		// Fetch Sprite2D Flip
 		command.inst.cmd0= *pCmdBase++;
@@ -45,7 +156,7 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 			pc += 8;
 			break;
 		}
-		RSP_GBI1_Sprite2DScaleFlip( command );
+		RSP_Sprite2DScaleFlip( command, &info);
 
 		// Fetch Sprite2D Draw
 		command.inst.cmd0= *pCmdBase++;
@@ -55,7 +166,7 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 			pc += 16;	//We have executed atleast 2 instructions at this point
 			break;
 		}
-		RSP_GBI1_Sprite2DDraw( command );
+		RSP_Sprite2DDraw( command, info, sprite);
 
 		// Fetch Sprite2D Base
 		command.inst.cmd0= *pCmdBase++;
@@ -66,126 +177,3 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 	gDlistStack[gDlistStackPointer].pc = pc-8;
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {DebuggerAppendMsg("Pause after Sprite2DBase: Addr=%08X\n", address);});
 }
-
-typedef struct{
-	uint32 address; 
-	uint32 tlut;
-
-	short width;
-	short Stride;
-
-	char  size;
-	char  format;
-	short height;
-
-	short scaleY;
-	short scaleX;
-
-	short imageX;
-	char  dummy1[2]; 
-
-	short px;
-	short imageY;
-
-	char  dummy2[2]; 
-	short py;
-
-} PuzzleMasterSprite;
-
-void RSP_GBI_Sprite2D_PuzzleMaster64(MicroCodeCommand command)
-{
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	dwAddr &= (g_dwRamSize-1);
-
-	g_Sprite2DInfo.spritePtr = (SpriteStruct *)(g_ps8RamBase+dwAddr);
-
-	g_Sprite2DInfo.flipX = 0;
-	g_Sprite2DInfo.flipY = 0;
-	g_Sprite2DInfo.px = 0;
-	g_Sprite2DInfo.py = 0;
-
-	SpriteStruct tempInfo;
-	memcpy(&tempInfo, g_Sprite2DInfo.spritePtr, sizeof(SpriteStruct));
-	PuzzleMasterSprite info;
-	memcpy(&info, g_Sprite2DInfo.spritePtr, sizeof(PuzzleMasterSprite));
-
-	g_Sprite2DInfo.px = info.px>>2;
-	g_Sprite2DInfo.py = info.py>>2;
-	g_Sprite2DInfo.scaleX = info.scaleX / 1024.0f;
-	g_Sprite2DInfo.scaleY = info.scaleY / 1024.0f;
-	tempInfo.imageX = info.imageX;
-	tempInfo.imageY = info.imageY;
-	g_Sprite2DInfo.spritePtr = &tempInfo;
-
-	CRender::g_pRender->DrawSprite2D(g_Sprite2DInfo, 1);
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {DebuggerAppendMsg("Pause after Sprite2DBase: Addr=%08X\n", dwAddr);});
-}
-
-
-void RSP_GBI1_Sprite2DDraw(MicroCodeCommand command)
-{
-	// This ucode is shared by PopMtx and gSPSprite2DDraw
-	g_Sprite2DInfo.px = (short)(((command.inst.cmd1)>>16)&0xFFFF)/4;
-	g_Sprite2DInfo.py = (short)((command.inst.cmd1)&0xFFFF)/4;
-
-	//RSP_RDP_NOIMPL("gSPSprite2DDraw is not implemented", (command.inst.cmd0), (command.inst.cmd1));
-	CRender::g_pRender->DrawSprite2D(g_Sprite2DInfo, 1);
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, 
-		{DebuggerAppendMsg("Pause after Sprite2DDraw at (%d, %d)\n", g_Sprite2DInfo.px, g_Sprite2DInfo.py);});
-
-//	LoadedUcodeMap[RSP_SPRITE2D_SCALEFLIP] = &RSP_GBI1_CullDL;
-//	LoadedUcodeMap[RSP_SPRITE2D_DRAW] = &RSP_GBI1_PopMtx;
-//	LoadedUcodeMap[RSP_SPRITE2D_BASE] = &RSP_GBI1_Sprite2DBase;
-
-}
-
-void RSP_GBI0_Sprite2DDraw(MicroCodeCommand command)
-{
-	// This ucode is shared by PopMtx and gSPSprite2DDraw
-	g_Sprite2DInfo.px = (short)(((command.inst.cmd1)>>16)&0xFFFF)/4;
-	g_Sprite2DInfo.py = (short)((command.inst.cmd1)&0xFFFF)/4;
-
-	//RSP_RDP_NOIMPL("gSPSprite2DDraw is not implemented", (command.inst.cmd0), (command.inst.cmd1));
-	CRender::g_pRender->DrawSprite2D(g_Sprite2DInfo, 0);
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {TRACE0("Pause after Sprite2DDraw\n");});
-}
-
-
-void RSP_GBI1_Sprite2DScaleFlip(MicroCodeCommand command)
-{
-
-	g_Sprite2DInfo.scaleX = (((command.inst.cmd1)>>16)&0xFFFF)/1024.0f;
-	g_Sprite2DInfo.scaleY = ( (command.inst.cmd1)     &0xFFFF)/1024.0f;
-
-	if( ((command.inst.cmd1)&0xFFFF) < 0x100 )
-	{
-		g_Sprite2DInfo.scaleY = g_Sprite2DInfo.scaleX;
-	}
-
-	g_Sprite2DInfo.flipX = (uint8)(((command.inst.cmd0)>>8)&0xFF);
-	g_Sprite2DInfo.flipY = (uint8)( (command.inst.cmd0)    &0xFF);
-	//RSP_RDP_NOIMPL("RSP_SPRITE2D_SCALEFLIP is not implemented", (command.inst.cmd0), (command.inst.cmd1));
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, 
-		{DebuggerAppendMsg("Pause after Sprite2DScaleFlip, Flip (%d,%d), Scale (%f, %f)\n", g_Sprite2DInfo.flipX, g_Sprite2DInfo.flipY,
-			g_Sprite2DInfo.scaleX, g_Sprite2DInfo.scaleY);});
-}
-
-
-//remove us
-void RSP_GBI1_Sprite2DBase(MicroCodeCommand command)
-{
-	RSP_GBI_Sprite2DBase(command);
-}
-
-
-//remove us
-void RSP_GBI0_Sprite2DBase(MicroCodeCommand command)
-{
-	//Weired, this ucode 0 game is using ucode 1, but sprite2D cmd is working differently from
-	//normal ucode1 sprite2D game
-
-	TRACE0("Ucode 0 game is using Sprite2D, and using ucode 1 codes, create a new ucode for me");
-
-	RSP_GBI_Sprite2DBase(command);
-}
-

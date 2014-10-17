@@ -421,34 +421,6 @@ struct LoadCmdInfo
 	unsigned int dxt	:12;
 };
 
-typedef struct {	// This is in Intel format
-  uint32 address; 
-  uint32 tlut;
-
-  short width;
-  short Stride;
-
-  char  size;
-  char  format;
-  short height;
-
-  short imageY;
-  short imageX;
-
-  char	dummy[4]; 
-} SpriteStruct;			//Converted Sprint struct in Intel format
-
-typedef struct{
-	short px;
-	short py;
-	float scaleX;
-	float scaleY;
-	uint8  flipX; 
-	uint8  flipY;
-	SpriteStruct *spritePtr;
-} Sprite2DInfo;
-
-
 struct RDP_BlenderSetting
 {
 	unsigned int	c2_m2b:2;
