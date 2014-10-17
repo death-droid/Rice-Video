@@ -17,6 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 //Clean me
+#ifndef RSP_GBI1_H_
+#define RSP_GBI1_H_
+
 void RSP_GBI1_Vtx(MicroCodeCommand command)
 {
 	uint32 addr = RSPSegmentAddr(command.vtx1.addr);
@@ -25,6 +28,7 @@ void RSP_GBI1_Vtx(MicroCodeCommand command)
 
 	LOG_UCODE("    Address 0x%08x, v0: %d, Num: %d, Length: 0x%04x", addr, v0, n, command.vtx1.len);
 
+	//This happens in wetrix
 	if (addr > g_dwRamSize)
 	{
 		TRACE0("     Address out of range - ignoring load");
@@ -47,36 +51,18 @@ void RSP_GBI1_Vtx(MicroCodeCommand command)
 
 void RSP_GBI1_ModifyVtx(MicroCodeCommand command)
 {
-	if( ((command.inst.cmd0)&0x00FFFFFF) == 0 && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
-	{
-		DLParser_Bomberman2TextRect(command);
-	}
-	else
-	{
-		uint32 dwWhere = ((command.inst.cmd0) >> 16) & 0xFF;
-		uint32 dwVert   = (((command.inst.cmd0)      ) & 0xFFFF) / 2;
-		uint32 dwValue  = (command.inst.cmd1);
+	uint32 offset   = command.modifyvtx.offset;
+	uint32 dwVert   = command.modifyvtx.vtx;
+	uint32 dwValue  = command.modifyvtx.value;
 
-		if( dwVert > 80 )
-		{
-			RSP_RDP_NOIMPL("RSP_GBI1_ModifyVtx: Invalid vertex number: %d", dwVert, 0);
-			return;
-		}
-
-		// Data for other commands?
-		switch (dwWhere)
-		{
-		case RSP_MV_WORD_OFFSET_POINT_RGBA:			// Modify RGBA
-		case RSP_MV_WORD_OFFSET_POINT_XYSCREEN:		// Modify X,Y
-		case RSP_MV_WORD_OFFSET_POINT_ZSCREEN:		// Modify C
-		case RSP_MV_WORD_OFFSET_POINT_ST:			// Texture
-			ModifyVertexInfo(dwWhere, dwVert, dwValue);
-			break;
-		default:
-			RSP_RDP_NOIMPL("RSP_GBI1_ModifyVtx: Setting unk value: 0x%02x, 0x%08x", dwWhere, dwValue);
-			break;
-		}
+	//Stops crash after swining in mario golf
+	if( dwVert > 80 )
+	{
+		RSP_RDP_NOIMPL("RSP_GBI1_ModifyVtx: Invalid vertex number: %d", dwVert, 0);
+		return;
 	}
+
+	ModifyVertexInfo(offset, dwVert, dwValue);
 }
 
 void RSP_GBI1_Tri2(MicroCodeCommand command)
@@ -123,16 +109,18 @@ void RSP_GBI1_Tri2(MicroCodeCommand command)
 }
 
 extern D3DXVECTOR4 g_vtxNonTransformed[MAX_VERTS];
-
+//*****************************************************************************
+// When the depth is less than the z value provided, branch to given address
+//*****************************************************************************
 void RSP_GBI1_BranchZ(MicroCodeCommand command)
 {
-	uint32 vtx = ((command.inst.cmd0)&0xFFF)>>1;
+	uint32 vtx = command.branchz.vtx;
 	float vtxdepth = g_vecProjected[vtx].z/g_vecProjected[vtx].w;
 
 #ifdef _DEBUG
 	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)command.inst.cmd1 || g_curRomInfo.bForceDepthBuffer )
 #else
-	if( vtxdepth <= (s32)(command.inst.cmd1) || g_curRomInfo.bForceDepthBuffer )
+	if( vtxdepth <= (s32)(command.branchz.value) || g_curRomInfo.bForceDepthBuffer )
 #endif
 	{
 		uint32 dwAddr = RSPSegmentAddr(gRDPHalf1);
@@ -155,6 +143,8 @@ void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SWITCH_UCODE,{DebuggerAppendMsg("Pause at loading ucode");});
 }
 
+
+//NOT GBI1 SPECFIFIC MOVEME FIXME CLEANME
 void RSP_GFX_Force_Matrix(uint32 dwAddr)
 {
 	if (dwAddr + 64 > g_dwRamSize)
@@ -211,6 +201,7 @@ void DisplayVertexInfo(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 #endif
 }
 
+//NOT GBI1 SPECFIFIC MOVEME FIXME CLEANME
 void RSP_MoveMemLight(uint32 dwLight, const N64Light *light)
 {
 	if( dwLight >= 16 )
@@ -240,6 +231,8 @@ void RSP_MoveMemLight(uint32 dwLight, const N64Light *light)
 	SetLightDirection(dwLight, dir_x, dir_y, dir_z);
 }
 
+
+//NOT GBI1 SPECFIFIC MOVEME FIXME CLEANME
 void RSP_MoveMemViewport(uint32 dwAddr)
 {
 	if( dwAddr+16 >= g_dwRamSize )
@@ -308,14 +301,13 @@ void RSP_GBI1_Reserved(MicroCodeCommand command)
 void RSP_GBI1_MoveMem(MicroCodeCommand command)
 {
 	uint32 type    = ((command.inst.cmd0)>>16)&0xFF;
-	uint32 dwLength  = ((command.inst.cmd0))&0xFFFF;
 	uint32 addr = RSPSegmentAddr((command.inst.cmd1));
 
 	switch (type) 
 	{
 		case RSP_GBI1_MV_MEM_VIEWPORT:
 			{
-				LOG_UCODE("    RSP_GBI1_MV_MEM_VIEWPORT. Address: 0x%08x, Length: 0x%04x", addr, dwLength);
+				LOG_UCODE("    RSP_GBI1_MV_MEM_VIEWPORT. Address: 0x%08x", addr);
 				RSP_MoveMemViewport(addr);
 			}
 			break;
@@ -336,7 +328,6 @@ void RSP_GBI1_MoveMem(MicroCodeCommand command)
 			{
 				uint32 dwLight = (type-RSP_GBI1_MV_MEM_L0)/2;
 				LOG_UCODE("    RSP_GBI1_MV_MEM_L%d", dwLight);
-				LOG_UCODE("    Light%d: Length:0x%04x, Address: 0x%08x", dwLight, dwLength, addr);
 				N64Light *light = (N64Light*)(g_pu8RamBase + addr);
 				RSP_MoveMemLight(dwLight, light);
 			}
@@ -345,7 +336,10 @@ void RSP_GBI1_MoveMem(MicroCodeCommand command)
 			LOG_UCODE("    RSP_GBI1_MV_MEM_TXTATT");
 			break;
 		case RSP_GBI1_MV_MEM_MATRIX_1:
+			// Rayman 2, Donald Duck, Tarzan, all wrestling games use this
 			RSP_GFX_Force_Matrix(addr);
+			//Force matrix takes fource cmds
+			gDlistStack[gDlistStackPointer].pc += 24;
 			break;
 		case RSP_GBI1_MV_MEM_MATRIX_2:
 			break;
@@ -448,6 +442,7 @@ void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.Shade		= gGeometryMode.GBI1_Shade;
 	gRDP.tnl.Zbuffer	= gGeometryMode.GBI1_Zbuffer;
 
+	//Re-implment culling properly, FIXME CLEANME
 	gRDP.tnl.TriCull = gGeometryMode.GBI1_CullFront;// | gGeometryMode.GBI1_CullBack;
 	gRDP.tnl.CullBack	= gGeometryMode.GBI1_CullBack;
 
@@ -506,17 +501,12 @@ void RSP_GBI1_SetOtherModeH(MicroCodeCommand command)
 
 void RSP_GBI1_Texture(MicroCodeCommand command)
 {
-	bool bEnable = command.texture.enable_gbi0;
-
-	CRender::g_pRender->SetTextureEnable( bEnable );
-
-	//Since the texture isnt enabled, lets stop it from calculating texture scales
-	if(!bEnable) return;
+	CRender::g_pRender->SetTextureEnable(command.texture.enable_gbi0);
 
 	float fTextureScaleS = (float)(command.texture.scaleS) / (65536.0f * 32.0f);
 	float fTextureScaleT = (float)(command.texture.scaleT) / (65536.0f * 32.0f);
 
-	if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF )
+	/*if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF ) FIXME CLEANME Check for any side effects
 	{
 		fTextureScaleS = 1/32.0f;
 	}
@@ -544,13 +534,8 @@ void RSP_GBI1_Texture(MicroCodeCommand command)
 	{
 		//DebuggerAppendMsg("Warning, texture scale = %08X is not integer", (word1)&0xFFFF);
 	}
-#endif
+#endif */
 
-	//if( gRSP.ucode == 6 )
-	//{
-//		if( fTextureScaleS == 0 )	fTextureScaleS = 1.0f/32.0f;
-	//	if( fTextureScaleT == 0 )	fTextureScaleT = 1.0f/32.0f;
-//	}
 
 	CRender::g_pRender->SetTextureScale(command.texture.tile, fTextureScaleS, fTextureScaleT);
 
@@ -584,7 +569,7 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 			SetNumLights(dwNumLights);
 		}
 		break;
-	case RSP_MOVE_WORD_CLIP:
+	case RSP_MOVE_WORD_CLIP: //CHECKME, CLEANME, FIXME, unsure what this does
 		{
 			switch (command.mw1.offset)
 			{
@@ -605,18 +590,7 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 			uint32 dwSegment = (command.mw1.offset >> 2) & 0xF;
 			uint32 dwBase = (command.mw1.value)&0x00FFFFFF;
 			LOG_UCODE("    RSP_MOVE_WORD_SEGMENT Seg[%d] = 0x%08x", dwSegment, dwBase);
-			if( dwBase > g_dwRamSize )
-			{
-				gRSP.segments[dwSegment] = dwBase;
-#ifdef _DEBUG
-				if( pauseAtNext )
-					DebuggerAppendMsg("warning: Segment %d addr is %8X", dwSegment, dwBase);
-#endif
-			}
-			else
-			{
-				gRSP.segments[dwSegment] = dwBase;
-			}
+			gRSP.segments[dwSegment] = dwBase;
 		}
 		break;
 	case RSP_MOVE_WORD_FOG:
@@ -649,7 +623,7 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 		break;
 	case RSP_MOVE_WORD_LIGHTCOL:
 		{
-			uint32 dwLight = command.mw1.offset / 0x20;
+			uint32 dwLight = command.mw1.offset >> 5;
 			uint32 field_offset = (command.mw1.offset & 0x7);
 
 			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw1.offset, command.mw1.value);
@@ -753,7 +727,6 @@ void RSP_GBI1_CullDL(MicroCodeCommand command)
 }
 
 
-
 void RSP_GBI1_Tri1(MicroCodeCommand command)
 {
 	bool bTrisAdded = false;
@@ -791,3 +764,5 @@ void RSP_GBI1_Tri1(MicroCodeCommand command)
 
 	DEBUG_TRIANGLE(TRACE0("Pause at GBI0 TRI1"));
 }
+
+#endif //RSP_GBI1_H_

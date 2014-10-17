@@ -16,6 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+#ifndef RSP_GBI0_H_
+#define RSP_GBI0_H_
 
 void RSP_GBI0_Mtx(MicroCodeCommand command)
 {	
@@ -190,3 +192,5 @@ void RSP_GBI0_Tri4(MicroCodeCommand command)
 
 //	gDKRVtxCount=0;
 }
+
+#endif //RSP_GBI0_H_

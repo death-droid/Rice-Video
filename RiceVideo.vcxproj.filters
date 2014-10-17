@@ -164,9 +164,6 @@
     <ClInclude Include="Parser\RSP_GBI2.h">
       <Filter>Graphics\Parser\Ucodes</Filter>
     </ClInclude>
-    <ClInclude Include="Parser\RSP_GBI2_ext.h">
-      <Filter>Graphics\Parser\Ucodes</Filter>
-    </ClInclude>
     <ClInclude Include="Parser\RSP_GBI_Others.h">
       <Filter>Graphics\Parser\Ucodes</Filter>
     </ClInclude>

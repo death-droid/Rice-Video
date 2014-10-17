@@ -17,9 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-
 // This file implements the S2DEX ucode, Yoshi story is using this ucodes
-
 #include "..\Stdafx.h"
 #include "UcodeDefs.h"
 

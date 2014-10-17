@@ -62,7 +62,6 @@ uint16	g_wRDPTlut[0x200];
 #include "RSP_GBI0.h"
 #include "RSP_GBI1.h"
 #include "RSP_GBI2.h"
-#include "RSP_GBI2_ext.h"
 #include "RSP_GBI_Others.h"
 #include "RSP_GBI_Sprite2D.h"
 #include "RDP_Texture.h"

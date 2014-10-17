@@ -195,7 +195,6 @@
     <ClInclude Include="Parser\RSP_GBI0.h" />
     <ClInclude Include="Parser\RSP_GBI1.h" />
     <ClInclude Include="Parser\RSP_GBI2.h" />
-    <ClInclude Include="Parser\RSP_GBI2_ext.h" />
     <ClInclude Include="Parser\RSP_GBI_Others.h" />
     <ClInclude Include="Parser\RSP_GBI_Sprite2D.h" />
     <ClInclude Include="Parser\RSP_Conker.h" />

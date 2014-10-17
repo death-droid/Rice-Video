@@ -16,6 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+#ifndef RSP_GBI2_H_
+#define RSP_GBI2_H_
 
 //*****************************************************************************
 //
@@ -108,13 +110,13 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 
 	case RSP_MOVE_WORD_NUMLIGHT:
 		{
-			uint32 dwNumLights = command.mw2.value/24;
+			uint32 dwNumLights = command.mw2.value / 24;
 			gRSP.ambientLightIndex = dwNumLights;
 			SetNumLights(dwNumLights);
 		}
 		break;
 
-	case RSP_MOVE_WORD_CLIP:
+	case RSP_MOVE_WORD_CLIP: //Test whether this really actually does anything
 		{
 			switch (command.mw2.offset)
 			{
@@ -133,7 +135,7 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_SEGMENT:
 		{
 			uint32 dwSeg     = command.mw2.offset >> 2;
-			uint32 dwAddr = command.mw2.value & 0x00FFFFFF;			// Hack - convert to physical
+			uint32 dwAddr    = command.mw2.value & 0x00FFFFFF;			// Hack - convert to physical
 
 			LOG_UCODE("      RSP_MOVE_WORD_SEGMENT Segment[%d] = 0x%08x",	dwSeg, dwAddr);
 
@@ -202,163 +204,136 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 
 void RSP_GBI2_Tri1(MicroCodeCommand command)
 {
-	if( command.inst.cmd0 == 0x05000017 && command.gbi2tri1.flag == 0x80 )
+
+	// While the next command pair is Tri1, add vertices
+	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
+
+	bool bTrisAdded = false;
+
+	do
 	{
-		// The ObjLoadTxtr / Tlut cmd for Evangelion.v64
-		RSP_S2DEX_SPObjLoadTxtr(command);
-		DebuggerAppendMsg("Fix me, SPObjLoadTxtr as RSP_GBI2_Tri2");
-	}
-	else
-	{
-	
-		bool bTrisAdded = false;
-		bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
+		uint32 dwV0 = command.gbi2tri1.v0/gRSP.vertexMult;
+		uint32 dwV1 = command.gbi2tri1.v1/gRSP.vertexMult;
+		uint32 dwV2 = command.gbi2tri1.v2/gRSP.vertexMult;
 
-		// While the next command pair is Tri1, add vertices
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-		do
-		{
-			uint32 dwV0 = command.gbi2tri1.v0/gRSP.vertexMult;
-			uint32 dwV1 = command.gbi2tri1.v1/gRSP.vertexMult;
-			uint32 dwV2 = command.gbi2tri1.v2/gRSP.vertexMult;
+		command.inst.cmd0 = *pCmdBase++;
+		command.inst.cmd1 = *pCmdBase++;
 
-			bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
-
-			command.inst.cmd0 = *pCmdBase++;
-			command.inst.cmd1 = *pCmdBase++;
-
-			dwPC += 8;
+		dwPC += 8;
 
 #ifdef _DEBUG
-		} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_ZELDATRI1);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_ZELDATRI1);
 #else
-		} while( command.inst.cmd == (uint8)RSP_ZELDATRI1);
+	} while( command.inst.cmd == (uint8)RSP_ZELDATRI1);
 #endif
 
-		gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack[gDlistStackPointer].pc = dwPC-8;
 
-		if (bTrisAdded)	
-		{
-			CRender::g_pRender->DrawTriangles();
-		}
-
-		DEBUG_TRIANGLE(TRACE0("Pause at GBI2 TRI1"));
+	if (bTrisAdded)	
+	{
+		CRender::g_pRender->DrawTriangles();
 	}
+
+	DEBUG_TRIANGLE(TRACE0("Pause at GBI2 TRI1"));
 }
 
 
 
 void RSP_GBI2_Tri2(MicroCodeCommand command)
 {
-	if( command.inst.cmd0 == 0x0600002f && command.gbi2tri2.flag == 0x80 )
-	{
-		// The ObjTxSprite cmd for Evangelion.v64
-		RSP_S2DEX_SPObjLoadTxSprite(command);
-		DebuggerAppendMsg("Fix me, SPObjLoadTxSprite as RSP_GBI2_Tri2");
-	}
-	else
-	{
-		bool bTrisAdded = FALSE;
 
-		// While the next command pair is Tri2, add vertices
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
+	// While the next command pair is Tri2, add vertices
+	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
-		bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
+	bool bTrisAdded = FALSE;
 
-		do {
+	do {
 
-			uint32 dwV0 = command.gbi2tri2.v0;
-			uint32 dwV1 = command.gbi2tri2.v1;
-			uint32 dwV2 = command.gbi2tri2.v2;
+		uint32 dwV0 = command.gbi2tri2.v0;
+		uint32 dwV1 = command.gbi2tri2.v1;
+		uint32 dwV2 = command.gbi2tri2.v2;
 
-			bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-			uint32 dwV5 = command.gbi2tri2.v5;
-			uint32 dwV4 = command.gbi2tri2.v4;
-			uint32 dwV3 = command.gbi2tri2.v3;
+		uint32 dwV5 = command.gbi2tri2.v5;
+		uint32 dwV4 = command.gbi2tri2.v4;
+		uint32 dwV3 = command.gbi2tri2.v3;
 
-			bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
+		bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
 
-			LOG_UCODE("    ZeldaTri2: 0x%08x 0x%08x", command.inst.cmd0, command.inst.cmd1);
-			LOG_UCODE("           V0: %d, V1: %d, V2: %d", dwV0, dwV1, dwV2);
-			LOG_UCODE("           V3: %d, V4: %d, V5: %d", dwV3, dwV4, dwV5);
+		LOG_UCODE("    ZeldaTri2: 0x%08x 0x%08x", command.inst.cmd0, command.inst.cmd1);
+		LOG_UCODE("           V0: %d, V1: %d, V2: %d", dwV0, dwV1, dwV2);
+		LOG_UCODE("           V3: %d, V4: %d, V5: %d", dwV3, dwV4, dwV5);
 
-			command.inst.cmd0= *pCmdBase++;
-			command.inst.cmd1= *pCmdBase++;
-			dwPC += 8;
+		command.inst.cmd0= *pCmdBase++;
+		command.inst.cmd1= *pCmdBase++;
+		dwPC += 8;
 
 #ifdef _DEBUG
-		} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_ZELDATRI2);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_ZELDATRI2);
 #else
-		} while ( command.inst.cmd == (uint8)RSP_ZELDATRI2 );//&& status.dwNumTrisRendered < 50);
+	} while ( command.inst.cmd == (uint8)RSP_ZELDATRI2 );//&& status.dwNumTrisRendered < 50);
 #endif
 
 
-		gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack[gDlistStackPointer].pc = dwPC-8;
 
-		if (bTrisAdded)	
-		{
-			CRender::g_pRender->DrawTriangles();
-		}
-
-		DEBUG_TRIANGLE(TRACE0("Pause at GBI2 TRI2"));
+	if (bTrisAdded)	
+	{
+		CRender::g_pRender->DrawTriangles();
 	}
+
+	DEBUG_TRIANGLE(TRACE0("Pause at GBI2 TRI2"));
+
 }
 
 void RSP_GBI2_Line3D(MicroCodeCommand command)
 {
-	if( command.inst.cmd0 == 0x0700002f && (command.inst.cmd1>>24) == 0x80 )
-	{
-		// The ObjTxSprite cmd for Evangelion.v64
-		RSP_S2DEX_SPObjLoadTxRect(command);
-	}
-	else
-	{
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
-		uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
+	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
-		bool bTrisAdded = false;
+	bool bTrisAdded = false;
 
-		do {
-			uint32 dwV0 = command.gbi2line3d.v0/gRSP.vertexMult;
-			uint32 dwV1 = command.gbi2line3d.v1/gRSP.vertexMult;
-			uint32 dwV2 = command.gbi2line3d.v2/gRSP.vertexMult;
+	do {
+		uint32 dwV0 = command.gbi2line3d.v0/gRSP.vertexMult;
+		uint32 dwV1 = command.gbi2line3d.v1/gRSP.vertexMult;
+		uint32 dwV2 = command.gbi2line3d.v2/gRSP.vertexMult;
 
-			bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-			uint32 dwV3 = command.gbi2line3d.v3/gRSP.vertexMult;
-			uint32 dwV4 = command.gbi2line3d.v4/gRSP.vertexMult;
-			uint32 dwV5 = command.gbi2line3d.v5/gRSP.vertexMult;
+		uint32 dwV3 = command.gbi2line3d.v3/gRSP.vertexMult;
+		uint32 dwV4 = command.gbi2line3d.v4/gRSP.vertexMult;
+		uint32 dwV5 = command.gbi2line3d.v5/gRSP.vertexMult;
 
-			bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
+		bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
 
-			LOG_UCODE("    ZeldaTri3: 0x%08x 0x%08x", command.inst.cmd0, command.inst.cmd1);
-			LOG_UCODE("           V0: %d, V1: %d, V2: %d", dwV0, dwV1, dwV2);
-			LOG_UCODE("           V3: %d, V4: %d, V5: %d", dwV3, dwV4, dwV5);		
+		LOG_UCODE("    ZeldaTri3: 0x%08x 0x%08x", command.inst.cmd0, command.inst.cmd1);
+		LOG_UCODE("           V0: %d, V1: %d, V2: %d", dwV0, dwV1, dwV2);
+		LOG_UCODE("           V3: %d, V4: %d, V5: %d", dwV3, dwV4, dwV5);		
 
-			command.inst.cmd0= *pCmdBase++;
-			command.inst.cmd1= *pCmdBase++;
-			dwPC += 8;
+		command.inst.cmd0= *pCmdBase++;
+		command.inst.cmd1= *pCmdBase++;
+		dwPC += 8;
 
 #ifdef _DEBUG
-		} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_LINE3D);
+	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_LINE3D);
 #else
-		} while ( command.inst.cmd == (uint8)RSP_LINE3D);
+	} while ( command.inst.cmd == (uint8)RSP_LINE3D);
 #endif
 
-		gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack[gDlistStackPointer].pc = dwPC-8;
 
 
-		if (bTrisAdded)	
-		{
-			CRender::g_pRender->DrawTriangles();
-		}
-
-		DEBUG_TRIANGLE(TRACE0("Pause at GBI2 Line3D"));
+	if (bTrisAdded)	
+	{
+		CRender::g_pRender->DrawTriangles();
 	}
+
+	DEBUG_TRIANGLE(TRACE0("Pause at GBI2 Line3D"));
 }
 
 void RSP_GBI2_Texture(MicroCodeCommand command)
@@ -368,12 +343,10 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 	CRender::g_pRender->SetTextureEnable( bEnable );
 
 	//Since the texture isnt enabled lets stop it from computing the rest
-	if(!bEnable) return;
-
 	float fTextureScaleS = (float)(command.texture.scaleS) / (65536.0f * 32.0f);
 	float fTextureScaleT = (float)(command.texture.scaleT) / (65536.0f * 32.0f);
 
-	if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF )
+	/*if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF ) -_ TEST FOR SIDE EFFECTS FIXME CLEANME
 	{
 		fTextureScaleS = 1/32.0f;
 	}
@@ -388,33 +361,7 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 	else if( (((command.inst.cmd1)    )&0xFFFF) == 0x8000 )
 	{
 		fTextureScaleT = 1/64.0f;
-	}
-
-	/*
-	if( g_curRomInfo.bTextureScaleHack )
-	{
-	// Hack, need to verify, refer to N64 programming manual
-	// that if scale = 0.5 (1/64), vtx s,t are also doubled
-
-		if( ((word1>>16)&0xFFFF) == 0x8000 )
-		{
-			fTextureScaleS = 1/128.0f;
-			if( ((word1)&0xFFFF) == 0xFFFF )
-			{
-				fTextureScaleT = 1/64.0f;
-			}
-		}
-
-		if( ((word1    )&0xFFFF) == 0x8000 )
-		{
-			fTextureScaleT = 1/128.0f;
-			if( ((word1>>16)&0xFFFF) == 0xFFFF )
-			{
-				fTextureScaleS = 1/64.0f;
-			}
-		}
-	}
-	*/
+	}*/
 
 	CRender::g_pRender->SetTextureScale(command.texture.tile, fTextureScaleS, fTextureScaleT);
 
@@ -440,22 +387,6 @@ void RSP_GBI2_PopMtx(MicroCodeCommand command)
 	u32 num = command.inst.cmd1>>6;
 
 	CRender::g_pRender->PopWorldView(num);
-	
-#ifdef _DEBUG
-	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
-	{
-		pauseAtNext = false;
-		debuggerPause = true;
-		TRACE0("Pause after Pop GBI2_PopMtx:");
-	}
-	else
-	{
-		if( pauseAtNext && logMatrix ) 
-		{
-			TRACE0("Pause after Pop GBI2_PopMtx:");
-		}
-	}
-#endif
 
 }
 
@@ -473,7 +404,7 @@ void RSP_GBI2_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.Shade		= !(gGeometryMode.GBI2_TexGenLin);
 	gRDP.tnl.Zbuffer	= gGeometryMode.GBI2_Zbuffer;
 
-	gRDP.tnl.TriCull = gGeometryMode.GBI2_CullFront;// | gGeometryMode.GBI2_CullBack;
+	gRDP.tnl.TriCull = gGeometryMode.GBI2_CullFront;// | gGeometryMode.GBI2_CullBack; //We need to redo the way we handle culling
 	gRDP.tnl.CullBack	= gGeometryMode.GBI2_CullBack;
 	gRDP.tnl.PointLight = gGeometryMode.GBI2_PointLight;
 
@@ -508,14 +439,10 @@ void RSP_GBI2_Mtx(MicroCodeCommand command)
 		command.mtx2.nopush==0 ? "Push" : "No Push",
 		command.mtx2.len, addr);
 
-	if (addr + 64 > g_dwRamSize)
-	{
-		DebuggerAppendMsg("ZeldaMtx: Address invalid (0x%08x)", addr);
-		return;
-	}
 
 	LoadMatrix(addr);
 
+	//Load Matrix from address
 	if (command.mtx2.projection)
 	{
 		// So far only Extreme-G seems to Push/Pop projection matrices	
@@ -534,40 +461,6 @@ void RSP_GBI2_Mtx(MicroCodeCommand command)
 			}
 		}
 	}
-
-#ifdef _DEBUG
-	char *loadstr = command.mtx2.load?"Load":"Mul";
-	char *pushstr = command.mtx2.nopush==0?"Push":"Nopush";
-	int projlevel = CRender::g_pRender->GetProjectMatrixLevel();
-	int worldlevel = CRender::g_pRender->GetWorldViewMatrixLevel();
-	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
-	{
-		pauseAtNext = false;
-		debuggerPause = true;
-		if (command.mtx2.projection)
-		{
-			DebuggerAppendMsg("Pause after %s and %s Matrix: Projection, level=%d\n", loadstr, pushstr, projlevel );
-		}
-		else
-		{
-			DebuggerAppendMsg("Pause after %s and %s Matrix: WorldView level=%d\n", loadstr, pushstr, worldlevel);
-		}
-	}
-	else
-	{
-		if( pauseAtNext && logMatrix ) 
-		{
-			if (command.mtx2.projection)
-			{
-				DebuggerAppendMsg("Matrix: %s and %s Projection level=%d\n", loadstr, pushstr, projlevel);
-			}
-			else
-			{
-				DebuggerAppendMsg("Matrix: %s and %s WorldView\n level=%d", loadstr, pushstr, worldlevel);
-			}
-		}
-	}
-#endif
 }
 
 void RSP_GBI2_MoveMem(MicroCodeCommand command)
@@ -608,7 +501,10 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 		break;
 	case RSP_GBI2_MV_MEM__MATRIX:
 		LOG_UCODE("Force Matrix: addr=%08X", addr);
+		// Rayman 2, Donald Duck, Tarzan, all wrestling games use this
 		RSP_GFX_Force_Matrix(addr);
+		// ForceMatrix takes two cmds
+		gDlistStack[gDlistStackPointer].pc += 8;
 		break;
 	case RSP_GBI2_MV_MEM_O_L0:
 	case RSP_GBI2_MV_MEM_O_L1:
@@ -627,22 +523,14 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 		RDP_NOIMPL_WARN("Zelda Move Point");
 		break;
 
-	case RSP_GBI2_MV_MEM_O_LOOKATX:
-		if( (command.inst.cmd0) == 0xDC170000 && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
-		{
-			// Ucode for Evangelion.v64, the ObjMatrix cmd
-			RSP_S2DEX_OBJ_MOVEMEM(command);
-		}
-		break;
 	case RSP_GBI2_MV_MEM_O_LOOKATY:
 		RSP_RDP_NOIMPL("Not implemented ZeldaMoveMem LOOKATY, Cmd0=0x%08X, Cmd1=0x%08X", command.inst.cmd0, command.inst.cmd1);
 		break;
+	case 0x00:
 	case 0x02:
-		if( (command.inst.cmd0) == 0xDC070002 && ((command.inst.cmd1)&0xFF000000) == 0x80000000 )
-		{
+		// Ucode for Evangelion.v64, the ObjMatrix cmd
 			RSP_S2DEX_OBJ_MOVEMEM(command);
 			break;
-		}
 	default:
 		LOG_UCODE("ZeldaMoveMem Type: Unknown");
 		RSP_RDP_NOIMPL("Unknown ZeldaMoveMem Type, type=0x%X, Addr=%08X", type, addr);
@@ -726,7 +614,37 @@ void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 	DLParser_RDPSetOtherMode(tempgfx );
 }
 
+void RSP_GBI2_DL_Count(MicroCodeCommand command)
+{
+	// This cmd is likely to execute number of ucode at the given address
+	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+
+	// For SSB and Kirby, otherwise we'll end up scrapping the pc
+	if (dwAddr == 0)
+	{
+		return;
+	}
+
+	gDlistStackPointer++;
+	gDlistStack[gDlistStackPointer].pc = dwAddr;
+	gDlistStack[gDlistStackPointer].countdown = ((command.inst.cmd0) & 0xFFFF);
+}
+
+void RSP_GBI2_0x8(MicroCodeCommand command)
+{
+	if (((command.inst.cmd0) & 0x00FFFFFF) == 0x2F && ((command.inst.cmd1) & 0xFF000000) == 0x80000000)
+	{
+		// V-Rally 64
+		RSP_S2DEX_SPObjLoadTxRectR(command);
+	}
+	else
+	{
+		RSP_RDP_Nothing(command);
+	}
+}
 void RSP_GBI2_SubModule(MicroCodeCommand command)
 {
 	RSP_RDP_NOIMPL("RDP: RSP_GBI2_SubModule (0x%08x 0x%08x)", (command.inst.cmd0), (command.inst.cmd1));
 }
+
+#endif RSP_GBI2_H_
