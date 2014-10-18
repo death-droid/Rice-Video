@@ -645,30 +645,6 @@ void D3DRender::CaptureScreen(char *filename)
 	TRACE1("Capture screen to %s", filename);
 }
 
-void D3DRender::SetCullMode(bool bCullFront, bool bCullBack)
-{
-	CRender::SetCullMode(bCullFront, bCullBack);
-	/*
-	if( bCullFront && bCullBack )
-	{
-		gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_CW );
-		gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_CCW );
-	}
-	else if( bCullFront )
-	{
-		gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_CW );
-	}
-	else if( bCullBack )
-	{
-		gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_CCW );
-	}
-	else
-	{
-		gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_NONE );
-	}
-	*/
-}
-
 void D3DRender::D3DSetMinFilter(uint32 dwStage, uint32 filter)
 {
 	if( filter == D3DTEXF_LINEAR && options.DirectXAnisotropyValue > 0 )

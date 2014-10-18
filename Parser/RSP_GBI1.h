@@ -443,7 +443,7 @@ void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.Zbuffer	= gGeometryMode.GBI1_Zbuffer;
 
 	//Re-implment culling properly, FIXME CLEANME
-	gRDP.tnl.TriCull = gGeometryMode.GBI1_CullFront;// | gGeometryMode.GBI1_CullBack;
+	gRDP.tnl.TriCull = gGeometryMode.GBI1_CullFront | gGeometryMode.GBI1_CullBack;
 	gRDP.tnl.CullBack	= gGeometryMode.GBI1_CullBack;
 
 	CRender::g_pRender->ZBufferEnable(gRDP.tnl.Zbuffer);

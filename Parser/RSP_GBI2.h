@@ -240,16 +240,13 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 	DEBUG_TRIANGLE(TRACE0("Pause at GBI2 TRI1"));
 }
 
-
-
 void RSP_GBI2_Tri2(MicroCodeCommand command)
 {
-
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
-	bool bTrisAdded = FALSE;
+	bool bTrisAdded = false;
 
 	do {
 
@@ -346,7 +343,7 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 	float fTextureScaleS = (float)(command.texture.scaleS) / (65536.0f * 32.0f);
 	float fTextureScaleT = (float)(command.texture.scaleT) / (65536.0f * 32.0f);
 
-	/*if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF ) -_ TEST FOR SIDE EFFECTS FIXME CLEANME
+	if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF ) //TEST FOR SIDE EFFECTS FIXME CLEANME
 	{
 		fTextureScaleS = 1/32.0f;
 	}
@@ -361,7 +358,7 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 	else if( (((command.inst.cmd1)    )&0xFFFF) == 0x8000 )
 	{
 		fTextureScaleT = 1/64.0f;
-	}*/
+	}
 
 	CRender::g_pRender->SetTextureScale(command.texture.tile, fTextureScaleS, fTextureScaleT);
 
@@ -404,7 +401,7 @@ void RSP_GBI2_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.Shade		= !(gGeometryMode.GBI2_TexGenLin);
 	gRDP.tnl.Zbuffer	= gGeometryMode.GBI2_Zbuffer;
 
-	gRDP.tnl.TriCull = gGeometryMode.GBI2_CullFront;// | gGeometryMode.GBI2_CullBack; //We need to redo the way we handle culling
+	gRDP.tnl.TriCull = gGeometryMode.GBI2_CullFront | gGeometryMode.GBI2_CullBack; //We need to redo the way we handle culling
 	gRDP.tnl.CullBack	= gGeometryMode.GBI2_CullBack;
 	gRDP.tnl.PointLight = gGeometryMode.GBI2_PointLight;
 
