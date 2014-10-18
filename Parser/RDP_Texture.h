@@ -85,131 +85,87 @@ inline uint32 ReverseDXT(uint32 val, uint32 lrs, uint32 width, uint32 size)
 // Rice, 02/24/2004
 inline void UnswapCopy( void *src, void *dest, uint32 numBytes )
 {
-	__asm
-	{
-		mov		ecx, 0
-		mov		esi, dword ptr [src]
-		mov		edi, dword ptr [dest]
+    /* implementation borrowed from mupen64plus-libretro/gles2n64 */
+    int i, numDWords, trailingBytes;
+    // copy leading bytes
+    int leadingBytes = ((intptr_t)src) & 3;
 
-		mov		ebx, esi
-		and		ebx, 3			// ebx = number of leading bytes
+    if (numBytes == 1)
+    {
+        *(u8 *)(dest) = *(u8 *)(src);
+        return;
+    }
 
-		cmp		ebx, 0
-		jz		StartDWordLoop
-		neg		ebx
-		add		ebx, 4
+    if (leadingBytes != 0)
+    {
+        leadingBytes = 4 - leadingBytes;
+        if ((unsigned int)leadingBytes > numBytes)
+            leadingBytes = numBytes;
+        numBytes -= leadingBytes;
 
-		cmp		ebx, [numBytes]
-		jle		NotGreater
-		mov		ebx, [numBytes]
-NotGreater:
-		mov		ecx, ebx
-			xor		esi, 3
-LeadingLoop:				// Copies leading bytes, in reverse order (un-swaps)
-		mov		al, byte ptr [esi]
-		mov		byte ptr [edi], al
-		sub		esi, 1
-		add		edi, 1
-		loop	LeadingLoop
-		add		esi, 5
+        src = (void *)((intptr_t)src ^ 3);
+        for (i = 0; i < leadingBytes; i++)
+        {
+            *(u8 *)(dest) = *(u8 *)(src);
+            dest = (void *)((intptr_t)dest + 1);
+            src = (void *)((intptr_t)src - 1);
+        }
+        src = (void *)((intptr_t)src + 5);
+    }
 
-StartDWordLoop:
-		mov		ecx, dword ptr [numBytes]
-		sub		ecx, ebx		// Don't copy what's already been copied
+    // copy dwords
+    numDWords = numBytes >> 2;
+    while (numDWords--)
+    {
+        *(u32 *)dest = _byteswap_ulong(*(u32 *)src);
+        dest = (void *)((intptr_t)dest + 4);
+        src = (void *)((intptr_t)src + 4);
+    }
 
-		mov		ebx, ecx
-		and		ebx, 3
-		//		add		ecx, 3			// Round up to nearest dword
-		shr		ecx, 2
-
-		cmp		ecx, 0			// If there's nothing to do, don't do it
-		jle		StartTrailingLoop
-
-		// Copies from source to destination, bswap-ing first
-DWordLoop:
-		mov		eax, dword ptr [esi]
-		bswap	eax
-		mov		dword ptr [edi], eax
-		add		esi, 4
-		add		edi, 4
-		loop	DWordLoop
-StartTrailingLoop:
-		cmp		ebx, 0
-		jz		Done
-		mov		ecx, ebx
-		xor		esi, 3
-
-TrailingLoop:
-		mov		al, byte ptr [esi]
-		mov		byte ptr [edi], al
-		sub		esi, 1
-		add		edi, 1
-		loop	TrailingLoop
-Done:
-	}
+    // copy trailing bytes
+    trailingBytes = numBytes & 3;
+    if (trailingBytes)
+    {
+        src = (void *)((intptr_t)src ^ 3);
+        for (i = 0; i < trailingBytes; i++)
+        {
+            *(u8 *)(dest) = *(u8 *)(src);
+            dest = (void *)((intptr_t)dest + 1);
+            src = (void *)((intptr_t)src - 1);
+        }
+    }
 }
 
 inline void DWordInterleave( void *mem, uint32 numDWords )
 {
-	__asm {
-		mov		esi, dword ptr [mem]
-		mov		edi, dword ptr [mem]
-		add		edi, 4
-		mov		ecx, dword ptr [numDWords]
-DWordInterleaveLoop:
-		mov		eax, dword ptr [esi]
-		mov		ebx, dword ptr [edi]
-		mov		dword ptr [esi], ebx
-		mov		dword ptr [edi], eax
-		add		esi, 8
-		add		edi, 8
-		loop	DWordInterleaveLoop
-	}
+    uint32 addr = 0;
+    uint32* dwordptr = (uint32*)mem;
+    for (uint32 i = 0; i < numDWords; i++)
+    {
+        std::swap(dwordptr[addr], dwordptr[addr + 1]);
+        addr += 2;
+    }
 }
 
 inline void QWordInterleave( void *mem, uint32 numDWords )
 {
-	__asm
-	{
-		// Interleave the line on the qword
-		mov		esi, dword ptr [mem]
-		mov		edi, dword ptr [mem]
-		add		edi, 8
-		mov		ecx, dword ptr [numDWords]
-		shr		ecx, 1
-QWordInterleaveLoop:
-		mov		eax, dword ptr [esi]
-		mov		ebx, dword ptr [edi]
-		mov		dword ptr [esi], ebx
-		mov		dword ptr [edi], eax
-		add		esi, 4
-		add		edi, 4
-		mov		eax, dword ptr [esi]
-		mov		ebx, dword ptr [edi]
-		mov		dword ptr [esi], ebx
-		mov		dword ptr [edi], eax
-		add		esi, 12
-		add		edi, 12
-		loop	QWordInterleaveLoop
-	}
+    uint32 addr = 0;
+    uint64* qwordptr = (uint64*)mem;
+    for (uint32 i = 0; i < numDWords/2; i++)
+    {
+        std::swap(qwordptr[addr], qwordptr[addr + 1]);
+        addr += 2;
+    }
 }
 
 inline uint32 swapdword( uint32 value )
 {
-	__asm
-	{
-		mov		eax, dword ptr [value]
-		bswap	eax
-	}
+    return _byteswap_ulong(value);
 }
 
 inline uint16 swapword( uint16 value )
 {
-	__asm
-	{
-		mov		ax, word ptr [value]
-		xchg	ah, al
-	}
+    return _byteswap_ushort(value);
 }
 
 
@@ -760,7 +716,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	if (gti.Format == TXT_FMT_CI && gti.TLutFmt == TLUT_FMT_NONE )
 		gti.TLutFmt = TLUT_FMT_RGBA16;		// Force RGBA
 
-	gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
+	gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
 
 	//if( !options.bUseFullTMEM && tile.dwSize == TXT_SIZE_4b )
 	//	gti.PalAddress += 16  * 2 * tile.dwPalette; BACKTOME

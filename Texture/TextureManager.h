@@ -44,7 +44,7 @@ public:
 	uint32 HeightToLoad;
 	uint32 Pitch;
 
-	uint32 PalAddress;
+	uintptr_t PalAddress;
 	uint32 TLutFmt;
 	uint32 Palette;
 	

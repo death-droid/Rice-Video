@@ -570,57 +570,40 @@ extern uint8* pAsmStart;
 
 uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes )
 {
-	dwAsmCRC = 0;
-	dwAsmdwBytesPerLine = ((width<<size)+1)/2;
+    /* implementation borrowed from mupen64plus-libretro/gles2n64 */
+    dwAsmdwBytesPerLine = ((width << size) + 1) / 2;
 
-	try{
-		dwAsmdwBytesPerLine = ((width<<size)+1)/2;
+    pAsmStart = (uint8*)(pPhysicalAddress);
+    pAsmStart += (top * pitchInBytes) + (((left << size) + 1) >> 1);
 
-		pAsmStart = (uint8*)(pPhysicalAddress);
-		pAsmStart += (top * pitchInBytes) + (((left<<size)+1)>>1);
+    dwAsmHeight = height - 1;
+    dwAsmPitch = pitchInBytes;
 
-		dwAsmHeight = height - 1;
-		dwAsmPitch = pitchInBytes;
+    uint32 pitch = pitchInBytes >> 2;
+    uint32* pStart = (uint32*)pPhysicalAddress;
+    pStart += (top * pitch) + (((left << size) + 1) >> 3);
 
+    int y = dwAsmHeight;
 
-		__asm 
-		{
-			push eax
-			push ebx
-			push ecx
-			push edx
-			push esi
+    while (y >= 0)
+    {
+        uint32 esi = 0;
+        int x = dwAsmdwBytesPerLine - 4;
+        while (x >= 0)
+        {
+            esi = *(uint32*)(pAsmStart + x);
+            esi ^= x;
 
-			mov	ecx, pAsmStart;	// = pStart
-			mov	edx, 0			// The CRC
-			mov	eax, dwAsmHeight	// = y
-l2:				mov	ebx, dwAsmdwBytesPerLine	// = x
-			sub	ebx, 4
-l1:				mov	esi, [ecx+ebx]
-			xor esi, ebx
-			rol edx, 4
-			add edx, esi
-			sub	ebx, 4
-			jge l1
-			xor esi, eax
-			add edx, esi
-			add ecx, dwAsmPitch
-			dec eax
-			jge l2
+            dwAsmCRC = (dwAsmCRC << 4) + ((dwAsmCRC >> 28) & 15);
+            dwAsmCRC += esi;
+            x -= 4;
+        }
+        esi ^= y;
+        dwAsmCRC += esi;
+        pAsmStart += dwAsmPitch;
+        y--;
+    }
 
-			mov	dwAsmCRC, edx
-
-			pop esi
-			pop edx
-			pop ecx
-			pop ebx
-			pop	eax
-		}
-	}
-	catch(...)
-	{
-		TRACE0("Exception in texture CRC calculation");
-	}
 	return dwAsmCRC;
 }
 

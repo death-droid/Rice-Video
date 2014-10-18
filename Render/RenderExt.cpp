@@ -48,7 +48,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 		gti.LeftToLoad	= 0;
 		gti.TopToLoad	= 0;
 
-		gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
+        gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
 
 		gti.WidthToCreate	= windowSetting.uViWidth;
 		gti.HeightToCreate	= windowSetting.uViHeight;
@@ -65,7 +65,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 	{
 		gti.Format	= g_CI.dwFormat;
 		gti.Size	= g_CI.dwSize;
-		gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
+        gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
 
 		gti.Address	= RSPSegmentAddr(g_CI.dwAddr);
 
@@ -177,7 +177,7 @@ void CRender::LoadObjBGCopy(uObjBg &info)
 	gti.TopToLoad	= 0;
 	gti.Palette		= info.imagePal;
 
-	gti.PalAddress	= (uint32)(&g_wRDPTlut[0]);
+    gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
 	gti.bSwapped	= FALSE;
 	gti.TLutFmt		= TLUT_FMT_RGBA16;	//RGBA16
 
@@ -244,7 +244,7 @@ void CRender::LoadTxtrBufIntoTexture(void)
 	gti.TopToLoad		= 0;
 	gti.Palette	= 0;
 
-	gti.PalAddress = (uint32)(&g_wRDPTlut[0]);
+    gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
 	gti.bSwapped	= FALSE;
 
 	gti.WidthToCreate		= g_pRenderTextureInfo->N64Width;
@@ -263,6 +263,7 @@ void CRender::LoadTxtrBufIntoTexture(void)
 
 
 
+	gti.PalAddress = (uintptr_t)(g_pu8RamBase+RSPSegmentAddr(info.spritePtr->tlut));
 
 void CRender::DrawSpriteR(uObjTxSprite &sprite, bool initCombiner, uint32 tile, uint32 left, uint32 top, uint32 width, uint32 height)	// With Rotation
 {
@@ -646,7 +647,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 
 	uint8* img = (uint8*)(g_pu8RamBase+RSPSegmentAddr(bg.imagePtr));
 	
-	uint32 palAddr = (uint32)(&g_wRDPTlut[0]);
+    uintptr_t palAddr = (uintptr_t)(&g_wRDPTlut[0]);
 	gti.Address	= RSPSegmentAddr(bg.imagePtr);
 
 	gti.LeftToLoad		= 0;
@@ -712,7 +713,7 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 	}
 	else
 		img = (uint8*)(g_pu8RamBase+RSPSegmentAddr(sprite.txtr.block.image));
-	uint32 palAddr = (uint32)(&g_wRDPTlut[0]);
+    uintptr_t palAddr = (uintptr_t)(&g_wRDPTlut[0]);
 
 	gti.Address	= RSPSegmentAddr(sprite.txtr.block.image);
 	gti.Address += sprite.sprite.imageAdrs<<3;
