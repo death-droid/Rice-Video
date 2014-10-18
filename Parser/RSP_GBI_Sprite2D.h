@@ -66,7 +66,7 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 
 	gti.Address = RSPSegmentAddr(sprite->address);
 
-	gti.PalAddress = (uint32)(g_pu8RamBase + RSPSegmentAddr(sprite->tlut));
+	gti.PalAddress = (uintptr_t)(g_pu8RamBase+RSPSegmentAddr(sprite->tlut));
 
 	gti.WidthToCreate = sprite->width;
 	gti.HeightToCreate = sprite->height;

@@ -261,10 +261,6 @@ void CRender::LoadTxtrBufIntoTexture(void)
 	SetCurrentTexture(0,pEntry);
 }
 
-
-
-	gti.PalAddress = (uintptr_t)(g_pu8RamBase+RSPSegmentAddr(info.spritePtr->tlut));
-
 void CRender::DrawSpriteR(uObjTxSprite &sprite, bool initCombiner, uint32 tile, uint32 left, uint32 top, uint32 width, uint32 height)	// With Rotation
 {
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
