@@ -128,7 +128,7 @@ void RSP_Sprite2DScaleFlip(MicroCodeCommand command, Sprite2DInfo *info)
 
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D,
 	{ DebuggerAppendMsg("Pause after Sprite2DScaleFlip, Flip (%d,%d), Scale (%f, %f)\n", info->flipX, info->flipY,
-	info.scaleX, info.scaleY); });
+	info->scaleX, info->scaleY); });
 }
 
 // Sprite2D Ucodes
