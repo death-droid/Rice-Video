@@ -3,7 +3,7 @@ Copyright (C) 2003-2009 Rice1964
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either 
+as published by the Free Software Foundation; either
 
 2
 of the License, or (at your option) any later version.
@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef unsigned char				uint8;
 
-typedef signed char					s8;	
+typedef signed char					s8;
 typedef signed short				s16;
 typedef long						s32;
 typedef unsigned long				u32;
@@ -61,21 +61,21 @@ struct SetImgInfo
 struct  Tile
 {
 	// Set by RDP_SetTile
-	unsigned int dwFormat	:3;		// e.g. RGBA, YUV etc
-	unsigned int dwSize		:2;		// e.g 4/8/16/32bpp
-	unsigned int dwLine		:9;		// Ummm...
-	unsigned int dwPalette	:4;		// 0..15 - a palette index?
+	unsigned int dwFormat : 3;		// e.g. RGBA, YUV etc
+	unsigned int dwSize : 2;		// e.g 4/8/16/32bpp
+	unsigned int dwLine : 9;		// Ummm...
+	unsigned int dwPalette : 4;		// 0..15 - a palette index?
 	uint32 dwTMem;					// Texture memory location
 
-	unsigned int bClampS	:1;
-	unsigned int bClampT	:1;
-	unsigned int bMirrorS	:1;
-	unsigned int bMirrorT	:1;
+	unsigned int bClampS : 1;
+	unsigned int bClampT : 1;
+	unsigned int bMirrorS : 1;
+	unsigned int bMirrorT : 1;
 
-	unsigned int dwMaskS	:4;
-	unsigned int dwMaskT	:4;
-	unsigned int dwShiftS	:4;
-	unsigned int dwShiftT	:4;
+	unsigned int dwMaskS : 4;
+	unsigned int dwMaskT : 4;
+	unsigned int dwShiftS : 4;
+	unsigned int dwShiftT : 4;
 
 	// Set by RDP_SetTileSize
 	int sl;		// Upper left S		- 8:3
@@ -129,8 +129,8 @@ typedef struct VECTOR2
 {
 	float x;
 	float y;
-	VECTOR2( float newx, float newy )	{x=newx; y=newy;}
-	VECTOR2()	{x=0; y=0;}
+	VECTOR2(float newx, float newy)	{ x = newx; y = newy; }
+	VECTOR2()	{ x = 0; y = 0; }
 } VECTOR2;
 
 typedef struct
@@ -139,7 +139,7 @@ typedef struct
 	short y;
 } IVector2;
 
-typedef struct 
+typedef struct
 {
 	short x;
 	short y;
@@ -148,7 +148,7 @@ typedef struct
 
 #define RICE_FVF_TLITVERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2 ) 
 typedef struct {
-	float x,y,z;
+	float x, y, z;
 	float rhw;
 	union {
 		D3DCOLOR  dcDiffuse;
@@ -165,7 +165,7 @@ typedef struct {
 
 #define RICE_FVF_UTLITVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2 ) 
 typedef struct {
-	float x,y,z;
+	float x, y, z;
 	union {
 		D3DCOLOR  dcDiffuse;
 		struct {
@@ -182,7 +182,7 @@ typedef struct {
 
 #define RICE_FVF_LITVERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR ) 
 typedef struct {
-	float x,y,z;
+	float x, y, z;
 	float rhw;
 	union {
 		D3DCOLOR  dcDiffuse;
@@ -199,15 +199,15 @@ typedef struct {
 
 
 typedef struct {
-	float	x,y,z;
+	float	x, y, z;
 	float	rhw;
 	D3DCOLOR dcDiffuse;
 } FILLRECTVERTEX, *LPFILLRECTVERTEX;
 
 typedef struct
 {
-	float x,y,z;
-	float nx,ny,nz;
+	float x, y, z;
+	float nx, ny, nz;
 	union {
 		D3DCOLOR  dcDiffuse;
 		struct {
@@ -217,7 +217,7 @@ typedef struct
 			uint8 a;
 		};
 	};
-	float u,v;
+	float u, v;
 }EXTERNAL_VERTEX, *LPSHADERVERTEX;
 
 struct Color
@@ -280,7 +280,7 @@ typedef struct
 	uint32 dwAlphaArg1;
 	uint32 dwAlphaArg2;
 	uint32 dwResultArg;
-	
+
 	uint32 dwMinFilter;
 	uint32 dwMagFilter;
 
@@ -289,7 +289,7 @@ typedef struct
 	uint32 dwAddressW;
 
 	uint32 dwTexCoordIndex;
-	LPDIRECT3DBASETEXTURE9 pTexture; 
+	LPDIRECT3DBASETEXTURE9 pTexture;
 } D3DCombinerStage;
 
 typedef struct
@@ -304,13 +304,13 @@ typedef struct
 {
 	short y;
 	short x;
-	
+
 	short flag;
 	short z;
-	
+
 	short tv;
 	short tu;
-	
+
 	union {
 		struct _rgba {
 			uint8 a;
@@ -326,17 +326,17 @@ typedef struct
 {
 	short y;
 	short x;
-	
+
 	uint8 a;
 	uint8 b;
 	short z;
-	
+
 	uint8 g;
 	uint8 r;
-	
+
 } FiddledVtxDKR;
 
-typedef struct 
+typedef struct
 {
 	short y;
 	short	x;
@@ -355,7 +355,7 @@ typedef struct {
 	union {
 		CTexture *			m_pCTexture;
 	};
-	
+
 	uint32 m_dwTileWidth;
 	uint32 m_dwTileHeight;
 	float m_fTexWidth;

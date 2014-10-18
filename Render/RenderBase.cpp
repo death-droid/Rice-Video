@@ -107,6 +107,7 @@ n.y = (g_normal.x * matWorld.m01) + (g_normal.y * matWorld.m11) + (g_normal.z * 
 n.z = (g_normal.x * matWorld.m02) + (g_normal.y * matWorld.m12) + (g_normal.z * matWorld.m22);*/
 
 // Multiply (x,y,z,0) by matrix m, then normalize
+#if defined(__INTEL_COMPILER)
 #define Vec3TransformNormal(vec, m) __asm					\
 {														\
 	__asm fld		dword ptr [vec + 0]							\
@@ -178,6 +179,18 @@ __asm l2:	\
 	__asm mov dword ptr [vec + 8], 0	\
 __asm l3:	\
 }		\
+
+#else  // use C code in other cases, this is probably faster anyway
+#define Vec3TransformNormal(vec, m) \
+   Vector3 temp; \
+   temp.x = (vec.x * m._11) + (vec.y * m._21) + (vec.z * m._31); \
+   temp.y = (vec.x * m._12) + (vec.y * m._22) + (vec.z * m._32); \
+   temp.z = (vec.x * m._13) + (vec.y * m._23) + (vec.z * m._33); \
+   float norm = sqrt(temp.x*temp.x+temp.y*temp.y+temp.z*temp.z); \
+   if (norm == 0.0) { vec.x = 0.0; vec.y = 0.0; vec.z = 0.0;} else \
+         { vec.x = temp.x/norm; vec.y = temp.y/norm; vec.z = temp.z/norm; }
+#endif
+
 
 void InitRenderBase()
 {
