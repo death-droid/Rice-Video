@@ -252,6 +252,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="math\Matrix4x4.h" />
+    <ClInclude Include="math\Vector2.h" />
+    <ClInclude Include="math\Vector3.h" />
+    <ClInclude Include="math\Vector4.h" />
     <ClInclude Include="Parser\Microcode.h" />
     <ClInclude Include="SimpleIni.h" />
     <ClInclude Include="_BldNum.h" />
@@ -303,6 +307,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="math\Matrix4x4.cpp" />
     <ClCompile Include="Parser\Microcode.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -626,11 +626,11 @@ void D3DRender::BeginRendering(void)
 	if( CRender::gRenderReferenceCount == 0 )
 	{
 		g_pD3DDev->BeginScene();
-		D3DXMATRIX mat;
-		D3DXMatrixIdentity(&mat);
-		g_pD3DDev->SetTransform( D3DTS_WORLD, &mat );
-		g_pD3DDev->SetTransform( D3DTS_PROJECTION, &mat );
-		g_pD3DDev->SetTransform( D3DTS_VIEW, &mat );
+		//Matrix4x4 mat;
+		//D3DXMatrixIdentity(&mat);
+		//g_pD3DDev->SetTransform( D3DTS_WORLD, &mat );
+		//g_pD3DDev->SetTransform( D3DTS_PROJECTION, &mat );
+		//g_pD3DDev->SetTransform( D3DTS_VIEW, &mat );
 	}
 
 	CRender::gRenderReferenceCount++; 

@@ -24,8 +24,8 @@ extern FiddledVtx * g_pVtxBase;
 CRender * CRender::g_pRender=NULL;
 int CRender::gRenderReferenceCount=0;
 
-D3DXMATRIX reverseXY(-1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,1);
-D3DXMATRIX reverseY(1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,1);
+Matrix4x4 reverseXY(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+Matrix4x4 reverseY(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
 extern char* right (char * src, int nchars);
 
@@ -97,7 +97,7 @@ CRender::~CRender()
 
 void CRender::ResetMatrices(uint32 size)
 {
-	Matrix mat;
+	Matrix4x4 mat;
 
 	//Tigger's Honey Hunt
 	if (size == 0)
@@ -120,7 +120,7 @@ void CRender::ResetMatrices(uint32 size)
 	UpdateCombinedMatrix();
 }
 
-void CRender::SetProjection(const Matrix & mat, bool bPush, bool bReplace) 
+void CRender::SetProjection(const Matrix4x4 & mat, bool bPush, bool bReplace)
 {
 	if (gRSP.projectionMtxTop >= (RICE_MATRIX_STACK-1) && bPush)
 	{
@@ -145,7 +145,7 @@ void CRender::SetProjection(const Matrix & mat, bool bPush, bool bReplace)
 }
 
 bool mtxPopUpError = false;
-void CRender::SetWorldView(const Matrix & mat, bool bPush, bool bReplace)
+void CRender::SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace)
 {
 	if (bPush && (gRSP.modelViewMtxTop < gRSP.mMatStackSize))
 	{
@@ -185,7 +185,6 @@ void CRender::SetWorldView(const Matrix & mat, bool bPush, bool bReplace)
 	{
 		gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
 	}
-	D3DXMatrixTranspose(&gRSPmodelViewTopTranspose, &gRSPmodelViewTop);
 
 	gRSP.bMatrixIsUpdated = true;
 
@@ -207,7 +206,6 @@ void CRender::PopWorldView(u32 num)
 		{
 			gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
 		}
-		D3DXMatrixTranspose(&gRSPmodelViewTopTranspose, &gRSPmodelViewTop);
 		gRSP.bMatrixIsUpdated = true;
 	}
 	else
@@ -221,12 +219,12 @@ void CRender::PopWorldView(u32 num)
 }
 
 
-Matrix & CRender::GetWorldProjectMatrix(void)
+Matrix4x4 & CRender::GetWorldProjectMatrix(void)
 {
 	return gRSPworldProject;
 }
 
-void CRender::SetWorldProjectMatrix(Matrix &mtx)
+void CRender::SetWorldProjectMatrix(Matrix4x4 &mtx)
 {
 #ifdef _DEBUG
 	if( pauseAtNext && (eventToPause == NEXT_TRIANGLE || eventToPause == NEXT_FLUSH_TRI || eventToPause == NEXT_MATRIX_CMD ) )

@@ -33,38 +33,38 @@ void CopyVertexData(int oriidx, TLITVERTEX *oribuf, int dstidx, TLITVERTEX *dstb
 }
 
 #define interp(a,b,r)	(((a)-(r)*(b))/	(1-(r)))
-void SetVtx(TLITVERTEX &v, TLITVERTEX &v1, TLITVERTEX &v2, float r)
+void SetVtx(TLITVERTEX &v, TLITVERTEX &vec1, TLITVERTEX &vec2, float r)
 {
-	v.x = interp(v1.x,v2.x,r);
-	v.y = interp(v1.y,v2.y,r);
-	//v.z = (v1.z-r*v2.z)/(1-r);
-	v.dcSpecular = v2.dcSpecular; //fix me here
-	v.r = (uint8)(interp((int)v1.r,(int)v2.r,r));
-	v.g = (uint8)(interp((int)v1.g,(int)v2.g,r));
-	v.b = (uint8)(interp((int)v1.b,(int)v2.b,r));
-	v.a = (uint8)(interp((int)v1.a,(int)v2.a,r));
+	v.x = interp(vec1.x,vec2.x,r);
+	v.y = interp(vec1.y,vec2.y,r);
+	//v.z = (vec1.z-r*vec2.z)/(1-r);
+	v.dcSpecular = vec2.dcSpecular; //fix me here
+	v.r = (uint8)(interp((int)vec1.r,(int)vec2.r,r));
+	v.g = (uint8)(interp((int)vec1.g,(int)vec2.g,r));
+	v.b = (uint8)(interp((int)vec1.b,(int)vec2.b,r));
+	v.a = (uint8)(interp((int)vec1.a,(int)vec2.a,r));
 
 	for( int i=0; i<2; i++ )
 	{
-		v.tcord[i].u = interp(v1.tcord[i].u,v2.tcord[i].u,r);
-		v.tcord[i].v = interp(v1.tcord[i].v,v2.tcord[i].v,r);
+		v.tcord[i].u = interp(vec1.tcord[i].u,vec2.tcord[i].u,r);
+		v.tcord[i].v = interp(vec1.tcord[i].v,vec2.tcord[i].v,r);
 	}
 }
 
 void SwapVertexPos(int firstidx)
 {
-	TLITVERTEX &v1 = g_vtxBuffer[firstidx];
-	TLITVERTEX &v2 = g_vtxBuffer[firstidx+1];
-	TLITVERTEX &v3 = g_vtxBuffer[firstidx+2];
+	TLITVERTEX &vec1 = g_vtxBuffer[firstidx];
+	TLITVERTEX &vec2 = g_vtxBuffer[firstidx+1];
+	TLITVERTEX &vec3 = g_vtxBuffer[firstidx+2];
 
-	if( v1.rhw >= v2.rhw && v1.rhw >= v3.rhw ) return;
+	if( vec1.rhw >= vec2.rhw && vec1.rhw >= vec3.rhw ) return;
 
 	TLITVERTEX tempv;
 	memcpy(&tempv,&g_vtxBuffer[firstidx], sizeof(TLITVERTEX));
 
-	if( v2.rhw > v1.rhw && v2.rhw >= v3.rhw )
+	if( vec2.rhw > vec1.rhw && vec2.rhw >= vec3.rhw )
 	{
-		// v2 is the largest one
+		// vec2 is the largest one
 		memcpy(&g_vtxBuffer[firstidx],&g_vtxBuffer[firstidx+1], sizeof(TLITVERTEX));
 		memcpy(&g_vtxBuffer[firstidx+1],&g_vtxBuffer[firstidx+2], sizeof(TLITVERTEX));
 		memcpy(&g_vtxBuffer[firstidx+2],&tempv, sizeof(TLITVERTEX));
@@ -103,19 +103,19 @@ struct PointInfo
 	int onLine;
 };
 
-PointInfo Split( PointInfo &a, PointInfo &b, TLITVERTEX &v1, TLITVERTEX &v2, int lineno )
+PointInfo Split( PointInfo &a, PointInfo &b, TLITVERTEX &vec1, TLITVERTEX &vec2, int lineno )
 {
 	LineEuqationType l;
 	l.x = b.y-a.y;
 	l.y = a.x-b.x;
 	l.d = -(l.x*b.x+(l.y)*b.y);
-	double cDot = (v1.x*l.x + v1.y*l.y);
-	double dDot = (v2.x*l.x + v2.y*l.y);
+	double cDot = (vec1.x*l.x + vec1.y*l.y);
+	double dDot = (vec2.x*l.x + vec2.y*l.y);
 	double scale = ( - l.d - cDot) / ( dDot - cDot );
 
-	D3DXVECTOR3 va(v1.x, v1.y, v1.z);
-	D3DXVECTOR3 vb(v2.x, v2.y, v2.z);
-	D3DXVECTOR3 vc = va + ((vb - va) * (float)scale );
+	v3 va(vec1.x, vec1.y, vec1.z);
+	v3 vb(vec2.x, vec2.y, vec2.z);
+	v3 vc = va + ((vb - va) * (float)scale );
 
 	PointInfo d = {vc.x, vc.y, vc.z, -1, lineno};
 
@@ -139,7 +139,7 @@ PointInfo Split( PointInfo &a, PointInfo &b, TLITVERTEX &v1, TLITVERTEX &v2, int
 }
 
 // Clipping using the Sutherland-Hodgeman algorithm
-bool ClipFor1LineXY( std::vector<PointInfo> &in, int lineno, TLITVERTEX &v1, TLITVERTEX &v2 )
+bool ClipFor1LineXY( std::vector<PointInfo> &in, int lineno, TLITVERTEX &vec1, TLITVERTEX &vec2 )
 {
 	std::vector<PointInfo> out;
 
@@ -167,7 +167,7 @@ bool ClipFor1LineXY( std::vector<PointInfo> &in, int lineno, TLITVERTEX &v1, TLI
 		if( ( thisRes < 0 && nextRes >= 0 ) || ( thisRes >= 0 && nextRes < 0 ) )
 		{
 			// Add the split point
-			out.push_back( Split(in[thisInd], in[nextInd], v1, v2, lineno ));
+			out.push_back( Split(in[thisInd], in[nextInd], vec1, vec2, lineno ));
 		}
 
 		thisInd = nextInd;
@@ -296,18 +296,18 @@ bool ClipFarPlane( std::vector<PointInfo> &in )
 		{
 			// Add the split point
 			PointInfo newvtx;
-			PointInfo &v1 = in[thisInd];
-			PointInfo &v2 = in[nextInd];
+			PointInfo &vec1 = in[thisInd];
+			PointInfo &vec2 = in[nextInd];
 
 			newvtx.z = farz;
 
-			float r = (v1.z - newvtx.z )/(v1.z-v2.z);
+			float r = (vec1.z - newvtx.z )/(vec1.z-vec2.z);
 			if( r != r )
 			{
-				r = (v1.z - newvtx.z )/(v1.z-v2.z);
+				r = (vec1.z - newvtx.z )/(vec1.z-vec2.z);
 			}
-			newvtx.x = v1.x - r*(v1.x-v2.x);
-			newvtx.y = v1.y - r*(v1.y-v2.y);
+			newvtx.x = vec1.x - r*(vec1.x-vec2.x);
+			newvtx.y = vec1.y - r*(vec1.y-vec2.y);
 			out.push_back( newvtx );
 		}
 
@@ -319,13 +319,13 @@ bool ClipFarPlane( std::vector<PointInfo> &in )
 	return( (int)out.size() >= insize );
 }
 
-void Create1LineEq(LineEuqationType &l, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3)
+void Create1LineEq(LineEuqationType &l, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3)
 {
 	// Line between (x1,y1) to (x2,y2)
-	l.x = v2.y-v1.y;
-	l.y = v1.x-v2.x;
-	l.d = -(l.x*v2.x+(l.y)*v2.y);
-	if( EvaLine(l,v3.x,v3.y)*v3.rhw<0 )
+	l.x = vec2.y-vec1.y;
+	l.y = vec1.x-vec2.x;
+	l.d = -(l.x*vec2.x+(l.y)*vec2.y);
+	if( EvaLine(l,vec3.x,vec3.y)*vec3.rhw<0 )
 	{
 		l.x = -l.x ;
 		l.y = -l.y ;
@@ -333,11 +333,11 @@ void Create1LineEq(LineEuqationType &l, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERT
 	}
 }
 
-void CreateLineEquations(TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3)
+void CreateLineEquations(TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3)
 {
-	Create1LineEq(alllines[0],v1,v2,v3);
-	Create1LineEq(alllines[1],v1,v3,v2);
-	Create1LineEq(alllines[2],v2,v3,v1);
+	Create1LineEq(alllines[0],vec1,vec2,vec3);
+	Create1LineEq(alllines[1],vec1,vec3,vec2);
+	Create1LineEq(alllines[2],vec2,vec3,vec1);
 }
 
 float interp3p(float a, float b, float c, double r1, double r2)
@@ -345,35 +345,35 @@ float interp3p(float a, float b, float c, double r1, double r2)
 	return (float)((a)+(((b)+((c)-(b))*(r2))-(a))*(r1));
 }
 
-bool Interp1Point3pZ(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3)
+bool Interp1Point3pZ(PointInfo &v, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3)
 {
 	bool res = true;
 
 	LineEuqationType line;
-	Create1LineEq(line, v2, v3, v1);
+	Create1LineEq(line, vec2, vec3, vec1);
 
-	D3DXVECTOR3 tempv1(v1.x, v1.y, 0);
+	v3 tempvec1(vec1.x, vec1.y, 0);
 
 	double aDot = (v.x*line.x + v.y*line.y);
-	double bDot = (v1.x*line.x + v1.y*line.y);
+	double bDot = (vec1.x*line.x + vec1.y*line.y);
 
 	double scale1 = ( - line.d - aDot) / ( bDot - aDot );
 
-	D3DXVECTOR3 tempv;
-	D3DXVECTOR3 va(v.x, v.y, v.z);
-	tempv = va + ((float)scale1 * (tempv1 - va));
+	v3 tempv;
+	v3 va(v.x, v.y, v.z);
+	tempv = va + ((float)scale1 * (tempvec1 - va));
 
-	double s1 = (v.x-v1.x)/(tempv.x-v1.x);
+	double s1 = (v.x-vec1.x)/(tempv.x-vec1.x);
 	if( !_finite(s1) || abs(s1) > 100 )
 	{
-		s1 = (v.y-v1.y)/(tempv.y-v1.y);
+		s1 = (v.y-vec1.y)/(tempv.y-vec1.y);
 		if( !_finite(s1) )	return false;
 	}
 
-	double s2 = (tempv.x-v2.x)/(v3.x-v2.x);
+	double s2 = (tempv.x-vec2.x)/(vec3.x-vec2.x);
 	if( !_finite(s2) || abs(s2) > 100 )
 	{
-		s2 = (tempv.y-v2.y)/(v3.y-v2.y);
+		s2 = (tempv.y-vec2.y)/(vec3.y-vec2.y);
 		if( !_finite(s2) )	return false;
 	}
 
@@ -382,46 +382,46 @@ bool Interp1Point3pZ(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v
 		return false;
 	}
 
-	v.z = interp3p(v1.z,v2.z,v3.z,s1,s2);
+	v.z = interp3p(vec1.z,vec2.z,vec3.z,s1,s2);
 
 	return true;
 }
 
-bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3, TLITVERTEX &out)
+bool Interp1Point3p(PointInfo &v, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3, TLITVERTEX &out)
 {
 	bool res = true;
 
 	LineEuqationType line;
-	Create1LineEq(line, v2, v3, v1);
+	Create1LineEq(line, vec2, vec3, vec1);
 
-	D3DXVECTOR3 tempv1(v1.x, v1.y, 0);
+	v3 tempvec1(vec1.x, vec1.y, 0);
 
 	double aDot = (v.x*line.x + v.y*line.y);
-	double bDot = (v1.x*line.x + v1.y*line.y);
+	double bDot = (vec1.x*line.x + vec1.y*line.y);
 
 	double scale1 = ( - line.d - aDot) / ( bDot - aDot );
 
-	D3DXVECTOR3 tempv;
-	D3DXVECTOR3 va(v.x, v.y, v.z);
-	tempv = va + ((float)scale1 * (tempv1 - va));
+	v3 tempv;
+	v3 va(v.x, v.y, v.z);
+	tempv = va + ((float)scale1 * (tempvec1 - va));
 
-	double s1 = (v.x-v1.x)/(tempv.x-v1.x);
+	double s1 = (v.x-vec1.x)/(tempv.x-vec1.x);
 	if( !_finite(s1) || abs(s1) > 100 )
 	{
-		s1 = (v.y-v1.y)/(tempv.y-v1.y);
+		s1 = (v.y-vec1.y)/(tempv.y-vec1.y);
 		if( !_finite(s1) )	return false;
 	}
 
-	double s2 = (tempv.x-v2.x)/(v3.x-v2.x);
+	double s2 = (tempv.x-vec2.x)/(vec3.x-vec2.x);
 	if( !_finite(s2) || abs(s2) > 100 )
 	{
-		s2 = (tempv.y-v2.y)/(v3.y-v2.y);
+		s2 = (tempv.y-vec2.y)/(vec3.y-vec2.y);
 		if( !_finite(s2) )	return false;
 	}
 
 	if( !_finite(s1) || !_finite(s2) )
 	{
-		memcpy(&out, &v3, sizeof(TLITVERTEX) );
+		memcpy(&out, &vec3, sizeof(TLITVERTEX) );
 		RDP_NOIMPL_WARN("s1 or s2 is still infinite, it is a coplaner triangle");
 		return false;
 	}
@@ -429,8 +429,8 @@ bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3
 	out.x = v.x;
 	out.y = v.y;
 	out.z = v.z;
-	//out.z = interp3p(v1.z,v2.z,v3.z,s1,s2);
-	out.rhw = interp3p(v1.rhw,v2.rhw,v3.rhw,s1,s2);
+	//out.z = interp3p(vec1.z,vec2.z,vec3.z,s1,s2);
+	out.rhw = interp3p(vec1.rhw,vec2.rhw,vec3.rhw,s1,s2);
 
 	if( !_finite(out.z) || !_finite(out.rhw) || out.rhw < 0 )
 	{
@@ -439,9 +439,9 @@ bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3
 			DebuggerAppendMsg("Warning: rhw<0");
 		else
 			RDP_NOIMPL_WARN("Z or RHW value is #INF, check me as below");
-		DebuggerAppendMsg("v1=[%f %f %f %f];\n",v1.x, v1.y, v1.z, v1.rhw);
-		DebuggerAppendMsg("v2=[%f %f %f %f];\n",v2.x, v2.y, v2.z, v2.rhw);
-		DebuggerAppendMsg("v3=[%f %f %f %f];\n",v3.x, v3.y, v3.z, v3.rhw);
+		DebuggerAppendMsg("vec1=[%f %f %f %f];\n",vec1.x, vec1.y, vec1.z, vec1.rhw);
+		DebuggerAppendMsg("vec2=[%f %f %f %f];\n",vec2.x, vec2.y, vec2.z, vec2.rhw);
+		DebuggerAppendMsg("vec3=[%f %f %f %f];\n",vec3.x, vec3.y, vec3.z, vec3.rhw);
 		DebuggerAppendMsg("v=[%f %f];\n",v.x, v.y);
 		DebuggerAppendMsg("v-out=[z=%f rhw=%f];\n",out.z, out.rhw);
 		DebuggerAppendMsg("tempv=[%f %f %f];\n",tempv.x, tempv.y, tempv.z);
@@ -457,12 +457,12 @@ bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3
 		return false;
 	}
 
-	out.dcSpecular = v2.dcSpecular; //fix me here
+	out.dcSpecular = vec2.dcSpecular; //fix me here
 	if( gRDP.tnl.Fog )
 	{
-		float f1 = (v1.dcSpecular>>24)*v1.rhw;
-		float f2 = (v2.dcSpecular>>24)*v2.rhw;
-		float f3 = (v3.dcSpecular>>24)*v3.rhw;
+		float f1 = (vec1.dcSpecular >> 24)*vec1.rhw;
+		float f2 = (vec2.dcSpecular >> 24)*vec2.rhw;
+		float f3 = (vec3.dcSpecular >> 24)*vec3.rhw;
 		float f = interp3p(f1,f2,f3,s1,s2)/out.rhw;	
 		if( f < 0 )	f = 0;
 		if( f > 255 ) f = 255;
@@ -471,27 +471,27 @@ bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3
 		out.dcSpecular |= (fb<<24);
 	}
 
-	float r = interp3p(v1.r*v1.rhw,v2.r*v2.rhw,v3.r*v3.rhw,s1,s2)/out.rhw;	
+	float r = interp3p(vec1.r*vec1.rhw,vec2.r*vec2.rhw,vec3.r*vec3.rhw,s1,s2)/out.rhw;	
 	if( r<0 )	r=0; 
 	if( r>255 )	r=255;
 	out.r = (uint8)r;
-	float g = interp3p(v1.g*v1.rhw,v2.g*v2.rhw,v3.g*v3.rhw,s1,s2)/out.rhw;
+	float g = interp3p(vec1.g*vec1.rhw,vec2.g*vec2.rhw,vec3.g*vec3.rhw,s1,s2)/out.rhw;
 	if( g<0 )	g=0; 
 	if( g>255 )	g=255;
 	out.g = (uint8)g;
-	float b = interp3p(v1.b*v1.rhw,v2.b*v2.rhw,v3.b*v3.rhw,s1,s2)/out.rhw;
+	float b = interp3p(vec1.b*vec1.rhw,vec2.b*vec2.rhw,vec3.b*vec3.rhw,s1,s2)/out.rhw;
 	if( b<0 )	b=0; 
 	if( b>255 )	b=255;
 	out.b = (uint8)b;
-	float a = interp3p(v1.a*v1.rhw,v2.a*v2.rhw,v3.a*v3.rhw,s1,s2)/out.rhw;
+	float a = interp3p(vec1.a*vec1.rhw,vec2.a*vec2.rhw,vec3.a*vec3.rhw,s1,s2)/out.rhw;
 	if( a<0 )	a=0; 
 	if( a>255 )	a=255;
 	out.a = (uint8)a;
 
 	for( int i=0; i<2; i++ )
 	{
-		out.tcord[i].u = interp3p(v1.tcord[i].u*v1.rhw,v2.tcord[i].u*v2.rhw,v3.tcord[i].u*v3.rhw,s1,s2)/out.rhw;
-		out.tcord[i].v = interp3p(v1.tcord[i].v*v1.rhw,v2.tcord[i].v*v2.rhw,v3.tcord[i].v*v3.rhw,s1,s2)/out.rhw;
+		out.tcord[i].u = interp3p(vec1.tcord[i].u*vec1.rhw,vec2.tcord[i].u*vec2.rhw,vec3.tcord[i].u*vec3.rhw,s1,s2)/out.rhw;
+		out.tcord[i].v = interp3p(vec1.tcord[i].v*vec1.rhw,vec2.tcord[i].v*vec2.rhw,vec3.tcord[i].v*vec3.rhw,s1,s2)/out.rhw;
 	}
 
 	if( out.rhw < 0 )	
@@ -502,33 +502,33 @@ bool Interp1Point3p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3
 		return true;
 }
 
-bool Interp1Point2pZ(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2)
+bool Interp1Point2pZ(PointInfo &v, TLITVERTEX &vec1, TLITVERTEX &vec2)
 {
-	double s1 = (v.x-v1.x)/(v2.x-v1.x);
+	double s1 = (v.x-vec1.x)/(vec2.x-vec1.x);
 	if( !_finite(s1) || abs(s1) > 100 )
 	{
-		s1 = (v.y-v1.y)/(v2.y-v1.y);
+		s1 = (v.y-vec1.y)/(vec2.y-vec1.y);
 		if( !_finite(s1) )	return false;
 	}
 
-	v.z = interp2p(v1.z,v2.z,s1);
+	v.z = interp2p(vec1.z,vec2.z,s1);
 	return true;
 }
 
-bool Interp1Point2p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &out)
+bool Interp1Point2p(PointInfo &v, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &out)
 {
-	double s1 = (v.x-v1.x)/(v2.x-v1.x);
+	double s1 = (v.x-vec1.x)/(vec2.x-vec1.x);
 	if( !_finite(s1) || abs(s1) > 100 )
 	{
-		s1 = (v.y-v1.y)/(v2.y-v1.y);
+		s1 = (v.y-vec1.y)/(vec2.y-vec1.y);
 		if( !_finite(s1) )	return false;
 	}
 
 	out.x = v.x;
 	out.y = v.y;
 	out.z = v.z;
-	//out.z = interp2p(v1.z,v2.z,s1);
-	out.rhw = interp2p(v1.rhw,v2.rhw,s1);
+	//out.z = interp2p(vec1.z,vec2.z,s1);
+	out.rhw = interp2p(vec1.rhw,vec2.rhw,s1);
 
 	if( !_finite(out.z) || !_finite(out.rhw) || out.rhw < 0 )
 	{
@@ -537,8 +537,8 @@ bool Interp1Point2p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &ou
 			DebuggerAppendMsg("Warning: rhw<0");
 		else
 			RDP_NOIMPL_WARN("Z or RHW value is #INF, check me as below");
-		DebuggerAppendMsg("v1=[%f %f %f %f];\n",v1.x, v1.y, v1.z, v1.rhw);
-		DebuggerAppendMsg("v2=[%f %f %f %f];\n",v2.x, v2.y, v2.z, v2.rhw);
+		DebuggerAppendMsg("vec1=[%f %f %f %f];\n",vec1.x, vec1.y, vec1.z, vec1.rhw);
+		DebuggerAppendMsg("vec2=[%f %f %f %f];\n",vec2.x, vec2.y, vec2.z, vec2.rhw);
 		DebuggerAppendMsg("v=[%f %f];\n",v.x, v.y);
 		DebuggerAppendMsg("v-out=[z=%f rhw=%f];\n",out.z, out.rhw);
 		DebuggerAppendMsg("s1=%f;\n",s1);
@@ -549,11 +549,11 @@ bool Interp1Point2p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &ou
 	if( out.z > 1 )	
 		RDP_NOIMPL_WARN("Warning: z>1");
 
-	out.dcSpecular = v2.dcSpecular; //fix me here
+	out.dcSpecular = vec2.dcSpecular; //fix me here
 	if( gRDP.tnl.Fog )
 	{
-		float f1 = (v1.dcSpecular>>24)*v1.rhw;
-		float f2 = (v2.dcSpecular>>24)*v2.rhw;
+		float f1 = (vec1.dcSpecular>>24)*vec1.rhw;
+		float f2 = (vec2.dcSpecular>>24)*vec2.rhw;
 		float f = interp2p(f1,f2,s1)/out.rhw;	
 		if( f < 0 )	f = 0;
 		if( f > 255 ) f = 255;
@@ -562,27 +562,27 @@ bool Interp1Point2p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &ou
 		out.dcSpecular |= (fb<<24);
 	}
 
-	float r = interp2p(v1.r*v1.rhw,v2.r*v2.rhw,s1)/out.rhw;	
+	float r = interp2p(vec1.r*vec1.rhw,vec2.r*vec2.rhw,s1)/out.rhw;	
 	if( r<0 )	r=0; 
 	if( r>255 )	r=255;
 	out.r = (uint8)r;
-	float g = interp2p(v1.g*v1.rhw,v2.g*v2.rhw,s1)/out.rhw;
+	float g = interp2p(vec1.g*vec1.rhw,vec2.g*vec2.rhw,s1)/out.rhw;
 	if( g<0 )	g=0; 
 	if( g>255 )	g=255;
 	out.g = (uint8)g;
-	float b = interp2p(v1.b*v1.rhw,v2.b*v2.rhw,s1)/out.rhw;
+	float b = interp2p(vec1.b*vec1.rhw,vec2.b*vec2.rhw,s1)/out.rhw;
 	if( b<0 )	b=0; 
 	if( b>255 )	b=255;
 	out.b = (uint8)b;
-	float a = interp2p(v1.a*v1.rhw,v2.a*v2.rhw,s1)/out.rhw;
+	float a = interp2p(vec1.a*vec1.rhw,vec2.a*vec2.rhw,s1)/out.rhw;
 	if( a<0 )	a=0; 
 	if( a>255 )	a=255;
 	out.a = (uint8)a;
 
 	for( int i=0; i<2; i++ )
 	{
-		out.tcord[i].u = interp2p(v1.tcord[i].u*v1.rhw,v2.tcord[i].u*v2.rhw,s1)/out.rhw;
-		out.tcord[i].v = interp2p(v1.tcord[i].v*v1.rhw,v2.tcord[i].v*v2.rhw,s1)/out.rhw;
+		out.tcord[i].u = interp2p(vec1.tcord[i].u*vec1.rhw,vec2.tcord[i].u*vec2.rhw,s1)/out.rhw;
+		out.tcord[i].v = interp2p(vec1.tcord[i].v*vec1.rhw,vec2.tcord[i].v*vec2.rhw,s1)/out.rhw;
 	}
 
 	if( out.rhw < 0 )	
@@ -593,19 +593,19 @@ bool Interp1Point2p(PointInfo &v, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &ou
 		return true;
 }
 
-bool ClipXYBy1Triangle( std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3 )
+bool ClipXYBy1Triangle( std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3 )
 {
-	if( abs(EvaLine(alllines[0],v3.x, v3.y) ) < 1 )	// v1, v2, v3 are linear
+	if( abs(EvaLine(alllines[0],vec3.x, vec3.y) ) < 1 )	// vec1, vec2, vec3 are linear
 	{
 		points.clear();
 		return false;
 	}
 
-	if( v1.rhw >= 0 || v2.rhw >= 0 )	ClipFor1LineXY(points, 0, v1, v2);
+	if( vec1.rhw >= 0 || vec2.rhw >= 0 )	ClipFor1LineXY(points, 0, vec1, vec2);
 	if( points.size() < 3 )	return false;
-	if( v1.rhw >= 0 || v3.rhw >= 0 )	ClipFor1LineXY(points, 1, v1, v3);
+	if( vec1.rhw >= 0 || vec3.rhw >= 0 )	ClipFor1LineXY(points, 1, vec1, vec3);
 	if( points.size() < 3 )	return false;
-	if( v2.rhw >= 0 || v3.rhw >= 0 )	ClipFor1LineXY(points, 2, v2, v3);
+	if( vec2.rhw >= 0 || vec3.rhw >= 0 )	ClipFor1LineXY(points, 2, vec2, vec3);
 	if( points.size() < 3 )	return false;
 
 	return true;
@@ -631,7 +631,7 @@ void InitScreenPoints(std::vector<PointInfo> &points)
 
 }
 
-void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3, int &dstidx)
+void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3, int &dstidx)
 {
 	// now compute z and rhw values
 	int i;
@@ -645,22 +645,22 @@ void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTE
 
 		if( p.onVtx == 0 )
 		{
-			memcpy(&newvertexes[i], &v1, sizeof(TLITVERTEX) );
+			memcpy(&newvertexes[i], &vec1, sizeof(TLITVERTEX) );
 			continue;
 		}
 		else if( p.onVtx == 1 )
 		{
-			memcpy(&newvertexes[i], &v2, sizeof(TLITVERTEX) );
+			memcpy(&newvertexes[i], &vec2, sizeof(TLITVERTEX) );
 			continue;
 		}
 		else if( p.onVtx == 2 )
 		{
-			memcpy(&newvertexes[i], &v3, sizeof(TLITVERTEX) );
+			memcpy(&newvertexes[i], &vec3, sizeof(TLITVERTEX) );
 			continue;
 		}
 		else if( p.onLine == 0 )
 		{
-			if( !Interp1Point2p(p,v1,v2,newvtx) )
+			if( !Interp1Point2p(p,vec1,vec2,newvtx) )
 			{
 				delete [] newvertexes;
 				return; 
@@ -668,7 +668,7 @@ void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTE
 		}
 		else if( p.onLine == 1 )
 		{
-			if( !Interp1Point2p(p,v1,v3,newvtx) )
+			if( !Interp1Point2p(p,vec1,vec3,newvtx) )
 			{
 				delete [] newvertexes;
 				return; 
@@ -676,52 +676,52 @@ void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTE
 		}
 		else if( p.onLine == 2 )
 		{
-			if( !Interp1Point2p(p,v2,v3,newvtx) )
+			if( !Interp1Point2p(p,vec2,vec3,newvtx) )
 			{
 				delete [] newvertexes;
 				return; 
 			}
 		}
-		//else if( abs(p.x-v1.x)<1 && abs(p.y-v1.y)<1 )
+		//else if( abs(p.x-vec1.x)<1 && abs(p.y-vec1.y)<1 )
 		//{
-		//	memcpy(&newvertexes[i], &v1, sizeof(TLITVERTEX) );
+		//	memcpy(&newvertexes[i], &vec1, sizeof(TLITVERTEX) );
 		//	continue;
 		//}
-		//else if( abs(p.x-v2.x)<1 && abs(p.y-v2.y)<1 )
+		//else if( abs(p.x-vec2.x)<1 && abs(p.y-vec2.y)<1 )
 		//{
-		//	memcpy(&newvertexes[i], &v2, sizeof(TLITVERTEX) );
+		//	memcpy(&newvertexes[i], &vec2, sizeof(TLITVERTEX) );
 		//	continue;
 		//}
-		//else if( abs(p.x-v3.x)<1 && abs(p.y-v3.y)<1 )
+		//else if( abs(p.x-vec3.x)<1 && abs(p.y-vec3.y)<1 )
 		//{
-		//	memcpy(&newvertexes[i], &v3, sizeof(TLITVERTEX) );
+		//	memcpy(&newvertexes[i], &vec3, sizeof(TLITVERTEX) );
 		//	continue;
 		//}
-		//else if( abs(EvaLine(alllines[0],p.x, p.y) ) < 1 )	// v1, v2, p are linear
+		//else if( abs(EvaLine(alllines[0],p.x, p.y) ) < 1 )	// vec1, vec2, p are linear
 		//{
-		//	if( !Interp1Point2p(p,v1,v2,newvtx) )
+		//	if( !Interp1Point2p(p,vec1,vec2,newvtx) )
 		//	{
 		//		delete [] newvertexes;
 		//		return; 
 		//	}
 		//}
-		//else if( abs(EvaLine(alllines[1],p.x, p.y) ) < 1 )	// v1, v3, p are linear
+		//else if( abs(EvaLine(alllines[1],p.x, p.y) ) < 1 )	// vec1, vec3, p are linear
 		//{
-		//	if( !Interp1Point2p(p,v1,v3,newvtx) )
+		//	if( !Interp1Point2p(p,vec1,vec3,newvtx) )
 		//	{
 		//		delete [] newvertexes;
 		//		return; 
 		//	}
 		//}
-		//else if( abs(EvaLine(alllines[2],p.x, p.y) ) < 1 )	// v2, v3, p are linear
+		//else if( abs(EvaLine(alllines[2],p.x, p.y) ) < 1 )	// vec2, vec3, p are linear
 		//{
-		//	if( !Interp1Point2p(p,v2,v3,newvtx) )
+		//	if( !Interp1Point2p(p,vec2,vec3,newvtx) )
 		//	{
 		//		delete [] newvertexes;
 		//		return; 
 		//	}
 		//}
-		else if( !Interp1Point3p(p,v1,v2,v3,newvtx) )
+		else if( !Interp1Point3p(p,vec1,vec2,vec3,newvtx) )
 		{
 			delete [] newvertexes;
 			return; 
@@ -749,7 +749,7 @@ void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTE
 	delete [] newvertexes;
 }
 
-void InterpolatePointsZ(std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3)
+void InterpolatePointsZ(std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3)
 {
 	// now compute z values
 	int i;
@@ -759,56 +759,56 @@ void InterpolatePointsZ(std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERT
 	{
 		PointInfo &p = points[i];
 
-		//if( abs(p.x-v1.x)<1 && abs(p.y-v1.y)<1 )
+		//if( abs(p.x-vec1.x)<1 && abs(p.y-vec1.y)<1 )
 		//{
-		//	p.z = v1.z;
+		//	p.z = vec1.z;
 		//}
-		//else if( abs(p.x-v2.x)<1 && abs(p.y-v2.y)<1 )
+		//else if( abs(p.x-vec2.x)<1 && abs(p.y-vec2.y)<1 )
 		//{
-		//	p.z = v2.z;
+		//	p.z = vec2.z;
 		//}
-		//else if( abs(p.x-v3.x)<1 && abs(p.y-v3.y)<1 )
+		//else if( abs(p.x-vec3.x)<1 && abs(p.y-vec3.y)<1 )
 		//{
-		//	p.z = v3.z;
+		//	p.z = vec3.z;
 		//}
-		//else if( abs(EvaLine(alllines[0],p.x, p.y) ) < 1 )	// v1, v2, p are linear
+		//else if( abs(EvaLine(alllines[0],p.x, p.y) ) < 1 )	// vec1, vec2, p are linear
 		//{
-		//	Interp1Point2pZ(p,v1,v2);
+		//	Interp1Point2pZ(p,vec1,vec2);
 		//}
-		//else if( abs(EvaLine(alllines[1],p.x, p.y) ) < 1 )	// v1, v3, p are linear
+		//else if( abs(EvaLine(alllines[1],p.x, p.y) ) < 1 )	// vec1, vec3, p are linear
 		//{
-		//	Interp1Point2pZ(p,v1,v3);
+		//	Interp1Point2pZ(p,vec1,vec3);
 		//}
-		//else if( abs(EvaLine(alllines[2],p.x, p.y) ) < 1 )	// v2, v3, p are linear
+		//else if( abs(EvaLine(alllines[2],p.x, p.y) ) < 1 )	// vec2, vec3, p are linear
 		//{
-		//	Interp1Point2pZ(p,v2,v3);
+		//	Interp1Point2pZ(p,vec2,vec3);
 		//}
 		//else
 		{
-			Interp1Point3pZ(p,v1,v2,v3);
+			Interp1Point3pZ(p,vec1,vec2,vec3);
 		}
 	}
 }
 
-void InitTrianglePoints( std::vector<PointInfo> &points, TLITVERTEX &v1, TLITVERTEX &v2, TLITVERTEX &v3 )
+void InitTrianglePoints( std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3 )
 {
 	points.clear();
 
 	PointInfo p;
-	p.x = v1.x;
-	p.y = v1.y;
-	p.z = v1.z;
+	p.x = vec1.x;
+	p.y = vec1.y;
+	p.z = vec1.z;
 	p.onVtx = 0;
 	p.onLine = -1;
 	points.push_back(p);
-	p.x = v2.x;
-	p.y = v2.y;
-	p.z = v2.z;
+	p.x = vec2.x;
+	p.y = vec2.y;
+	p.z = vec2.z;
 	p.onVtx = 1;
 	points.push_back(p);
-	p.x = v3.x;
-	p.y = v3.y;
-	p.z = v3.z;
+	p.x = vec3.x;
+	p.y = vec3.y;
+	p.z = vec3.z;
 	p.onVtx = 2;
 	points.push_back(p);
 }
@@ -836,11 +836,11 @@ void ClipVertexes()
 	{
 		int firstidx = i*3;
 		int size;
-		TLITVERTEX &v1 = g_vtxBuffer[firstidx];
-		TLITVERTEX &v2 = g_vtxBuffer[firstidx+1];
-		TLITVERTEX &v3 = g_vtxBuffer[firstidx+2];
+		TLITVERTEX &vec1 = g_vtxBuffer[firstidx];
+		TLITVERTEX &vec2 = g_vtxBuffer[firstidx+1];
+		TLITVERTEX &vec3 = g_vtxBuffer[firstidx+2];
 
-		if( v1.rhw < 0 && v2.rhw < 0 && v3.rhw < 0 )
+		if( vec1.rhw < 0 && vec2.rhw < 0 && vec3.rhw < 0 )
 			continue;	// Skip this triangle
 
 		std::vector<PointInfo> points;
@@ -852,16 +852,16 @@ void ClipVertexes()
 		TRI_DUMP( 
 		{
 			TRACE1("Clip triangle %d for negative w", i);
-			TRACE4("V1: x=%f, y=%f, z=%f, rhw=%f", v1.x, v1.y, v1.z, v1.rhw);
-			TRACE4("V2: x=%f, y=%f, z=%f, rhw=%f", v2.x, v2.y, v2.z, v2.rhw);
-			TRACE4("V3: x=%f, y=%f, z=%f, rhw=%f", v3.x, v3.y, v3.z, v3.rhw);
+			TRACE4("vec1: x=%f, y=%f, z=%f, rhw=%f", vec1.x, vec1.y, vec1.z, vec1.rhw);
+			TRACE4("vec2: x=%f, y=%f, z=%f, rhw=%f", vec2.x, vec2.y, vec2.z, vec2.rhw);
+			TRACE4("vec3: x=%f, y=%f, z=%f, rhw=%f", vec3.x, vec3.y, vec3.z, vec3.rhw);
 		});
 
 		SwapVertexPos(firstidx);
-		CreateLineEquations(v1,v2,v3);
+		CreateLineEquations(vec1,vec2,vec3);
 		InitScreenPoints(points);
-		InterpolatePointsZ(points,v1,v2,v3);
-		ClipXYBy1Triangle(points, v1, v2, v3);
+		InterpolatePointsZ(points,vec1,vec2,vec3);
+		ClipXYBy1Triangle(points, vec1, vec2, vec3);
 
 		TRI_DUMP( 
 		{
@@ -890,19 +890,19 @@ void ClipVertexes()
 
 				SplitPointsToTwoPolygons(points,polygon1,polygon2);
 
-				InterpolatePoints(polygon1,v1,v2,v3,dstidx);
-				InterpolatePoints(polygon2,v1,v2,v3,dstidx);
+				InterpolatePoints(polygon1,vec1,vec2,vec3,dstidx);
+				InterpolatePoints(polygon2,vec1,vec2,vec3,dstidx);
 				polygon1.clear();
 				polygon2.clear();
 			}
 			else
 			{
-				InterpolatePoints(points,v1,v2,v3,dstidx);
+				InterpolatePoints(points,vec1,vec2,vec3,dstidx);
 			}
 		}
 		else
 		{
-			InterpolatePoints(points,v1,v2,v3,dstidx);
+			InterpolatePoints(points,vec1,vec2,vec3,dstidx);
 		}
 
 		points.clear();

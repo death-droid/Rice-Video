@@ -54,6 +54,9 @@
     <Filter Include="Graphics\Parser\Ucodes\Custom Ucodes">
       <UniqueIdentifier>{52c24813-2f06-4e9f-812e-329a4bccf335}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{bd33d62c-85ad-44b5-b4e2-8e9f99c7aa77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="_BldNum.h">
@@ -200,6 +203,18 @@
     <ClInclude Include="Parser\Microcode.h">
       <Filter>Graphics\Parser</Filter>
     </ClInclude>
+    <ClInclude Include="math\Vector2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\Vector3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\Vector4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\Matrix4x4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">
@@ -285,6 +300,9 @@
     </ClCompile>
     <ClCompile Include="Parser\Microcode.cpp">
       <Filter>Graphics\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="math\Matrix4x4.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

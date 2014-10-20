@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _RICE_RENDER_H
 #define _RICE_RENDER_H
 
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "ExtendedRender.h"
 
 enum TextureChannel 
@@ -94,8 +94,8 @@ public:
 	}
 	uint32 GetFogColor() { return gRDP.fogColor; }
 
-	void SetProjection(const Matrix & mat, bool bPush, bool bReplace);
-	void SetWorldView(const Matrix & mat, bool bPush, bool bReplace);
+	void SetProjection(const Matrix4x4 & mat, bool bPush, bool bReplace);
+	void SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace);
 	inline int GetProjectMatrixLevel(void) { return gRSP.projectionMtxTop; }
 	inline int GetWorldViewMatrixLevel(void) { return gRSP.modelViewMtxTop; }
 
@@ -108,8 +108,8 @@ public:
 	}
 
 	void PopWorldView(u32 num = 1);
-	Matrix & GetWorldProjectMatrix(void);
-	void SetWorldProjectMatrix(Matrix &mtx);
+	Matrix4x4 & GetWorldProjectMatrix(void);
+	void SetWorldProjectMatrix(Matrix4x4 &mtx);
 	
 	void ResetMatrices(uint32 size);
 

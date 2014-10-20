@@ -22,8 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void LoadHiresTexture( TxtrCacheEntry &entry );
 
 extern uObjMtxReal gObjMtxReal;
-extern Matrix gD3DMtxReal;
-extern Matrix gD3DObjOffset;
+extern Matrix4x4 gD3DMtxReal;
+extern Matrix4x4 gD3DObjOffset;
 
 //========================================================================
 

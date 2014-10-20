@@ -27,8 +27,8 @@ uint32 gObjTlutAddr = 0;
 uObjMtx *gObjMtx = NULL;
 uObjSubMtx *gSubObjMtx = NULL;
 uObjMtxReal gObjMtxReal = {1, 0, 0, 1, 0, 0, 0, 0};
-Matrix gD3DMtxReal(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-Matrix gD3DObjOffset(1.0,0,0,0,  0,1.0,0,0, 0,0,0,1.0, 0,0,0,1.0);
+Matrix4x4 gD3DMtxReal(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+Matrix4x4 gD3DObjOffset(1.0,0,0,0,  0,1.0,0,0, 0,0,0,1.0, 0,0,0,1.0);
 
 uint32 g_TxtLoadBy = CMD_LOAD_OBJ_TXTR;
 
@@ -438,25 +438,25 @@ void RSP_S2DEX_OBJ_MOVEMEM(MicroCodeCommand command)
 #endif
 	}
 
-	gD3DMtxReal._11 = gObjMtxReal.A;
-	gD3DMtxReal._12 = gObjMtxReal.C;
-	gD3DMtxReal._13 = 0;
-	gD3DMtxReal._14 = 0;//gObjMtxReal.X;
+	gD3DMtxReal.m11 = gObjMtxReal.A;
+	gD3DMtxReal.m12 = gObjMtxReal.C;
+	gD3DMtxReal.m13 = 0;
+	gD3DMtxReal.m14 = 0;//gObjMtxReal.X;
 
-	gD3DMtxReal._21 = gObjMtxReal.B;
-	gD3DMtxReal._22 = gObjMtxReal.D;
-	gD3DMtxReal._23 = 0;
-	gD3DMtxReal._24 = 0;//gObjMtxReal.Y;
+	gD3DMtxReal.m21 = gObjMtxReal.B;
+	gD3DMtxReal.m22 = gObjMtxReal.D;
+	gD3DMtxReal.m23 = 0;
+	gD3DMtxReal.m24 = 0;//gObjMtxReal.Y;
 
-	gD3DMtxReal._31 = 0;
-	gD3DMtxReal._32 = 0;
-	gD3DMtxReal._33 = 1.0;
-	gD3DMtxReal._34 = 0;
+	gD3DMtxReal.m31 = 0;
+	gD3DMtxReal.m32 = 0;
+	gD3DMtxReal.m33 = 1.0;
+	gD3DMtxReal.m34 = 0;
 
-	gD3DMtxReal._41 = gObjMtxReal.X;
-	gD3DMtxReal._42 = gObjMtxReal.Y;
-	gD3DMtxReal._43 = 0;
-	gD3DMtxReal._44 = 1.0;
+	gD3DMtxReal.m41 = gObjMtxReal.X;
+	gD3DMtxReal.m42 = gObjMtxReal.Y;
+	gD3DMtxReal.m43 = 0;
+	gD3DMtxReal.m44 = 1.0;
 
 	DEBUGGER_PAUSE_COUNT_N(NEXT_OBJ_TXT_CMD);
 }

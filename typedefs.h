@@ -42,8 +42,6 @@ typedef unsigned char				u8;
 #define RGBA_GETGREEN(rgb)      (((rgb) >> 8) & 0xff)
 #define RGBA_GETBLUE(rgb)       ((rgb) & 0xff)
 
-typedef D3DXMATRIX Matrix;
-typedef D3DVECTOR Vector3;
 typedef D3DLOCKED_RECT LockRectType;
 
 #define COLOR_RGBA D3DCOLOR_RGBA
@@ -243,26 +241,13 @@ struct Color
 	};
 };
 
-struct Direction
-{
-	union {
-		struct {
-			float x;
-			float y;
-			float z;
-			float range;		// Range == 0  for directional light
-			// Range != 0  for point light, Zelda MM
-		};
-	};
-};
-
 struct Light
 {
-	Direction direction;
+	v3 direction;
 	u32 SkipIfZero; //Needed by CBFD and MM
 	Color colour; // HOlds the colours
 	float Iscale; // Used by CBFD
-	D3DXVECTOR4 Position; // Position -32768 to 32767
+	v4 Position; // Position -32768 to 32767
 	float ca; //Used by point lights
 	float la; //Used by point lights
 	float qa; //Used by point lights

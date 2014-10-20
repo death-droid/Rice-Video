@@ -20,8 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "..\..\stdafx.h"
 
 extern uObjMtxReal gObjMtxReal;
-extern Matrix gD3DMtxReal;
-extern Matrix gD3DObjOffset;
+extern Matrix4x4 gD3DMtxReal;
+extern Matrix4x4 gD3DObjOffset;
 
 static BOOL bSavedZEnabled = TRUE;
 static uint32 dwSavedMinFilter = 0;
@@ -180,7 +180,7 @@ void D3DRender::DrawObjBGCopy(uObjBg &info)
 	}
 }
 
-Matrix spriteMtx(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0);
+Matrix4x4 spriteMtx(1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 1.0);
 
 extern uObjTxtrTLUT *gObjTlut;
 extern void TH_RemoveTextureEntry(TxtrCacheEntry * pEntry);
