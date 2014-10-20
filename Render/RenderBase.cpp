@@ -634,7 +634,7 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 	// 3 vertices, it means that all three x, y or z lie outside of
 	// the current viewing volume.
 	// Currently disabled - still seems a bit dodgy
-	if ((gRDP.tnl.TriCull || gRDP.tnl.CullBack) && gRDP.otherMode.zmode != 3)
+	if (gRDP.tnl.TriCull)
 	{
 		v4 & v0 = g_vecProjected[dwV0];
 		v4 & v1 = g_vecProjected[dwV1];
@@ -656,12 +656,15 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 			/*
 			*/
 
-			if (fDirection < 0 && gRDP.tnl.CullBack)
+			if (fDirection <= 0.0f)
 			{
-				status.dwNumTrisClipped++;
-				return false;
+				if (gRDP.tnl.CullBack)
+				{
+					status.dwNumTrisClipped++;
+					return false;
+				}
 			}
-			else if (fDirection > 0 && gRDP.tnl.TriCull)
+			else if (!gRDP.tnl.CullBack)
 			{
 				status.dwNumTrisClipped++;
 				return false;
