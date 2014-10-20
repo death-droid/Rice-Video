@@ -123,27 +123,6 @@ typedef struct
 	float v;
 } TexCord;
 
-typedef struct VECTOR2
-{
-	float x;
-	float y;
-	VECTOR2(float newx, float newy)	{ x = newx; y = newy; }
-	VECTOR2()	{ x = 0; y = 0; }
-} VECTOR2;
-
-typedef struct
-{
-	short x;
-	short y;
-} IVector2;
-
-typedef struct
-{
-	short x;
-	short y;
-	short z;
-} IVector3;
-
 #define RICE_FVF_TLITVERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2 ) 
 typedef struct {
 	float x, y, z;
@@ -277,35 +256,44 @@ typedef struct
 	LPDIRECT3DBASETEXTURE9 pTexture;
 } D3DCombinerStage;
 
-typedef struct
+
+struct FiddledVtx
 {
-	char na;
-	char nz;	// b
-	char ny;	//g
-	char nx;	//r
-}NormalStruct;
+	s16 y;
+	s16 x;
 
-typedef struct
-{
-	short y;
-	short x;
-
-	short flag;
-	short z;
-
-	short tv;
-	short tu;
-
-	union {
-		struct _rgba {
-			uint8 a;
-			uint8 b;
-			uint8 g;
-			uint8 r;
-		} rgba;
-		NormalStruct norma;
+	union
+	{
+		s16 flag;
+		struct
+		{
+			s8 normz;
+			u8 pad;
+		};
 	};
-} FiddledVtx;
+	s16 z;
+
+	s16 tv;
+	s16 tu;
+
+	union 
+	{
+		struct
+		{
+			u8 rgba_a;
+			u8 rgba_b;
+			u8 rgba_g;
+			u8 rgba_r;
+		};
+		struct
+		{
+			s8 norm_a;
+			s8 norm_z; //b
+			s8 norm_y; //g
+			s8 norm_x; //r
+		};
+	};
+};
 
 typedef struct
 {

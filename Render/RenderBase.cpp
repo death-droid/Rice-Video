@@ -64,8 +64,6 @@ inline void RSP_Vtx_Clipping(int i) {}
 RSP_Options gRSP;
 RDP_Options gRDP;
 
-__declspec(align(16)) static v4 g_normal;
-
 static int norms[3];
 
 __declspec(align(16)) v4	g_vtxNonTransformed[MAX_VERTS];
@@ -232,19 +230,6 @@ void InitVertexTextureConstants()
 	gRSP.texGenYRatio = gRSP.fTexScaleX/gRSP.fTexScaleY*tex0.m_fTexWidth/tex0.m_fTexHeight*tile0.fShiftScaleT;
 }
 
-void TexGen(float &s, float &t)
-{
-	if (gRDP.tnl.TexGenLin)
-	{   
-		s = acosf(g_normal.x) / 3.14f;
-		t = acosf(g_normal.y) / 3.14f;
-	}
-	else
-	{
-		s = 0.5f * ( 1.0f + g_normal.x);
-		t = 0.5f * ( 1.0f - g_normal.y);
-	}
-}
 
 void ComputeLOD()
 {
@@ -532,9 +517,10 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		if (gRDP.tnl.Light)
 		{
-			v3 model_normal((float)vert.norma.nx, (float)vert.norma.ny, (float)vert.norma.nz);
+			
+			v3 model_normal((float)vert.norm_x, (float)vert.norm_y, (float)vert.norm_z);
 			v3 vecTransformedNormal;
-			vecTransformedNormal = gRSPworldProject.TransformNormal(model_normal);
+			vecTransformedNormal = gRSPmodelViewTop.TransformNormal(model_normal);
 			vecTransformedNormal.Normalise();
 
 			if (gRDP.tnl.PointLight)
@@ -546,7 +532,27 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				g_dwVtxDifColor[i] = LightVert(vecTransformedNormal);
 			}
 
-			*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba.a;	// still use alpha from the vertex
+			*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba_a;	// still use alpha from the vertex
+
+			if (gRDP.tnl.TexGen)
+			{
+				const v3 & norm = vecTransformedNormal;
+				if (gRDP.tnl.TexGenLin)
+				{
+					g_fVtxTxtCoords[i].x = acosf(norm.x) / 3.14f;
+					g_fVtxTxtCoords[i].y = acosf(norm.y) / 3.14f;
+				}
+				else
+				{
+					g_fVtxTxtCoords[i].x = 0.5f * (1.0f + norm.x);
+					g_fVtxTxtCoords[i].y = 0.5f * (1.0f - norm.y);
+				}
+			}
+			else
+			{
+				g_fVtxTxtCoords[i].x = (float)vert.tu;
+				g_fVtxTxtCoords[i].y = (float)vert.tv;
+			}
 		}
 		else
 		{
@@ -557,29 +563,21 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			}
 			else
 			{
-				g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba.r, vert.rgba.g, vert.rgba.b, vert.rgba.a);
+				g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 			}
+			g_fVtxTxtCoords[i].x = (float)vert.tu;
+			g_fVtxTxtCoords[i].y = (float)vert.tv;
 		}
 
 		if (options.bWinFrameMode)
 		{
-			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba.r, vert.rgba.g, vert.rgba.b, vert.rgba.a);
+			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 		}
 
 		ReplaceAlphaWithFogFactor(i);
 
 		// Update texture coords n.b. need to divide tu/tv by bogus scale on addition to buffer
 
-		// If the vert is already lit, then there is no normal (and hence we can't generate tex coord)
-		if (gRDP.tnl.TexGen && gRDP.tnl.Light)
-		{
-			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
-		}
-		else
-		{
-			g_fVtxTxtCoords[i].x = (float)vert.tu;
-			g_fVtxTxtCoords[i].y = (float)vert.tv;
-		}
 	}
 
 	VTX_DUMP(TRACE2("Setting Vertexes: %d - %d\n", dwV0, dwV0 + dwNum - 1));
@@ -880,7 +878,6 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		short wA = *(short*)((pVtxBase + 6) ^ 2);
 		short wB = *(short*)((pVtxBase + 8) ^ 2);
 
-
 		// Assign true vert colour after lighting/fogging
 		g_dwVtxDifColor[i] = COLOR_RGBA((s8)(wA >> 8), (s8)(wA), (s8)(wB >> 8), (s8)(wB));
 
@@ -961,10 +958,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		v2 & t = g_fVtxTxtCoords[i];
 		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
-			// Not sure if we should transform the normal here
-			//Matrix & matWV = gRSP.projectionMtxs[gRSP.projectionMtxTop];
-			//Vec3TransformNormal(g_normal, matWV);
-			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
+			//TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y); BACKTOMEANDFIXME
 		}
 		else
 		{
@@ -1001,7 +995,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = pVtxBase;
 
-	short *vertexColoraddr = (short*)(g_pu8RamBase + dwConkerVtxZAddr);
+	short *mn = (short*)(g_pu8RamBase + dwConkerVtxZAddr);
 
 	uint32 i;
 	for (i = dwV0; i < dwV0 + dwNum; i++)
@@ -1022,12 +1016,6 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		if (g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin)
 			g_fFogCoord[i] = gRSPfFogMin;
 
-	/*	v4 Pos;
-		Pos.x = (g_vecProjected[i].x + gRDP.CoordMod[8]) * gRDP.CoordMod[12];
-		Pos.y = (g_vecProjected[i].y + gRDP.CoordMod[9]) * gRDP.CoordMod[13];
-		Pos.z = (g_vecProjected[i].z + gRDP.CoordMod[10])* gRDP.CoordMod[14];
-		Pos.w = (g_vecProjected[i].w + gRDP.CoordMod[11])* gRDP.CoordMod[15];*/
-
 		//Initialize clipping flags for vertexs
 		RSP_Vtx_Clipping(i);
 
@@ -1037,12 +1025,18 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			uint32 g = gRSPlights[gRSP.ambientLightIndex].colour.g;
 			uint32 b = gRSPlights[gRSP.ambientLightIndex].colour.b;
 
-		/*	g_normal.x = vertexColoraddr[((i << 1) + 0) ^ 3];
-			g_normal.y = vertexColoraddr[((i << 1) + 1) ^ 3];
-			g_normal.z = vert.norma.nz;
+			v3 model_normal(mn[((i << 1) + 0) ^ 3], mn[((i << 1) + 1) ^ 3], vert.normz);
+			v3 vecTransformedNormal = gRSPworldProject.TransformNormal(model_normal);
+			const v3 & norm = vecTransformedNormal;
+
+			v4 Pos;
+			Pos.x = (g_vecProjected[i].x + gRDP.CoordMod[8]) * gRDP.CoordMod[12];
+			Pos.y = (g_vecProjected[i].y + gRDP.CoordMod[9]) * gRDP.CoordMod[13];
+			Pos.z = (g_vecProjected[i].z + gRDP.CoordMod[10])* gRDP.CoordMod[14];
+			Pos.w = (g_vecProjected[i].w + gRDP.CoordMod[11])* gRDP.CoordMod[15];
+
 			float fCosT;
 			uint32 k;
-			Vec3TransformNormal(g_normal, gRSPmodelViewTop);
 
 			if (gRDP.tnl.PointLight)
 			{
@@ -1050,10 +1044,11 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				{
 					if (gRSPlights[k].SkipIfZero)
 					{
-						fCosT = g_normal.x*gRSPlights[k].direction.x + g_normal.y*gRSPlights[k].direction.y + g_normal.z*gRSPlights[k].direction.z;
+						fCosT = norm.Dot(gRSPlights[k].direction);
 						if (fCosT > 0.0f)
 						{
-							float pi = gRSPlights[k].Iscale / D3DXVec4LengthSq(&(Pos - gRSPlights[k].Position));
+							float pi = gRSPlights[k].Iscale /(Pos - gRSPlights[k].Position).LengthSq();
+							
 							if (pi < 1.0f)
 								fCosT *= pi;
 
@@ -1064,7 +1059,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 					}
 				}
 
-				fCosT = g_normal.x*gRSPlights[k].direction.x + g_normal.y*gRSPlights[k].direction.y + g_normal.z*gRSPlights[k].direction.z;
+				fCosT = norm.Dot(gRSPlights[k].direction);
 				if (fCosT > 0.0f)
 				{
 					r += gRSPlights[k].colour.r *fCosT;
@@ -1078,7 +1073,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				{
 					if (gRSPlights[k].SkipIfZero)
 					{
-						float pi = gRSPlights[k].Iscale / D3DXVec4LengthSq(&(Pos - gRSPlights[k].Position));
+						float pi = gRSPlights[k].Iscale / (Pos - gRSPlights[k].Position).LengthSq();
 						if (pi > 1.0f) pi = 1.0f;
 
 						r += gRSPlights[k].colour.r *pi;
@@ -1087,13 +1082,6 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 					}
 				}
 			}
-			*/
-			for (uint32 k = 1; k <= gRSPnumLights; k++)
-			{
-				r += gRSPlights[k].colour.r;
-				g += gRSPlights[k].colour.g;
-				b += gRSPlights[k].colour.b;
-			}
 
 			if (r>255)
 				r = 255;
@@ -1101,9 +1089,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				g = 255;
 			if (b>255)
 				b = 255;
-			r *= vert.rgba.r;
-			g *= vert.rgba.g;
-			b *= vert.rgba.b;
+			r *= vert.rgba_r;
+			g *= vert.rgba_g;
+			b *= vert.rgba_b;
 			r >>= 8;
 			g >>= 8;
 			b >>= 8;
@@ -1112,49 +1100,44 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			g_dwVtxDifColor[i] |= (g << 8);
 			g_dwVtxDifColor[i] |= (b);
 
-			*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba.a;	// still use alpha from the vertex
+			*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba_a;	// still use alpha from the vertex
 			//TEXTURE
 
 			// ENV MAPPING
 			if (gRDP.tnl.TexGen)
 			{
-				TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
+				const v3 & norm = vecTransformedNormal;
+				if (gRDP.tnl.TexGenLin)
+				{
+					g_fVtxTxtCoords[i].x = acosf(norm.x) / 3.14f;
+					g_fVtxTxtCoords[i].y = acosf(norm.y) / 3.14f;
+				}
+				else
+				{
+					g_fVtxTxtCoords[i].x = 0.5f * (1.0f + norm.x);
+					g_fVtxTxtCoords[i].y = 0.5f * (1.0f - norm.y);
+				}
 			}
 			else
-			{	//TEXTURE SCALE
-				g_vtxTransformed[i].x = (float)vert.tu;
-				g_vtxTransformed[i].y = (float)vert.tv;
+			{
+				g_fVtxTxtCoords[i].x = (float)vert.tu;
+				g_fVtxTxtCoords[i].y = (float)vert.tv;
 			}
-
-		}
-		else
-		{
-			//Hmmm actually allows the characters to be drawn properly, but there not being effected by lighting	
-			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba.r, vert.rgba.g, vert.rgba.b, vert.rgba.a);
-		}
-
-		if (options.bWinFrameMode)
-		{
-			//g_vecProjected[i].z = 0;
-			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba.r, vert.rgba.g, vert.rgba.b, vert.rgba.a);
-		}
-
-		ReplaceAlphaWithFogFactor(i);
-
-		// Update texture coords n.b. need to divide tu/tv by bogus scale on addition to buffer
-		v2 & t = g_fVtxTxtCoords[i];
-
-		// If the vert is already lit, then there is no normal (and hence we
-		// can't generate tex coord)
-		if (gRDP.tnl.TexGen && gRDP.tnl.Light)
-		{
-			TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y);
 		}
 		else
 		{
 			g_fVtxTxtCoords[i].x = (float)vert.tu;
 			g_fVtxTxtCoords[i].y = (float)vert.tv;
 		}
+
+		if (options.bWinFrameMode)
+		{
+			//g_vecProjected[i].z = 0;
+			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
+		}
+
+		ReplaceAlphaWithFogFactor(i);
+
 	}
 
 	VTX_DUMP(TRACE2("Setting Vertexes: %d - %d\n", dwV0, dwV0 + dwNum - 1));

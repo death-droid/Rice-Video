@@ -219,13 +219,13 @@ protected:
 
 	// FillRect
 	virtual bool	RenderFillRect(uint32 dwColor, float depth)=0;
-	VECTOR2			m_fillRectVtx[2];
+	v2				m_fillRectVtx[2];
 	
 	// Line3D
 	virtual bool	RenderLine3D()=0;
 
 	LITVERTEX		m_line3DVtx[2];
-	VECTOR2			m_line3DVector[4];
+	v2				m_line3DVector[4];
 	
 	// TexRect
 	virtual bool	RenderTexRect()=0;
@@ -238,7 +238,7 @@ protected:
 
 	// DrawSimpleRect
 	virtual void	StartDrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor, float depth, float rhw);
-	VECTOR2			m_simpleRectVtx[2];
+	v2			m_simpleRectVtx[2];
 
 	bool			RemapTextureCoordinate(float s0, float s1, uint32 tileWidth, uint32 mask, float textureWidth,
 											float &u0, float &u1);
