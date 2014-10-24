@@ -53,12 +53,7 @@ CRender::CRender() :
 	m_bZCompare(FALSE),
 	m_dwZBias(0),
 
-	m_dwTexturePerspective(FALSE),
-	m_bAlphaTestEnable(FALSE),
-
 	m_dwAlpha(0xFF),
-
-	m_bBlendModeValid(FALSE),
 	
 	m_dwMinFilter(D3DTEXF_POINT),
 	m_dwMagFilter(D3DTEXF_POINT)
@@ -245,7 +240,6 @@ void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)
 	if( m_Mux != tempmux )
 	{
 		m_Mux = tempmux;
-		m_bBlendModeValid = FALSE;
 		m_pColorCombiner->UpdateCombiner(dwMux0, dwMux1);
 	}
 }
@@ -322,8 +316,6 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 	if( options.bWinFrameMode )	SetFillMode(RICE_FILLMODE_WINFRAME );
 
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", nX0, nY0, nX1, nY1, dwColor);
-			DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", dwColor);if( logCombiners ) m_pColorCombiner->DisplayMuxString();});
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", nX0, nY0, nX1, nY1, dwColor);
 			DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", dwColor);if( logCombiners ) m_pColorCombiner->DisplayMuxString();});
 
 	return res;
@@ -952,29 +944,6 @@ void CRender::SetTextureScale(int dwTile,  float fScaleX, float fScaleY)
 	}	
 }
 
-void CRender::SetFogFlagForNegativeW()
-{
-	if( !gRDP.tnl.Fog )	return;
-
-	m_bFogStateSave = gRDP.tnl.Fog;
-
-	bool flag=gRDP.tnl.Fog;
-	
-	for (uint32 i = 0; i < gRSP.numVertices; i++) 
-	{
-		if( g_vtxBuffer[i].rhw < 0 )
-			flag = FALSE;
-	}
-
-	TurnFogOnOff(flag);
-}
-
-void CRender::RestoreFogFlag()
-{
-	if( !gRDP.tnl.Fog )	return;
-	TurnFogOnOff(m_bFogStateSave);
-}
-
 void CRender::SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ)
 {
 	if( status.bHandleN64RenderTexture )
@@ -1151,20 +1120,6 @@ bool CRender::DrawTriangles()
 
 	return res;
 }
-
-//MOVE THIS STUFF OUT OF HERE? Doesnt feel like it should be in the renderer XD
-inline int ReverseCITableLookup(uint32 *pTable, int size, uint32 val)
-{
-	for( int i=0; i<size; i++)
-	{
-		if( pTable[i] == val )
-			return i;
-	}
-
-	TRACE0("Cannot find value in CI table");
-	return 0;
-}
-
 
 #ifdef _DEBUG
 bool CRender::DrawTexture(int tex, TextureChannel channel)
@@ -1415,11 +1370,9 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 {
 	ApplyTextureFilter();
 
-	//
 	// I can't think why the hand in mario's menu screen is rendered with an opaque rendermode,
 	// and no alpha threshold. We set the alpha reference to 1 to ensure that the transparent pixels
 	// don't get rendered. I hope this doesn't fuck anything else up.
-	//
 	if ( gRDP.otherMode.alpha_compare == 0 )
 	{
 		if ( gRDP.otherMode.cvg_x_alpha && (gRDP.otherMode.alpha_cvg_sel || gRDP.otherMode.aa_en ) )

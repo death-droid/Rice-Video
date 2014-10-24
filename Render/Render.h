@@ -43,10 +43,6 @@ public:
 	float m_fScreenViewportMultX;
 	float m_fScreenViewportMultY;
 
-
-	uint32	m_dwTexturePerspective;
-	BOOL	m_bAlphaTestEnable;
-
 	BOOL	m_bZUpdate;
 	BOOL	m_bZCompare;
 	uint32	m_dwZBias;
@@ -57,7 +53,6 @@ public:
 	uint32	m_dwAlpha;
 
 	uint64		m_Mux;
-	BOOL	m_bBlendModeValid;
 
 	CColorCombiner *m_pColorCombiner;
 	
@@ -84,9 +79,6 @@ public:
 	virtual void SetFogEnable(bool bEnable) {}
 	virtual void SetFogMinMax(float fMin, float fMax) = 0;
 	virtual void TurnFogOnOff(bool flag)=0;
-	bool m_bFogStateSave;
-	void SetFogFlagForNegativeW();
-	void RestoreFogFlag();
 
 	virtual void SetFogColor(uint32 r, uint32 g, uint32 b, uint32 a) 
 	{ 

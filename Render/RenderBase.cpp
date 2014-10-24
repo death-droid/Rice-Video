@@ -378,7 +378,6 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	}
 
 	VTX_DUMP(TRACE2("  DIF(%08X), SPE(%08X)",   v.dcDiffuse, v.dcSpecular));
-	VTX_DUMP(TRACE0(""));
 }
 
 uint32 LightVert(v3 & norm)

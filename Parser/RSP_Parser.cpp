@@ -441,21 +441,6 @@ void DLParser_SetScissor(MicroCodeCommand command)
 	gRDP.scissor.right = command.scissor.x1 >> 2;
 	gRDP.scissor.bottom = command.scissor.y1 >> 2;
 
-	/*if( options.bEnableHacks )
-	{
-		if( g_CI.dwWidth == 0x200 && tempScissor.right == 0x200 )
-		{
-			uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
-
-			if( width != 0x200 )
-			{
-				// Hack for RE2
-				tempScissor.bottom = tempScissor.right*tempScissor.bottom/width;
-				tempScissor.right = width;
-			}
-
-		}
-	}*/
 
 	if( !status.bHandleN64RenderTexture )
 		SetVIScales();

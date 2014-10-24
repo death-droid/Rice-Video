@@ -74,7 +74,6 @@ public:
 		gD3DDevWrapper.SetRenderState(D3DRS_TEXTUREFACTOR, dwCol);
 	}
 
-
 	void SetShadeMode(RenderShadeMode mode);
 	void ZBufferEnable(BOOL bZBuffer);
 	void ClearZBuffer(float depth);

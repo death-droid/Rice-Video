@@ -65,8 +65,8 @@ bool D3DRender::InitDeviceObjects()
 	gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_NONE );
 
 	// We do our own lighting
-	gD3DDevWrapper.SetRenderState( D3DRS_AMBIENT, COLOR_RGBA(255,255,255,255) );
-	gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING,	  FALSE);
+	gD3DDevWrapper.SetRenderState( D3DRS_AMBIENT,  COLOR_RGBA(255,255,255,255) );
+	gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING, FALSE);
 
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
 	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
