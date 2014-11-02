@@ -38,6 +38,10 @@
 #include <D3dx9math.h>
 #include <dxerr.h>
 #include <vector>
+#include "./math/Vector2.h"
+#include "./math/Vector3.h"
+#include "./math/Vector4.h"
+#include "./math/Matrix4x4.h"
 
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }// Microdev check me.

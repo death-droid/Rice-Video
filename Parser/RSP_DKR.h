@@ -54,7 +54,7 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 			uint8 c = wB>>8;
 			uint8 d = (uint8)wB;
 
-			D3DXVECTOR4 & t = g_vecProjected[dwV];
+			v4 & t = g_vecProjected[dwV];
 
 
 			LOG_UCODE(" #%02d Pos: {% 6f,% 6f,% 6f} Extra: %02x %02x %02x %02x (transf: {% 6f,% 6f,% 6f})",
@@ -163,7 +163,7 @@ void RSP_Mtx_DKR(MicroCodeCommand command)
 	}
 
 	// Load matrix from address
-	Matrix &mat = gRSP.modelviewMtxs[mtx_command];
+	Matrix4x4 &mat = gRSP.modelviewMtxs[mtx_command];
 	LoadMatrix(address);
 
 	//Perform any required modifications to the matrix (aka if it needs multiply)

@@ -108,7 +108,6 @@ void RSP_GBI1_Tri2(MicroCodeCommand command)
 	DEBUG_TRIANGLE(TRACE0("Pause at GBI1 TRI1"));
 }
 
-extern D3DXVECTOR4 g_vtxNonTransformed[MAX_VERTS];
 //*****************************************************************************
 // When the depth is less than the z value provided, branch to given address
 //*****************************************************************************
@@ -190,7 +189,7 @@ void DisplayVertexInfo(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 			float tu = (float)(short)(psSrc[4^0x1]);
 			float tv = (float)(short)(psSrc[5^0x1]);
 
-			D3DXVECTOR4 & t = g_vecProjected[dwV];
+			v4 & t = g_vecProjected[dwV];
 
 			psSrc += 8;			// Increase by 16 bytes
 			pcSrc += 16;

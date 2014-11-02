@@ -102,7 +102,7 @@ void DebuggerPause();
 void __cdecl DebuggerAppendMsg(const char * Message, ...);
 void DumpHex(uint32 rdramAddr, int count);
 
-void DumpMatrix(const Matrix &mtx, const char* prompt);
+void DumpMatrix(const Matrix4x4 &mtx, const char* prompt);
 
 //Some common used macros
 #define DEBUG_DUMP_VERTEXES(str, v0, v1, v2)	\

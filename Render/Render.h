@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _RICE_RENDER_H
 #define _RICE_RENDER_H
 
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "ExtendedRender.h"
 
 enum TextureChannel 
@@ -94,8 +94,8 @@ public:
 	}
 	uint32 GetFogColor() { return gRDP.fogColor; }
 
-	void SetProjection(const Matrix & mat, bool bPush, bool bReplace);
-	void SetWorldView(const Matrix & mat, bool bPush, bool bReplace);
+	void SetProjection(const Matrix4x4 & mat, bool bPush, bool bReplace);
+	void SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace);
 	inline int GetProjectMatrixLevel(void) { return gRSP.projectionMtxTop; }
 	inline int GetWorldViewMatrixLevel(void) { return gRSP.modelViewMtxTop; }
 
@@ -108,8 +108,8 @@ public:
 	}
 
 	void PopWorldView(u32 num = 1);
-	Matrix & GetWorldProjectMatrix(void);
-	void SetWorldProjectMatrix(Matrix &mtx);
+	Matrix4x4 & GetWorldProjectMatrix(void);
+	void SetWorldProjectMatrix(Matrix4x4 &mtx);
 	
 	void ResetMatrices(uint32 size);
 
@@ -219,13 +219,13 @@ protected:
 
 	// FillRect
 	virtual bool	RenderFillRect(uint32 dwColor, float depth)=0;
-	VECTOR2			m_fillRectVtx[2];
+	v2				m_fillRectVtx[2];
 	
 	// Line3D
 	virtual bool	RenderLine3D()=0;
 
 	LITVERTEX		m_line3DVtx[2];
-	VECTOR2			m_line3DVector[4];
+	v2				m_line3DVector[4];
 	
 	// TexRect
 	virtual bool	RenderTexRect()=0;
@@ -238,7 +238,7 @@ protected:
 
 	// DrawSimpleRect
 	virtual void	StartDrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor, float depth, float rhw);
-	VECTOR2			m_simpleRectVtx[2];
+	v2			m_simpleRectVtx[2];
 
 	bool			RemapTextureCoordinate(float s0, float s1, uint32 tileWidth, uint32 mask, float textureWidth,
 											float &u0, float &u1);

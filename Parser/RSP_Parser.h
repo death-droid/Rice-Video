@@ -571,7 +571,7 @@ void RSP_GFX_InitGeometryMode();
 void RSP_SetUcode(int ucode, uint32 ucStart=0, uint32 ucDStart=0, uint32 cdSize=0);
 void RDP_GFX_PopDL();
 
-extern Matrix matToLoad;
+extern Matrix4x4 matToLoad;
 void LoadMatrix(uint32 addr);
 
 ULONG ComputeCRC32(ULONG crc, const uint8 *buf, UINT len);

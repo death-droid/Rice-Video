@@ -859,7 +859,7 @@ void DLParser_TriRSP(MicroCodeCommand command)
 	LOG_UCODE("DLParser_TriRSP: (Ignored)");
 }
 
-Matrix matToLoad;
+Matrix4x4 matToLoad;
 void LoadMatrix(uint32 addr)
 {
 	if (addr + 64 > g_dwRamSize)

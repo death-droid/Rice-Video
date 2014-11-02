@@ -38,8 +38,8 @@ enum { MAX_VERTS = 80 };		// F3DLP.Rej supports up to 80 verts!
 
 // All these arrays are moved out of the class CRender
 // to be accessed in faster speed
-extern D3DXVECTOR4	g_vecProjected[MAX_VERTS];
-extern VECTOR2		g_fVtxTxtCoords[MAX_VERTS];
+extern v4	g_vecProjected[MAX_VERTS];
+extern v2		g_fVtxTxtCoords[MAX_VERTS];
 extern uint32		g_dwVtxDifColor[MAX_VERTS];
 //extern uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
 
@@ -70,10 +70,8 @@ extern TLITVERTEX			g_texRectTVtx[4];
 
 extern uint32	gRSPnumLights;
 extern Light	gRSPlights[16];
-extern Matrix	gRSPworldProjectTransported;
-extern Matrix	gRSPworldProject;
-extern Matrix	gRSPmodelViewTop;
-extern Matrix	gRSPmodelViewTopTranspose;
+extern Matrix4x4	gRSPworldProject;
+extern Matrix4x4	gRSPmodelViewTop;
 extern float	gRSPfFogMin;
 extern float	gRSPfFogMax;
 extern float	gRSPfFogDivider;
@@ -107,8 +105,8 @@ __declspec(align(16)) struct RSP_Options
 	int		real_clip_scissor_left,	real_clip_scissor_top,	real_clip_scissor_right,	real_clip_scissor_bottom;
 	float	real_clip_ratio_negx,	real_clip_ratio_negy,	real_clip_ratio_posx,	real_clip_ratio_posy;
 
-	Matrix	projectionMtxs[RICE_MATRIX_STACK];
-	Matrix	modelviewMtxs[RICE_MATRIX_STACK];
+	Matrix4x4	projectionMtxs[RICE_MATRIX_STACK];
+	Matrix4x4	modelviewMtxs[RICE_MATRIX_STACK];
 	u32		mMatStackSize;
 
 	bool	bMatrixIsUpdated;
@@ -116,13 +114,12 @@ __declspec(align(16)) struct RSP_Options
 
 	uint32		segments[16];
 
-	D3DXVECTOR4		DKRBaseVec;
+	v4		DKRBaseVec;
 
 	int		vertexMult;
 
 	bool	bNearClip;
 	bool	bRejectVtx;
-
 
 	// For DirectX only
 	float	vtxXMul;
@@ -144,6 +141,10 @@ __declspec(align(16)) struct RSP_Options
 
 };
 
+__declspec(align(16)) struct RiceVideoVtx4
+{
+
+};
 
 struct TnLMode
 {

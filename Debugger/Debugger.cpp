@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef _DEBUG
 
-void DumpMatrix2(const Matrix &mtx, const char* prompt);
+void DumpMatrix2(const Matrix4x4 &mtx, const char* prompt);
 
 bool debuggerWinOpened = FALSE;
 bool debuggerDrawRenderTexture = FALSE;
@@ -287,7 +287,7 @@ void DumpDlistAt(uint32 dwPC)
 
 void DumpMatrixAt(uint32 dwPC)
 {
-	Matrix mat;
+	Matrix4x4 mat;
 	uint32 dwI;
 	uint32 dwJ;
 	const float fRecip = 1.0f / 65536.0f;
@@ -1002,7 +1002,7 @@ void DEBUGGER_PAUSE_COUNT_N_WITHOUT_UPDATE(uint32 val)
 	}
 }
 
-void DumpMatrix2(const Matrix &mat, const char* prompt)
+void DumpMatrix2(const Matrix4x4 &mat, const char* prompt)
 {
 	DebuggerAppendMsg(prompt);
 	DebuggerAppendMsg(
@@ -1016,7 +1016,7 @@ void DumpMatrix2(const Matrix &mat, const char* prompt)
 		mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3]);
 }
 
-void DumpMatrix(const Matrix &mat, const char* prompt)
+void DumpMatrix(const Matrix4x4 &mat, const char* prompt)
 {
 	if( pauseAtNext && logMatrix )
 	{
