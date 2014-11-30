@@ -127,8 +127,6 @@ void CDirectXPixelShaderCombiner::InitCombinerCycleCopy(void)
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,FALSE);
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHATESTENABLE,TRUE);
 
-	m_pD3DRender->m_curCombineInfo.nStages = 1;
-
 	gD3DDevWrapper.SetTexture( 0, g_textures[gRSP.curTile].m_lpsTexturePtr );
 	m_pD3DRender->SetTexelRepeatFlags(gRSP.curTile);
 	gD3DDevWrapper.SetTexture( 1, NULL );
@@ -313,10 +311,6 @@ void CDirectXPixelShaderCombiner::InitCombinerCycle12(void)
 	float frac2 = gRDP.primLODFrac / 255.0f;
 	float tempf2[4] = {frac2,frac2,frac2,frac2};
 	gD3DDevWrapper.SetPixelShaderConstant(5,tempf2);
-
-	m_pD3DRender->m_curCombineInfo.nStages = 2;
-	m_pD3DRender->m_curCombineInfo.stages[0].dwTexture = 0;
-	m_pD3DRender->m_curCombineInfo.stages[1].dwTexture = 1;
 
 	// Step 3: set textures
 	if( m_bTex0Enabled ) 

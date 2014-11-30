@@ -103,10 +103,6 @@ public:
 	void ApplyRDPScissor(bool force=false);
 	void ApplyScissorWithClipRatio(bool force=false);
 
-
-protected:
-	SetCombineInfo m_curCombineInfo;
-
 protected:
 
 	// Basic render drawing functions
