@@ -137,7 +137,6 @@ typedef struct TxtrCacheEntry
 	uint32	dwUses;			// Total times used (for stats)
 	uint32	dwTimeLastUsed;	// timeGetTime of time of last usage
 	uint32	FrameLastUsed;	// Frame # that this was last used
-	uint32	FrameLastUpdated;
 
 	CTexture	*pTexture;
 	CTexture	*pEnhancedTexture;
@@ -146,7 +145,6 @@ typedef struct TxtrCacheEntry
 	int			txtrBufIdx;
 	bool		bExternalTxtrChecked;
 
-	TxtrCacheEntry *lastEntry;
 } TxtrCacheEntry;
 
 
@@ -172,8 +170,6 @@ protected:
 	uint32 Hash(uint32 dwValue);
 	bool TCacheEntryIsLoaded(TxtrCacheEntry *pEntry);
 
-	void updateColorTexture(CTexture *ptexture, uint32 color);
-
 public:
 	void Wrap(uint32 *array, uint32 width, uint32 mask, uint32 towidth, uint32 arrayWidth, uint32 rows, int flag);
 	void Clamp(uint32 *array, uint32 width, uint32 towidth, uint32 arrayWidth, uint32 rows, int flag);
@@ -184,22 +180,10 @@ protected:
 	TxtrCacheEntry ** m_pCacheTxtrList;
 	uint32 m_numOfCachedTxtrList;
 
-	TxtrCacheEntry m_blackTextureEntry;
-	TxtrCacheEntry m_PrimColorTextureEntry;
-	TxtrCacheEntry m_EnvColorTextureEntry;
-	TxtrCacheEntry m_LODFracTextureEntry;
-	TxtrCacheEntry m_PrimLODFracTextureEntry;
-	TxtrCacheEntry * GetPrimColorTexture(uint32 color);
-	TxtrCacheEntry * GetEnvColorTexture(uint32 color);
-	TxtrCacheEntry * GetLODFracTexture(uint8 fac);
-	TxtrCacheEntry * GetPrimLODFracTexture(uint8 fac);
-
 public:
 	CTextureManager();
 	~CTextureManager();
 
-	TxtrCacheEntry * GetBlackTexture(void);
-	TxtrCacheEntry * GetConstantColorTexture(uint32 constant);
 	TxtrCacheEntry * GetTexture(TxtrInfo * pgti, bool fromTMEM, bool AutoExtendTexture = false);
 	
 	void PurgeOldTextures();

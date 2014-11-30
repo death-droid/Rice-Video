@@ -793,12 +793,6 @@ void PrepareTextures()
 					(pEntry->pEnhancedTexture)?pEntry->pEnhancedTexture:pEntry->pTexture,
 					pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
 			}
-			else
-			{
-				pEntry = gTextureManager.GetBlackTexture();
-				CRender::g_pRender->SetCurrentTexture( tilenos[i], pEntry->pTexture, 4, 4, pEntry);
-			}
-
 		}
 
 		gRDP.textureIsChanged = false;

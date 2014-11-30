@@ -351,18 +351,6 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 				VTX_DUMP(TRACE2("  (tex0): %f, %f",  tex0u,tex0v));
 			}
 		}
-
-		// Check for txt scale hack
-		if( !bHalfTxtScale && g_curRomInfo.bTextureScaleHack &&
-			(gRDP.tiles[lastSetTile].dwSize == TXT_SIZE_32b || gRDP.tiles[lastSetTile].dwSize == TXT_SIZE_4b ) )
-		{
-			int width = ((gRDP.tiles[lastSetTile].sh-gRDP.tiles[lastSetTile].sl+1)<<1);
-			int height = ((gRDP.tiles[lastSetTile].th-gRDP.tiles[lastSetTile].tl+1)<<1);
-			if( g_fVtxTxtCoords[dwV].x*gRSP.fTexScaleX == width || g_fVtxTxtCoords[dwV].y*gRSP.fTexScaleY == height )
-			{
-				bHalfTxtScale=true;
-			}
-		}
 	}
 
 	if( g_curRomInfo.bEnableTxtLOD && vtxIndex == 1 && gRDP.otherMode.text_lod )
@@ -439,6 +427,7 @@ uint32 LightPointVert(v4 & w)
 	if (b > 255) b = 255;
 	return ((0xff000000) | (((uint32)r) << 16) | (((uint32)g) << 8) | ((uint32)b));
 }
+
 inline void ReplaceAlphaWithFogFactor(int i)
 {
 	if( gRDP.tnl.Fog )
