@@ -451,16 +451,8 @@ void D3DRender::TurnFogOnOff(bool flag)
 	gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, flag?TRUE:FALSE);
 }
 
-#define RSP_ZELDA_CULL_FRONT 0x00000400
 void D3DRender::SetFogEnable(bool bEnable)
 {
-	DEBUGGER_IF_DUMP( (gRDP.tnl.Fog != (bEnable==TRUE) && logFog ), TRACE1("Set Fog %s", bEnable? "enable":"disable"));
-
-	if( options.enableHackForGames == HACK_FOR_TWINE && gRDP.tnl.Fog == FALSE && bEnable == FALSE && (gRDP.tnl.TriCull) )
-	{
-		g_pD3DDev->Clear(1, NULL, D3DCLEAR_ZBUFFER, 0xFF000000, 1.0, 0);
-	}
-
 	DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Set Fog %s", bEnable?"enable":"disable");});
 	
 	//gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
