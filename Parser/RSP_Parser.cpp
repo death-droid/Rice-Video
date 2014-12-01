@@ -88,8 +88,6 @@ void DLParser_Init()
 	status.gRDPTime = 0;
 	status.gDlistCount = 0;
 	status.gUcodeCount = 0;
-	status.frameReadByCPU = FALSE;
-	status.frameWriteByCPU = FALSE;
 	status.bN64IsDrawingTextureBuffer = false;
 	status.bHandleN64RenderTexture = false;
 
@@ -116,7 +114,6 @@ void DLParser_Init()
 	GBIMicrocode_Reset();
 
 	memset(&g_TmemFlag, 0, sizeof(g_TmemFlag));
-	memset(&g_RecentCIInfo, 0, sizeof(RecentCIInfo)*5);
 	memset(&g_RecentVIOriginInfo, 0, sizeof(RecentViOriginInfo)*5);
 	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)*2);
 	memset(&g_ZI, 0, sizeof(SetImgInfo));

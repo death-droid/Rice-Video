@@ -30,15 +30,6 @@ signed char *g_ps8RamBase = NULL;
 unsigned char *g_pu8RamBase = NULL;
 
 CCritSect g_CritialSection;
-
-//=======================================================
-// User Options
-RECT frameWriteByCPURect;
-std::vector<RECT> frameWriteByCPURects;
-RECT frameWriteByCPURectArray[20][20];
-bool frameWriteByCPURectFlag[20][20];
-std::vector<uint32> frameWriteRecord;
-
 //---------------------------------------------------------------------------------------
 
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
@@ -196,13 +187,7 @@ bool StartVideo(void)
 
 	//Lets figure out what the tv system is
 	status.dwTvSystem = CountryCodeToTVSystem(g_curRomInfo.romheader.nCountryID);
-	
-	//Now we have determined the tv system of the rom, lets set the frame ratio's
-	if( status.dwTvSystem == TV_SYSTEM_NTSC )
-		status.fRatio = 0.75f;
-	else
-		status.fRatio = 9/11.0f;
-	
+
 	//Grab any external textures.
 	InitExternalTextures();
 	
@@ -275,7 +260,7 @@ void StopVideo()
 	}
 
 	g_CritialSection.Unlock();
-	status.gDlistCount = status.gFrameCount = 0;
+	status.gDlistCount = 0;
 
 	if( windowSetting.screenSaverStatus )	
 		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, 0, 0);	// Enable screen saver

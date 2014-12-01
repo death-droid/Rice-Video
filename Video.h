@@ -61,10 +61,6 @@ enum CurScissorType
 struct PluginStatus{
 	bool	bGameIsRunning;	  
 	uint32	dwTvSystem;
-	float	fRatio;
-
-	BOOL	frameReadByCPU;
-	BOOL	frameWriteByCPU;
 
 	uint32	dwNumTrisRendered;
 	uint32	dwNumDListsCulled;
@@ -72,7 +68,6 @@ struct PluginStatus{
 	uint32	dwNumVertices;
 
 	uint32	gDlistCount;
-	uint32	gFrameCount;
 	uint32	gUcodeCount;
 	uint32	gRDPTime;
 	BOOL	ToToggleFullScreen;

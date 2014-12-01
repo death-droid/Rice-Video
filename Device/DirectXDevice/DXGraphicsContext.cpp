@@ -61,13 +61,9 @@ void CDXGraphicsContext::Clear(ClearFlag dwFlags, uint32 color, float depth)
 //*****************************************************************************
 //
 //*****************************************************************************
-extern RECT frameWriteByCPURect;
-
 void CDXGraphicsContext::UpdateFrame(bool swaponly)
 {
 	HRESULT hr;
-
-	status.gFrameCount++;
 
 	if( CRender::g_pRender )	
 	{
