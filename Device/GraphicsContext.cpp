@@ -46,39 +46,16 @@ CGraphicsContext::~CGraphicsContext()
 
 HWND		CGraphicsContext::m_hWnd=NULL;
 HWND		CGraphicsContext::m_hWndStatus=NULL;
-HWND		CGraphicsContext::m_hWndToolbar=NULL;
 HMENU		CGraphicsContext::m_hMenu=NULL;
 uint32		CGraphicsContext::m_dwWindowStyle=0;     // Saved window style for mode switches
 uint32		CGraphicsContext::m_dwWindowExStyle=0;   // Saved window style for mode switches
 uint32		CGraphicsContext::m_dwStatusWindowStyle=0;     // Saved window style for mode switches
-
-BOOL CALLBACK MyEnumChildProc(HWND hwnd, LPARAM lParam)
-{
-	int id = GetDlgCtrlID(hwnd);
-	if( id != 0 )
-	{
-		if( CGraphicsContext::m_hWndStatus != hwnd && IsWindow( hwnd ) )
-		{
-			RECT rect;
-			GetClientRect(hwnd, &rect);
-			if( rect.left == 0 && rect.top == 0 && rect.bottom < 40 && rect.right > 320 )
-			{
-				DEBUGGER_IF_DUMP((CGraphicsContext::m_hWndToolbar!=NULL), {DebuggerAppendMsg("Check me, found two toolbar");});
-				CGraphicsContext::m_hWndToolbar = hwnd;
-			}
-		}
-	}
-
-	return TRUE;
-}
 
 void CGraphicsContext::InitWindowInfo()
 {
 	m_hWnd = g_GraphicsInfo.hWnd;
 
 	m_hWndStatus = g_GraphicsInfo.hStatusBar;
-	m_hWndToolbar = NULL;
-	EnumChildWindows(m_hWnd, MyEnumChildProc, 0);	// To find toolbar
 
 	m_hMenu = GetMenu(m_hWnd);
 
@@ -96,13 +73,6 @@ void CGraphicsContext::InitWindowInfo()
 		// Add on enough space for the status bar
 		GetClientRect(m_hWndStatus, &rcStatus);
 		windowSetting.statusBarHeight = (rcStatus.bottom - rcStatus.top);
-	}
-
-	windowSetting.toolbarHeight = 0;
-	if( IsWindow( m_hWndToolbar ) )
-	{
-		GetClientRect(m_hWndToolbar, &rcStatus);
-		windowSetting.toolbarHeight = (rcStatus.bottom - rcStatus.top);
 	}
 }
 
@@ -123,7 +93,6 @@ bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, ui
 	RECT rcScreen;
 	SetRect(&rcScreen, 0,0, windowSetting.uDisplayWidth, windowSetting.uDisplayHeight);
 	rcScreen.bottom += windowSetting.statusBarHeight;
-	rcScreen.bottom += windowSetting.toolbarHeight;
 
 	// Calculate window size to give desired window size...
 	AdjustWindowRectEx(&rcScreen, m_dwWindowStyle & (~(WS_THICKFRAME|WS_MAXIMIZEBOX)), TRUE, m_dwWindowExStyle);
@@ -135,13 +104,9 @@ bool CGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus, uint32 dwWidth, ui
     EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &m_DMsaved);
 
 	if( !m_bWindowed )
-	{
 		ShowCursor( FALSE );
-	}
 	else
-	{
 		ShowCursor( TRUE );
-	}
 
 	g_pFrameBufferManager->Initialize();
 
@@ -224,8 +189,7 @@ void CGraphicsContext::InitDeviceParameters(void)
 
 void OutputText(char *msg, RECT *prect, uint32 flag)
 {
-	prect->top += windowSetting.toolbarHeight;
-	prect->bottom += windowSetting.toolbarHeight;
+
 	HDC hdc = GetDC(g_GraphicsInfo.hWnd);
 	if( hdc )
 	{

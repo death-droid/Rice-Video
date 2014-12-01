@@ -478,9 +478,6 @@ void CRender::DrawObjBG1CYC(uObjScaleBg &bg, bool scaled)	//Without Ratation
 {
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-	if( g_curRomInfo.bDisableObjBG )
-		return;
-
 	if( status.bHandleN64RenderTexture )
 	{
 		g_pRenderTextureInfo->maxUsedHeight = g_pRenderTextureInfo->N64Height;

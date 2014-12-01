@@ -208,12 +208,6 @@ void DLParser_Process()
 	status.dwNumTrisRendered = 0;
 	status.dwNumTrisClipped = 0;
 	status.dwNumVertices = 0;
-	
-	if( g_curRomInfo.bForceScreenClear && CGraphicsContext::needCleanScene )
-	{
-		CRender::g_pRender->ClearBuffer(true,true);
-		CGraphicsContext::needCleanScene = false;
-	}
 
 	SetVIScales();
 	CRender::g_pRender->RenderReset();

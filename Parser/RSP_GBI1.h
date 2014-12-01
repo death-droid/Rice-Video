@@ -119,7 +119,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 #ifdef _DEBUG
 	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)command.inst.cmd1 || g_curRomInfo.bForceDepthBuffer )
 #else
-	if( vtxdepth <= (s32)(command.branchz.value) || g_curRomInfo.bForceDepthBuffer )
+	if( vtxdepth <= (s32)(command.branchz.value) )
 #endif
 	{
 		uint32 dwAddr = RSPSegmentAddr(gRDPHalf1);

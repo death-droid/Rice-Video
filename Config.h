@@ -209,13 +209,7 @@ typedef struct
 	uint32	dwFrameBufferOption;
 	uint32	dwRenderToTextureOption;
 
-	// With FALSE as its default values
-	BOOL	bForceScreenClear;
-	BOOL	bEmulateClear;
-	BOOL	bForceDepthBuffer;
-
 	// Less useful options
-	BOOL	bDisableObjBG;
 	BOOL	bIncTexRectEdge;
 	BOOL	bZHack;
 	BOOL	bTextureScaleHack;

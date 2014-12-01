@@ -281,7 +281,7 @@ TxtrCacheEntry * CTextureManager::GetTxtrCacheEntry(TxtrInfo * pti)
 
 void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 {
-	TxtrCacheEntry * pPrev;
+	TxtrCacheEntry * pPrev= NULL;
 	TxtrCacheEntry * pCurr;
 	
 	if (m_pCacheTxtrList == NULL)
@@ -290,7 +290,6 @@ void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 	// See if it is already in the hash table
 	uint32 dwKey = Hash(pEntry->ti.Address);
 	
-	pPrev = NULL;
 	pCurr = m_pCacheTxtrList[dwKey];
 	
 	while (pCurr)

@@ -268,18 +268,12 @@ void D3DRender::SetAddressVAllStages(uint32 dwTile, int dwFlag)
 
 void D3DRender::ZBufferEnable(BOOL bZBuffer)
 {
-	if( g_curRomInfo.bForceDepthBuffer )
-		bZBuffer = TRUE;
-
 	SetZCompare(bZBuffer);
 	SetZUpdate(bZBuffer);
 }
  
 void D3DRender::SetZCompare(BOOL bZCompare)
 {
-	if( g_curRomInfo.bForceDepthBuffer )
-		bZCompare = TRUE;
-
 	gRDP.tnl.Zbuffer = bZCompare;
 	m_bZCompare = bZCompare;
 	gD3DDevWrapper.SetRenderState(D3DRS_ZENABLE, bZCompare ? D3DZB_TRUE : D3DZB_FALSE );
@@ -287,9 +281,6 @@ void D3DRender::SetZCompare(BOOL bZCompare)
 
 void D3DRender::SetZUpdate(BOOL bZUpdate)
 {
-	if( g_curRomInfo.bForceDepthBuffer )
-		bZUpdate = TRUE;
-
 	m_bZUpdate = bZUpdate;
 	if( bZUpdate )	
 	{

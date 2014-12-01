@@ -111,12 +111,9 @@ void CDXGraphicsContext::UpdateFrame(bool swaponly)
 			goto exit;
 		}
 
-		if( !g_curRomInfo.bForceScreenClear )	
-			Clear(CLEAR_DEPTH_BUFFER);
-
 		if( m_bWindowed )
 		{
-			RECT dstrect={0,windowSetting.toolbarHeight,windowSetting.uDisplayWidth,windowSetting.toolbarHeight+windowSetting.uDisplayHeight};
+			RECT dstrect={0,0,windowSetting.uDisplayWidth,windowSetting.uDisplayHeight};
 			RECT srcrect={0,0,windowSetting.uDisplayWidth,windowSetting.uDisplayHeight};
 			hr = m_pd3dDevice->Present( &srcrect, &dstrect, NULL, NULL );
 		}
@@ -138,7 +135,6 @@ exit:
 	Unlock();
 
 	status.bScreenIsDrawn = false;
-	if( g_curRomInfo.bForceScreenClear )	needCleanScene = true;
 }
 
 //*****************************************************************************
@@ -182,7 +178,7 @@ bool CDXGraphicsContext::Initialize(HWND hWnd, HWND hWndStatus,
 
 	D3DVIEWPORT9 vp = {
 		0, 
-			windowSetting.toolbarHeightToUse, 
+		0, 
 			windowSetting.uDisplayWidth, 
 			windowSetting.uDisplayHeight, 0, 1
 	};
@@ -259,7 +255,6 @@ HRESULT CDXGraphicsContext::InitializeD3D()
     AdjustWindowForChange();
 
 	windowSetting.statusBarHeightToUse = 0;
-	windowSetting.toolbarHeightToUse = 0;
 
     // Set up the presentation parameters
 	//Clear out our presentation struct for use
