@@ -238,9 +238,6 @@ enum {
     PSH_ROM_SETTINGS,
 };
 
-extern int DialogToStartRomIsRunning;
-extern int DialogToStartRomIsNotRunning;
-
 void CreateOptionsDialogs(HWND hParent);
 
 #endif

@@ -95,8 +95,6 @@ const SettingInfo TextureEnhancementSettings[] =
 void WriteConfiguration(void);
 void GenerateCurrentRomOptions();
 
-int DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
-int DialogToStartRomIsNotRunning = PSH_OPTIONS;
 HWND hPropSheetHwnd = NULL;
 
 inline void ShowItem(HWND hDlg, UINT item, bool flag)
@@ -800,14 +798,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
                 //Handle a Cancel button click, if necessary
                 EndDialog(lpnm->hwndFrom, TRUE);
 				break;
-			case PSN_SETACTIVE :
-
-				if(status.bGameIsRunning)
-					DialogToStartRomIsRunning = PSH_OPTIONS;
-				else
-					DialogToStartRomIsNotRunning = PSH_OPTIONS;
-
-				break;
 			default:
 				return 0;
 			}
@@ -967,10 +957,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
                 //Handle a Cancel button click, if necessary
                 EndDialog(lpnm->hwndFrom, TRUE);
 				break;
-			case PSN_SETACTIVE:
-				if(status.bGameIsRunning)
-					DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
-				break;
 			default:
 				return 0;
 			}
@@ -1121,15 +1107,7 @@ void CreateOptionsDialogs(HWND hParent)
 	psh.pszCaption = (LPSTR) generalText;
 	psh.nPages = sizeof(psp) / sizeof(PROPSHEETPAGE);
 	psh.ppsp = (LPCPROPSHEETPAGE) & psp;
-	if(status.bGameIsRunning)
-	{
-		psh.nStartPage = DialogToStartRomIsRunning;
-	}
-	else
-	{
-		psh.nStartPage = DialogToStartRomIsNotRunning;
-	}
-
+	psh.nStartPage = PSH_OPTIONS;
 	hPropSheetHwnd = (HWND) PropertySheet(&psh);	// Start the Property Sheet
 
 #endif
