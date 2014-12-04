@@ -467,6 +467,12 @@ void GenerateCurrentRomOptions()
 	{
 		options.enableHackForGames = HACK_FOR_MARIO_KART;
 	}
+	else if ((_stricmp(g_curRomInfo.szGameName, "Diddy Kong Racing") == 0))
+	{
+		options.enableHackForGames = HACK_FOR_DIDDY_KONG_RACING;
+	}
+
+
 
 	if( currentRomOptions.N64FrameBufferEmuType == 0 )		currentRomOptions.N64FrameBufferEmuType = defaultRomOptions.N64FrameBufferEmuType;
 	else currentRomOptions.N64FrameBufferEmuType--;

@@ -640,9 +640,6 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 
 			float fDirection = (V1 * W2) - (V2 * W1);
 			fDirection = fDirection * v1.w * v2.w * v0.w;
-			//float fDirection = v0.x*v1.y-v1.x*v0.y+v1.x*v2.y-v2.x*v1.y+v2.x*v0.y-v0.x*v2.y;
-			/*
-			*/
 
 			if (fDirection <= 0.0f)
 			{

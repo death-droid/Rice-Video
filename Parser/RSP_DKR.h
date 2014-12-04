@@ -87,8 +87,11 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 void RSP_Vtx_DKR(MicroCodeCommand command)
 {
 	uint32 address = command.inst.cmd1 + gDKRVtxAddr;
-	uint32 num_verts  = ((command.inst.cmd0 >>19 )&0x1F)+1;
+	uint32 num_verts  = (command.inst.cmd0 >>19 )&0x1F;
 	uint32 v0_idx = 0;
+
+	//Increase num_verts by 1 for diddy kong racing, needed to avoid having a seperate method just for gemini
+	if (options.enableHackForGames == HACK_FOR_DIDDY_KONG_RACING) num_verts++;
 
 	if( command.inst.cmd0 & 0x00010000 )
 	{
@@ -224,16 +227,10 @@ void DLParser_Set_Addr_DKR(MicroCodeCommand command)
 void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 {
 	u32 dwAddr = RSPSegmentAddr(command.inst.cmd1);
-	u32 dwNum = (((command.inst.cmd0) &  0xFFF0) >>4 );
+	u32 dwNum = (command.inst.cmd0 >> 4) & 0x1F; //Count should never exceed 16
 
 	//Unlike normal tri ucodes, this has the tri's stored in rdram
-	TriDKR *tri = (TriDKR*)&g_pu32RamBase[ dwAddr >> 2];
-
-	if( dwAddr+16*dwNum >= g_dwRamSize )
-	{
-		TRACE0("DMATRI invalid memory pointer");
-		return;
-	}
+	TriDKR *tri = (TriDKR*)(g_pu8RamBase + dwAddr);
 
 	TRI_DUMP(TRACE2("DMATRI, addr=%08X, Cmd0=%08X\n", dwAddr, (command.inst.cmd0)));
 
@@ -245,30 +242,20 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 		uint32 dwV1 = tri->v1;
 		uint32 dwV2 = tri->v2;
 
-		CRender::g_pRender->SetCullMode(!(tri->flag & 0x40), false);
+		CRender::g_pRender->SetCullMode(!(tri->flag & 0x40), true);
 
 		TRI_DUMP(TRACE5("DMATRI: %d, %d, %d (%08X-%08X)", dwV0,dwV1,dwV2,(command.inst.cmd0),(command.inst.cmd1)));
 
 		DEBUG_DUMP_VERTEXES("DmaTri", dwV0, dwV1, dwV2);
 		LOG_UCODE("   Tri: %d,%d,%d", dwV0, dwV1, dwV2);
-		if (!bTrisAdded )//&& CRender::g_pRender->IsTextureEnabled())
-		{
-			PrepareTextures();
-			InitVertexTextureConstants();
-		}
 
-		// Generate texture coordinates
+		//Lets set the vtx texture coords always 
 		CRender::g_pRender->SetVtxTextureCoord(dwV0, tri->s0, tri->t0);
 		CRender::g_pRender->SetVtxTextureCoord(dwV1, tri->s1, tri->t1);
 		CRender::g_pRender->SetVtxTextureCoord(dwV2, tri->s2, tri->t2);
 
-		if( !bTrisAdded )
-		{
-			CRender::g_pRender->SetCombinerAndBlender();
-		}
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-		bTrisAdded = true;
-		PrepareTriangle(dwV0, dwV1, dwV2);
 		tri++;
 	}
 
@@ -276,6 +263,7 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 	{
 		CRender::g_pRender->DrawTriangles();
 	}
+
 	gDKRVtxCount=0;
 }
 #endif //RSP_DKR_H__
