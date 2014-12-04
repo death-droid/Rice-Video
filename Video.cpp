@@ -120,19 +120,17 @@ void ChangeWinSize( void )
 //---------------------------------------------------------------------------------------
 
 FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
-{
-	
+{	
 	if( status.ToToggleFullScreen )
 		status.ToToggleFullScreen = FALSE;
 	else
 		status.ToToggleFullScreen = TRUE;
 
-	status.bDisableFPS = true;
 	windowSetting.bDisplayFullscreen = !windowSetting.bDisplayFullscreen;
 	g_CritialSection.Lock();
 	windowSetting.bDisplayFullscreen = CGraphicsContext::Get()->ToggleFullscreen();
 
-	if( g_GraphicsInfo.hStatusBar != NULL )
+	if (g_GraphicsInfo.hStatusBar != NULL)
 		ShowWindow(g_GraphicsInfo.hStatusBar, windowSetting.bDisplayFullscreen ? SW_HIDE : SW_SHOW);
 
 	ShowCursor(windowSetting.bDisplayFullscreen ? FALSE : TRUE);
@@ -140,7 +138,6 @@ FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
 	CGraphicsContext::Get()->Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
 	CGraphicsContext::Get()->UpdateFrame();
 	g_CritialSection.Unlock();
-	status.bDisableFPS = false;
 	status.ToToggleFullScreen = FALSE;
 }
 
@@ -287,8 +284,6 @@ FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void)
 		TRACE0("g_CritialSection is locked when game is starting, unlock it now.");
 	}
 
-	status.bDisableFPS=false;
-
 #ifdef _DEBUG
 	if( debuggerPause )
 	{
@@ -434,7 +429,6 @@ FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 	windowSetting.fViWidth = 320;
 	windowSetting.fViHeight = 240;
 	status.ToToggleFullScreen = FALSE;
-	status.bDisableFPS=false;
 
 	InitConfiguration();
 	CGraphicsContext::InitWindowInfo();

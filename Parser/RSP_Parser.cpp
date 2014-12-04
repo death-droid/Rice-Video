@@ -139,7 +139,6 @@ void RDP_Cleanup()
 }
 
 extern int dlistMtxCount;
-extern bool bHalfTxtScale;
 
 //*****************************************************************************
 //
@@ -159,8 +158,6 @@ void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 dat
 void DLParser_Process()
 {
 	dlistMtxCount = 0;
-	bHalfTxtScale = false;
-
 	if ( CRender::g_pRender == NULL)
 	{
 		return;
@@ -341,6 +338,7 @@ void DLParser_SetConvert(MicroCodeCommand command)
 {
 	LOG_UCODE("SetConvert: (Ignored)");
 }
+
 void DLParser_SetPrimDepth(MicroCodeCommand command)
 {
 	uint32 dwZ  = ((command.inst.cmd1) >> 16) & 0xFFFF;
@@ -416,6 +414,12 @@ void DLParser_RDPPipeSync(MicroCodeCommand command)
 void DLParser_RDPTileSync(MicroCodeCommand command)	
 { 
 	LOG_UCODE("TileSync: (Ignored)"); 
+}
+
+//You will never see these any HLE emulation, and since where a HLE plugin ignore them completely
+void DLParser_TriRSP(MicroCodeCommand command)
+{
+	LOG_UCODE("DLParser_TriRSP: (Ignored)");
 }
 
 void DLParser_RDPFullSync(MicroCodeCommand command)
@@ -589,21 +593,14 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 		status.bFrameBufferIsDrawn = true;
 
-		//if( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) && gRDP.fillColor == 0)
-		//{
-		//	CRender::g_pRender->ClearBuffer(true,false);
-		//}
-		//else
+		if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 		{
-			if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
-			{
-				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
-			}
-			else
-			{
-				D3DCOLOR primColor = GetPrimitiveColor();
-				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
-			}
+			CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
+		}
+		else
+		{
+			D3DCOLOR primColor = GetPrimitiveColor();
+			CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
 		}
 
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect\n");});
@@ -827,12 +824,6 @@ void RDP_DLParser_Process(void)
 	}
 
 	CRender::g_pRender->EndRendering();
-}
-
-//You will never see these any HLE emulation, and since where a HLE plugin ignore them completely
-void DLParser_TriRSP(MicroCodeCommand command)
-{
-	LOG_UCODE("DLParser_TriRSP: (Ignored)");
 }
 
 Matrix4x4 matToLoad;

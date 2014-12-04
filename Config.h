@@ -212,7 +212,6 @@ typedef struct
 	// Less useful options
 	BOOL	bIncTexRectEdge;
 	BOOL	bZHack;
-	BOOL	bTextureScaleHack;
 	BOOL	bPrimaryDepthHack;
 	BOOL	bTexture1Hack;
 	BOOL 	bDisableCulling;

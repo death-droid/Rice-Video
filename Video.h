@@ -71,7 +71,6 @@ struct PluginStatus{
 	uint32	gUcodeCount;
 	uint32	gRDPTime;
 	BOOL	ToToggleFullScreen;
-	bool	bDisableFPS;
 
 	uint32	curRenderBuffer;
 	uint32	curVIOriginReg;

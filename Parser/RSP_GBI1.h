@@ -240,43 +240,28 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 		return;
 	}
 
-	short scale[4];
-	short trans[4];
+	// address is offset into RD_RAM of 8 x 16bits of data...
+	N64Viewport *vp = (N64Viewport*)(g_pu8RamBase + dwAddr);
 
-	// dwAddr is offset into RD_RAM of 8 x 16bits of data...
-	scale[0] = *(short *)(g_pu8RamBase + ((dwAddr+(0*2))^0x2));
-	scale[1] = *(short *)(g_pu8RamBase + ((dwAddr+(1*2))^0x2));
-//	scale[2] = *(short *)(g_pu8RamBase + ((dwAddr+(2*2))^0x2));
-//	scale[3] = *(short *)(g_pu8RamBase + ((dwAddr+(3*2))^0x2));
-
-	trans[0] = *(short *)(g_pu8RamBase + ((dwAddr+(4*2))^0x2));
-	trans[1] = *(short *)(g_pu8RamBase + ((dwAddr+(5*2))^0x2));
-//	trans[2] = *(short *)(g_pu8RamBase + ((dwAddr+(6*2))^0x2));
-//	trans[3] = *(short *)(g_pu8RamBase + ((dwAddr+(7*2))^0x2));
-
-
-	int nCenterX = trans[0]/4;
-	int nCenterY = trans[1]/4;
-	int nWidth   = scale[0]/4;
-	int nHeight  = scale[1]/4;
+	v2 vec_scale(vp->scale_x * 0.25f, vp->scale_y * 0.25f);
+	v2 vec_trans(vp->trans_x * 0.25f, vp->trans_y * 0.25f);
 
 	// Check for some strange games
-	if( nWidth < 0 )	nWidth = -nWidth;
-	if( nHeight < 0 )	nHeight = -nHeight;
+	if (vec_scale.x < 0)	vec_scale.x = -vec_scale.x;
+	if (vec_scale.y < 0)	vec_scale.y = -vec_scale.y;
 
-	int nLeft = nCenterX - nWidth;
-	int nTop  = nCenterY - nHeight;
-	int nRight= nCenterX + nWidth;
-	int nBottom= nCenterY + nHeight;
+	int nLeft = vec_trans.x - vec_scale.x;
+	int nTop = vec_trans.y - vec_scale.y;
+	int nRight = vec_trans.x + vec_scale.x;
+	int nBottom = vec_trans.y + vec_scale.y;
 
 	//LONG maxZ = scale[2];
 	int maxZ = 0x3FF;
 
 	CRender::g_pRender->SetViewport(nLeft, nTop, nRight, nBottom, maxZ);
 
-
-	LOG_UCODE("        Scale: %d %d = %d,%d", scale[0], scale[1],  nWidth, nHeight);
-	LOG_UCODE("        Trans: %d %d = %d,%d", trans[0], trans[1], nCenterX, nCenterY);
+	LOG_UCODE("        Scale: %d %d = %d,%d", vp->scale_x, vp->scale_y, vec_scale.x, vec_scale.y);
+	LOG_UCODE("        Trans: %d %d = %d,%d", vp->trans_x, vp->trans_y, vec_trans.x, vec_trans.y);
 }
 
 // S2DEX uses this - 0xc1

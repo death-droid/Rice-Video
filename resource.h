@@ -97,7 +97,6 @@
 #define IDC_ALPHA_TEST                  1103
 #define IDC_PRIMARY_DEPTH_HACK          1104
 #define IDC_FASTER_LOADING_TILE         1105
-#define IDC_TEXTURE_SCALE_HACK          1106
 #define IDC_SKIP_FRAME                  1110
 #define IDC_INCREASE_TEXTRECT_EDGE      1112
 #define IDC_SKIP_FRAME2                 1113
