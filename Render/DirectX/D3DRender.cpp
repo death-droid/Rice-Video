@@ -241,18 +241,32 @@ void D3DRender::DrawSimpleRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dw
 void D3DRender::SetTextureUFlag(int dwFlag, uint32 tile)
 {
 	TileUFlags[tile] = dwFlag;
-	//if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
+	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
 		g_pD3DDev->SetSamplerState(0, D3DSAMP_ADDRESSU, dwFlag );
+	}
+	else
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSU, dwFlag);
+		}
 	}
 }
 
 void D3DRender::SetTextureVFlag(int dwFlag, uint32 tile)
 {
 	TileVFlags[tile] = dwFlag;
-	//if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
+	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
 		g_pD3DDev->SetSamplerState(0, D3DSAMP_ADDRESSV, dwFlag );
+	}
+	else
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSV, dwFlag);
+		}
 	}
 }
 
@@ -291,10 +305,18 @@ void D3DRender::SetZUpdate(BOOL bZUpdate)
 
 void D3DRender::ApplyTextureFilter()
 {
-	//if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
+	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
 		D3DSetMinFilter( 0, m_dwMinFilter );
 		D3DSetMagFilter( 0, m_dwMagFilter );
+	}
+	else
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			D3DSetMinFilter(i, m_dwMinFilter);
+			D3DSetMagFilter(i, m_dwMagFilter);
+		}
 	}
 }
 
