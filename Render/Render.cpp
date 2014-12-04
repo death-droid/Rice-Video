@@ -1363,47 +1363,24 @@ void CRender::UpdateScissorWithClipRatio()
 }
 
 
+//MOVE ME//REPLACE ME//WE SHOULD DO THIS ELSEWHERE
 void CRender::InitOtherModes(void)					// Set other modes not covered by color combiner or alpha blender
 {
 	ApplyTextureFilter();
 
-	// I can't think why the hand in mario's menu screen is rendered with an opaque rendermode,
-	// and no alpha threshold. We set the alpha reference to 1 to ensure that the transparent pixels
-	// don't get rendered. I hope this doesn't fuck anything else up.
-	if ( gRDP.otherMode.alpha_compare == 0 )
+	if ((gRDP.otherMode.alpha_compare == 1) && !gRDP.otherMode.alpha_cvg_sel)
 	{
-		if ( gRDP.otherMode.cvg_x_alpha && (gRDP.otherMode.alpha_cvg_sel || gRDP.otherMode.aa_en ) )
-		{
-			ForceAlphaRef(128);	// Strange, I have to use value=2 for pixel shader combiner for Nvidia FX5200
-								// for other video cards, value=1 is good enough.
-			SetAlphaTestEnable(TRUE);
-		}
-		else
-		{
-			SetAlphaTestEnable(FALSE);
-		}
+		ForceAlphaRef(m_dwAlpha);
+		SetAlphaTestEnable(TRUE);
 	}
-	else if ( gRDP.otherMode.alpha_compare == 3 )
+	else if (gRDP.otherMode.cvg_x_alpha)
 	{
-		//RDP_ALPHA_COMPARE_DITHER
-		SetAlphaTestEnable(FALSE);
+		ForceAlphaRef(128);
+		SetAlphaTestEnable(TRUE);
 	}
 	else
 	{
-		if( (gRDP.otherMode.alpha_cvg_sel ) && !gRDP.otherMode.cvg_x_alpha )
-		{
-			// Use CVG for pixel alpha
-			SetAlphaTestEnable(FALSE);
-		}
-		else
-		{
-			// RDP_ALPHA_COMPARE_THRESHOLD || RDP_ALPHA_COMPARE_DITHER
-			if(	m_dwAlpha==0 )
-				ForceAlphaRef(1);
-			else
-				ForceAlphaRef(m_dwAlpha);
-			SetAlphaTestEnable(TRUE);
-		}
+		SetAlphaTestEnable(FALSE);
 	}
 
 	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
@@ -1411,7 +1388,6 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 	{
 		SetZCompare(FALSE);
 	}
-
 
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
 	{
@@ -1424,14 +1400,6 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 		SetZUpdate(gRDP.otherMode.z_upd);
 	}
 
-	/*
-	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
-		gRSP.bCullFront && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd )//&& gRDP.otherMode.aa_en )
-	{
-		SetZCompare(FALSE);
-		SetZUpdate(FALSE);
-	}
-	*/
 }
 
 
