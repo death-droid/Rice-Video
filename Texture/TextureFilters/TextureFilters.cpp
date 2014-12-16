@@ -135,7 +135,6 @@ struct ExtTxtrInfo{
 };
 void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo );
 
-CSortedList<uint64,ExtTxtrInfo> gTxtrDumpInfos;
 CSortedList<uint64,ExtTxtrInfo> gHiresTxtrInfos;
 
 extern void GetPluginDir( char * Directory );
@@ -212,7 +211,6 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
  * foldername: the folder that should be scaned for valid hires textures.
  * infos: a pointer that will point to the list containing the records with the infos about the found hires textures.
  *        In case of enabled caching, these records will also contain the actual textures.
- * extraCheck: ?
  * bRecursive: flag that indicates if also subfolders should be scanned for hires textures
  * bCacheTextures: flag that indicates if the identified hires textures should also be cached
  * bMainFolder: indicates if the folder is the main folder that will be scanned. That way, texture counting does not
@@ -222,7 +220,7 @@ int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
  * infos: the list with the records of the identified hires textures. Be aware that these records also contains the 
  *        actual textures if caching is enabled.
  ********************************************************************************************************************/
-void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo> &infos, bool extraCheck, bool bRecursive, bool bCacheTextures = false, bool bMainFolder = true)
+void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo> &infos, bool bRecursive, bool bCacheTextures = false, bool bMainFolder = true)
 {
 	// check if folder actually exists
 	if(!PathIsDirectory(foldername) )
@@ -309,7 +307,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 			// add file-separator
 			strcat(texturefilename, "\\");
 			// scan detected subfolder for hires textures (recursive call)
-			FindAllTexturesFromFolder(texturefilename, infos, extraCheck, bRecursive, bCacheTextures, false);
+			FindAllTexturesFromFolder(texturefilename, infos, bRecursive, bCacheTextures, false);
 			continue;
 		}
 
@@ -361,7 +359,7 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 					continue;
 				}
 				// yes it is a texture file. Check if the size of the alpha channel is the same as the one of the texture
-				if( extraCheck && (imgInfo2.Width != imgInfo.Width || imgInfo2.Height != imgInfo.Height) )
+				if(imgInfo2.Width != imgInfo.Width || imgInfo2.Height != imgInfo.Height)
 				{
 					// nope, it isn't => go on with next file
 					TRACE1("RGB and alpha texture size mismatch: %s", filename2);
@@ -418,12 +416,9 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				// check if texture already exists in the list
 				if( infos[k].crc32 == crc && infos[k].pal_crc32 == palcrc32 )
 				{
-
-					foundIdx = k;
 					//Duplicates
-					//ini.SetValue("Duplicates", infos[k].filename, _strdup(libaa.cFileName)); //Todo, finish me
+					foundIdx = k;
 				}
-
 			}
 
 			// if the texture is not yet in the list
@@ -548,11 +543,7 @@ void FindAllDumpedTextures(void)
 	strcat(foldername,g_curRomInfo.szGameName);
 	strcat(foldername,"\\");
 
-	gTxtrDumpInfos.clear();
-
 	CheckAndCreateFolder(foldername);
-
-	FindAllTexturesFromFolder(foldername,gTxtrDumpInfos, false, true);
 
 	char	foldername2[256];
 	for( int i=0; i<2; i++)
@@ -600,7 +591,7 @@ void FindAllHiResTextures()
 	else
 	{
 		// find all hires textures and also cache them if configured to do so
-		FindAllTexturesFromFolder(foldername,gHiresTxtrInfos, true, true, options.bCacheHiResTextures != FALSE);
+		FindAllTexturesFromFolder(foldername,gHiresTxtrInfos, true, options.bCacheHiResTextures != FALSE);
 	}
 }
 
@@ -610,6 +601,7 @@ void CloseHiresTextures(void)
 	{
 		for (int i = 0; i < gHiresTxtrInfos.size(); i++)
 		{
+			//Clear out any information we have kept about the files
 			if (gHiresTxtrInfos[i].foldername)
 				delete[] gHiresTxtrInfos[i].foldername;
 			if (gHiresTxtrInfos[i].filename)
@@ -627,24 +619,6 @@ void CloseHiresTextures(void)
 	}
 }
 
-void CloseTextureDump(void)
-{
-	if (gTxtrDumpInfos.size() > 0)
-	{
-		for (int i = 0; i < gTxtrDumpInfos.size(); i++)
-		{
-			if (gTxtrDumpInfos[i].foldername)
-				delete[] gTxtrDumpInfos[i].foldername;
-			if (gTxtrDumpInfos[i].filename)
-				delete[]gTxtrDumpInfos[i].filename;
-			if (gTxtrDumpInfos[i].filename_a)
-				delete[]gTxtrDumpInfos[i].filename_a;
-		}
-		gTxtrDumpInfos.clear();
-	}
-}
-
-
 void CloseExternalTextures(void)
 {
 	static char* currentRomName = new char[200];
@@ -655,8 +629,6 @@ void CloseExternalTextures(void)
 	{
 		strcpy(currentRomName, g_curRomInfo.szGameName);
 		CloseHiresTextures();
-
-		CloseTextureDump();
 	}
 }
 
@@ -671,6 +643,8 @@ void CloseExternalTextures(void)
 void InitHiresTextures()
 {
 	CSimpleIniA ini;
+
+	//If we are going to load highres texture, makes sure  our highres texture infos is actually empty
 	if (options.bLoadHiResTextures && gHiresTxtrInfos.size() <= 0)
 	{
 		// create a box for displaying the message on screen
@@ -702,10 +676,10 @@ void InitHiresTextures()
 		//If we have already loaded this pack in then dont bother trying to get all the infomration again
 		if (PathFileExists(inifilename))
 		{
-			ini.LoadFile(inifilename); //Loud in our cache file
+			ini.LoadFile(inifilename); //Load in our cache file
 			CSimpleIniA::TNamesDepend sections; //A place to store all the sections we find
 			ini.GetAllSections(sections); // Store all our sections
-			CSimpleIniA::TNamesDepend::const_iterator i; //Define out iterator so we can look through the sections we grabbed
+			CSimpleIniA::TNamesDepend::const_iterator i; //Define our iterator so we can look through the sections we grabbed
 
 			//Define a new place to store our incoming new info
 			ExtTxtrInfo *newinfo;
@@ -746,17 +720,18 @@ void InitHiresTextures()
 			//And after we have foudn them all, loopthrough them and dump them to our cache file
 			for( int i=0; i<gHiresTxtrInfos.size(); i++)
 			{
-				ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "width", gHiresTxtrInfos[i].width);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "height", gHiresTxtrInfos[i].height);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename,			 "format", gHiresTxtrInfos[i].fmt);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename,		   "bit-size", gHiresTxtrInfos[i].siz);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename,			  "crc32", gHiresTxtrInfos[i].crc32);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename,		  "pal_crc32", gHiresTxtrInfos[i].pal_crc32);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename,	           "type", gHiresTxtrInfos[i].type);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "width",			 gHiresTxtrInfos[i].width);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "height",			 gHiresTxtrInfos[i].height);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "format",			 gHiresTxtrInfos[i].fmt);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "bit-size",		 gHiresTxtrInfos[i].siz);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "crc32",			 gHiresTxtrInfos[i].crc32);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "crc32",			 gHiresTxtrInfos[i].crc32);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "pal_crc32",		 gHiresTxtrInfos[i].pal_crc32);
+				ini.SetLongValue(gHiresTxtrInfos[i].filename, "type",			 gHiresTxtrInfos[i].type);
 				ini.SetBoolValue(gHiresTxtrInfos[i].filename, "seperated-alpha", gHiresTxtrInfos[i].bSeparatedAlpha);
-				ini.SetValue(gHiresTxtrInfos[i].filename,        "filename", gHiresTxtrInfos[i].filename);
-				ini.SetValue(gHiresTxtrInfos[i].filename,  "filename_alpha",gHiresTxtrInfos[i].filename_a);
-				ini.SetValue(gHiresTxtrInfos[i].filename, "foldername", gHiresTxtrInfos[i].foldername);
+				ini.SetValue(gHiresTxtrInfos[i].filename,     "filename",		 gHiresTxtrInfos[i].filename);
+				ini.SetValue(gHiresTxtrInfos[i].filename,	  "filename_alpha",	 gHiresTxtrInfos[i].filename_a);
+				ini.SetValue(gHiresTxtrInfos[i].filename,	  "foldername",		 gHiresTxtrInfos[i].foldername);
 			}
 			//Save our cache file
 			ini.SaveFile(inifilename);
@@ -767,17 +742,18 @@ void InitHiresTextures()
 // load all hires textures into cache
 void InitHiresCache(void)
 {
+	//We can only create the cache if theres actually textures in its list
 	if (options.bCacheHiResTextures && gHiresTxtrInfos.size() > 0)
 	{
 		for( int i=0; i<gHiresTxtrInfos.size(); i++)
 		{
-
 			// generate status message
 			sprintf(generalText,"Loading Texture Nr. %d", (i+1));
 			SetWindowText(g_GraphicsInfo.hStatusBar,generalText);
 			RECT rect={0,300,windowSetting.uDisplayWidth,320};
 			OutputText(generalText,&rect);
 
+			//Ok start caching!
 			CacheHiresTexture(gHiresTxtrInfos[i]);
 		}
 	}
@@ -793,19 +769,6 @@ void ClearHiresCache(void)
 			SAFE_DELETE(gHiresTxtrInfos[i].pHiresTextureRGB);
 			SAFE_DELETE(gHiresTxtrInfos[i].pHiresTextureAlpha);
 		}
-	}
-}
-
-void InitTextureDump(void)
-{
-	if (options.bDumpTexturesToFiles && gTxtrDumpInfos.size() <= 0)
-	{
-		RECT rect={0,100,windowSetting.uDisplayWidth,200};
-		OutputText("Texture dump option is enabled",&rect);
-		RECT rect2={0,150,windowSetting.uDisplayWidth,250};
-		OutputText("Finding all dumpped textures",&rect2);
-		SetWindowText(g_GraphicsInfo.hStatusBar,"Finding all dumped textures");
-		FindAllDumpedTextures();
 	}
 }
 
@@ -833,9 +796,6 @@ void InitExternalTextures(void)
 		CloseExternalTextures();
 		// reload and recache hires textures
 		InitHiresTextures();
-		// prepare list of already dumped textures (for avoiding to redump them). Available hires textures will
-		// also be excluded from dumping
-		InitTextureDump();
 	} 
 }
 
@@ -923,15 +883,12 @@ int CheckTextureInfos( CSortedList<uint64,ExtTxtrInfo> &infos, TxtrCacheEntry &e
 
 void DumpCachedTexture( TxtrCacheEntry &entry )
 {
-
 	CTexture *pSrcTexture = entry.pTexture;
 	if( pSrcTexture )
 	{
 		// Check the vector table
 		if( CheckTextureInfos(gHiresTxtrInfos, entry) >= 0 )
 			return;		// This texture already exists as a hires version, thus don't redump it.
-		else if( CheckTextureInfos(gTxtrDumpInfos, entry) >= 0 )
-			return;		// This texture has been dumped
 
 		char filename[256];
 		char gamefolder[256];
@@ -945,32 +902,17 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 		if( (gRDP.otherMode.text_tlut>=2 || entry.ti.Format == TXT_FMT_CI || entry.ti.Format == TXT_FMT_RGBA) && entry.ti.Size <= TXT_SIZE_8b )
 		{
 			sprintf(filename, "%sci_by_png\\%s#%08X#%d#%d#%08X_ciByRGBA.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
-			D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
+			//Only dump if the file doesnt already exist
+			if (!PathFileExists(filename))
+				D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
 		}
 		else
 		{
 			sprintf(filename, "%spng_all\\%s#%08X#%d#%d_all.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
-			D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
+			//Only dump if the file doesnt already exist
+			if (!PathFileExists(filename))
+				D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
 		}
-
-		ExtTxtrInfo newinfo;
-		newinfo.width = entry.ti.WidthToLoad;
-		newinfo.height = entry.ti.HeightToLoad;
-		newinfo.fmt = entry.ti.Format;
-		newinfo.siz = entry.ti.Size;
-		newinfo.crc32 = entry.dwCRC; //We only need the crc's for this... maybe we should use a new struct
-		newinfo.pal_crc32 = entry.dwPalCRC;
-		newinfo.foldername = NULL;
-		newinfo.filename = NULL;
-		newinfo.filename_a = NULL;
-		newinfo.type = NO_TEXTURE;
-		newinfo.bSeparatedAlpha = false;
-
-		uint64 crc64 = newinfo.crc32;
-		crc64 <<= 32;
-		crc64 |= newinfo.pal_crc32&0xFFFFFFFF;
-		gTxtrDumpInfos.add(crc64, newinfo);
-
 	}
 }
 bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, int &height, int bits_per_pixel = 24 )
@@ -1129,7 +1071,6 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 
 	if( !gHiresTxtrInfos[idx].pHiresTextureRGB )
 	{
-		
 		TRACE1("RGBBuffer creation failed for file '%s'.", gHiresTxtrInfos[idx].filename);
 		return;
 	}
@@ -1263,6 +1204,7 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	strcpy(filename_rgb, ExtTexInfo.foldername);
 	strcat(filename_rgb, ExtTexInfo.filename);
 
+	//Check if we have an alpha filename as well
 	if (ExtTexInfo.filename_a) 
 	{
 		strcpy(filename_alpha, ExtTexInfo.foldername);
@@ -1277,12 +1219,11 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	ExtTexInfo.pHiresTextureRGB = NULL;
 	// init the pointer to the alpha channel data
 	ExtTexInfo.pHiresTextureAlpha = NULL;
+
 	// width and height of the loaded texture
 	int width, height;
 	// flags for indicating if texture loading was successful
 	bool bResRGBA=false, bResA=false;
-	// a color indexed texture has to (??? or color indexed format or the RGB format) and has to be 8 bit at most per pixel
-	bool bCI = ((gRDP.otherMode.text_tlut>=2 || ExtTexInfo.fmt == TXT_FMT_CI || ExtTexInfo.fmt == TXT_FMT_RGBA) && ExtTexInfo.siz <= TXT_SIZE_8b );
 
 	//We need to seperate these as they rely on not having a alpha channel / we need to strip it out by converting them to 24 bits
 	if (ExtTexInfo.type == RGB_PNG)
@@ -1304,21 +1245,17 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo )
 	ExtTexInfo.height = height;
 
 	// If texture could not be loaded, or loaded texture is invalid (nulled)
-	if( !bResRGBA || !ExtTexInfo.pHiresTextureRGB )
+	if( !bResRGBA || !ExtTexInfo.pHiresTextureRGB || (ExtTexInfo.bSeparatedAlpha && !bResA) )
 	{
 		TRACE1("Cannot open %s", filename_rgb);
 		// free the memory that has been alocated for the texture
 		SAFE_DELETE(ExtTexInfo.pHiresTextureRGB);
-		return;
-	}
-	// if texture has separate alpha channel but channel could not be loaded
-	else if( ExtTexInfo.bSeparatedAlpha && !bResA )
-	{
-		TRACE1("Cannot open %s", filename_alpha);
-
-		// free the memory that has been alocated for the texture
-		SAFE_DELETE(ExtTexInfo.pHiresTextureRGB);
-		SAFE_DELETE(ExtTexInfo.pHiresTextureAlpha);
+		//If texture has a seperated alpha, we need to delete this as well
+		if (ExtTexInfo.bSeparatedAlpha && !bResA)
+		{
+			TRACE1("Cannot open %s", filename_alpha);
+			SAFE_DELETE(ExtTexInfo.pHiresTextureAlpha);
+		}
 		return;
 	}
 }

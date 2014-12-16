@@ -34,9 +34,6 @@ void CloseHiresTextures(void);
 void InitHiresCache(void);
 void ClearHiresCache(void);
 
-void InitTextureDump(void);
-void CloseTextureDump(void);
-
 typedef enum _IMAGE_FILEFORMAT 
 {
      XIFF_BMP = 0,
