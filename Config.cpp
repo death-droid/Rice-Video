@@ -877,6 +877,9 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 					InitHiresCache();
 				else
 					ClearHiresCache();
+
+				if(options.bDumpTexturesToFiles)
+					CreateDumpFolders();
 			}
 
 			//--------------------------------------------------------------

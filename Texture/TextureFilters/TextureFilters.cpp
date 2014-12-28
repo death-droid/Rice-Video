@@ -531,7 +531,7 @@ char *subfolders[] = {
 	"ci_by_png\\",
 };
 
-void FindAllDumpedTextures(void)
+void CreateDumpFolders(void)
 {
 	char	foldername[256];
 	GetPluginDir(foldername);
@@ -796,6 +796,8 @@ void InitExternalTextures(void)
 		CloseExternalTextures();
 		// reload and recache hires textures
 		InitHiresTextures();
+		//Also create folders for dumped textures
+		CreateDumpFolders();
 	} 
 }
 
