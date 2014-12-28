@@ -829,9 +829,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		switch (LOWORD(wParam))
 		{
 		case IDOK:
+		{
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			
+
 			//Begin Resolutioon Handling
 			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
 
@@ -855,30 +856,40 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			//--------------------------------------------------------------
 			// Begin texture enhancement code
 			//--------------------------------------------------------------
-			
+
+			//We need to make sure the option has actually changed otherwise it recalls same methods when no setting has been changed.
+			bool bTempLoadHiRes = options.bLoadHiResTextures;
+			bool bTempCacheTex = options.bCacheHiResTextures;
+
 			options.textureEnhancement = TextureEnhancementSettings[SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_GETCURSEL, 0, 0)].setting;
 			options.forceTextureFilter = ForceTextureFilterSettings[SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0)].setting;
-			options.bMipMaps			 = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bLoadHiResTextures   = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE,    BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bLoadHiResTextures = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bCacheHiResTextures  = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE,   BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bCacheHiResTextures = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			if (status.bGameIsRunning) //BACKTOME, NEEDS RETHINKING -- CLEAN ME
 			{
-				if (options.bLoadHiResTextures)
+				if (bTempLoadHiRes != options.bLoadHiResTextures)
 				{
-					InitHiresTextures();
-					gTextureManager.RecheckHiresForAllTextures();
+					if (options.bLoadHiResTextures)
+					{
+						InitHiresTextures();
+						gTextureManager.RecheckHiresForAllTextures();
+					}
+					else
+						CloseHiresTextures();
 				}
-				else
-					CloseHiresTextures();
-	
-				if (options.bCacheHiResTextures)
-					InitHiresCache();
-				else
-					ClearHiresCache();
 
-				if(options.bDumpTexturesToFiles)
+				if (bTempCacheTex != options.bCacheHiResTextures)
+				{
+					if (options.bCacheHiResTextures)
+						InitHiresCache();
+					else
+						ClearHiresCache();
+				}
+
+				if (options.bDumpTexturesToFiles)
 					CreateDumpFolders();
 			}
 
@@ -892,7 +903,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 			WriteConfiguration();
 			EndDialog(hDlg, TRUE);
-
+			}
 			return(TRUE);
 
 		case IDCANCEL:
