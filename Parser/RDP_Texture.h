@@ -83,90 +83,135 @@ inline uint32 ReverseDXT(uint32 val, uint32 lrs, uint32 width, uint32 size)
 // The following inline assemble routines are borrowed from glN64, I am too tired to
 // rewrite these routine by myself.
 // Rice, 02/24/2004
-inline void UnswapCopy( void *src, void *dest, uint32 numBytes )
+inline void UnswapCopy(void *src, void *dest, uint32 numBytes)
 {
-    /* implementation borrowed from mupen64plus-libretro/gles2n64 */
-    int i, numDWords, trailingBytes;
-    // copy leading bytes
-    int leadingBytes = ((intptr_t)src) & 3;
+	__asm
+	{
+		mov		ecx, 0
+			mov		esi, dword ptr[src]
+			mov		edi, dword ptr[dest]
 
-    if (numBytes == 1)
-    {
-        *(u8 *)(dest) = *(u8 *)(src);
-        return;
-    }
+			mov		ebx, esi
+			and		ebx, 3			// ebx = number of leading bytes
 
-    if (leadingBytes != 0)
-    {
-        leadingBytes = 4 - leadingBytes;
-        if ((unsigned int)leadingBytes > numBytes)
-            leadingBytes = numBytes;
-        numBytes -= leadingBytes;
+			cmp		ebx, 0
+			jz		StartDWordLoop
+			neg		ebx
+			add		ebx, 4
 
-        src = (void *)((intptr_t)src ^ 3);
-        for (i = 0; i < leadingBytes; i++)
-        {
-            *(u8 *)(dest) = *(u8 *)(src);
-            dest = (void *)((intptr_t)dest + 1);
-            src = (void *)((intptr_t)src - 1);
-        }
-        src = (void *)((intptr_t)src + 5);
-    }
+			cmp		ebx, [numBytes]
+			jle		NotGreater
+			mov		ebx, [numBytes]
+		NotGreater:
+			mov		ecx, ebx
+				xor		esi, 3
+			LeadingLoop :				// Copies leading bytes, in reverse order (un-swaps)
+										mov		al, byte ptr[esi]
+										mov		byte ptr[edi], al
+										sub		esi, 1
+										add		edi, 1
+										loop	LeadingLoop
+										add		esi, 5
 
-    // copy dwords
-    numDWords = numBytes >> 2;
-    while (numDWords--)
-    {
-        *(u32 *)dest = _byteswap_ulong(*(u32 *)src);
-        dest = (void *)((intptr_t)dest + 4);
-        src = (void *)((intptr_t)src + 4);
-    }
+									StartDWordLoop:
+			mov		ecx, dword ptr[numBytes]
+				sub		ecx, ebx		// Don't copy what's already been copied
 
-    // copy trailing bytes
-    trailingBytes = numBytes & 3;
-    if (trailingBytes)
-    {
-        src = (void *)((intptr_t)src ^ 3);
-        for (i = 0; i < trailingBytes; i++)
-        {
-            *(u8 *)(dest) = *(u8 *)(src);
-            dest = (void *)((intptr_t)dest + 1);
-            src = (void *)((intptr_t)src - 1);
-        }
-    }
+				mov		ebx, ecx
+				and		ebx, 3
+				//		add		ecx, 3			// Round up to nearest dword
+				shr		ecx, 2
+
+				cmp		ecx, 0			// If there's nothing to do, don't do it
+				jle		StartTrailingLoop
+
+				// Copies from source to destination, bswap-ing first
+			DWordLoop :
+			mov		eax, dword ptr[esi]
+				bswap	eax
+				mov		dword ptr[edi], eax
+				add		esi, 4
+				add		edi, 4
+				loop	DWordLoop
+			StartTrailingLoop :
+			cmp		ebx, 0
+				jz		Done
+				mov		ecx, ebx
+				xor		esi, 3
+
+			TrailingLoop :
+						 mov		al, byte ptr[esi]
+						 mov		byte ptr[edi], al
+						 sub		esi, 1
+						 add		edi, 1
+						 loop	TrailingLoop
+					 Done :
+	}
 }
 
-inline void DWordInterleave( void *mem, uint32 numDWords )
+inline void DWordInterleave(void *mem, uint32 numDWords)
 {
-    uint32 addr = 0;
-    uint32* dwordptr = (uint32*)mem;
-    for (uint32 i = 0; i < numDWords; i++)
-    {
-        std::swap(dwordptr[addr], dwordptr[addr + 1]);
-        addr += 2;
-    }
+	__asm {
+		mov		esi, dword ptr[mem]
+			mov		edi, dword ptr[mem]
+			add		edi, 4
+			mov		ecx, dword ptr[numDWords]
+		DWordInterleaveLoop:
+			mov		eax, dword ptr[esi]
+				mov		ebx, dword ptr[edi]
+				mov		dword ptr[esi], ebx
+				mov		dword ptr[edi], eax
+				add		esi, 8
+				add		edi, 8
+				loop	DWordInterleaveLoop
+	}
 }
 
-inline void QWordInterleave( void *mem, uint32 numDWords )
+inline void QWordInterleave(void *mem, uint32 numDWords)
 {
-    uint32 addr = 0;
-    uint64* qwordptr = (uint64*)mem;
-    for (uint32 i = 0; i < numDWords/2; i++)
-    {
-        std::swap(qwordptr[addr], qwordptr[addr + 1]);
-        addr += 2;
-    }
+	__asm
+	{
+		// Interleave the line on the qword
+		mov		esi, dword ptr[mem]
+			mov		edi, dword ptr[mem]
+			add		edi, 8
+			mov		ecx, dword ptr[numDWords]
+			shr		ecx, 1
+		QWordInterleaveLoop:
+		mov		eax, dword ptr[esi]
+			mov		ebx, dword ptr[edi]
+			mov		dword ptr[esi], ebx
+			mov		dword ptr[edi], eax
+			add		esi, 4
+			add		edi, 4
+			mov		eax, dword ptr[esi]
+			mov		ebx, dword ptr[edi]
+			mov		dword ptr[esi], ebx
+			mov		dword ptr[edi], eax
+			add		esi, 12
+			add		edi, 12
+			loop	QWordInterleaveLoop
+	}
 }
 
-inline uint32 swapdword( uint32 value )
+inline uint32 swapdword(uint32 value)
 {
-    return _byteswap_ulong(value);
+	__asm
+	{
+		mov		eax, dword ptr[value]
+			bswap	eax
+	}
 }
 
-inline uint16 swapword( uint16 value )
+inline uint16 swapword(uint16 value)
 {
-    return _byteswap_ushort(value);
+	__asm
+	{
+		mov		ax, word ptr[value]
+			xchg	ah, al
+	}
 }
+
 
 
 void ComputeTileDimension(int mask, int clamp, int mirror, int width, uint32 &widthToCreate, uint32 &widthToLoad)
