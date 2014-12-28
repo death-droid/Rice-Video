@@ -175,11 +175,14 @@ public:
 	virtual bool SetCurrentTexture(int tile, TxtrCacheEntry *pTextureEntry)=0;
 	virtual bool SetCurrentTexture(int tile, CTexture *handler, uint32 dwTileWidth, uint32 dwTileHeight, TxtrCacheEntry *pTextureEntry) = 0;
 
+	void SaveTextureToFile(CTexture &texture, char *filename, int width, int height);
+
 	virtual bool InitDeviceObjects()=0;
 	virtual bool ClearDeviceObjects()=0;
 	virtual void Initialize(void);
 	virtual void CleanUp(void);
 	
+
 	virtual void SetFillMode(FillMode mode)=0;
 
 #ifdef _DEBUG
@@ -236,5 +239,7 @@ protected:
 											float &u0, float &u1);
 
 };
+
+bool SaveRGBABufferToPNGFile(char *filename, unsigned char *buf, int width, int height);
 
 #endif	//_RICE_RENDER_H

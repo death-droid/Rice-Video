@@ -906,14 +906,14 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 			sprintf(filename, "%sci_by_png\\%s#%08X#%d#%d#%08X_ciByRGBA.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size,entry.dwPalCRC);
 			//Only dump if the file doesnt already exist
 			if (!PathFileExists(filename))
-				D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
+				CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
 		}
 		else
 		{
 			sprintf(filename, "%spng_all\\%s#%08X#%d#%d_all.png", gamefolder, g_curRomInfo.szGameName, entry.dwCRC, entry.ti.Format, entry.ti.Size);
 			//Only dump if the file doesnt already exist
 			if (!PathFileExists(filename))
-				D3DXSaveTextureToFile(filename, D3DXIFF_PNG, pSrcTexture->GetTexture(), NULL);
+				CRender::g_pRender->SaveTextureToFile(*pSrcTexture, filename, entry.ti.WidthToLoad, entry.ti.HeightToLoad);
 		}
 	}
 }

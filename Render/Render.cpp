@@ -1430,3 +1430,62 @@ void CRender::SetTextureFilter(uint32 dwFilter)
 
 	ApplyTextureFilter();
 }
+
+void CRender::SaveTextureToFile(CTexture &texture, char *filename, int width, int height)
+{
+	if (width < 0 || height < 0)
+	{
+		width = texture.m_dwWidth;
+		height = texture.m_dwHeight;
+	}
+
+	BYTE *pbuf = new BYTE[width*height*4];
+	if (pbuf)
+	{
+		DrawInfo srcInfo;
+		if (texture.StartUpdate(&srcInfo))
+		{
+			uint32 *pbuf2 = (uint32*)pbuf;
+			for (int i = height - 1; i >= 0; i--)
+			{
+				uint32 *pSrc = (uint32*)((BYTE*)srcInfo.lpSurface + srcInfo.lPitch * i);
+				for (int j = 0; j<width; j++)
+				{
+					*pbuf2++ = *pSrc++;
+				}
+			}
+
+			SaveRGBABufferToPNGFile(filename, (BYTE*)pbuf, width, height);
+			texture.EndUpdate(&srcInfo);
+		}
+		else
+		{
+			TRACE0("Cannot lock texture");
+		}
+		delete[] pbuf;
+	}
+	else
+	{
+		TRACE0("Out of memory");
+	}
+}
+
+bool SaveRGBABufferToPNGFile(char *filename, unsigned char *buf, int width, int height)
+{
+
+	if (_stricmp(right(filename, 4), ".png") != 0)	strcat(filename, ".png");
+
+	struct BMGImageStruct img;
+	InitBMGImage(&img);
+	img.bits = buf;
+	img.bits_per_pixel = 32;
+	img.height = height;
+	img.width = width;
+	img.scan_width = width * 4;
+	BMG_Error code = WritePNG(filename, img);
+
+	if (code == BMG_OK)
+		return true;
+	else
+		return false;
+}
