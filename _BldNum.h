@@ -6,4 +6,4 @@
 #else
 #define FILE_VERSION "RELEASE"
 #endif
-#define BUILD_NUMBER "0.4.3"
+#define BUILD_NUMBER "0.4.4"
