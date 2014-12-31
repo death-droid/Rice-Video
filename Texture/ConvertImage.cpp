@@ -217,12 +217,12 @@ void ConvertIA4(CTexture *pTexture, const TxtrInfo &tinfo)
 					*pDst++ = ThreeToEight[(b & 0xE0) >> 5];
 					*pDst++ = ThreeToEight[(b & 0xE0) >> 5];
 					*pDst++ = ThreeToEight[(b & 0xE0) >> 5];
-					*pDst++ = OneToEight[(b & 0x10) >> 4];	
+					*pDst++ =	OneToEight[(b & 0x10) >> 4];	
 					// Odd
 					*pDst++ = ThreeToEight[(b & 0x0E) >> 1];
 					*pDst++ = ThreeToEight[(b & 0x0E) >> 1];
 					*pDst++ = ThreeToEight[(b & 0x0E) >> 1];
-					*pDst++ = OneToEight[(b & 0x01)     ];
+					*pDst++ =	OneToEight[(b & 0x01)     ];
 
 					dwByteOffset++;
 				}
@@ -244,7 +244,7 @@ void ConvertIA4(CTexture *pTexture, const TxtrInfo &tinfo)
                 *pDst++ = ThreeToEight[(b & 0xE0) >> 5];
                 *pDst++ = ThreeToEight[(b & 0xE0) >> 5];
                 *pDst++ = ThreeToEight[(b & 0xE0) >> 5];
-                *pDst++ = OneToEight[(b & 0x10) >> 4];  
+                *pDst++ =	OneToEight[(b & 0x10) >> 4];  
             }
             else
 			{

@@ -279,37 +279,27 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 
 	bool res=true;
 
-	/*
-	//CHECKME if statement was previously disabled
-	*/
-	if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL && nX0 == 0 && nY0 == 0 && ((nX1==windowSetting.uViWidth && nY1==windowSetting.uViHeight)||(nX1==windowSetting.uViWidth-1 && nY1==windowSetting.uViHeight-1)) )
-	{
-		CGraphicsContext::g_pGraphicsContext->Clear(CLEAR_COLOR_BUFFER,dwColor);
-	}
-	else
-	{
-		ZBufferEnable( FALSE );
+	ZBufferEnable( FALSE );
 
-		m_fillRectVtx[0].x = ViewPortTranslatei_x(nX0);
-		m_fillRectVtx[0].y = ViewPortTranslatei_y(nY0);
-		m_fillRectVtx[1].x = ViewPortTranslatei_x(nX1);
-		m_fillRectVtx[1].y = ViewPortTranslatei_y(nY1);
+	m_fillRectVtx[0].x = ViewPortTranslatei_x(nX0);
+	m_fillRectVtx[0].y = ViewPortTranslatei_y(nY0);
+	m_fillRectVtx[1].x = ViewPortTranslatei_x(nX1);
+	m_fillRectVtx[1].y = ViewPortTranslatei_y(nY1);
 
-		SetCombinerAndBlender();
+	SetCombinerAndBlender();
 
-		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			ZBufferEnable(FALSE);
+	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
+		ZBufferEnable(FALSE);
 
-		float depth = (gRDP.otherMode.depth_source == 1 ? gRDP.fPrimitiveDepth : 0 );
+	float depth = (gRDP.otherMode.depth_source == 1 ? gRDP.fPrimitiveDepth : 0 );
 
-		ApplyRDPScissor();
-		TurnFogOnOff(false);
-		res = RenderFillRect(dwColor, depth);
-		TurnFogOnOff(gRDP.tnl.Fog);
+	ApplyRDPScissor();
+	TurnFogOnOff(false);
+	res = RenderFillRect(dwColor, depth);
+	TurnFogOnOff(gRDP.tnl.Fog);
 
-		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			ZBufferEnable(gRDP.tnl.Zbuffer);
-	}
+	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
+		ZBufferEnable(gRDP.tnl.Zbuffer);
 
 	if( options.bWinFrameMode )	SetFillMode(RICE_FILLMODE_WINFRAME );
 
@@ -518,12 +508,10 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 
 	SetCombinerAndBlender();
 	
-
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY || !gRDP.otherMode.z_cmp )
 	{
 		ZBufferEnable(FALSE);
 	}
-
 
 	CTexture *surf = g_textures[gRSP.curTile].m_pCTexture;
 	RenderTexture &tex0 = g_textures[gRSP.curTile];

@@ -105,6 +105,9 @@ public:
 
 protected:
 
+	uint32 nStages;
+	uint32 nTextureStages[2];
+
 	// Basic render drawing functions
 	bool RenderFlushTris();
 	bool RenderTexRect();
