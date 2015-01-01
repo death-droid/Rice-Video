@@ -119,8 +119,6 @@ enum TextureType
 struct ExtTxtrInfo{
 	unsigned int width;
 	unsigned int height;
-	int fmt;
-	int siz;
 	int crc32;
 	int pal_crc32;
 	char *foldername;
@@ -439,10 +437,6 @@ void FindAllTexturesFromFolder(char *foldername, CSortedList<uint64,ExtTxtrInfo>
 				newinfo->filename = _strdup(libaa.cFileName);
 				//assume by default theres no alpha texture
 				newinfo->filename_a = NULL;
-				// store the format
-				newinfo->fmt	= fmt;
-				// store the size (bit-size not texture size)
-				newinfo->siz	= siz;
 				// store DRAM (texture) CRC
 				newinfo->crc32 =	crc;
 				// store PAL (palette) CRC (the actual one or the dummy value ('FFFFFFFF'))
@@ -695,8 +689,6 @@ void InitHiresTextures()
 				//each and every darn png, specially with the community texture pack
 				newinfo->width		= ini.GetLongValue(i->pItem,     "width", 0);
 				newinfo->height		= ini.GetLongValue(i->pItem,    "height", 0);
-				newinfo->fmt		= ini.GetLongValue(i->pItem,    "format", 0);
-				newinfo->siz		= ini.GetLongValue(i->pItem,  "bit-size", 0);
 				newinfo->crc32		= ini.GetLongValue(i->pItem,     "crc32", 0);
 				newinfo->pal_crc32  = ini.GetLongValue(i->pItem, "pal_crc32", 0);
 				newinfo->type		= (TextureType)ini.GetLongValue(i->pItem,	  "type", 0);
@@ -722,9 +714,6 @@ void InitHiresTextures()
 			{
 				ini.SetLongValue(gHiresTxtrInfos[i].filename, "width",			 gHiresTxtrInfos[i].width);
 				ini.SetLongValue(gHiresTxtrInfos[i].filename, "height",			 gHiresTxtrInfos[i].height);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename, "format",			 gHiresTxtrInfos[i].fmt);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename, "bit-size",		 gHiresTxtrInfos[i].siz);
-				ini.SetLongValue(gHiresTxtrInfos[i].filename, "crc32",			 gHiresTxtrInfos[i].crc32);
 				ini.SetLongValue(gHiresTxtrInfos[i].filename, "crc32",			 gHiresTxtrInfos[i].crc32);
 				ini.SetLongValue(gHiresTxtrInfos[i].filename, "pal_crc32",		 gHiresTxtrInfos[i].pal_crc32);
 				ini.SetLongValue(gHiresTxtrInfos[i].filename, "type",			 gHiresTxtrInfos[i].type);
@@ -917,6 +906,7 @@ void DumpCachedTexture( TxtrCacheEntry &entry )
 		}
 	}
 }
+
 bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, int &height, int bits_per_pixel = 24 )
 {
 	struct BMGImageStruct img;
@@ -1058,7 +1048,7 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 
 	// search the index of the appropriate hires replacement texture
 	// in the list containing the infos of the external textures
-	int idx = CheckTextureInfos(gHiresTxtrInfos, entry);//backtomenow
+	int idx = CheckTextureInfos(gHiresTxtrInfos, entry);
 	if( idx < 0 )
 	{
 		// there is no hires replacement => indicate that
@@ -1165,7 +1155,6 @@ void LoadHiresTexture( TxtrCacheEntry &entry )
 			// Clamp
 			gTextureManager.Clamp((uint32*)info.lpSurface, gHiresTxtrInfos[idx].height, entry.pEnhancedTexture->m_dwCreatedTextureHeight, entry.pEnhancedTexture->m_dwCreatedTextureWidth, gHiresTxtrInfos[idx].height, T_FLAG);
 		}
-
 		entry.pEnhancedTexture->EndUpdate(&info);
 
 

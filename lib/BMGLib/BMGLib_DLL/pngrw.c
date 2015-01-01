@@ -70,7 +70,6 @@ BMGError ReadPNG( const char *filename,
     unsigned char       signature[8];
     png_structp volatile png_ptr = NULL;
     png_infop   volatile info_ptr = NULL;
-	png_infop	volatile end_info = NULL;
     png_color_16       *ImageBackground = NULL;
     png_bytep           trns = NULL;
     int                 NumTrans = 0;
@@ -87,9 +86,7 @@ BMGError ReadPNG( const char *filename,
     error = setjmp( err_jmp );
     if ( error != 0 )
     {
-        if (end_info != NULL)
-            png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, (png_infop *) &end_info);
-        else if (info_ptr != NULL)
+        if (info_ptr != NULL)
             png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, NULL);
         else if (png_ptr != NULL)
             png_destroy_read_struct((png_structp *) &png_ptr, NULL, NULL);
@@ -128,11 +125,6 @@ BMGError ReadPNG( const char *filename,
     if ( !info_ptr )
         longjmp( err_jmp, (int)errMemoryAllocation );
 
-    /* create a pointer to the png end-info structure */
-    end_info = png_create_info_struct(png_ptr);
-    if (!end_info)
-        longjmp( err_jmp, (int)errMemoryAllocation );
-
     /* bamboozle the PNG longjmp buffer */
     /*generic PNG error handler*/
 	/* error will always == 1 which == errLib */
@@ -160,9 +152,12 @@ BMGError ReadPNG( const char *filename,
     img->bits_per_pixel = (unsigned char)32;
 	img->scan_width = Width * 4;
 
-    /* convert 16-bit images to 8-bit images */
-    if (BitDepth == 16)
-        png_set_strip_16(png_ptr);
+	/* strip if color channel is larger than 8 bits */
+	if (BitDepth > 8)
+	{
+		png_set_strip_16(png_ptr);
+		BitDepth = 8;
+	}
 
    /* These are not really required per Rice format spec,
     * but is done just in case someone uses them.
@@ -195,15 +190,13 @@ BMGError ReadPNG( const char *filename,
 		ColorType = PNG_COLOR_TYPE_RGB_ALPHA;
 	}
 
+	/* punt invalid formats */
+	if (ColorType != PNG_COLOR_TYPE_RGB_ALPHA) {
+		longjmp(err_jmp, (int)errIncorrectFormat);
+	}
+
+	/* convert rgba to bgra */
     png_set_bgr(png_ptr);
-
-	/* set the background color if one is found */
-	if ( png_get_valid(png_ptr, info_ptr, PNG_INFO_bKGD) )
-		png_get_bKGD(png_ptr, info_ptr, &ImageBackground);
-
-	/* get the transparent color if one is there */
-	if ( png_get_valid( png_ptr, info_ptr, PNG_INFO_tRNS ) )
-		png_get_tRNS( png_ptr, info_ptr, &trns, &NumTrans, &TransColors );
 
 	img->palette_size = (unsigned short)0;
 	img->bytes_per_palette_entry = 4U;
@@ -212,6 +205,7 @@ BMGError ReadPNG( const char *filename,
     if ( tmp != BMG_OK )
         longjmp( err_jmp, (int)tmp );
 
+	/* Update info structure */
     png_read_update_info( png_ptr, info_ptr );
 
     /* create buffer to read data to */
@@ -220,7 +214,9 @@ BMGError ReadPNG( const char *filename,
         longjmp( err_jmp, (int)errMemoryAllocation );
 
     k = png_get_rowbytes( png_ptr, info_ptr );
+
     rows[0] = (unsigned char *)malloc( Height*k*sizeof(char));
+
     if ( !rows[0] )
         longjmp( err_jmp, (int)errMemoryAllocation );
 
@@ -237,10 +233,10 @@ BMGError ReadPNG( const char *filename,
         bits -= img->scan_width;
     }
 
-    free( rows[0] );
+	free( rows[0] );
     free( rows );
     png_read_end( png_ptr, info_ptr );
-    png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, (png_infop *) &end_info);
+    png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, NULL);
     fclose( file );
 
     return BMG_OK;
@@ -274,16 +270,13 @@ BMGError ReadPNGInfo( const char *filename,
     unsigned char       signature[8];
     png_structp volatile png_ptr = NULL;
     png_infop   volatile info_ptr = NULL;
-    png_infop   volatile end_info = NULL;
     png_uint_32         Width, Height;
 
     /* error handler */
     error = setjmp( err_jmp );
     if (error != 0)
     {
-        if (end_info != NULL)
-            png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, (png_infop *) &end_info);
-        else if (info_ptr != NULL)
+		if (info_ptr != NULL)
             png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, NULL);
         else if (png_ptr != NULL)
             png_destroy_read_struct((png_structp *) &png_ptr, NULL, NULL);
@@ -311,20 +304,9 @@ BMGError ReadPNGInfo( const char *filename,
     if ( !png_ptr )
         longjmp( err_jmp, (int)errMemoryAllocation );
 
-    /* create a pointer to the png info structure */
-    info_ptr = png_create_info_struct( png_ptr );
-    if ( !info_ptr )
-        longjmp( err_jmp, (int)errMemoryAllocation );
-
-    /* create a pointer to the png end-info structure */
-    end_info = png_create_info_struct(png_ptr);
-    if (!end_info)
-        longjmp( err_jmp, (int)errMemoryAllocation );
-
     /* bamboozle the PNG longjmp buffer */
     /*generic PNG error handler*/
-    /* error will always == 1 which == errLib */
-//    error = png_setjmp(png_ptr);
+
     error = setjmp( png_jmpbuf( png_ptr ) );
     if ( error > 0 )
         longjmp( err_jmp, error );
@@ -352,7 +334,7 @@ BMGError ReadPNGInfo( const char *filename,
     img->bytes_per_palette_entry = 4U;
     img->bits = NULL;
 
-    png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, (png_infop *) &end_info);
+    png_destroy_read_struct((png_structp *) &png_ptr, (png_infop *) &info_ptr, NULL);
     fclose( file );
 
     return BMG_OK;

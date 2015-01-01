@@ -35,57 +35,6 @@
 extern "C" {
 #endif
 
-/* returns a BITMAPINFO structure with the given height, width,
-  bit count, and compression scheme.  This structure DOES NOT contain any
-  palette information (bmiColors = NULL) */
-extern
-BITMAPINFO BMG_EXPORT CreateBMI( DWORD dwWidth,      /* width in pixels */
-                                 DWORD dwHeight,     /* height in pixels */
-                                 WORD wBitCount,     /* 1, 4, 8, 16, 24, & 32 */
-                                 int compression );  /* biCompression value */
-
-/* returns an array of RGBA or BGRA values for all supported graphics file 
-   formats.  The RGBA pixel format is supported by all versions of OpenGL.
-   The BGRA format is an extension supported by may OpenGL vendors. */
-extern
-BMGError BMG_EXPORT GetUnpackedArray( const char *filename,
-                                 unsigned int *width,
-                                 unsigned int *height,
-                                 unsigned char **bits,
-                                 int bgra );
-
-/* Saves an array of RGB, RGBA, BGR, and BGRA values to a file.  The RGB and RGBA 
-   pixel formats are supported by OpenGL.  The BGR and BGRA extensions are
-   supported by many OpenGL vendors */
-extern
-BMGError BMG_EXPORT SaveUnpackedArray( const char *filename,
-                                  unsigned char bytes_per_pixel,
-                                  unsigned int width,
-                                  unsigned int height,
-                                  unsigned char *bits,
-								  int bgra );
-
-/* saves the contents of an HBITMAP to a file.  The extension of the file name
-// determines the file type.  returns 1 if successfull, 0 otherwise */
-extern
-BMGError BMG_EXPORT SaveBitmapToFile( HBITMAP hBitmap,      /* bitmap to be saved */
-                                 const char *filename, /* name of output file */
-                                 void *parameters );
-
-/* Creates an HBITMAP to an image file.  The extension of the file name
-// determines the file type.  returns an HBITMAP if successfull, NULL
-// otherwise */
-extern
-HBITMAP BMG_EXPORT CreateBitmapFromFile( const char *filename,
-                                         void *parameters,
-                                         int blend );
-
-/* extracts a BMGImageStruct from any one of the supported image files */
-extern 
-BMGError BMG_EXPORT GetDataFromFile( const char *filename,
-									 struct BMGImageStruct *img,
-									 void *parameters );
-
 /* the following functions will read/write image files using raw data */
 extern
 BMGError BMG_EXPORT ReadRGB( const char *filename,

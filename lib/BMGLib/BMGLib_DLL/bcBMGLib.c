@@ -9,10 +9,8 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
     switch( reason )
     {
     case DLL_PROCESS_ATTACH:
-        InitBackground();
         break;
     case DLL_PROCESS_DETACH:
-        FreeBMGImage( GetBackgroundImage() );
         break;
     }
 
