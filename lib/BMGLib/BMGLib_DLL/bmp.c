@@ -72,8 +72,6 @@ BMGError ReadBMP( const char *filename,
     unsigned int bit_size, rawbit_size;
     unsigned char *rawbits = NULL;
 
-	SetLastBMGError( BMG_OK );
-
     /* error handler */
     error = setjmp( err_jmp );
     if ( error != 0 )
@@ -84,7 +82,6 @@ BMGError ReadBMP( const char *filename,
             free( rawbits );
 		if( img != NULL)
 			FreeBMGImage( img );
-		SetLastBMGError( (BMGError)error );
         return (BMGError)error;
     }
 
@@ -95,7 +92,7 @@ BMGError ReadBMP( const char *filename,
     if  ( file == NULL )
         longjmp( err_jmp, (int)errFileOpen );
 
-        /* read the file header */
+    /* read the file header */
     if ( fread( (void *)&bmfh, sizeof(BITMAPFILEHEADER), 1, file ) != 1 )
         longjmp( err_jmp, (int)errFileRead );
 
@@ -210,8 +207,6 @@ BMGError ReadBMPInfo( const char *filename,
     BITMAPFILEHEADER bmfh;
     BITMAPINFOHEADER bmih;
 
-	SetLastBMGError( BMG_OK );
-
     /* error handler */
     error = setjmp( err_jmp );
     if ( error != 0 )
@@ -220,7 +215,6 @@ BMGError ReadBMPInfo( const char *filename,
             fclose( file );
 		if ( img != NULL)
 			FreeBMGImage( img );
-		SetLastBMGError( (BMGError)error );
         return (BMGError)error;
     }
 
@@ -257,183 +251,5 @@ BMGError ReadBMPInfo( const char *filename,
     }
 
     fclose( file );
-    return BMG_OK;
-}
-
-/*
-    WriteBMP - writes the contents of an BMGImageStruct to a bmp file.
-
-    Inputs:
-        filename    - the name of the file to be opened
-        img         - the BMGImageStruct containing the image data
-
-    Returns:
-        BMGError - if a write error or a resource error occurred
-        BMG_OK   - if the data was successfilly stored in filename
-
-    Limitations:
-        will not write BMP files using BI_RLE8, BI_RLE4, or BI_BITFIELDS
-*/
-BMGError WriteBMP( const char *filename,
-                   struct BMGImageStruct img )
-{
-    FILE *file;
-    jmp_buf err_jmp;
-    int error;
-
-    unsigned char *bits = NULL;
-    unsigned int DIBScanWidth;
-    unsigned int BitsPerPixel;
-    unsigned int bit_size; /*, new_bit_size; */
-/*    unsigned int rawbit_size; */
-    unsigned char *p, *q, *r, *t;
-/*    unsigned int cnt;  */
-    unsigned char *pColor = NULL;
-
-    BITMAPFILEHEADER bmfh;
-    BITMAPINFOHEADER bmih;
-
-	SetLastBMGError( BMG_OK );
-
-    /* error handler */
-    error = setjmp( err_jmp );
-    if ( error != 0 )
-    {
-        if ( file != NULL )
-            fclose( file );
-        if ( bits != NULL )
-            free( bits );
-        if ( pColor != NULL )
-            free( pColor );
-		SetLastBMGError( (BMGError)error );
-        return (BMGError)error;
-    }
-
-    if ( img.bits == NULL )
-        longjmp( err_jmp, (int)errInvalidBMGImage );
-
-    file = fopen( filename, "wb" );
-    if ( file == NULL )
-        longjmp( err_jmp, (int)errFileOpen );
-
-    /* abort if we do not support the data */
-    if ( img.palette != NULL && img.bytes_per_palette_entry < 3 )
-        longjmp( err_jmp, (int)errInvalidBMGImage );
-
-    /* calculate dimensions */
-    BitsPerPixel = img.bits_per_pixel < 32 ? img.bits_per_pixel : 24U;
-    DIBScanWidth = ( BitsPerPixel * img.width + 7 ) / 8;
-    if ( DIBScanWidth % 4 )
-        DIBScanWidth += 4 - DIBScanWidth % 4;
-    bit_size = DIBScanWidth * img.height;
-/*    rawbit_size = BITScanWidth * img.height; */
-
-    /* allocate memory for bit array - assume that compression will
-    // actually compress the bitmap */
-    bits = (unsigned char *)calloc( bit_size, 1 );
-    if ( bits == NULL )
-        longjmp( err_jmp, (int)errMemoryAllocation );
-
-    /* some initialization */
-    memset( (void *)&bmih, 0, sizeof(BITMAPINFOHEADER) );
-    bmih.biSize = sizeof(BITMAPINFOHEADER);
-    bmih.biWidth = img.width;
-    bmih.biHeight = img.height;
-    bmih.biPlanes = 1;
-    /* 32-bit images will be stored as 24-bit images to save space.  The BMP
-       format does not use the high word and I do not want to store alpha
-       components in an image format that does not recognize it */
-    bmih.biBitCount = BitsPerPixel;
-    bmih.biCompression = BI_RGB; // assumed
-    bmih.biSizeImage = bit_size; // assumed
-    bmih.biClrUsed = img.palette == NULL ? 0 : img.palette_size;
-    bmih.biClrImportant = img.palette == NULL ? 0 : img.palette_size;
-
-    /* if we are not compressed then copy the raw bits to bits */
-    if ( bmih.biCompression == BI_RGB )
-    {
-        p = img.bits;
-        /* simple memcpy's for images containing < 32-bits per pixel */
-        if ( img.bits_per_pixel < 32 )
-        {
-            for ( q = bits; q < bits + bit_size; q += DIBScanWidth,
-                                                 p += img.scan_width )
-            {
-                memcpy( (void *)q, (void *)p, img.scan_width );
-            }
-        }
-        /* store 32-bit images as 24-bit images to save space. alpha terms
-           are lost */
-        else
-        {
-            DIBScanWidth = 3 * img.width;
-            if ( DIBScanWidth % 4 )
-                DIBScanWidth += 4 - DIBScanWidth % 4;
-
-            for ( q = bits; q < bits + bit_size; q += DIBScanWidth,
-                                                 p += img.scan_width )
-            {
-                t = p;
-                for ( r = q; r < q + DIBScanWidth; r += 3, t += 4 )
-                    memcpy( (void *)r, (void *)t, 3 );
-            }
-        }
-    }
-
-    /* create the palette if necessary */
-    if ( img.palette != NULL )
-    {
-        pColor = (unsigned char *)calloc( img.palette_size, sizeof(RGBQUAD) );
-        if ( pColor == NULL )
-            longjmp( err_jmp, (int)errMemoryAllocation );
-
-        if ( img.bytes_per_palette_entry == 3 )
-        {
-            p = img.palette;
-            for ( q = pColor + 1; q < pColor +img.palette_size*sizeof(RGBQUAD);
-                            q += sizeof(RGBQUAD), p += 3 )
-            {
-                memcpy( (void *)pColor, (void *)p, 3 );
-            }
-        }
-        else /* img.bytes_per_palette_entry == 4 */
-        {
-            memcpy( (void *)pColor, (void *)img.palette,
-                img.palette_size * sizeof(RGBQUAD) );
-        }
-    }
-
-    /* now that we know how big everything is let's write the file */
-    memset( (void *)&bmfh, 0, sizeof(BITMAPFILEHEADER) );
-    bmfh.bfType = BMP_ID;
-    bmfh.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) +
-                     img.palette_size * sizeof(RGBQUAD);
-    bmfh.bfSize = bmfh.bfOffBits + bit_size;
-
-    if ( fwrite( (void *)&bmfh, sizeof(BITMAPFILEHEADER), 1, file ) != 1 )
-        longjmp( err_jmp, (int)errFileWrite );
-
-    if ( fwrite( (void *)&bmih, sizeof(BITMAPINFOHEADER), 1, file ) != 1 )
-        longjmp( err_jmp, (int)errFileWrite );
-
-    if ( pColor != NULL )
-    {
-        if ( fwrite( (void *)pColor, sizeof(RGBQUAD), img.palette_size, file )
-                              != (unsigned int)img.palette_size )
-        {
-            longjmp( err_jmp, (int)errFileWrite );
-        }
-    }
-
-    if ( fwrite( (void *)bits, sizeof(unsigned char), bit_size, file )
-                    != bit_size )
-    {
-        longjmp( err_jmp, (int)errFileWrite );
-    }
-
-    fclose( file );
-    free( bits );
-    if ( pColor != NULL )
-        free( pColor );
     return BMG_OK;
 }

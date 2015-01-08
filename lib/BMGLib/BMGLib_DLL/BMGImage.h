@@ -75,14 +75,6 @@ void BMG_EXPORT FreeBMGImage( struct BMGImageStruct *img );
 extern
 BMGError BMG_EXPORT AllocateBMGImage( struct BMGImageStruct *img );
 
-/* returns the last error state */
-extern
-BMGError BMG_EXPORT GetLastBMGError();
-
-/* gets the error message */
-extern
-void BMG_EXPORT GetLastBMGErrorMessage( const char **msg );
-
 #if defined(__cplusplus)
  }
 #endif

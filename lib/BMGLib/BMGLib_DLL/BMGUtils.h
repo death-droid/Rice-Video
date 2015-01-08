@@ -13,5 +13,4 @@
 /* creates a 24 bpp image from a 16 bpp image */
 BMGError Convert16to24( struct BMGImageStruct *img );
 
-void SetLastBMGError( BMGError err );
 #endif

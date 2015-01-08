@@ -28,68 +28,6 @@
 #include <malloc.h>
 #include "BMGUtils.h"
 
-/* error strings for all BMG errors */
-char BMGErrorStrings[17][128] = {
-"No Error",
-"Corrupted file or invalid file format",
-"Invalid bits per pixel for this file format",
-"Memory allocation error",
-"Invalid requested image size",
-"Invalid bitmap handle",
-"Windows API Error",  /* this will be overwritten */
-"Unable to open file",
-"Unsupported file format option",
-"Invalid pointer to a BMG image",
-"Unsupported file extension",
-"Error reading file",
-"Error writing to the output file",
-"Invalid pointer to a GeoTIFF structure",
-"The background image is undefined",
-"The background image is too small",
-"Corrupt File"
-};
-
-/* stores last BMG error */
-static BMGError LastBMGError;
-
-/* sets the last BMG error */
-void SetLastBMGError( BMGError err )
-{
-	LastBMGError = err;
-}
-
-/* returns the last error state */
-BMGError GetLastBMGError(void)
-{
-	return LastBMGError;
-}
-/* gets the error message */
-void GetLastBMGErrorMessage( const char **msg )
-{
-	if ( LastBMGError == errWindowsAPI )
-	{
-		  LPVOID lpMsgBuf;
-
-		  FormatMessage(
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-			NULL,
-			GetLastError(),
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-			(LPTSTR) &lpMsgBuf,
-			0,
-			NULL
-		  );
-
-		/* copy the string. */
-		  strcpy( BMGErrorStrings[(int)LastBMGError], (char *)lpMsgBuf );
-
-		/* Free the buffer. */
-		  LocalFree( lpMsgBuf );
-	}
-
-	*msg = BMGErrorStrings[(int)LastBMGError];
-}
-
 /****************************************************************************
 // Converts a 16 BPP image to a 24 BPP image 
 // returns 1 if successfull, 0 otherwise */

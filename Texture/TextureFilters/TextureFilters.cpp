@@ -921,8 +921,7 @@ bool LoadRGBBufferFromPNGFile(char *filename, unsigned char **pbuf, int &width, 
 	img.bits = NULL;
 	img.palette = NULL;
 
-	BMG_Error code = ReadPNG( filename, &img );
-	if( code == BMG_OK )
+	if (ReadPNG(filename, &img) == BMG_OK)
 	{
 		*pbuf = NULL;
 

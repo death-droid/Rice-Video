@@ -74,12 +74,10 @@ BMGError AllocateBMGImage( struct BMGImageStruct *img )
 {
     unsigned int mempal;
 
-	SetLastBMGError( BMG_OK );
 
     /* make sure that all REQUIRED parameters are valid */
     if ( img->width * img->height <= 0 )
 	{
-		SetLastBMGError(errInvalidSize);
         return errInvalidSize;
 	}
 
@@ -93,7 +91,6 @@ BMGError AllocateBMGImage( struct BMGImageStruct *img )
         case 32:
             break;
         default:
-			SetLastBMGError( errInvalidPixelFormat );
             return errInvalidPixelFormat;
     }
 
@@ -133,7 +130,6 @@ BMGError AllocateBMGImage( struct BMGImageStruct *img )
         img->palette = (unsigned char *)calloc( mempal, sizeof(unsigned char) );
         if ( img->palette == NULL )
 		{
-			SetLastBMGError(errMemoryAllocation);
             return errMemoryAllocation;
 		}
     }
@@ -163,13 +159,11 @@ BMGError AllocateBMGImage( struct BMGImageStruct *img )
                 free( img->palette );
                 img->palette = NULL;
             }
-			SetLastBMGError(errMemoryAllocation);
             return errMemoryAllocation;
         }
     }
     else
 	{
-		SetLastBMGError(errInvalidSize);
         return errInvalidSize;
 	}
 
