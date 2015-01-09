@@ -252,6 +252,8 @@ void CRender::SetCombinerAndBlender()
 	CBlender::InitBlenderMode();
 
 	m_pColorCombiner->InitCombinerMode();
+
+	ApplyTextureFilter();
 }
 
 void CRender::RenderReset()
@@ -1352,8 +1354,6 @@ void CRender::UpdateScissorWithClipRatio()
 //MOVE ME//REPLACE ME//WE SHOULD DO THIS ELSEWHERE
 void CRender::InitOtherModes(void)					// Set other modes not covered by color combiner or alpha blender
 {
-	ApplyTextureFilter();
-
 	if ((gRDP.otherMode.alpha_compare == 1) && !gRDP.otherMode.alpha_cvg_sel)
 	{
 		ForceAlphaRef(m_dwAlpha);
