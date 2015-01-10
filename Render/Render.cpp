@@ -652,31 +652,9 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 
 	bool res;
 	TurnFogOnOff(false);
-	if( TileUFlags[gRSP.curTile]==D3DTADDRESS_CLAMP && TileVFlags[gRSP.curTile]==D3DTADDRESS_CLAMP && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
-	{
-		int dwFilter = m_dwMagFilter;
-		m_dwMagFilter = m_dwMinFilter = D3DTEXF_LINEAR;
-		ApplyTextureFilter();
-		ApplyRDPScissor();
-		res = RenderTexRect();
-		m_dwMagFilter = m_dwMinFilter = dwFilter;
-		ApplyTextureFilter();
-	}
-	else if( fScaleS >= 1 && fScaleT >= 1 && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
-	{
-		int dwFilter = m_dwMagFilter;
-		m_dwMagFilter = m_dwMinFilter = D3DTEXF_POINT;
-		ApplyTextureFilter();
-		ApplyRDPScissor();
-		res = RenderTexRect();
-		m_dwMagFilter = m_dwMinFilter = dwFilter;
-		ApplyTextureFilter();
-	}
-	else
-	{
-		ApplyRDPScissor();
-		res = RenderTexRect();
-	}
+
+	ApplyRDPScissor();
+	res = RenderTexRect();
 
 	TurnFogOnOff(gRDP.tnl.Fog);
 
