@@ -454,7 +454,7 @@ void RSP_GBI1_SetOtherModeH(MicroCodeCommand command)
 {
 	const u32 mask = ((1 << command.othermode.len) - 1) << command.othermode.sft;
 
-	gRDP.otherMode.H = (gRDP.otherMode.L & ~mask) | command.othermode.data;
+	gRDP.otherMode.H = (gRDP.otherMode.H & ~mask) | command.othermode.data;
 }
 
 
