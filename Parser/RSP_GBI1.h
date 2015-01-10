@@ -550,9 +550,9 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 		break;
 	case RSP_MOVE_WORD_SEGMENT:
 		{
-			uint32 segment = (command.mw1.offset >> 2) & 0xF;
+			uint32 segment = (offset >> 2) & 0xF;
 			LOG_UCODE("    RSP_MOVE_WORD_SEGMENT Seg[%d] = 0x%08x", segment, value);
-			gRSP.segments[segment] = value;
+			gRSP.segments[segment] = value & 0x00FFFFFF;
 		}
 		break;
 	case RSP_MOVE_WORD_FOG:
