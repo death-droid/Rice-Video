@@ -310,7 +310,6 @@ void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 		pPrev = pCurr;
 		pCurr = pCurr->pNext;
 	}
-	
 }
 	
 TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWidth, uint32 dwHeight)

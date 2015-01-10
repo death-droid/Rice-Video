@@ -1354,6 +1354,33 @@ void CRender::UpdateScissorWithClipRatio()
 //MOVE ME//REPLACE ME//WE SHOULD DO THIS ELSEWHERE
 void CRender::InitOtherModes(void)					// Set other modes not covered by color combiner or alpha blender
 {
+
+	if (gRDP.otherMode.text_filt != 0) //If not point
+	{
+		CRender::g_pRender->SetTextureFilter(RDP_TFILTER_BILERP);
+	}
+	else
+	{
+		CRender::g_pRender->SetTextureFilter(RDP_TFILTER_POINT);
+	}
+
+	if (gRDP.otherMode.zmode == 3)
+		CRender::g_pRender->SetZBias(2);
+	else
+		CRender::g_pRender->SetZBias(0);
+
+
+	if ((gRDP.tnl.Zbuffer & gRDP.otherMode.z_cmp) | gRDP.otherMode.z_upd)
+	{
+		CRender::g_pRender->SetZCompare(true);
+	}
+	else
+	{
+		CRender::g_pRender->SetZCompare(false);
+	}
+
+	CRender::g_pRender->SetZUpdate(gRDP.otherMode.z_upd ? true : false);
+
 	if ((gRDP.otherMode.alpha_compare == 1) && !gRDP.otherMode.alpha_cvg_sel)
 	{
 		ForceAlphaRef(m_dwAlpha);
@@ -1368,24 +1395,6 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 	{
 		SetAlphaTestEnable(FALSE);
 	}
-
-	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
-		gRDP.tnl.TriCull && gRDP.otherMode.aa_en && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd)
-	{
-		SetZCompare(FALSE);
-	}
-
-	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-	{
-		// Disable zbuffer for COPY and FILL mode
-		SetZCompare(FALSE);
-	}
-	else
-	{
-		SetZCompare(gRDP.otherMode.z_cmp);
-		SetZUpdate(gRDP.otherMode.z_upd);
-	}
-
 }
 
 

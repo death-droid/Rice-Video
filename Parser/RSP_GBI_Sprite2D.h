@@ -55,10 +55,6 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 		status.bFrameBufferDrawnByTriangles = true;
 	}
 
-	//Wipeout seems to have sprites with a width of 0, handle this
-	if (sprite->width == 0)
-		return;
-
 	TxtrInfo gti;
 
 	gti.Format = sprite->format;
@@ -68,14 +64,14 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 
 	gti.PalAddress = (uintptr_t)(g_pu8RamBase+RSPSegmentAddr(sprite->tlut));
 
-	gti.WidthToCreate = sprite->width;
+	gti.WidthToCreate  = sprite->width;
 	gti.HeightToCreate = sprite->height;
-	gti.LeftToLoad = sprite->imageX;
-	gti.TopToLoad = sprite->imageY;
-	gti.Pitch = sprite->Stride << sprite->size >> 1;
+	gti.LeftToLoad	   = sprite->imageX;
+	gti.TopToLoad	   = sprite->imageY;
+	gti.Pitch		   = sprite->Stride << sprite->size >> 1;
 
-	gti.HeightToLoad = gti.HeightToCreate;
-	gti.WidthToLoad = gti.WidthToCreate;
+	gti.HeightToLoad   = gti.HeightToCreate;
+	gti.WidthToLoad    = gti.WidthToCreate;
 
 	gti.TLutFmt = TLUT_FMT_RGBA16;	//RGBA16
 	gti.Palette = 0;
@@ -121,10 +117,10 @@ void RSP_Sprite2DScaleFlip(MicroCodeCommand command, Sprite2DInfo *info)
 {
 
 	info->scaleX = (((command.inst.cmd1) >> 16) & 0xFFFF) / 1024.0f;
-	info->scaleY = ((command.inst.cmd1) & 0xFFFF) / 1024.0f;
+	info->scaleY = ((command.inst.cmd1)			& 0xFFFF) / 1024.0f;
 
 	info->flipX = (uint8)(((command.inst.cmd0) >> 8) & 0xFF);
-	info->flipY = (uint8)((command.inst.cmd0) & 0xFF);
+	info->flipY = (uint8)((command.inst.cmd0)		 & 0xFF);
 
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D,
 	{ DebuggerAppendMsg("Pause after Sprite2DScaleFlip, Flip (%d,%d), Scale (%f, %f)\n", info->flipX, info->flipY,

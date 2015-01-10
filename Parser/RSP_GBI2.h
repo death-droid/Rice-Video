@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void RSP_GBI2_Vtx(MicroCodeCommand command)
 {
 	uint32 addr = RSPSegmentAddr(command.vtx2.addr);
-	int vend	= command.vtx2.vend/2;
+	int vend	= command.vtx2.vend >> 1;
 	int n		= command.vtx2.n;
 	int v0		= vend - n;
 
@@ -111,6 +111,7 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 	case RSP_MOVE_WORD_NUMLIGHT:
 		{
 			uint32 dwNumLights = command.mw2.value / 24;
+
 			gRSP.ambientLightIndex = dwNumLights;
 			SetNumLights(dwNumLights);
 		}
@@ -156,7 +157,6 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 			float fMax = rng + fMin;
 
 			FOG_DUMP(TRACE4("Set Fog: Min=%f, Max=%f, Mul=%f, Off=%f", fMin, fMax, fMult, fOff));
-			//if( fMult <= 0 || fMin > fMax || fMax < 0 || fMin > 1000 )
 			if( fMult <= 0 || fMax < 0 )
 			{
 				// Hack
@@ -204,7 +204,6 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 
 void RSP_GBI2_Tri1(MicroCodeCommand command)
 {
-
 	// While the next command pair is Tri1, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
@@ -256,15 +255,11 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 
 		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-		uint32 dwV5 = command.gbi2tri2.v5;
 		uint32 dwV4 = command.gbi2tri2.v4;
 		uint32 dwV3 = command.gbi2tri2.v3;
+		uint32 dwV5 = command.gbi2tri2.v5;
 
 		bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
-
-		LOG_UCODE("    ZeldaTri2: 0x%08x 0x%08x", command.inst.cmd0, command.inst.cmd1);
-		LOG_UCODE("           V0: %d, V1: %d, V2: %d", dwV0, dwV1, dwV2);
-		LOG_UCODE("           V3: %d, V4: %d, V5: %d", dwV3, dwV4, dwV5);
 
 		command.inst.cmd0= *pCmdBase++;
 		command.inst.cmd1= *pCmdBase++;
@@ -273,7 +268,7 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 #ifdef _DEBUG
 	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && command.inst.cmd == (uint8)RSP_ZELDATRI2);
 #else
-	} while ( command.inst.cmd == (uint8)RSP_ZELDATRI2 );//&& status.dwNumTrisRendered < 50);
+	} while ( command.inst.cmd == (uint8)RSP_ZELDATRI2 );
 #endif
 
 
@@ -290,27 +285,24 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 
 void RSP_GBI2_Line3D(MicroCodeCommand command)
 {
+	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
-	bool bTrisAdded = false;
+	bool tris_added = false;
 
 	do {
 		uint32 dwV0 = command.gbi2line3d.v0/gRSP.vertexMult;
 		uint32 dwV1 = command.gbi2line3d.v1/gRSP.vertexMult;
 		uint32 dwV2 = command.gbi2line3d.v2/gRSP.vertexMult;
 
-		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
+		tris_added |= AddTri(dwV0, dwV1, dwV2);
 
 		uint32 dwV3 = command.gbi2line3d.v3/gRSP.vertexMult;
 		uint32 dwV4 = command.gbi2line3d.v4/gRSP.vertexMult;
 		uint32 dwV5 = command.gbi2line3d.v5/gRSP.vertexMult;
 
-		bTrisAdded |= AddTri(dwV3, dwV4, dwV5);
-
-		LOG_UCODE("    ZeldaTri3: 0x%08x 0x%08x", command.inst.cmd0, command.inst.cmd1);
-		LOG_UCODE("           V0: %d, V1: %d, V2: %d", dwV0, dwV1, dwV2);
-		LOG_UCODE("           V3: %d, V4: %d, V5: %d", dwV3, dwV4, dwV5);		
+		tris_added |= AddTri(dwV3, dwV4, dwV5);
 
 		command.inst.cmd0= *pCmdBase++;
 		command.inst.cmd1= *pCmdBase++;
@@ -324,22 +316,17 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 
 	gDlistStack[gDlistStackPointer].pc = dwPC-8;
 
-
-	if (bTrisAdded)	
+	if (tris_added)
 	{
 		CRender::g_pRender->DrawTriangles();
 	}
-
-	DEBUG_TRIANGLE(TRACE0("Pause at GBI2 Line3D"));
 }
 
 void RSP_GBI2_Texture(MicroCodeCommand command)
 {
-	bool bEnable = command.texture.enable_gbi2;
 
-	CRender::g_pRender->SetTextureEnable( bEnable );
+	CRender::g_pRender->SetTextureEnable(command.texture.enable_gbi2);
 
-	//Since the texture isnt enabled lets stop it from computing the rest
 	float fTextureScaleS = (float)(command.texture.scaleS) / (65536.0f * 32.0f);
 	float fTextureScaleT = (float)(command.texture.scaleT) / (65536.0f * 32.0f);
 
@@ -383,6 +370,7 @@ void RSP_GBI2_PopMtx(MicroCodeCommand command)
 	// Banjo Tooie, pops more than one matrix
 	u32 num = command.inst.cmd1>>6;
 
+	// Just pop the worldview matrix
 	CRender::g_pRender->PopWorldView(num);
 
 }
@@ -462,8 +450,8 @@ void RSP_GBI2_Mtx(MicroCodeCommand command)
 
 void RSP_GBI2_MoveMem(MicroCodeCommand command)
 {
-	uint32 addr = RSPSegmentAddr((command.inst.cmd1));
-	uint32 type    = ((command.inst.cmd0)     ) & 0xFE;
+	uint32 addr = RSPSegmentAddr(command.inst.cmd1);
+	uint32 type = (command.inst.cmd0     ) & 0xFE;
 
 	//uint32 dwLen = ((command.inst.cmd0) >> 16) & 0xFF;
 	//uint32 dwOffset = ((command.inst.cmd0) >> 8) & 0xFFFF;
@@ -477,9 +465,9 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 		break;
 	case RSP_GBI2_MV_MEM__LIGHT:
 		{
-			 uint32 dwOffset2 = ((command.inst.cmd0) >> 5) & 0x7F8;
-	
+			uint32 dwOffset2 = ((command.inst.cmd0) >> 5) & 0x7F8;
 			uint32 dwLight = (dwOffset2)/24;
+
 			if (dwLight < 2)
 			{
 				return;
@@ -512,12 +500,9 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 	case RSP_GBI2_MV_MEM_O_L6:
 	case RSP_GBI2_MV_MEM_O_L7:
 		LOG_UCODE("Zelda Move Light");
-		RDP_NOIMPL_WARN("Zelda Move Light");
 		break;
-
 	case RSP_GBI2_MV_MEM__POINT:
 		LOG_UCODE("Zelda Move Point");
-		RDP_NOIMPL_WARN("Zelda Move Point");
 		break;
 
 	case RSP_GBI2_MV_MEM_O_LOOKATY:
@@ -578,43 +563,24 @@ void RSP_GBI2_DL(MicroCodeCommand command)
 
 void RSP_GBI2_SetOtherModeL(MicroCodeCommand command)
 {
-	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
-	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
-	uint32 dwData  = (command.inst.cmd1);
-
 	// Mask is constructed slightly differently
-	uint32 dwMask = (uint32)((s32)(0x80000000)>>dwLength)>>dwShift;
-	dwData &= dwMask;
+	const uint32 mask = (uint32)((s32)(0x80000000) >> command.othermode.len) >> command.othermode.sft;
 
-	uint32 modeL = gRDP.otherMode.L;
-	modeL = (modeL&(~dwMask)) | dwData;
-
-	MicroCodeCommand tempgfx;
-	tempgfx.inst.cmd0 = gRDP.otherMode.H;
-	tempgfx.inst.cmd1 = modeL;
-	DLParser_RDPSetOtherMode(tempgfx );
+	gRDP.otherMode.L = (gRDP.otherMode.L & ~mask) | command.othermode.data;
 }
 
 void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 {
-	uint32 dwLength= (((command.inst.cmd0))&0xFF)+1;
-	uint32 dwShift = 32 - (((command.inst.cmd0)>>8)&0xFF) - dwLength;
-	uint32 dwData  = (command.inst.cmd1);
+	// Mask is constructed slightly differently
+	const uint32 mask = (uint32)((s32)(0x80000000) >> command.othermode.len) >> command.othermode.sft;
 
-	uint32 dwMask2 = ((1<<dwLength)-1)<<dwShift;
-	uint32 dwModeH = gRDP.otherMode.H;
-	dwModeH = (dwModeH&(~dwMask2)) | dwData;
-
-	MicroCodeCommand tempgfx;
-	tempgfx.inst.cmd0 = dwModeH;
-	tempgfx.inst.cmd1 = gRDP.otherMode.L;
-	DLParser_RDPSetOtherMode(tempgfx );
+	gRDP.otherMode.H = (gRDP.otherMode.H & ~mask) | command.othermode.data;
 }
 
 void RSP_GBI2_DL_Count(MicroCodeCommand command)
 {
 	// This cmd is likely to execute number of ucode at the given address
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwAddr = RSPSegmentAddr(command.inst.cmd1);
 
 	// For SSB and Kirby, otherwise we'll end up scrapping the pc
 	if (dwAddr == 0)
@@ -624,7 +590,7 @@ void RSP_GBI2_DL_Count(MicroCodeCommand command)
 
 	gDlistStackPointer++;
 	gDlistStack[gDlistStackPointer].pc = dwAddr;
-	gDlistStack[gDlistStackPointer].countdown = ((command.inst.cmd0) & 0xFFFF);
+	gDlistStack[gDlistStackPointer].countdown = (command.inst.cmd0) & 0xFFFF;
 }
 
 void RSP_GBI2_0x8(MicroCodeCommand command)

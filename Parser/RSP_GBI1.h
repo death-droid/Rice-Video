@@ -450,36 +450,17 @@ static const char * sc_szBlA2[4] = { "1-A", "AMem", "1", "?" };
 //TODO CLEAN OTHERMODEL and OTHERMODEH
 void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 {
-	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
-	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
-	uint32 dwData  = (command.inst.cmd1);
+	const u32 mask = ((1 << command.othermode.len) - 1) << command.othermode.sft;
 
-	uint32 dwMask = ((1<<dwLength)-1)<<dwShift;
-
-	uint32 modeL = gRDP.otherMode.L;
-	modeL = (modeL&(~dwMask)) | dwData;
-
-	MicroCodeCommand tempgfx;
-	tempgfx.inst.cmd0 = gRDP.otherMode.H;
-	tempgfx.inst.cmd1 = modeL;
-	DLParser_RDPSetOtherMode(tempgfx);
+	gRDP.otherMode.L = (gRDP.otherMode.L & ~mask) | command.othermode.data;
 }
 
 
 void RSP_GBI1_SetOtherModeH(MicroCodeCommand command)
 {
-	uint32 dwShift = ((command.inst.cmd0)>>8)&0xFF;
-	uint32 dwLength= ((command.inst.cmd0)   )&0xFF;
-	uint32 dwData  = (command.inst.cmd1);
+	const u32 mask = ((1 << command.othermode.len) - 1) << command.othermode.sft;
 
-	uint32 dwMask = ((1<<dwLength)-1)<<dwShift;
-	uint32 dwModeH = gRDP.otherMode.H;
-
-	dwModeH = (dwModeH&(~dwMask)) | dwData;
-	MicroCodeCommand tempgfx;
-	tempgfx.inst.cmd0 = dwModeH;
-	tempgfx.inst.cmd1 = gRDP.otherMode.L;
-	DLParser_RDPSetOtherMode(tempgfx );
+	gRDP.otherMode.H = (gRDP.otherMode.L & ~mask) | command.othermode.data;
 }
 
 

@@ -351,53 +351,17 @@ void DLParser_SetPrimDepth(MicroCodeCommand command)
 	DEBUGGER_PAUSE(NEXT_SET_PRIM_COLOR);
 }
 
+//BACKTOMERIGHTNOW
 void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 {
-	if( gRDP.otherMode.H != ((command.inst.cmd0)) )
-	{
-		gRDP.otherMode.H = ((command.inst.cmd0));
-
-		uint32 dwTextFilt  = (gRDP.otherMode.H>>RSP_SETOTHERMODE_SHIFT_TEXTFILT)&0x3;
-		CRender::g_pRender->SetTextureFilter(dwTextFilt<<RSP_SETOTHERMODE_SHIFT_TEXTFILT);
-	}
-	//RDP_TFILTER_BILERP
-
-	if( gRDP.otherMode.L != (command.inst.cmd1) )
-	{
-
-		gRDP.otherMode.L = (command.inst.cmd1);
-
-		if (gRDP.otherMode.zmode == 3) //DKR doesnt seem to like the zbias being set for some odd reason :S
-			CRender::g_pRender->SetZBias(2);
-		else
-			CRender::g_pRender->SetZBias(0);
-
-
-		if ((gRDP.tnl.Zbuffer * gRDP.otherMode.z_cmp) | gRDP.otherMode.z_upd)
-		{
-			CRender::g_pRender->SetZCompare(true);
-		}
-		else
-		{
-			CRender::g_pRender->SetZCompare(false);
-		}
-		
-		CRender::g_pRender->SetZUpdate( gRDP.otherMode.z_upd ? true : false );
-
-		uint32 dwAlphaTestMode = (gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3;
-
-		if ((dwAlphaTestMode) != 0)
-			CRender::g_pRender->SetAlphaTestEnable( TRUE );
-		else
-			CRender::g_pRender->SetAlphaTestEnable( FALSE );
-	}
-
-	uint16 blender = gRDP.otherMode.blender;
+	gRDP.otherMode.H = (command.inst.cmd0);
+	gRDP.otherMode.L = (command.inst.cmd1);
+	/*uint16 blender = gRDP.otherMode.blender;
 	RDP_BlenderSetting &bl = *(RDP_BlenderSetting*)(&(blender));
 	if( bl.c1_m1a==3 || bl.c1_m2a == 3 || bl.c2_m1a == 3 || bl.c2_m2a == 3 )
 		gRDP.bFogEnableInBlender = true;
 	else
-		gRDP.bFogEnableInBlender = false;
+		gRDP.bFogEnableInBlender = false;*/
 }
 
 
