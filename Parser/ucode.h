@@ -28,10 +28,9 @@ typedef void (*RDPInstruction)(MicroCodeCommand);
 
 UcodeFunc(RSP_RDP_Nothing);
 
-UcodeFunc(RSP_GBI0_Mtx);
+UcodeFunc(RSP_GBI1_Mtx);
 UcodeFunc(RSP_Mtx_DKR);
 UcodeFunc(RSP_GBI0_DL);
-UcodeFunc(RSP_DL_In_MEM_DKR);
 
 UcodeFunc(RSP_GBI0_Vtx);
 UcodeFunc(RSP_Vtx_DKR);
@@ -174,7 +173,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 	// uCode 0 - RSP SW 2.0X
 	// Games: Super Mario 64, Tetrisphere, Demos
 	{
-		RSP_GBI1_SpNoop, RSP_GBI0_Mtx, RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
+		RSP_GBI1_SpNoop, RSP_GBI1_Mtx, RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 		RSP_GBI0_Vtx, RSP_GBI1_Reserved, RSP_GBI0_DL, RSP_GBI1_Reserved,
 		RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -260,7 +259,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 	// 00-3f
 	// games: Mario Kart, Star Fox
 	{
-		RSP_GBI1_SpNoop, RSP_GBI0_Mtx, RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
+		RSP_GBI1_SpNoop, RSP_GBI1_Mtx, RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
 		RSP_GBI1_Vtx, RSP_GBI1_Reserved, RSP_GBI0_DL, RSP_GBI1_Reserved,
 		RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,

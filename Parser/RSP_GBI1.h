@@ -284,8 +284,8 @@ void RSP_GBI1_Reserved(MicroCodeCommand command)
 
 void RSP_GBI1_MoveMem(MicroCodeCommand command)
 {
-	uint32 type    = ((command.inst.cmd0)>>16)&0xFF;
-	uint32 addr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 type    = (command.inst.cmd0>>16)&0xFF;
+	uint32 addr = RSPSegmentAddr(command.inst.cmd1);
 
 	switch (type) 
 	{
@@ -310,8 +310,7 @@ void RSP_GBI1_MoveMem(MicroCodeCommand command)
 		case RSP_GBI1_MV_MEM_L6:
 		case RSP_GBI1_MV_MEM_L7:
 			{
-				uint32 dwLight = (type-RSP_GBI1_MV_MEM_L0)/2;
-				LOG_UCODE("    RSP_GBI1_MV_MEM_L%d", dwLight);
+				uint32 dwLight = (type-RSP_GBI1_MV_MEM_L0) >> 1;
 				N64Light *light = (N64Light*)(g_pu8RamBase + addr);
 				RSP_MoveMemLight(dwLight, light);
 			}
@@ -375,10 +374,10 @@ void RSP_GBI1_Line3D(MicroCodeCommand command)
 	else
 	{
 		do {
-			uint32 dwV3  = command.gbi1line3d.v3/gRSP.vertexMult;		
-			uint32 dwV0  = command.gbi1line3d.v0/gRSP.vertexMult;
-			uint32 dwV1  = command.gbi1line3d.v1/gRSP.vertexMult;
-			uint32 dwV2  = command.gbi1line3d.v2/gRSP.vertexMult;
+			uint32 dwV0 = command.gbi1line3d.v0 / gRSP.vertexMult;
+			uint32 dwV1 = command.gbi1line3d.v1 / gRSP.vertexMult;
+			uint32 dwV2 = command.gbi1line3d.v2 / gRSP.vertexMult;
+			uint32 dwV3 = command.gbi1line3d.v3/gRSP.vertexMult;		
 
 			LOG_UCODE("    Line3D: V0: %d, V1: %d, V2: %d, V3: %d", dwV0, dwV1, dwV2, dwV3);
 
@@ -426,8 +425,8 @@ void RSP_GBI1_GeometryMode(MicroCodeCommand command)
 	gRDP.tnl.Shade		= gGeometryMode.GBI1_Shade;
 	gRDP.tnl.Zbuffer	= gGeometryMode.GBI1_Zbuffer;
 
-	//Re-implment culling properly, FIXME CLEANME
-	gRDP.tnl.TriCull = gGeometryMode.GBI1_CullFront | gGeometryMode.GBI1_CullBack;
+	// CULL_BACK has priority, Fixes Mortal Kombat 4
+	gRDP.tnl.TriCull	= gGeometryMode.GBI1_CullFront | gGeometryMode.GBI1_CullBack;
 	gRDP.tnl.CullBack	= gGeometryMode.GBI1_CullBack;
 
 	CRender::g_pRender->ZBufferEnable(gRDP.tnl.Zbuffer);
@@ -443,11 +442,6 @@ void RSP_GBI1_EndDL(MicroCodeCommand command)
 	RDP_GFX_PopDL();
 }
 
-static const char * sc_szBlClr[4] = { "In", "Mem", "Bl", "Fog" };
-static const char * sc_szBlA1[4] = { "AIn", "AFog", "AShade", "0" };
-static const char * sc_szBlA2[4] = { "1-A", "AMem", "1", "?" };
-
-//TODO CLEAN OTHERMODEL and OTHERMODEH
 void RSP_GBI1_SetOtherModeL(MicroCodeCommand command)
 {
 	const u32 mask = ((1 << command.othermode.len) - 1) << command.othermode.sft;
@@ -520,6 +514,10 @@ void RSP_GBI1_Texture(MicroCodeCommand command)
 extern void RSP_RDP_InsertMatrix(uint32 word0, uint32 word1);
 void RSP_GBI1_MoveWord(MicroCodeCommand command)
 {
+	// Type of movement is in low 8bits of cmd0.
+	u32 value = command.mw1.value;
+	u32 offset = command.mw1.offset;
+
 	switch (command.mw1.type)
 	{
 	case RSP_MOVE_WORD_MATRIX:
@@ -527,7 +525,7 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 		break;
 	case RSP_MOVE_WORD_NUMLIGHT:
 		{
-			uint32 dwNumLights = (((command.mw1.value)-0x80000000)/32)-1;
+			uint32 dwNumLights = ((command.mw1.value-0x80000000) >> 5) - 1;
 			LOG_UCODE("    RSP_MOVE_WORD_NUMLIGHT: Val:%d", dwNumLights);
 
 			gRSP.ambientLightIndex = dwNumLights;
@@ -552,10 +550,9 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 		break;
 	case RSP_MOVE_WORD_SEGMENT:
 		{
-			uint32 dwSegment = (command.mw1.offset >> 2) & 0xF;
-			uint32 dwBase = (command.mw1.value)&0x00FFFFFF;
-			LOG_UCODE("    RSP_MOVE_WORD_SEGMENT Seg[%d] = 0x%08x", dwSegment, dwBase);
-			gRSP.segments[dwSegment] = dwBase;
+			uint32 segment = (command.mw1.offset >> 2) & 0xF;
+			LOG_UCODE("    RSP_MOVE_WORD_SEGMENT Seg[%d] = 0x%08x", segment, value);
+			gRSP.segments[segment] = value;
 		}
 		break;
 	case RSP_MOVE_WORD_FOG:
@@ -588,22 +585,24 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 		break;
 	case RSP_MOVE_WORD_LIGHTCOL:
 		{
-			uint32 dwLight = command.mw1.offset >> 5;
-			uint32 field_offset = (command.mw1.offset & 0x7);
+			uint32 light_idx = offset >> 5;
+			uint32 field_offset = (offset & 0x7);
 
 			LOG_UCODE("    RSP_MOVE_WORD_LIGHTCOL/0x%08x: 0x%08x", command.mw1.offset, command.mw1.value);
 			
 			if(field_offset == 0)
 			{
-				SetLightCol(dwLight, ((command.mw2.value>>24)&0xFF), ((command.mw2.value>>16)&0xFF), ((command.mw2.value>>8)&0xFF));
+				u8 r = ((value >> 24) & 0xFF);
+				u8 g = ((value >> 16) & 0xFF);
+				u8 b = ((value >>  8) & 0xFF);
+
+				SetLightCol(light_idx, r, g, b);
 			}
 		}
 		break;
 	case RSP_MOVE_WORD_POINTS:
 		{
-			uint32 vtx = command.mw1.offset/40;
-			uint32 where = command.mw1.offset - vtx*40;
-			ModifyVertexInfo(where, vtx, command.mw1.value);
+			ModifyVertexInfo((offset % 40), (offset / 40), command.mw1.value);
 		}
 		break;
 	case RSP_MOVE_WORD_PERSPNORM:
@@ -615,6 +614,28 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 		break;
 	}
 
+}
+
+void RSP_GBI1_Mtx(MicroCodeCommand command)
+{
+	uint32 addr = RSPSegmentAddr(command.mtx1.addr);
+
+	LOG_UCODE("    Command: %s %s %s Length %d Address 0x%08x",
+		command.mtx1.projection == 1 ? "Projection" : "ModelView",
+		command.mtx1.load == 1 ? "Load" : "Mul",
+		command.mtx1.push == 1 ? "Push" : "NoPush",
+		command.mtx1.len, addr);
+
+	LoadMatrix(addr);
+
+	if (command.mtx1.projection)
+	{
+		CRender::g_pRender->SetProjection(matToLoad, command.mtx1.push, command.mtx1.load);
+	}
+	else
+	{
+		CRender::g_pRender->SetWorldView(matToLoad, command.mtx1.push, command.mtx1.load);
+	}
 }
 
 void RSP_GBI1_PopMtx(MicroCodeCommand command)
@@ -632,21 +653,7 @@ void RSP_GBI1_PopMtx(MicroCodeCommand command)
 	{
 		CRender::g_pRender->PopWorldView();
 	}
-#ifdef _DEBUG
-	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
-	{
-		pauseAtNext = false;
-		debuggerPause = true;
-		DebuggerAppendMsg("Pause after Pop Matrix: %s\n", command.popmtx.projection ? "Proj":"World");
-	}
-	else
-	{
-		if( pauseAtNext && logMatrix ) 
-		{
-			DebuggerAppendMsg("Pause after Pop Matrix: %s\n", command.popmtx.projection ? "Proj":"World");
-		}
-	}
-#endif
+
 }
 
 void RSP_GBI1_CullDL(MicroCodeCommand command)

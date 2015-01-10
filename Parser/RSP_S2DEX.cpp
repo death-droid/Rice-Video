@@ -462,7 +462,7 @@ void RSP_S2DEX_OBJ_MOVEMEM(MicroCodeCommand command)
 }
 
 // YoshiStory uses this - 0x01
-extern void RSP_GBI0_Mtx(MicroCodeCommand command);
+extern void RSP_GBI1_Mtx(MicroCodeCommand command);
 
 void RSP_S2DEX_BG_1CYC(MicroCodeCommand command)
 {
@@ -483,7 +483,7 @@ void RSP_S2DEX_BG_1CYC_2(MicroCodeCommand command)
 {
 	if( ((command.inst.cmd0)&0x00FFFFFF) != 0 )
 	{
-		RSP_GBI0_Mtx(command);
+		RSP_GBI1_Mtx(command);
 		return;
 	}
 

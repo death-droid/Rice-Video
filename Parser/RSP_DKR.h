@@ -135,9 +135,9 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 //*****************************************************************************
 //
 //*****************************************************************************
-void RSP_DL_In_MEM_DKR(MicroCodeCommand command)
+void RDP_GFX_DLInMem(MicroCodeCommand command)
 {
-	// This cmd is likely to execute number of ucode at the given address
+
 	gDlistStackPointer++;
 	gDlistStack[gDlistStackPointer].pc = command.inst.cmd1;
 	gDlistStack[gDlistStackPointer].countdown = (command.inst.cmd0 >> 16) & 0xFF;
