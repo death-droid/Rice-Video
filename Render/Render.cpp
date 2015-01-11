@@ -1373,6 +1373,13 @@ void CRender::InitOtherModes(void)					// Set other modes not covered by color c
 	{
 		SetAlphaTestEnable(FALSE);
 	}
+
+	uint16 blender = gRDP.otherMode.blender;
+	RDP_BlenderSetting &bl = *(RDP_BlenderSetting*)(&(blender));
+	if (bl.c1_m1a == 3 || bl.c1_m2a == 3 || bl.c2_m1a == 3 || bl.c2_m2a == 3)
+		gRDP.bFogEnableInBlender = true;
+	else
+		gRDP.bFogEnableInBlender = false;
 }
 
 
