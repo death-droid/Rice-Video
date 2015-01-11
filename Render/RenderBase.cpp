@@ -483,16 +483,6 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				g_fFogCoord[i] = gRSPfFogMin;
 		}
 
-		VTX_DUMP(
-		{
-			uint32 *dat = (uint32*)(&vert);
-			DebuggerAppendMsg("vtx %d: %08X %08X %08X %08X", i, dat[0], dat[1], dat[2], dat[3]);
-			DebuggerAppendMsg("      : %f, %f, %f, %f",
-				g_vtxTransformed[i].x, g_vtxTransformed[i].y, g_vtxTransformed[i].z, g_vtxTransformed[i].w);
-			DebuggerAppendMsg("      : %f, %f, %f, %f",
-				g_vecProjected[i].x, g_vecProjected[i].y, g_vecProjected[i].z, g_vecProjected[i].w);
-		});
-
 		RSP_Vtx_Clipping(i);
 
 		if (gRDP.tnl.Light)
@@ -545,6 +535,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			{
 				g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 			}
+
 			g_fVtxTxtCoords[i].x = (float)vert.tu;
 			g_fVtxTxtCoords[i].y = (float)vert.tv;
 		}
@@ -975,10 +966,10 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = pVtxBase;
 
+	//Model normal base vector
 	short *mn = (short*)(g_pu8RamBase + dwConkerVtxZAddr);
 
-	uint32 i;
-	for (i = dwV0; i < dwV0 + dwNum; i++)
+	for (uint32 i = dwV0; i < dwV0 + dwNum; i++)
 	{
 		FiddledVtx & vert = pVtxBase[i - dwV0];
 
@@ -990,6 +981,8 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
 		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
 		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
+
+		g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 
 		g_fFogCoord[i] = g_vecProjected[i].z;
 
@@ -1007,6 +1000,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 			v3 model_normal(mn[((i << 1) + 0) ^ 3], mn[((i << 1) + 1) ^ 3], vert.normz);
 			v3 vecTransformedNormal = gRSPworldProject.TransformNormal(model_normal);
+			vecTransformedNormal.Normalise();
 			const v3 & norm = vecTransformedNormal;
 
 			v4 Pos;
@@ -1069,18 +1063,17 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				g = 255;
 			if (b>255)
 				b = 255;
-			r *= vert.rgba_r;
-			g *= vert.rgba_g;
-			b *= vert.rgba_b;
-			r >>= 8;
-			g >>= 8;
-			b >>= 8;
+
+			g_dwVtxDifColor[i] = N64COL_GETR(g_dwVtxDifColor[i]) * r;
+			g_dwVtxDifColor[i] = N64COL_GETG(g_dwVtxDifColor[i]) * g;
+			g_dwVtxDifColor[i] = N64COL_GETB(g_dwVtxDifColor[i]) * b;
+
 			g_dwVtxDifColor[i] = 0xFF000000;
 			g_dwVtxDifColor[i] |= (r << 16);
 			g_dwVtxDifColor[i] |= (g << 8);
 			g_dwVtxDifColor[i] |= (b);
 
-			*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba_a;	// still use alpha from the vertex
+			//*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba_a;	// still use alpha from the vertex
 			//TEXTURE
 
 			// ENV MAPPING
