@@ -149,8 +149,7 @@ void RSP_MoveWord_Conker(MicroCodeCommand command)
 	{
 		case RSP_MOVE_WORD_NUMLIGHT:
 		{
-			uint32 dwNumLights = ((command.inst.cmd1) / 48);
-			gRSP.ambientLightIndex = dwNumLights + 1;
+			uint32 dwNumLights = command.inst.cmd1 / 48;
 			SetNumLights(dwNumLights);
 		}
 		break;

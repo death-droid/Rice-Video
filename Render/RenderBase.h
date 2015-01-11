@@ -91,8 +91,6 @@ __declspec(align(16)) struct RSP_Options
 
 	RenderShadeMode	shadeMode;
 
-	uint32	ambientLightIndex;
-
 	uint32	projectionMtxTop;
 	uint32	modelViewMtxTop;
 
@@ -100,10 +98,8 @@ __declspec(align(16)) struct RSP_Options
 	uint32  maxVertexID;
 
 	int		nVPLeftN, nVPTopN, nVPRightN, nVPBottomN, nVPWidthN, nVPHeightN, maxZ;
-	int		clip_ratio_negx,	clip_ratio_negy,	clip_ratio_posx,	clip_ratio_posy;
 	int		clip_ratio_left,	clip_ratio_top,	clip_ratio_right,	clip_ratio_bottom;
 	int		real_clip_scissor_left,	real_clip_scissor_top,	real_clip_scissor_right,	real_clip_scissor_bottom;
-	float	real_clip_ratio_negx,	real_clip_ratio_negy,	real_clip_ratio_posx,	real_clip_ratio_posy;
 
 	Matrix4x4	projectionMtxs[RICE_MATRIX_STACK];
 	Matrix4x4	modelviewMtxs[RICE_MATRIX_STACK];

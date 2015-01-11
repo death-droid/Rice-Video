@@ -112,26 +112,15 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 		{
 			uint32 dwNumLights = command.mw2.value / 24;
 
-			gRSP.ambientLightIndex = dwNumLights;
 			SetNumLights(dwNumLights);
 		}
 		break;
 
-	case RSP_MOVE_WORD_CLIP: //Test whether this really actually does anything
+	/*case RSP_MOVE_WORD_CLIP: Seems unused
 		{
-			switch (command.mw2.offset)
-			{
-			case RSP_MV_WORD_OFFSET_CLIP_RNX:
-			case RSP_MV_WORD_OFFSET_CLIP_RNY:
-			case RSP_MV_WORD_OFFSET_CLIP_RPX:
-			case RSP_MV_WORD_OFFSET_CLIP_RPY:
-				CRender::g_pRender->SetClipRatio(command.mw2.offset, command.mw2.value);
-			default:
-				LOG_UCODE("     RSP_MOVE_WORD_CLIP  ?   : 0x%08x", command.inst.cmd1);
-				break;
-			}
+			LOG_UCODE("     RSP_MOVE_WORD_CLIP  ?   : 0x%08x", command.inst.cmd1);
 		}
-		break;
+		break;*/
 
 	case RSP_MOVE_WORD_SEGMENT:
 		{

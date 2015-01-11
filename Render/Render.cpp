@@ -471,7 +471,6 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		return true;
 	}
 
-
 	if( IsUsedAsDI(g_CI.dwAddr) && !status.bHandleN64RenderTexture )
 	{
 		status.bFrameBufferIsDrawn = true;
@@ -1181,51 +1180,6 @@ void CRender::SetVertexTextureUVCoord(TLITVERTEX &v, float fTex0S, float fTex0T,
 	}
 }
 
-void CRender::SetClipRatio(uint32 type, uint32 w1)
-{
-	bool modified = false;
-	switch(type)
-	{
-	case RSP_MV_WORD_OFFSET_CLIP_RNX:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  NegX: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_negx != (short)w1 )
-		{
-			gRSP.clip_ratio_negx = (short)w1;
-			modified = true;
-		}
-		break;
-	case RSP_MV_WORD_OFFSET_CLIP_RNY:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  NegY: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_negy != (short)w1 )
-		{
-			gRSP.clip_ratio_negy = (short)w1;
-			modified = true;
-		}
-		break;
-	case RSP_MV_WORD_OFFSET_CLIP_RPX:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  PosX: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_posx != -(short)w1 )
-		{
-			gRSP.clip_ratio_posx = -(short)w1;
-			modified = true;
-		}
-		break;
-	case RSP_MV_WORD_OFFSET_CLIP_RPY:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  PosY: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_posy != -(short)w1 )
-		{
-			gRSP.clip_ratio_posy = -(short)w1;
-			modified = true;
-		}
-		break;
-	}
-
-	if( modified )
-	{
-		UpdateClipRectangle();
-	}
-
-}
 void CRender::UpdateClipRectangle()
 {
 	if( status.bHandleN64RenderTexture )
@@ -1250,10 +1204,10 @@ void CRender::UpdateClipRectangle()
 		int centerx = halfx;
 		int centery = halfy;
 
-		gRSP.clip_ratio_left = centerx - halfx * gRSP.clip_ratio_negx;
-		gRSP.clip_ratio_top = centery - halfy * gRSP.clip_ratio_negy;
-		gRSP.clip_ratio_right = centerx + halfx * gRSP.clip_ratio_posx;
-		gRSP.clip_ratio_bottom = centery + halfy * gRSP.clip_ratio_posy;
+		gRSP.clip_ratio_left = centerx - halfx;
+		gRSP.clip_ratio_top = centery - halfy;
+		gRSP.clip_ratio_right = centerx + halfx;
+		gRSP.clip_ratio_bottom = centery + halfy;
 	}
 	else
 	{
@@ -1276,10 +1230,10 @@ void CRender::UpdateClipRectangle()
 		int centerx = gRSP.nVPLeftN+halfx;
 		int centery = gRSP.nVPTopN+halfy;
 
-		gRSP.clip_ratio_left = centerx - halfx * gRSP.clip_ratio_negx;
-		gRSP.clip_ratio_top = centery - halfy * gRSP.clip_ratio_negy;
-		gRSP.clip_ratio_right = centerx + halfx * gRSP.clip_ratio_posx;
-		gRSP.clip_ratio_bottom = centery + halfy * gRSP.clip_ratio_posy;
+		gRSP.clip_ratio_left = centerx - halfx;
+		gRSP.clip_ratio_top = centery - halfy;
+		gRSP.clip_ratio_right = centerx + halfx;
+		gRSP.clip_ratio_bottom = centery + halfy;
 	}
 
 
@@ -1319,11 +1273,6 @@ void CRender::UpdateScissorWithClipRatio()
 	float halfy = gRSP.nVPHeightN/2.0f;
 	float centerx = gRSP.nVPLeftN+halfx;
 	float centery = gRSP.nVPTopN+halfy;
-
-	gRSP.real_clip_ratio_negx = (gRSP.real_clip_scissor_left - centerx)/halfx;
-	gRSP.real_clip_ratio_negy = (gRSP.real_clip_scissor_top - centery)/halfy;
-	gRSP.real_clip_ratio_posx = (gRSP.real_clip_scissor_right - centerx)/halfx;
-	gRSP.real_clip_ratio_posy = (gRSP.real_clip_scissor_bottom - centery)/halfy;
 
 	ApplyScissorWithClipRatio(true);
 }

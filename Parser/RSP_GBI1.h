@@ -528,26 +528,14 @@ void RSP_GBI1_MoveWord(MicroCodeCommand command)
 			uint32 dwNumLights = ((command.mw1.value-0x80000000) >> 5) - 1;
 			LOG_UCODE("    RSP_MOVE_WORD_NUMLIGHT: Val:%d", dwNumLights);
 
-			gRSP.ambientLightIndex = dwNumLights;
 			SetNumLights(dwNumLights);
 		}
 		break;
-	case RSP_MOVE_WORD_CLIP: //CHECKME, CLEANME, FIXME, unsure what this does
+	/*case RSP_MOVE_WORD_CLIP: //Seems unused
 		{
-			switch (command.mw1.offset)
-			{
-			case RSP_MV_WORD_OFFSET_CLIP_RNX:
-			case RSP_MV_WORD_OFFSET_CLIP_RNY:
-			case RSP_MV_WORD_OFFSET_CLIP_RPX:
-			case RSP_MV_WORD_OFFSET_CLIP_RPY:
-				CRender::g_pRender->SetClipRatio(command.mw1.offset, command.mw1.value);
-				break;
-			default:
-				LOG_UCODE("    RSP_MOVE_WORD_CLIP  ?   : 0x%08x", command.inst.cmd1);
-				break;
-			}
+			LOG_UCODE("    RSP_MOVE_WORD_CLIP  ?   : 0x%08x", command.inst.cmd1);
 		}
-		break;
+		break;*/
 	case RSP_MOVE_WORD_SEGMENT:
 		{
 			uint32 segment = (offset >> 2) & 0xF;

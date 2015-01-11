@@ -190,9 +190,6 @@ H_START:\t%08X\nV_START:\t%08X\nVI Width=%f(x %f), VI Height=%f(x %f)\n\n",
 	DebuggerAppendMsg("Effective scissor: x0=%d y0=%d x1=%d y1=%d",
 		gRSP.real_clip_scissor_left, gRSP.real_clip_scissor_top,
 		gRSP.real_clip_scissor_right, gRSP.real_clip_scissor_bottom);
-	DebuggerAppendMsg("Clipping: (%d) left=%f top=%f right=%f bottom=%f",
-		gRSP.clip_ratio_posx, gRSP.real_clip_ratio_negx , gRSP.real_clip_ratio_negy,
-		gRSP.real_clip_ratio_posx, gRSP.real_clip_ratio_posy);
 	DebuggerAppendMsg("Viewport: left=%d top=%d right=%d bottom=%d",
 		gRSP.nVPLeftN, gRSP.nVPTopN , gRSP.nVPRightN,
 		gRSP.nVPBottomN);

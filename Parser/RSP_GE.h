@@ -29,6 +29,11 @@ void DLParser_RDPHalf1_GoldenEye(MicroCodeCommand command)
 	CRender::g_pRender->SetCombinerAndBlender();
 
 	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	u32 * Cmd = (u32 *)(g_pu8RamBase + dwPC);
+
+	// Indices
+	u32 a1 = *Cmd + 8 * 0 + 4;
+	u32 a3 = *Cmd + 8 * 2 + 4;
 
 	//PD_LoadMatrix_0xb4(dwPC + 8*16 - 8);
 

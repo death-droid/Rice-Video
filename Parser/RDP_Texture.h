@@ -834,9 +834,7 @@ void PrepareTextures()
 					}
 				}
 
-				CRender::g_pRender->SetCurrentTexture( tilenos[i], 
-					(pEntry->pEnhancedTexture)?pEntry->pEnhancedTexture:pEntry->pTexture,
-					pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
+				CRender::g_pRender->SetCurrentTexture( tilenos[i], (pEntry->pEnhancedTexture)? pEntry->pEnhancedTexture: pEntry->pTexture, pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
 			}
 		}
 

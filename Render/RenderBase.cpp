@@ -113,7 +113,7 @@ void InitRenderBase()
 	gRDP.scissor.left=gRDP.scissor.top=0;
 	gRDP.scissor.right=gRDP.scissor.bottom=640;
 	
-	gRSP.curTile=gRSPnumLights=gRSP.ambientLightIndex= 0;
+	gRSP.curTile=gRSPnumLights= 0;
 	gRSP.projectionMtxTop = gRSP.modelViewMtxTop = 0;
 	gRDP.fogColor = gRDP.primitiveColor = gRDP.envColor = gRDP.primitiveDepth = gRDP.primLODMin = gRDP.primLODFrac = gRDP.LODFrac = 0;
 	gRDP.fPrimitiveDepth = 0;
@@ -132,10 +132,6 @@ void InitRenderBase()
 	gRSP.clip_ratio_top = 0;
 	gRSP.clip_ratio_right = 640;
 	gRSP.clip_ratio_bottom = 480;
-	gRSP.clip_ratio_negx = 1;
-	gRSP.clip_ratio_negy = 1;
-	gRSP.clip_ratio_posx = 1;
-	gRSP.clip_ratio_posy = 1;
 	gRSP.real_clip_scissor_left = 0;
 	gRSP.real_clip_scissor_top = 0;
 	gRSP.real_clip_scissor_right = 640;
@@ -147,10 +143,6 @@ void InitRenderBase()
 	windowSetting.clipping.width = 640;
 	windowSetting.clipping.height = 480;
 	windowSetting.clipping.needToClip = false;
-	gRSP.real_clip_ratio_negx = 1;
-	gRSP.real_clip_ratio_negy = 1;
-	gRSP.real_clip_ratio_posx = 1;
-	gRSP.real_clip_ratio_posy = 1;
 
 	gRDP.tnl._u32	= 0;
 	gRDP.otherMode.L		= 0;
@@ -371,9 +363,9 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 uint32 LightVert(v3 & norm)
 {
 	// Do ambient
-	float r = gRSPlights[gRSP.ambientLightIndex].colour.r;
-	float g = gRSPlights[gRSP.ambientLightIndex].colour.g;
-	float b = gRSPlights[gRSP.ambientLightIndex].colour.b;
+	float r = gRSPlights[gRSPnumLights].colour.r;
+	float g = gRSPlights[gRSPnumLights].colour.g;
+	float b = gRSPlights[gRSPnumLights].colour.b;
 
 	for (unsigned int l=0; l < gRSPnumLights; l++)
 	{
@@ -397,9 +389,9 @@ uint32 LightVert(v3 & norm)
 uint32 LightPointVert(v4 & w)
 {
 	// Do ambient
-	float r = gRSPlights[gRSP.ambientLightIndex].colour.r;
-	float g = gRSPlights[gRSP.ambientLightIndex].colour.g;
-	float b = gRSPlights[gRSP.ambientLightIndex].colour.b;
+	float r = gRSPlights[gRSPnumLights].colour.r;
+	float g = gRSPlights[gRSPnumLights].colour.g;
+	float b = gRSPlights[gRSPnumLights].colour.b;
 
 	for (unsigned int l = 0; l < gRSPnumLights; l++)
 	{
@@ -1009,9 +1001,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		if (gRDP.tnl.Light)
 		{
-			uint32 r = gRSPlights[gRSP.ambientLightIndex].colour.r;
-			uint32 g = gRSPlights[gRSP.ambientLightIndex].colour.g;
-			uint32 b = gRSPlights[gRSP.ambientLightIndex].colour.b;
+			uint32 r = gRSPlights[gRSPnumLights].colour.r;
+			uint32 g = gRSPlights[gRSPnumLights].colour.g;
+			uint32 b = gRSPlights[gRSPnumLights].colour.b;
 
 			v3 model_normal(mn[((i << 1) + 0) ^ 3], mn[((i << 1) + 1) ^ 3], vert.normz);
 			v3 vecTransformedNormal = gRSPworldProject.TransformNormal(model_normal);
