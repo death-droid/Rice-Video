@@ -98,37 +98,35 @@ void DLParser_Init()
 
 	status.lastPurgeTimeTime = 0;		// Time textures were last purged
 
-	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)*2);
+	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)* 2);
 
-	for( i=0; i<8; i++ )
+	for (i = 0; i < 8; i++)
 	{
 		memset(&gRDP.tiles[i], 0, sizeof(Tile));
 	}
 	memset(g_tmemLoadAddrMap, 0, sizeof(g_tmemLoadAddrMap));
 
 	status.bAllowLoadFromTMEM = true;
-	
+
 	char name[200];
 	strcpy(name, g_curRomInfo.szGameName);
 
 	GBIMicrocode_Reset();
 
 	memset(&g_TmemFlag, 0, sizeof(g_TmemFlag));
-	memset(&g_RecentVIOriginInfo, 0, sizeof(RecentViOriginInfo)*5);
-	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)*2);
+	memset(&g_RecentVIOriginInfo, 0, sizeof(RecentViOriginInfo)* 5);
+	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)* 2);
 	memset(&g_ZI, 0, sizeof(SetImgInfo));
 	memset(&g_CI, 0, sizeof(SetImgInfo));
 	memset(&g_TI, 0, sizeof(SetImgInfo));
 
 }
 
-
 void RDP_GFX_Reset()
 {
 	gDlistStackPointer=-1;
 	gTextureManager.RecycleAllTextures();
 }
-
 
 void RDP_Cleanup()
 {
@@ -232,10 +230,13 @@ void DLParser_Process()
 
 			gUcodeFunc[command.inst.cmd](command);
 
-			if ( gDlistStackPointer >= 0 && --gDlistStack[gDlistStackPointer].countdown < 0 )
+			if (gDlistStack[gDlistStackPointer].countdown >= 0)
 			{
-				LOG_UCODE("**EndDLInMem");
-				gDlistStackPointer--;
+				if (--gDlistStack[gDlistStackPointer].countdown < 0)
+				{
+					LOG_UCODE("**EndDLInMem");
+					gDlistStackPointer--;
+				}
 			}
 		}
 
@@ -322,16 +323,11 @@ void RDP_GFX_PopDL()
 
 void DLParser_SetKeyGB(MicroCodeCommand command)
 {
-	gRDP.keyB = ((command.inst.cmd1)>>8)&0xFF;
-	gRDP.keyG = ((command.inst.cmd1)>>24)&0xFF;
-	gRDP.keyA = (gRDP.keyR+gRDP.keyG+gRDP.keyB)/3;
-	gRDP.fKeyA = gRDP.keyA/255.0f;
+	LOG_UCODE("SetKeyGB: (Ignored)");
 }
 void DLParser_SetKeyR(MicroCodeCommand command)
 {
-	gRDP.keyR = ((command.inst.cmd1)>>8)&0xFF;
-	gRDP.keyA = (gRDP.keyR+gRDP.keyG+gRDP.keyB)/3;
-	gRDP.fKeyA = gRDP.keyA/255.0f;
+	LOG_UCODE("SetKeyR: (Ignored)");
 }
 
 void DLParser_SetConvert(MicroCodeCommand command)

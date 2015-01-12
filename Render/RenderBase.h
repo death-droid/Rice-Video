@@ -168,14 +168,6 @@ extern RSP_Options gRSP;
 
 
 __declspec(align(16)) struct RDP_Options{
-	uint32	keyR;
-	uint32	keyG;
-	uint32	keyB;
-	uint32	keyA;
-	uint32	keyRGB;
-	uint32	keyRGBA;
-	float	fKeyA;
-	
 	bool	bFogEnableInBlender;
 
 	uint32	fogColor;

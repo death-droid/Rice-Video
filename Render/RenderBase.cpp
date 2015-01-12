@@ -121,8 +121,6 @@ void InitRenderBase()
 	gRSP.maxVertexID = 0;
 	gRDP.bFogEnableInBlender=false;
 	gRSP.shadeMode=SHADE_SMOOTH;
-	gRDP.keyR=gRDP.keyG=gRDP.keyB=gRDP.keyA=gRDP.keyRGB=gRDP.keyRGBA = 0;
-	gRDP.fKeyA = 0;
 
 	gRSP.fTexScaleX = 1/32.0f;
 	gRSP.fTexScaleY = 1/32.0f;
@@ -280,20 +278,6 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	VTX_DUMP(TRACE2("  (U,V): %f, %f",  g_fVtxTxtCoords[dwV].x,g_fVtxTxtCoords[dwV].y));
 
 	v.dcDiffuse = g_dwVtxDifColor[dwV];
-	if( gRDP.otherMode.key_en )
-	{
-		v.dcDiffuse &= 0x00FFFFFF;
-		v.dcDiffuse |= (gRDP.keyA<<24);
-	}
-	else if( gRDP.otherMode.aa_en && gRDP.otherMode.clr_on_cvg==0 )
-	{
-		v.dcDiffuse |= 0xFF000000;
-	}
-
-	if( options.bWinFrameMode )
-	{
-		v.dcDiffuse = g_dwVtxDifColor[dwV];
-	}
 
 	if( bTexture )
 	{
