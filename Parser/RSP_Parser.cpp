@@ -337,13 +337,11 @@ void DLParser_SetConvert(MicroCodeCommand command)
 
 void DLParser_SetPrimDepth(MicroCodeCommand command)
 {
-	uint32 dwZ  = ((command.inst.cmd1) >> 16) & 0xFFFF;
-	uint32 dwDZ = ((command.inst.cmd1)      ) & 0xFFFF;
-
-	LOG_UCODE("SetPrimDepth: 0x%08x 0x%08x - z: 0x%04x dz: 0x%04x",
-		command.inst.cmd0, command.inst.cmd1, dwZ, dwDZ);
 	
-	SetPrimitiveDepth(dwZ, dwDZ);
+	LOG_UCODE("SetPrimDepth: 0x%08x 0x%08x - z: 0x%04x dz: 0x%04x",
+		command.inst.cmd0, command.inst.cmd1, command.primdepth.z, command.primdepth.dz);
+	
+	SetPrimitiveDepth(command.primdepth.z, command.primdepth.dz);
 	DEBUGGER_PAUSE(NEXT_SET_PRIM_COLOR);
 }
 
@@ -356,19 +354,9 @@ void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 
 
 
-void DLParser_RDPLoadSync(MicroCodeCommand command)	
-{ 
-	LOG_UCODE("LoadSync: (Ignored)"); 
-}
-
-void DLParser_RDPPipeSync(MicroCodeCommand command)	
-{ 
-	LOG_UCODE("PipeSync: (Ignored)"); 
-}
-void DLParser_RDPTileSync(MicroCodeCommand command)	
-{ 
-	LOG_UCODE("TileSync: (Ignored)"); 
-}
+void DLParser_RDPLoadSync(MicroCodeCommand command)	{	LOG_UCODE("LoadSync: (Ignored)"); }
+void DLParser_RDPPipeSync(MicroCodeCommand command)	{ 	LOG_UCODE("PipeSync: (Ignored)"); }
+void DLParser_RDPTileSync(MicroCodeCommand command)	{ 	LOG_UCODE("TileSync: (Ignored)"); }
 
 //You will never see these any HLE emulation, and since where a HLE plugin ignore them completely
 void DLParser_TriRSP(MicroCodeCommand command)
@@ -385,9 +373,9 @@ void DLParser_RDPFullSync(MicroCodeCommand command)
 void DLParser_SetScissor(MicroCodeCommand command)
 {
 	// The coords are all in 10:2 fixed point
-	gRDP.scissor.left = command.scissor.x0 >> 2;
-	gRDP.scissor.top = command.scissor.y0 >> 2;
-	gRDP.scissor.right = command.scissor.x1 >> 2;
+	gRDP.scissor.left	= command.scissor.x0 >> 2;
+	gRDP.scissor.top	= command.scissor.y0 >> 2;
+	gRDP.scissor.right	= command.scissor.x1 >> 2;
 	gRDP.scissor.bottom = command.scissor.y1 >> 2;
 
 
@@ -607,9 +595,7 @@ void RSP_RDP_Nothing(MicroCodeCommand command)
 	}
 #endif
 		
-	if( options.bEnableHacks )
-		return;
-	gDlistStackPointer=-1;
+	RDP_GFX_PopDL();
 }
 
 
@@ -655,11 +641,11 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 
 void DLParser_SetCImg(MicroCodeCommand command)
 {
-	g_CI.dwFormat = command.img.fmt;
-	g_CI.dwSize = command.img.siz;
-	g_CI.dwWidth = command.img.width + 1;
-	g_CI.dwAddr = RSPSegmentAddr(command.img.addr) & 0x00FFFFFF;
-	g_CI.bpl = g_CI.dwWidth << g_CI.dwSize >> 1;
+	g_CI.dwFormat	= command.img.fmt;
+	g_CI.dwSize		= command.img.siz;
+	g_CI.dwWidth	= command.img.width + 1;
+	g_CI.dwAddr		= RSPSegmentAddr(command.img.addr) & 0x00FFFFFF;
+	g_CI.bpl		= g_CI.dwWidth << g_CI.dwSize >> 1;
 
 	TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", g_CI.dwAddr, pszImgFormat[g_CI.dwFormat], pszImgSize[g_CI.dwSize], g_CI.dwWidth););
 
@@ -721,8 +707,7 @@ void DLParser_SetBlendColor(MicroCodeCommand command)
 
 void DLParser_SetPrimColor(MicroCodeCommand command)
 {
-	SetPrimitiveColor( COLOR_RGBA(command.setcolor.r, command.setcolor.g, command.setcolor.b, command.setcolor.a), 
-		command.setcolor.prim_min_level, command.setcolor.prim_level);
+	SetPrimitiveColor( COLOR_RGBA(command.setcolor.r, command.setcolor.g, command.setcolor.b, command.setcolor.a), command.setcolor.prim_min_level, command.setcolor.prim_level);
 }
 
 void DLParser_SetEnvColor(MicroCodeCommand command)
