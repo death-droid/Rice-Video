@@ -343,20 +343,20 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 uint32 LightVert(v3 & norm)
 {
 	// Do ambient
-	float r = gRSPlights[gRSPnumLights].colour.r;
-	float g = gRSPlights[gRSPnumLights].colour.g;
-	float b = gRSPlights[gRSPnumLights].colour.b;
+	float r = gRSPlights[gRSPnumLights].Colour.x;
+	float g = gRSPlights[gRSPnumLights].Colour.y;
+	float b = gRSPlights[gRSPnumLights].Colour.z;
 
 	for (unsigned int l=0; l < gRSPnumLights; l++)
 	{
 		// Regular directional light
-		float fCosT = norm.Dot(gRSPlights[l].direction);
+		float fCosT = norm.Dot(gRSPlights[l].Direction);
 		
 		if (fCosT > 0.0f)
 		{
-			r += gRSPlights[l].colour.fr * fCosT;
-			g += gRSPlights[l].colour.fg * fCosT;
-			b += gRSPlights[l].colour.fb * fCosT;
+			r += gRSPlights[l].Colour.x * fCosT;
+			g += gRSPlights[l].Colour.y * fCosT;
+			b += gRSPlights[l].Colour.z * fCosT;
 		}
 	}
 
@@ -369,9 +369,9 @@ uint32 LightVert(v3 & norm)
 uint32 LightPointVert(v4 & w)
 {
 	// Do ambient
-	float r = gRSPlights[gRSPnumLights].colour.r;
-	float g = gRSPlights[gRSPnumLights].colour.g;
-	float b = gRSPlights[gRSPnumLights].colour.b;
+	float r = gRSPlights[gRSPnumLights].Colour.x;
+	float g = gRSPlights[gRSPnumLights].Colour.y;
+	float b = gRSPlights[gRSPnumLights].Colour.z;
 
 	for (unsigned int l = 0; l < gRSPnumLights; l++)
 	{
@@ -387,9 +387,9 @@ uint32 LightPointVert(v4 & w)
 			if (at > 0.0f)
 			{
 				float fCosT = 1.0f / at;
-				r += gRSPlights[l].colour.fr * fCosT;
-				g += gRSPlights[l].colour.fg * fCosT;
-				b += gRSPlights[l].colour.fb * fCosT;
+				r += gRSPlights[l].Colour.x * fCosT;
+				g += gRSPlights[l].Colour.y * fCosT;
+				b += gRSPlights[l].Colour.z * fCosT;
 			}
 		}
 	}
@@ -975,9 +975,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		if (gRDP.tnl.Light)
 		{
-			uint32 r = gRSPlights[gRSPnumLights].colour.r;
-			uint32 g = gRSPlights[gRSPnumLights].colour.g;
-			uint32 b = gRSPlights[gRSPnumLights].colour.b;
+			uint32 r = gRSPlights[gRSPnumLights].Colour.x;
+			uint32 g = gRSPlights[gRSPnumLights].Colour.y;
+			uint32 b = gRSPlights[gRSPnumLights].Colour.z;
 
 			v3 model_normal(mn[((i << 1) + 0) ^ 3], mn[((i << 1) + 1) ^ 3], vert.normz);
 			v3 vecTransformedNormal = gRSPworldProject.TransformNormal(model_normal);
@@ -999,7 +999,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				{
 					if (gRSPlights[k].SkipIfZero)
 					{
-						fCosT = norm.Dot(gRSPlights[k].direction);
+						fCosT = norm.Dot(gRSPlights[k].Direction);
 						if (fCosT > 0.0f)
 						{
 							float pi = gRSPlights[k].Iscale /(Pos - gRSPlights[k].Position).LengthSq();
@@ -1007,19 +1007,19 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 							if (pi < 1.0f)
 								fCosT *= pi;
 
-							r += gRSPlights[k].colour.r *fCosT;
-							g += gRSPlights[k].colour.g *fCosT;
-							b += gRSPlights[k].colour.b *fCosT;
+							r += gRSPlights[k].Colour.x *fCosT;
+							g += gRSPlights[k].Colour.y *fCosT;
+							b += gRSPlights[k].Colour.z *fCosT;
 						}
 					}
 				}
 
-				fCosT = norm.Dot(gRSPlights[k].direction);
+				fCosT = norm.Dot(gRSPlights[k].Direction);
 				if (fCosT > 0.0f)
 				{
-					r += gRSPlights[k].colour.r *fCosT;
-					g += gRSPlights[k].colour.g *fCosT;
-					b += gRSPlights[k].colour.b *fCosT;
+					r += gRSPlights[k].Colour.x *fCosT;
+					g += gRSPlights[k].Colour.y *fCosT;
+					b += gRSPlights[k].Colour.z *fCosT;
 				}
 			}
 			else
@@ -1031,9 +1031,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 						float pi = gRSPlights[k].Iscale / (Pos - gRSPlights[k].Position).LengthSq();
 						if (pi > 1.0f) pi = 1.0f;
 
-						r += gRSPlights[k].colour.r *pi;
-						g += gRSPlights[k].colour.g *pi;
-						b += gRSPlights[k].colour.b *pi;
+						r += gRSPlights[k].Colour.x *pi;
+						g += gRSPlights[k].Colour.y *pi;
+						b += gRSPlights[k].Colour.z *pi;
 					}
 				}
 			}
@@ -1101,14 +1101,9 @@ void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 {
 	
 	gRSPlights[dwLight].SkipIfZero = (r + g + b);
-	gRSPlights[dwLight].colour.r = r;
-	gRSPlights[dwLight].colour.g = g;
-	gRSPlights[dwLight].colour.b = b;
-	gRSPlights[dwLight].colour.a = 255;	// Ignore light alpha
-	gRSPlights[dwLight].colour.fr = (float)gRSPlights[dwLight].colour.r;
-	gRSPlights[dwLight].colour.fg = (float)gRSPlights[dwLight].colour.g;
-	gRSPlights[dwLight].colour.fb = (float)gRSPlights[dwLight].colour.b;
-	gRSPlights[dwLight].colour.fa = 255;	// Ignore light alpha
+	gRSPlights[dwLight].Colour.x = r;
+	gRSPlights[dwLight].Colour.y = g;
+	gRSPlights[dwLight].Colour.z = b;
 
 	//TRACE1("Set light %d color", dwLight);
 //	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
@@ -1118,9 +1113,9 @@ void SetLightDirection(uint32 dwLight, float x, float y, float z)
 {
 	float w = sqrt(x*x + y*y + z*z);
 
-	gRSPlights[dwLight].direction.x = x/w;
-	gRSPlights[dwLight].direction.y = y/w;
-	gRSPlights[dwLight].direction.z = z/w;
+	gRSPlights[dwLight].Direction.x = x/w;
+	gRSPlights[dwLight].Direction.y = y/w;
+	gRSPlights[dwLight].Direction.z = z/w;
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f", dwLight, x, y, z));
 }

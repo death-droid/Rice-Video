@@ -197,65 +197,19 @@ typedef struct
 	float u, v;
 }EXTERNAL_VERTEX, *LPSHADERVERTEX;
 
-struct Color
-{
-	union {
-		struct {
-			uint8 r;
-			uint8 g;
-			uint8 b;
-			uint8 a;
-		};
-		uint32 col;
-	};
-
-	union {
-		struct {
-			float fr;
-			float fg;
-			float fb;
-			float fa;
-		};
-		float fcolors[4];
-	};
-};
 
 struct Light
 {
-	v3 direction;
-	u32 SkipIfZero; //Needed by CBFD and MM
-	Color colour; // HOlds the colours
-	float Iscale; // Used by CBFD
-	v4 Position; // Position -32768 to 32767
-	float ca; //Used by point lights
-	float la; //Used by point lights
-	float qa; //Used by point lights
-	u32 Pad0;
+	v3 Direction;	// w component is ignored. Should be normalised
+	u32 SkipIfZero;	// Used by CBFD & MM
+	v3 Colour;		// Colour, components in range 0..1
+	float Iscale;	// Used by CBFD
+	v4 Position;	// Position -32768 to 32767
+	float ca;		// Used by MM(GBI2 point light)
+	float la;		// Used by MM(GBI2 point light)
+	float qa;		// Used by MM(GBI2 point light)
+	u32 Pad0;		// Padding
 };
-
-typedef struct
-{
-	uint32 dwColorOp;
-	uint32 dwColorArg0;
-	uint32 dwColorArg1;
-	uint32 dwColorArg2;
-	uint32 dwAlphaOp;
-	uint32 dwAlphaArg0;
-	uint32 dwAlphaArg1;
-	uint32 dwAlphaArg2;
-	uint32 dwResultArg;
-
-	uint32 dwMinFilter;
-	uint32 dwMagFilter;
-
-	uint32 dwAddressUMode;
-	uint32 dwAddressVMode;
-	uint32 dwAddressW;
-
-	uint32 dwTexCoordIndex;
-	LPDIRECT3DBASETEXTURE9 pTexture;
-} D3DCombinerStage;
-
 
 struct FiddledVtx
 {
