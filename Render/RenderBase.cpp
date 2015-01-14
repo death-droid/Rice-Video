@@ -1058,13 +1058,12 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			g_dwVtxDifColor[i] |= (g << 8);
 			g_dwVtxDifColor[i] |= (b);
 
-			//*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba_a;	// still use alpha from the vertex
+			*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = vert.rgba_a;	// still use alpha from the vertex
 			//TEXTURE
 
 			// ENV MAPPING
 			if (gRDP.tnl.TexGen)
 			{
-				const v3 & norm = vecTransformedNormal;
 				if (gRDP.tnl.TexGenLin)
 				{
 					g_fVtxTxtCoords[i].x = acosf(norm.x) / 3.14f;
