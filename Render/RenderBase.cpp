@@ -36,19 +36,19 @@ inline void RSP_Vtx_Clipping(int i)
 {
 	g_clipFlag[i] = 0;
 	g_clipFlag2[i] = 0;
-	if( g_vecProjected[i].w > 0 )
+	if( g_vecProjected[i].ProjectedPos.w > 0 )
 	{
 		{
 			float scaleFactor = 1.0f;
 			if(windowSetting.uScreenScaleMode == 1)
 				scaleFactor = (3.0f * windowSetting.uDisplayWidth) / (4.0f * windowSetting.uDisplayHeight);
 
-			if( g_vecProjected[i].x > scaleFactor )   g_clipFlag2[i] |= X_CLIP_MAX;
-			if( g_vecProjected[i].x < -scaleFactor )  g_clipFlag2[i] |= X_CLIP_MIN;
-			if( g_vecProjected[i].y > 1 )	g_clipFlag2[i] |= Y_CLIP_MAX;
-			if( g_vecProjected[i].y < -1 )	g_clipFlag2[i] |= Y_CLIP_MIN;
-			//if( g_vecProjected[i].z > 1.0f )	g_clipFlag2[i] |= Z_CLIP_MAX;
-			//if( gRSP.bNearClip && g_vecProjected[i].z < -1.0f )	g_clipFlag2[i] |= Z_CLIP_MIN;
+			if (g_vecProjected[i].ProjectedPos.x > scaleFactor)   g_clipFlag2[i] |= X_CLIP_MAX;
+			if (g_vecProjected[i].ProjectedPos.x < -scaleFactor)  g_clipFlag2[i] |= X_CLIP_MIN;
+			if (g_vecProjected[i].ProjectedPos.y > 1)	g_clipFlag2[i] |= Y_CLIP_MAX;
+			if (g_vecProjected[i].ProjectedPos.y < -1)	g_clipFlag2[i] |= Y_CLIP_MIN;
+			//if( g_vecProjected[i].ProjectedPos.z > 1.0f )	g_clipFlag2[i] |= Z_CLIP_MAX;
+			//if( gRSP.bNearClip && g_vecProjected[i].ProjectedPos.z < -1.0f )	g_clipFlag2[i] |= Z_CLIP_MIN;
 		}
 
 	}
@@ -66,12 +66,8 @@ RDP_Options gRDP;
 
 static int norms[3];
 
-__declspec(align(16)) v4	g_vtxNonTransformed[MAX_VERTS];
-__declspec(align(16)) v4	g_vecProjected[MAX_VERTS];
-__declspec(align(16)) v4	g_vtxTransformed[MAX_VERTS];
+DaedalusVtx4 g_vecProjected[MAX_VERTS];
 
-//uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
-v2		g_fVtxTxtCoords[MAX_VERTS];
 uint32		g_dwVtxDifColor[MAX_VERTS];
 uint32		g_clipFlag[MAX_VERTS]; //Unused? Remove?
 uint32		g_clipFlag2[MAX_VERTS];
@@ -162,8 +158,6 @@ void InitRenderBase()
 
 	for( i=0; i<MAX_VERTS; i++ )
 		g_clipFlag[i] = 0;
-	for( i=0; i<MAX_VERTS; i++ )
-		g_vtxNonTransformed[i].w = 1;
 
 }
 
@@ -259,15 +253,16 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 	VTX_DUMP(TRACE2("Init vertex (%d) to vtx buf[%d]:", dwV, vtxIndex));
 
 	TLITVERTEX &v = g_vtxBuffer[vtxIndex];
-
-	VTX_DUMP(TRACE4("  Trans: x=%f, y=%f, z=%f, w=%f",  g_vtxTransformed[dwV].x,g_vtxTransformed[dwV].y,g_vtxTransformed[dwV].z,g_vtxTransformed[dwV].w));
+	VTX_DUMP(TRACE4("  Trans: x=%f, y=%f, z=%f, w=%f",  g_vecProjected[dwV].TransformedPos.x,g_vecProjected[dwV].TransformedPos.y,g_vecProjected[dwV].TransformedPos.z,g_vecProjected[dwV].TransformedPos.w));
 	float scaleFactor = 1.0f;
 	if(windowSetting.uScreenScaleMode == 2)
 		scaleFactor = (4.0f * windowSetting.uDisplayHeight) / (3.0f * windowSetting.uDisplayWidth);
-	v.x = g_vecProjected[dwV].x*gRSP.vtxXMul+gRSP.vtxXAdd*scaleFactor;
-	v.y = g_vecProjected[dwV].y*gRSP.vtxYMul+gRSP.vtxYAdd;
-	v.z = (g_vecProjected[dwV].z + 1.0f) * 0.5f;	// DirectX minZ=0, maxZ=1
-	v.rhw = g_vecProjected[dwV].w;
+
+	v.x = g_vecProjected[dwV].ProjectedPos.x*gRSP.vtxXMul + gRSP.vtxXAdd*scaleFactor;
+	v.y = g_vecProjected[dwV].ProjectedPos.y*gRSP.vtxYMul + gRSP.vtxYAdd;
+	v.z = (g_vecProjected[dwV].ProjectedPos.z + 1.0f) * 0.5f;	// DirectX minZ=0, maxZ=1
+	v.rhw = g_vecProjected[dwV].ProjectedPos.w;
+	
 	VTX_DUMP(TRACE4("  Proj : x=%f, y=%f, z=%f, rhw=%f",  v.x,v.y,v.z,v.rhw));
 
 	if( gRDP.tnl.Fog )
@@ -275,7 +270,8 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 		uint32	fogFct = 0xFF-(uint8)((g_fFogCoord[dwV]-gRSPfFogMin)*gRSPfFogDivider);
 		v.dcSpecular = (fogFct<<24);
 	}
-	VTX_DUMP(TRACE2("  (U,V): %f, %f",  g_fVtxTxtCoords[dwV].x,g_fVtxTxtCoords[dwV].y));
+	VTX_DUMP(TRACE2("  (U,V): %f, %f",  g_vecProjected[dwV].Texture.x,g_vecProjected[dwV].Texture.y));
+
 
 	v.dcDiffuse = g_dwVtxDifColor[dwV];
 
@@ -288,16 +284,16 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 			// Correction for texGen result
 			float u0,u1,v0,v1;
 			RenderTexture &tex0 = g_textures[gRSP.curTile];
-			u0 = g_fVtxTxtCoords[dwV].x * 32 * 1024 * gRSP.fTexScaleX / tex0.m_fTexWidth;
-			v0 = g_fVtxTxtCoords[dwV].y * 32 * 1024 * gRSP.fTexScaleY / tex0.m_fTexHeight;
+			u0 = g_vecProjected[dwV].Texture.x * 32 * 1024 * gRSP.fTexScaleX / tex0.m_fTexWidth;
+			v0 = g_vecProjected[dwV].Texture.y * 32 * 1024 * gRSP.fTexScaleY / tex0.m_fTexHeight;
 			u0 *= (gRDP.tiles[gRSP.curTile].fShiftScaleS);
 			v0 *= (gRDP.tiles[gRSP.curTile].fShiftScaleT);
 
 			if( CRender::g_pRender->IsTexel1Enable() )
 			{
 				RenderTexture &tex1 = g_textures[(gRSP.curTile+1)&7];
-				u1 = g_fVtxTxtCoords[dwV].x * 32 * 1024 * gRSP.fTexScaleX / tex1.m_fTexWidth;
-				v1 = g_fVtxTxtCoords[dwV].y * 32 * 1024 * gRSP.fTexScaleY / tex1.m_fTexHeight;
+				u1 = g_vecProjected[dwV].Texture.x * 32 * 1024 * gRSP.fTexScaleX / tex1.m_fTexWidth;
+				v1 = g_vecProjected[dwV].Texture.y * 32 * 1024 * gRSP.fTexScaleY / tex1.m_fTexHeight;
 				u1 *= gRDP.tiles[(gRSP.curTile+1)&7].fShiftScaleS;
 				v1 *= gRDP.tiles[(gRSP.curTile+1)&7].fShiftScaleT;
 				CRender::g_pRender->SetVertexTextureUVCoord(v, u0, v0, u1, v1);
@@ -309,13 +305,13 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 		}
 		else
 		{
-			float tex0u = g_fVtxTxtCoords[dwV].x *gRSP.tex0scaleX - gRSP.tex0OffsetX ;
-			float tex0v = g_fVtxTxtCoords[dwV].y *gRSP.tex0scaleY - gRSP.tex0OffsetY ;
+			float tex0u = g_vecProjected[dwV].Texture.x *gRSP.tex0scaleX - gRSP.tex0OffsetX ;
+			float tex0v = g_vecProjected[dwV].Texture.y *gRSP.tex0scaleY - gRSP.tex0OffsetY ;
 
 			if( CRender::g_pRender->IsTexel1Enable() )
 			{
-				float tex1u = g_fVtxTxtCoords[dwV].x *gRSP.tex1scaleX - gRSP.tex1OffsetX ;
-				float tex1v = g_fVtxTxtCoords[dwV].y *gRSP.tex1scaleY - gRSP.tex1OffsetY ;
+				float tex1u = g_vecProjected[dwV].Texture.x *gRSP.tex1scaleX - gRSP.tex1OffsetX ;
+				float tex1v = g_vecProjected[dwV].Texture.y *gRSP.tex1scaleY - gRSP.tex1OffsetY ;
 
 				CRender::g_pRender->SetVertexTextureUVCoord(v, tex0u, tex0v, tex1u, tex1v);
 				VTX_DUMP(TRACE2("  (tex0): %f, %f",  tex0u,tex0v));
@@ -409,12 +405,12 @@ inline void ReplaceAlphaWithFogFactor(int i)
 	if( gRDP.tnl.Fog )
 	{
 		// Use fog factor to replace vertex alpha
-		if( g_vecProjected[i].z > 1 )
+		if (g_vecProjected[i].ProjectedPos.z > 1)
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = 0xFF;
-		if( g_vecProjected[i].z < 0 )
+		if (g_vecProjected[i].ProjectedPos.z < 0)
 			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = 0;
 		else
-			*(((uint8*)&(g_dwVtxDifColor[i]))+3) = (uint8)(g_vecProjected[i].z*255);	
+			*(((uint8*)&(g_dwVtxDifColor[i])) + 3) = (uint8)(g_vecProjected[i].ProjectedPos.z * 255);
 	}
 }
 
@@ -430,10 +426,10 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	// - calculate normal vector
 
 	// Output:  - g_vecProjected[i]				-> transformed vertex x,y,z
-	//			- g_vecProjected[i].w						-> saved vertex 1/w
+	//			- g_vecProjected[i].ProjectedPos.w						-> saved vertex 1/w
 	//			- g_dwVtxFlags[i]				-> flags
 	//			- g_dwVtxDifColor[i]			-> vertex color
-	//			- g_fVtxTxtCoords[i]				-> vertex texture cooridinates
+	//			-g_vecProjected[i].Texture				-> vertex texture cooridinates
 
 	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	g_pVtxBase = pVtxBase;
@@ -444,26 +440,26 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		v4 w(float(vert.x), float(vert.y), float(vert.z), 1.0f);
 
-		g_vtxTransformed[i] = gRSPworldProject.Transform(w);
+		g_vecProjected[i].TransformedPos = gRSPworldProject.Transform(w);
 
-		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
+		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
+		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
+		g_vecProjected[i].ProjectedPos.y = g_vecProjected[i].TransformedPos.y * g_vecProjected[i].ProjectedPos.w;
 
 		if ((g_curRomInfo.bPrimaryDepthHack || options.enableHackForGames == HACK_FOR_NASCAR) && gRDP.otherMode.depth_source)
 		{
-			g_vecProjected[i].z = gRDP.fPrimitiveDepth;
-			g_vtxTransformed[i].z = gRDP.fPrimitiveDepth*g_vtxTransformed[i].w;
+			g_vecProjected[i].ProjectedPos.z = gRDP.fPrimitiveDepth;
+			g_vecProjected[i].TransformedPos.z = gRDP.fPrimitiveDepth*g_vecProjected[i].TransformedPos.w;
 		}
 		else
 		{
-			g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
+			g_vecProjected[i].ProjectedPos.z = g_vecProjected[i].TransformedPos.z * g_vecProjected[i].ProjectedPos.w;
 		}
 
 		if (gRDP.tnl.Fog)
 		{
-			g_fFogCoord[i] = g_vecProjected[i].z;
-			if (g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin)
+			g_fFogCoord[i] = g_vecProjected[i].ProjectedPos.z;
+			if (g_vecProjected[i].ProjectedPos.w < 0 || g_vecProjected[i].ProjectedPos.z < 0 || g_fFogCoord[i] < gRSPfFogMin)
 				g_fFogCoord[i] = gRSPfFogMin;
 		}
 
@@ -493,19 +489,19 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				const v3 & norm = vecTransformedNormal;
 				if (gRDP.tnl.TexGenLin)
 				{
-					g_fVtxTxtCoords[i].x = acosf(norm.x) / 3.14f;
-					g_fVtxTxtCoords[i].y = acosf(norm.y) / 3.14f;
+					g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
+					g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
 				}
 				else
 				{
-					g_fVtxTxtCoords[i].x = 0.5f * (1.0f + norm.x);
-					g_fVtxTxtCoords[i].y = 0.5f * (1.0f - norm.y);
+					g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
+					g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
 				}
 			}
 			else
 			{
-				g_fVtxTxtCoords[i].x = (float)vert.tu;
-				g_fVtxTxtCoords[i].y = (float)vert.tv;
+				g_vecProjected[i].Texture.x = (float)vert.tu;
+				g_vecProjected[i].Texture.y = (float)vert.tv;
 			}
 		}
 		else
@@ -520,8 +516,8 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 			}
 
-			g_fVtxTxtCoords[i].x = (float)vert.tu;
-			g_fVtxTxtCoords[i].y = (float)vert.tv;
+			g_vecProjected[i].Texture.x = (float)vert.tu;
+			g_vecProjected[i].Texture.y = (float)vert.tv;
 		}
 
 		if (options.bWinFrameMode)
@@ -591,9 +587,9 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 	// Currently disabled - still seems a bit dodgy
 	if (gRDP.tnl.TriCull)
 	{
-		v4 & v0 = g_vecProjected[dwV0];
-		v4 & v1 = g_vecProjected[dwV1];
-		v4 & v2 = g_vecProjected[dwV2];
+		v4 & v0 = g_vecProjected[dwV0].ProjectedPos;
+		v4 & v1 = g_vecProjected[dwV1].ProjectedPos;
+		v4 & v2 = g_vecProjected[dwV2].ProjectedPos;
 
 		// Only try to clip if the tri is onscreen. For some reason, this
 		// method doesnt' work well when the z value is outside of screenspace
@@ -681,13 +677,13 @@ void SetPrimitiveDepth(uint32 z, uint32 dwDZ)
 
 void SetVertexXYZ(uint32 vertex, float x, float y, float z)
 {
-	g_vecProjected[vertex].x = x;
-	g_vecProjected[vertex].y = y;
-	g_vecProjected[vertex].z = z;
+	g_vecProjected[vertex].ProjectedPos.x = x;
+	g_vecProjected[vertex].ProjectedPos.y = y;
+	g_vecProjected[vertex].ProjectedPos.z = z;
 
-	g_vtxTransformed[vertex].x = x*g_vtxTransformed[vertex].w;
-	g_vtxTransformed[vertex].y = y*g_vtxTransformed[vertex].w;
-	g_vtxTransformed[vertex].z = z*g_vtxTransformed[vertex].w;
+	g_vecProjected[vertex].TransformedPos.x = x*g_vecProjected[vertex].TransformedPos.w;
+	g_vecProjected[vertex].TransformedPos.y = y*g_vecProjected[vertex].TransformedPos.w;
+	g_vecProjected[vertex].TransformedPos.z = z*g_vecProjected[vertex].TransformedPos.w;
 }
 
 void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val)
@@ -718,12 +714,12 @@ void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val)
 			{
 				// Tarzan
 				// I don't know why Tarzan is different
-				SetVertexXYZ(vertex, x/windowSetting.fViWidth, y/windowSetting.fViHeight, g_vecProjected[vertex].z);
+				SetVertexXYZ(vertex, x / windowSetting.fViWidth, y / windowSetting.fViHeight, g_vecProjected[vertex].ProjectedPos.z);
 			}
 			else
 			{
 				// Toy Story 2 and other games
-				SetVertexXYZ(vertex, x*2/windowSetting.fViWidth, y*2/windowSetting.fViHeight, g_vecProjected[vertex].z);
+				SetVertexXYZ(vertex, x * 2 / windowSetting.fViWidth, y * 2 / windowSetting.fViHeight, g_vecProjected[vertex].ProjectedPos.z);
 			}
 
 			LOG_UCODE("Modify vert %d: x=%d, y=%d", vertex, x, y);
@@ -734,7 +730,7 @@ void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val)
 		{
 			int z = val>>16;
 
-			SetVertexXYZ(vertex, g_vecProjected[vertex].x, g_vecProjected[vertex].y, (((float)z/0x03FF)+0.5f)/2.0f );
+			SetVertexXYZ(vertex, g_vecProjected[vertex].ProjectedPos.x, g_vecProjected[vertex].ProjectedPos.y, (((float)z / 0x03FF) + 0.5f) / 2.0f);
 			LOG_UCODE("Modify vert %d: z=%d", vertex, z);
 			VTX_DUMP(TRACE2("Modify vert %d: z=%d", vertex, z));
 		}
@@ -795,37 +791,37 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		w.z = (float)*(short*)((pVtxBase + 4) ^ 2);
 		w.w = 1.0f;
 
-		g_vtxTransformed[i] = matWorldProject.Transform(w);
+		g_vecProjected[i].TransformedPos = matWorldProject.Transform(w);
 
 		if( gDKRVtxCount == 0 && dwNum==1 )
 		{
-			gRSP.DKRBaseVec.x = g_vtxTransformed[i].x;
-			gRSP.DKRBaseVec.y = g_vtxTransformed[i].y;
-			gRSP.DKRBaseVec.z = g_vtxTransformed[i].z;
-			gRSP.DKRBaseVec.w = g_vtxTransformed[i].w;
+			gRSP.DKRBaseVec.x = g_vecProjected[i].TransformedPos.x;
+			gRSP.DKRBaseVec.y = g_vecProjected[i].TransformedPos.y;
+			gRSP.DKRBaseVec.z = g_vecProjected[i].TransformedPos.z;
+			gRSP.DKRBaseVec.w = g_vecProjected[i].TransformedPos.w;
 		}
 		else if( addbase )
 		{
-			g_vtxTransformed[i].x += gRSP.DKRBaseVec.x;
-			g_vtxTransformed[i].y += gRSP.DKRBaseVec.y;
-			g_vtxTransformed[i].z += gRSP.DKRBaseVec.z;
-			g_vtxTransformed[i].w  = gRSP.DKRBaseVec.w;
+			g_vecProjected[i].TransformedPos.x += gRSP.DKRBaseVec.x;
+			g_vecProjected[i].TransformedPos.y += gRSP.DKRBaseVec.y;
+			g_vecProjected[i].TransformedPos.z += gRSP.DKRBaseVec.z;
+			g_vecProjected[i].TransformedPos.w  = gRSP.DKRBaseVec.w;
 		}
 
-		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
-		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
+		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
+		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
+		g_vecProjected[i].ProjectedPos.y = g_vecProjected[i].TransformedPos.y * g_vecProjected[i].ProjectedPos.w;
+		g_vecProjected[i].ProjectedPos.z = g_vecProjected[i].TransformedPos.z * g_vecProjected[i].ProjectedPos.w;
 
 		gDKRVtxCount++;
 
 		VTX_DUMP(TRACE5("vtx %d: %f, %f, %f, %f", i, 
-			g_vtxTransformed[i].x,g_vtxTransformed[i].y,g_vtxTransformed[i].z,g_vtxTransformed[i].w));
+			g_vecProjected[i].TransformedPos.x,g_vecProjected[i].TransformedPos.y,g_vecProjected[i].TransformedPos.z,g_vecProjected[i].TransformedPos.w));
 
 		if( gRDP.tnl.Fog )
 		{
-			g_fFogCoord[i] = g_vecProjected[i].z;
-			if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
+			g_fFogCoord[i] = g_vecProjected[i].ProjectedPos.z;
+			if( g_vecProjected[i].ProjectedPos.w < 0 || g_vecProjected[i].ProjectedPos.z < 0 || g_fFogCoord[i] < gRSPfFogMin )
 				g_fFogCoord[i] = gRSPfFogMin;
 		}
 
@@ -839,7 +835,7 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		ReplaceAlphaWithFogFactor(i);
 
-		g_fVtxTxtCoords[i].x = g_fVtxTxtCoords[i].y = 1;
+		g_vecProjected[i].Texture.x = g_vecProjected[i].Texture.y = 1;
 
 		pVtxBase += 10;
 	}
@@ -861,15 +857,15 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 		N64VtxPD &vert = pVtxBase[i - dwV0];
 		v4 w(float(vert.x), float(vert.y), (float)vert.z, 1.0f);
 
-		g_vtxTransformed[i] = gRSPworldProject.Transform(w);
+		g_vecProjected[i].TransformedPos = gRSPworldProject.Transform(w);
 
-		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
-		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
+		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
+		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
+		g_vecProjected[i].ProjectedPos.y = g_vecProjected[i].TransformedPos.y * g_vecProjected[i].ProjectedPos.w;
+		g_vecProjected[i].ProjectedPos.z = g_vecProjected[i].TransformedPos.z * g_vecProjected[i].ProjectedPos.w;
 
-		g_fFogCoord[i] = g_vecProjected[i].z;
-		if( g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin )
+		g_fFogCoord[i] = g_vecProjected[i].ProjectedPos.z;
+		if( g_vecProjected[i].ProjectedPos.w < 0 || g_vecProjected[i].ProjectedPos.z < 0 || g_fFogCoord[i] < gRSPfFogMin )
 			g_fFogCoord[i] = gRSPfFogMin;
 
 		RSP_Vtx_Clipping(i);
@@ -911,10 +907,10 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		ReplaceAlphaWithFogFactor(i);
 
-		v2 & t = g_fVtxTxtCoords[i];
+		v2 & t =g_vecProjected[i].Texture;
 		if (gRDP.tnl.TexGen && gRDP.tnl.Light )
 		{
-			//TexGen(g_fVtxTxtCoords[i].x, g_fVtxTxtCoords[i].y); BACKTOMEANDFIXME
+			//TexGen(g_vecProjected[i].Texture.x, g_vecProjected[i].Texture.y); BACKTOMEANDFIXME
 		}
 		else
 		{
@@ -928,7 +924,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			uint32 *dat = (uint32*)(&vert);
 			DebuggerAppendMsg("vtx %d: %d %d %d", i, vert.x,vert.y,vert.z); 
 			DebuggerAppendMsg("      : %f, %f, %f, %f", 
-				g_vtxTransformed[i].x,g_vtxTransformed[i].y,g_vtxTransformed[i].z,g_vtxTransformed[i].w);
+				g_vecProjected[i].TransformedPos.x,g_vecProjected[i].TransformedPos.y,g_vecProjected[i].TransformedPos.z,g_vecProjected[i].TransformedPos.w);
 			DebuggerAppendMsg("      : %X, %X, %X, %X", r,g,b,a);
 			DebuggerAppendMsg("      : u=%f, v=%f", t.x, t.y);
 		});
@@ -960,18 +956,18 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		v4 w(float(vert.x), float(vert.y), (float)vert.z, 1.0f);
 
-		g_vtxTransformed[i] = gRSPworldProject.Transform(w);
+		g_vecProjected[i].TransformedPos = gRSPworldProject.Transform(w);
 
-		g_vecProjected[i].w = 1.0f / g_vtxTransformed[i].w;
-		g_vecProjected[i].x = g_vtxTransformed[i].x * g_vecProjected[i].w;
-		g_vecProjected[i].y = g_vtxTransformed[i].y * g_vecProjected[i].w;
-		g_vecProjected[i].z = g_vtxTransformed[i].z * g_vecProjected[i].w;
+		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
+		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
+		g_vecProjected[i].ProjectedPos.y = g_vecProjected[i].TransformedPos.y * g_vecProjected[i].ProjectedPos.w;
+		g_vecProjected[i].ProjectedPos.z = g_vecProjected[i].TransformedPos.z * g_vecProjected[i].ProjectedPos.w;
 
 		g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 
-		g_fFogCoord[i] = g_vecProjected[i].z;
+		g_fFogCoord[i] = g_vecProjected[i].ProjectedPos.z;
 
-		if (g_vecProjected[i].w < 0 || g_vecProjected[i].z < 0 || g_fFogCoord[i] < gRSPfFogMin)
+		if (g_vecProjected[i].ProjectedPos.w < 0 || g_vecProjected[i].ProjectedPos.z < 0 || g_fFogCoord[i] < gRSPfFogMin)
 			g_fFogCoord[i] = gRSPfFogMin;
 
 		//Initialize clipping flags for vertexs
@@ -989,10 +985,10 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			const v3 & norm = vecTransformedNormal;
 
 			v4 Pos;
-			Pos.x = (g_vecProjected[i].x + gRDP.CoordMod[8]) * gRDP.CoordMod[12];
-			Pos.y = (g_vecProjected[i].y + gRDP.CoordMod[9]) * gRDP.CoordMod[13];
-			Pos.z = (g_vecProjected[i].z + gRDP.CoordMod[10])* gRDP.CoordMod[14];
-			Pos.w = (g_vecProjected[i].w + gRDP.CoordMod[11])* gRDP.CoordMod[15];
+			Pos.x = (g_vecProjected[i].ProjectedPos.x + gRDP.CoordMod[8]) * gRDP.CoordMod[12];
+			Pos.y = (g_vecProjected[i].ProjectedPos.y + gRDP.CoordMod[9]) * gRDP.CoordMod[13];
+			Pos.z = (g_vecProjected[i].ProjectedPos.z + gRDP.CoordMod[10])* gRDP.CoordMod[14];
+			Pos.w = (g_vecProjected[i].ProjectedPos.w + gRDP.CoordMod[11])* gRDP.CoordMod[15];
 
 			float fCosT;
 			uint32 k;
@@ -1066,30 +1062,30 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			{
 				if (gRDP.tnl.TexGenLin)
 				{
-					g_fVtxTxtCoords[i].x = acosf(norm.x) / 3.14f;
-					g_fVtxTxtCoords[i].y = acosf(norm.y) / 3.14f;
+					g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
+					g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
 				}
 				else
 				{
-					g_fVtxTxtCoords[i].x = 0.5f * (1.0f + norm.x);
-					g_fVtxTxtCoords[i].y = 0.5f * (1.0f - norm.y);
+					g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
+					g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
 				}
 			}
 			else
 			{
-				g_fVtxTxtCoords[i].x = (float)vert.tu;
-				g_fVtxTxtCoords[i].y = (float)vert.tv;
+				g_vecProjected[i].Texture.x = (float)vert.tu;
+				g_vecProjected[i].Texture.y = (float)vert.tv;
 			}
 		}
 		else
 		{
-			g_fVtxTxtCoords[i].x = (float)vert.tu;
-			g_fVtxTxtCoords[i].y = (float)vert.tv;
+			g_vecProjected[i].Texture.x = (float)vert.tu;
+			g_vecProjected[i].Texture.y = (float)vert.tv;
 		}
 
 		if (options.bWinFrameMode)
 		{
-			//g_vecProjected[i].z = 0;
+			//g_vecProjected[i].ProjectedPos.z = 0;
 			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 		}
 

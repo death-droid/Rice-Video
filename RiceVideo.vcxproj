@@ -258,6 +258,8 @@
     <ClInclude Include="math\Vector4.h" />
     <ClInclude Include="Parser\Microcode.h" />
     <ClInclude Include="SimpleIni.h" />
+    <ClInclude Include="Utility\ColourValue.h" />
+    <ClInclude Include="Utility\DaedalusVtx.h" />
     <ClInclude Include="_BldNum.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Video.h" />
@@ -315,6 +317,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Utility\ColourValue.cpp" />
     <ClCompile Include="Video.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>

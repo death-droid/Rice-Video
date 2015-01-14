@@ -208,7 +208,7 @@ void DumpVertexArray(void)
 			FiddledVtx &v = g_pVtxBase[i];
 			DebuggerAppendMsg("[%d] x=%d,y=%d,z=%d -- r=%d,g=%d,b=%d,a=%d\n", i, v.x, v.y, v.z, 
 				v.rgba.r, v.rgba.g, v.rgba.b, v.rgba.a);
-			DebuggerAppendMsg("\tx=%f,y=%f,z=%f,rhw=%f\n", g_vecProjected[i].x, g_vecProjected[i].y, g_vecProjected[i].z, g_vecProjected[i].w);
+			DebuggerAppendMsg("\tx=%f,y=%f,z=%f,rhw=%f\n", g_vecProjected[i].x, g_vecProjected[i].y, g_vecProjected[i].ProjectedPos.z, g_vecProjected[i].ProjectedPos.w);
 		}
 	}catch(...)
 	{

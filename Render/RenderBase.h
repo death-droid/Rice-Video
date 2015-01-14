@@ -38,8 +38,8 @@ enum { MAX_VERTS = 80 };		// F3DLP.Rej supports up to 80 verts!
 
 // All these arrays are moved out of the class CRender
 // to be accessed in faster speed
-extern v4	g_vecProjected[MAX_VERTS];
-extern v2		g_fVtxTxtCoords[MAX_VERTS];
+extern DaedalusVtx4	g_vecProjected[MAX_VERTS];
+//extern v2		g_fVtxTxtCoords[MAX_VERTS];
 extern uint32		g_dwVtxDifColor[MAX_VERTS];
 //extern uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
 

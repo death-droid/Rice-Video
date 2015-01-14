@@ -114,7 +114,7 @@ void RSP_GBI1_Tri2(MicroCodeCommand command)
 void RSP_GBI1_BranchZ(MicroCodeCommand command)
 {
 	uint32 vtx = command.branchz.vtx;
-	float vtxdepth = g_vecProjected[vtx].z/g_vecProjected[vtx].w;
+	float vtxdepth = g_vecProjected[vtx].ProjectedPos.z / g_vecProjected[vtx].ProjectedPos.w;
 
 #ifdef _DEBUG
 	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)command.inst.cmd1 || g_curRomInfo.bForceDepthBuffer )

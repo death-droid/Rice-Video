@@ -108,14 +108,14 @@ public:
 
 	inline void CopyVtx(uint32 dwSrc, uint32 dwDest)
 	{
-		g_fVtxTxtCoords[dwDest].x = g_fVtxTxtCoords[dwSrc].x;
-		g_fVtxTxtCoords[dwDest].y = g_fVtxTxtCoords[dwSrc].y;
+		g_vecProjected[dwDest].Texture.x = g_vecProjected[dwSrc].Texture.x;
+		g_vecProjected[dwDest].Texture.y = g_vecProjected[dwSrc].Texture.y;
 	}
 	inline void SetVtxTextureCoord(uint32 dwV, float tu, float tv)
 	{
 		
-		g_fVtxTxtCoords[dwV].x = tu;
-		g_fVtxTxtCoords[dwV].y = tv;
+		g_vecProjected[dwV].Texture.x = tu;
+		g_vecProjected[dwV].Texture.y = tv;
 	}
 
 	virtual void RenderReset();

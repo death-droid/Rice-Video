@@ -317,8 +317,8 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 	LOG_UCODE("Line3D: Vtx0=%d, Vtx1=%d, Width=%d", dwV0, dwV1, dwWidth);
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-	m_line3DVtx[0].z = (g_vecProjected[dwV0].z + 1.0f) * 0.5f;
-	m_line3DVtx[1].z = (g_vecProjected[dwV1].z + 1.0f) * 0.5f;
+	m_line3DVtx[0].z = (g_vecProjected[dwV0].ProjectedPos.z + 1.0f) * 0.5f;
+	m_line3DVtx[1].z = (g_vecProjected[dwV1].ProjectedPos.z + 1.0f) * 0.5f;
 
 	if( m_line3DVtx[0].z != m_line3DVtx[1].z )  
 		return false;
@@ -330,14 +330,14 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 		status.bFrameBufferDrawnByTriangles = true;
 	}
 
-	m_line3DVtx[0].x = ViewPortTranslatef_x(g_vecProjected[dwV0].x);
-	m_line3DVtx[0].y = ViewPortTranslatef_y(g_vecProjected[dwV0].y);
-	m_line3DVtx[0].rhw = g_vecProjected[dwV0].w;
+	m_line3DVtx[0].x = ViewPortTranslatef_x(g_vecProjected[dwV0].ProjectedPos.x);
+	m_line3DVtx[0].y = ViewPortTranslatef_y(g_vecProjected[dwV0].ProjectedPos.y);
+	m_line3DVtx[0].rhw = g_vecProjected[dwV0].ProjectedPos.w;
 	m_line3DVtx[0].dcDiffuse = g_dwVtxDifColor[dwV0];
 
-	m_line3DVtx[1].x = ViewPortTranslatef_x(g_vecProjected[dwV1].x);
-	m_line3DVtx[1].y = ViewPortTranslatef_y(g_vecProjected[dwV1].y);
-	m_line3DVtx[1].rhw = g_vecProjected[dwV1].w;
+	m_line3DVtx[1].x = ViewPortTranslatef_x(g_vecProjected[dwV1].ProjectedPos.x);
+	m_line3DVtx[1].y = ViewPortTranslatef_y(g_vecProjected[dwV1].ProjectedPos.y);
+	m_line3DVtx[1].rhw = g_vecProjected[dwV1].ProjectedPos.w;
 	m_line3DVtx[1].dcDiffuse = g_dwVtxDifColor[dwV1];
 
 	float width = dwWidth*0.5f+1.5f;
