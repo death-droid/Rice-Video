@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "..\stdafx.h"
 #include "BMGDLL.h"
 
-extern FiddledVtx * g_pVtxBase;
 CRender * CRender::g_pRender=NULL;
 int CRender::gRenderReferenceCount=0;
 
@@ -98,63 +97,46 @@ void CRender::ResetMatrices(uint32 size)
 	if (size == 0)
 		size = RICE_MATRIX_STACK;
 
-	mat.m[0][1] = mat.m[0][2] = mat.m[0][3] =
-	mat.m[1][0] = mat.m[1][2] = mat.m[1][3] =
-	mat.m[2][0] = mat.m[2][1] = mat.m[2][3] =
-	mat.m[3][0] = mat.m[3][1] = mat.m[3][2] = 0.0f;
-
-	mat.m[0][0] = mat.m[1][1] = mat.m[2][2] = mat.m[3][3] = 1.0f;
-
-	gRSP.projectionMtxTop = 0;
-	gRSP.modelViewMtxTop = 0;
-	gRSP.projectionMtxs[0] = mat;
-	gRSP.modelviewMtxs[0] = mat;
 	gRSP.mMatStackSize = (size > RICE_MATRIX_STACK) ? RICE_MATRIX_STACK : size;
-
-	gRSP.bMatrixIsUpdated = true;
-	UpdateCombinedMatrix();
+	gRSP.mModelViewTop = 0;
+	gRSP.mProjectionMat = gRSP.mModelViewStack[0] = gMatrixIdentity;
+	gRSP.mWorldProjectValid = false;
 }
 
-void CRender::SetProjection(const Matrix4x4 & mat, bool bPush, bool bReplace)
+void CRender::SetProjection(const u32 address, bool bReplace)
 {
-	if (gRSP.projectionMtxTop >= (RICE_MATRIX_STACK-1) && bPush)
-	{
-		TRACE0("Pushing past proj stack limits!");
-	}
-	else if (bPush)
-		gRSP.projectionMtxTop++;
-
 	if (bReplace)
 	{
-		// Load projection matrix
-		gRSP.projectionMtxs[gRSP.projectionMtxTop] = mat;
+		MatrixFromN64FixedPoint(gRSP.mProjectionMat, address);
+
 	}
 	else
 	{
-		gRSP.projectionMtxs[gRSP.projectionMtxTop] = bPush ? mat * gRSP.projectionMtxs[gRSP.projectionMtxTop - 1] : mat * gRSP.projectionMtxs[gRSP.projectionMtxTop];
+		MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+		MatrixMultiplyAligned(&gRSP.mProjectionMat, &gRSP.mTempMat, &gRSP.mProjectionMat);
 	}
 
-	gRSP.bMatrixIsUpdated = true;
+	gRSP.mWorldProjectValid = false;
 
 	DumpMatrix(mat,"Set Projection Matrix");
 }
 
-bool mtxPopUpError = false;
-void CRender::SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace)
+void CRender::SetWorldView(const u32 address, bool bPush, bool bReplace)
 {
-	if (bPush && (gRSP.modelViewMtxTop < gRSP.mMatStackSize))
+	if (bPush && (gRSP.mModelViewTop < gRSP.mMatStackSize))
 	{
-		gRSP.modelViewMtxTop++;
+		gRSP.mModelViewTop++;
 
 		// We should store the current projection matrix...
 		if (bReplace)
 		{
-			// Load projection matrix
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat;
+			//Load Modelview matrix
+			MatrixFromN64FixedPoint(gRSP.mModelViewStack[gRSP.mModelViewTop], address);
 		}
 		else // Multiply projection matrix
 		{
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat * gRSP.modelviewMtxs[gRSP.modelViewMtxTop-1];
+			MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+			MatrixMultiplyAligned(&gRSP.mModelViewStack[gRSP.mModelViewTop], &gRSP.mTempMat, &gRSP.mModelViewStack[gRSP.mModelViewTop - 1]);
 		}
 	}
 	else	// NoPush
@@ -162,26 +144,17 @@ void CRender::SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace)
 		if (bReplace)
 		{
 			// Load projection matrix
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat;
+			MatrixFromN64FixedPoint(gRSP.mModelViewStack[gRSP.mModelViewTop], address);
 		}
 		else
 		{
 			// Multiply projection matrix
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat * gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
+			MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+			MatrixMultiplyAligned(&gRSP.mModelViewStack[gRSP.mModelViewTop], &gRSP.mTempMat, &gRSP.mModelViewStack[gRSP.mModelViewTop]);
 		}
 	}
 
-	gRSPmodelViewTop = gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
-	if( options.enableHackForGames == HACK_REVERSE_XY_COOR )
-	{
-		gRSPmodelViewTop = gRSPmodelViewTop * reverseXY;
-	}
-	if( options.enableHackForGames == HACK_REVERSE_Y_COOR )
-	{
-		gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
-	}
-
-	gRSP.bMatrixIsUpdated = true;
+	gRSP.mWorldProjectValid = false;
 
 	DumpMatrix(mat,"Set WorldView Matrix");
 }
@@ -189,49 +162,12 @@ void CRender::SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace)
 
 void CRender::PopWorldView(u32 num)
 {
-	if (gRSP.modelViewMtxTop > (num-1))
+	if (gRSP.mModelViewTop > (num - 1))
 	{
-		gRSP.modelViewMtxTop-=num;
-		gRSPmodelViewTop = gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
-		if( options.enableHackForGames == HACK_REVERSE_XY_COOR )
-		{
-			gRSPmodelViewTop = gRSPmodelViewTop * reverseXY;
-		}
-		if( options.enableHackForGames == HACK_REVERSE_Y_COOR )
-		{
-			gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
-		}
-		gRSP.bMatrixIsUpdated = true;
+		gRSP.mModelViewTop -= num;
+
+		gRSP.mWorldProjectValid = false;
 	}
-	else
-	{
-#ifdef _DEBUG
-		if( pauseAtNext )
-			TRACE0("Popping past worldview stack limits");
-#endif
-		mtxPopUpError = true;
-	}
-}
-
-
-Matrix4x4 & CRender::GetWorldProjectMatrix(void)
-{
-	return gRSPworldProject;
-}
-
-void CRender::SetWorldProjectMatrix(Matrix4x4 &mtx)
-{
-#ifdef _DEBUG
-	if( pauseAtNext && (eventToPause == NEXT_TRIANGLE || eventToPause == NEXT_FLUSH_TRI || eventToPause == NEXT_MATRIX_CMD ) )
-	{
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
-		DebuggerAppendMsg("Force Matrix: pc=%08X", dwPC);
-		DumpMatrix(mtx, "Force Matrix, loading new world-project matrix");
-	}
-#endif
-	gRSPworldProject = mtx;
-
-	gRSP.bMatrixIsUpdated = false;
 }
 
 void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)

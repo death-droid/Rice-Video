@@ -68,8 +68,6 @@ extern TLITVERTEX			g_texRectTVtx[4];
 
 extern uint32	gRSPnumLights;
 extern Light	gRSPlights[16];
-extern Matrix4x4	gRSPworldProject;
-extern Matrix4x4	gRSPmodelViewTop;
 extern float	gRSPfFogMin;
 extern float	gRSPfFogMax;
 extern float	gRSPfFogDivider;
@@ -89,9 +87,6 @@ __declspec(align(16)) struct RSP_Options
 
 	RenderShadeMode	shadeMode;
 
-	uint32	projectionMtxTop;
-	uint32	modelViewMtxTop;
-
 	uint32	numVertices;
 	uint32  maxVertexID;
 
@@ -99,11 +94,17 @@ __declspec(align(16)) struct RSP_Options
 	int		clip_ratio_left,	clip_ratio_top,	clip_ratio_right,	clip_ratio_bottom;
 	int		real_clip_scissor_left,	real_clip_scissor_top,	real_clip_scissor_right,	real_clip_scissor_bottom;
 
-	Matrix4x4	projectionMtxs[RICE_MATRIX_STACK];
-	Matrix4x4	modelviewMtxs[RICE_MATRIX_STACK];
-	u32		mMatStackSize;
+	mutable Matrix4x4	mWorldProject;
+	Matrix4x4			mTempMat;
+	Matrix4x4			mProjectionMat;
+	Matrix4x4			mModelViewStack[RICE_MATRIX_STACK];	//DKR reuses these and need at least 4 //Corn
+	u32					mModelViewTop;
+	u32					mMatStackSize;
+	mutable bool		mWorldProjectValid;
+	bool				mReloadProj;
+	bool				mWPmodified;
+	u32					mDKRMatIdx;
 
-	bool	bMatrixIsUpdated;
 	bool	bLightIsUpdated;
 
 	uint32		segments[16];
@@ -222,7 +223,6 @@ void SetLightCBFD(uint32 dwLight, short nonzero);
 void SetLightEx(uint32 dwLight, float ca, float la, float qa);
 
 void ForceMainTextureIndex(int dwTile); 
-void UpdateCombinedMatrix();
 
 void ClipVertexes();
 

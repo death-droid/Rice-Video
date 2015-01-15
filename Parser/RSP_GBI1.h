@@ -146,16 +146,11 @@ void RSP_GBI1_LoadUCode(MicroCodeCommand command)
 //NOT GBI1 SPECFIFIC MOVEME FIXME CLEANME
 void RSP_GFX_Force_Matrix(uint32 dwAddr)
 {
-	if (dwAddr + 64 > g_dwRamSize)
-	{
-		DebuggerAppendMsg("ForceMtx: Address invalid (0x%08x)", dwAddr);
-		return;
-	}
+	gRSP.mWorldProjectValid = true;
+	gRSP.mWPmodified = true;//Signal that Worldproject matrix is changed
 
-	// Load matrix from dwAddr
-	LoadMatrix(dwAddr);
+	MatrixFromN64FixedPoint(gRSP.mWorldProject, dwAddr);
 
-	CRender::g_pRender->SetWorldProjectMatrix(matToLoad);
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_MATRIX_CMD,{TRACE0("Paused at ModMatrix Cmd");});
 }
@@ -616,13 +611,14 @@ void RSP_GBI1_Mtx(MicroCodeCommand command)
 
 	LoadMatrix(addr);
 
+	//Load matrix from address
 	if (command.mtx1.projection)
 	{
-		CRender::g_pRender->SetProjection(matToLoad, command.mtx1.push, command.mtx1.load);
+		CRender::g_pRender->SetProjection(addr, command.mtx1.load);
 	}
 	else
 	{
-		CRender::g_pRender->SetWorldView(matToLoad, command.mtx1.push, command.mtx1.load);
+		CRender::g_pRender->SetWorldView(addr, command.mtx1.push, command.mtx1.load);
 	}
 }
 

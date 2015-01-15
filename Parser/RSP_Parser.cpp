@@ -37,7 +37,6 @@ const MicroCodeInstruction *gUcodeFunc = NULL;
 
 void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 data_size);
 
-FiddledVtx * g_pVtxBase=NULL;
 static RDP_GeometryMode gGeometryMode;
 
 SetImgInfo g_TI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
@@ -601,7 +600,14 @@ void RSP_RDP_Nothing(MicroCodeCommand command)
 
 void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 {
-	UpdateCombinedMatrix();
+	gRSP.mWPmodified = true; //Signal that worldproject matrix is changed 
+
+	//Make sure WP matrix is up to date before changing WP matrix
+	if (!gRSP.mWorldProjectValid)
+	{
+		gRSP.mWorldProject = gRSP.mModelViewStack[gRSP.mModelViewTop] * gRSP.mProjectionMat;
+		gRSP.mWorldProjectValid = true;
+	}
 
 	int x = ((command.inst.cmd0) & 0x1F) >> 1;
 	int y = x >> 2;
@@ -610,17 +616,15 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 	//Float
 	if ((command.inst.cmd0) & 0x20)
 	{
-		gRSPworldProject.m[y][x]     = (float)(int)gRSPworldProject.m[y][x] + ((float) (command.inst.cmd1 >> 16) / 65536.0f);
-		gRSPworldProject.m[y][x + 1] = (float)(int)gRSPworldProject.m[y][x + 1] + ((float) (command.inst.cmd1 & 0xFFFF) / 65536.0f);
+		gRSP.mWorldProject.m[y][x] = (float)(int)gRSP.mWorldProject.m[y][x] + ((float)(command.inst.cmd1 >> 16) / 65536.0f);
+		gRSP.mWorldProject.m[y][x + 1] = (float)(int)gRSP.mWorldProject.m[y][x + 1] + ((float)(command.inst.cmd1 & 0xFFFF) / 65536.0f);
 	}
 	else
 	{
 		//Integer
-		gRSPworldProject.m[y][x]     = (float)(short)((command.inst.cmd1)>>16);
-		gRSPworldProject.m[y][x + 1] = (float)(short)((command.inst.cmd1) & 0xFFFF);
+		gRSP.mWorldProject.m[y][x] = (float)(short)((command.inst.cmd1) >> 16);
+		gRSP.mWorldProject.m[y][x + 1] = (float)(short)((command.inst.cmd1) & 0xFFFF);
 	}
-
-	gRSP.bMatrixIsUpdated = false;
 
 #ifdef _DEBUG
 	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
@@ -753,6 +757,27 @@ void RDP_DLParser_Process(void)
 
 	CRender::g_pRender->EndRendering();
 }
+
+void MatrixFromN64FixedPoint(Matrix4x4 & mat, u32 address)
+{
+	if (address + 64 > g_dwRamSize)
+	{
+		TRACE1("Mtx: Address invalid (0x%08x)", addr);
+		return;
+	}
+
+	const float fRecip = 1.0f / 65536.0f;
+	const N64mat *Imat = (N64mat *)(g_pu8RamBase + address);
+
+	for (int i = 0; i < 4; i++)
+	{
+		mat.m[i][0] = ((Imat->h[i].x << 16) | Imat->l[i].x) * fRecip;
+		mat.m[i][1] = ((Imat->h[i].y << 16) | Imat->l[i].y) * fRecip;
+		mat.m[i][2] = ((Imat->h[i].z << 16) | Imat->l[i].z) * fRecip;
+		mat.m[i][3] = ((Imat->h[i].w << 16) | Imat->l[i].w) * fRecip;
+	}
+}
+
 
 Matrix4x4 matToLoad;
 void LoadMatrix(uint32 addr)

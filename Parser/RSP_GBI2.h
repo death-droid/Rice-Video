@@ -420,11 +420,11 @@ void RSP_GBI2_Mtx(MicroCodeCommand command)
 	if (command.mtx2.projection)
 	{
 		// So far only Extreme-G seems to Push/Pop projection matrices	
-		CRender::g_pRender->SetProjection(matToLoad, command.mtx2.nopush==0, command.mtx2.load);
+		CRender::g_pRender->SetProjection(addr, command.mtx2.load);
 	}
 	else
 	{
-		CRender::g_pRender->SetWorldView(matToLoad, command.mtx2.nopush==0, command.mtx2.load);
+		CRender::g_pRender->SetWorldView(addr, command.mtx2.nopush==0, command.mtx2.load);
 
 		if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY )
 		{

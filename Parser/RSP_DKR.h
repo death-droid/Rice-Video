@@ -165,18 +165,17 @@ void RSP_Mtx_DKR(MicroCodeCommand command)
 		mul = ((command.inst.cmd0 >> 23) & 0x1);
 	}
 
-	// Load matrix from address
-	Matrix4x4 &mat = gRSP.modelviewMtxs[mtx_command];
-	LoadMatrix(address);
+	gRSP.mWPmodified = true;
 
 	//Perform any required modifications to the matrix (aka if it needs multiply)
 	if( mul )
 	{
-		mat = matToLoad* gRSP.modelviewMtxs[0];
+		MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+		MatrixMultiplyAligned(&gRSP.mModelViewStack[mtx_command], &gRSP.mTempMat, &gRSP.mModelViewStack[0]);
 	}
 	else
 	{
-		mat = matToLoad;
+		MatrixFromN64FixedPoint(gRSP.mModelViewStack[mtx_command], address);
 	}
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_MATRIX_CMD,{TRACE0("Paused at DKR Matrix Cmd");});
@@ -199,6 +198,7 @@ void RSP_MoveWord_DKR(MicroCodeCommand command)
 
 	case RSP_MOVE_WORD_LIGHTCOL:
 		gDKRCMatrixIndex = (command.inst.cmd1 >> 6) & 0x3;
+		gRSP.mWPmodified = true;
 		LOG_UCODE("    gDKRCMatrixIndex = %d", gDKRCMatrixIndex);
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_MATRIX_CMD, {DebuggerAppendMsg("DKR Moveword, select matrix %d, cmd0=%08X, cmd1=%08X", gDKRCMatrixIndex, (command.inst.cmd0), (command.inst.cmd1));});
 		break;

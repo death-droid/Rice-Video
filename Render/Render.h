@@ -85,22 +85,18 @@ public:
 	}
 	uint32 GetFogColor() { return gRDP.fogColor; }
 
-	void SetProjection(const Matrix4x4 & mat, bool bPush, bool bReplace);
-	void SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace);
-	inline int GetProjectMatrixLevel(void) { return gRSP.projectionMtxTop; }
-	inline int GetWorldViewMatrixLevel(void) { return gRSP.modelViewMtxTop; }
+	void SetProjection(const u32 addr, bool bReplace);
+	void SetWorldView(const u32 addr, bool bPush, bool bReplace);
 
 	inline void PopProjection()
 	{
-		if (gRSP.projectionMtxTop > 0)
-			gRSP.projectionMtxTop--;
+	/*	if (gRSP.mProjectionTop > 0)
+			gRSP.mProjectionTop--;
 		else
-			TRACE0("Popping past projection stack limits");
+			TRACE0("Popping past projection stack limits");*/
 	}
 
 	void PopWorldView(u32 num = 1);
-	Matrix4x4 & GetWorldProjectMatrix(void);
-	void SetWorldProjectMatrix(Matrix4x4 &mtx);
 	
 	void ResetMatrices(uint32 size);
 

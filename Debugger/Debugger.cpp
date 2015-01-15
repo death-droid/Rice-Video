@@ -65,7 +65,6 @@ bool debuggerDropCombinerInfos=false;
 char msgBuf[0x20000+2];
 bool msgBufUpdated = false;
 static HWND myDialogWnd = NULL;
-extern FiddledVtx * g_pVtxBase;
 HWND hWndDlg = NULL;
 
 bool debuggerWinActive = false;
@@ -201,19 +200,7 @@ H_START:\t%08X\nV_START:\t%08X\nVI Width=%f(x %f), VI Height=%f(x %f)\n\n",
 
 void DumpVertexArray(void)
 {
-	DebuggerAppendMsg("----Vertexes----\n");
-	try{
-		for( int i=0; i<32; i++ )
-		{
-			FiddledVtx &v = g_pVtxBase[i];
-			DebuggerAppendMsg("[%d] x=%d,y=%d,z=%d -- r=%d,g=%d,b=%d,a=%d\n", i, v.x, v.y, v.z, 
-				v.rgba.r, v.rgba.g, v.rgba.b, v.rgba.a);
-			DebuggerAppendMsg("\tx=%f,y=%f,z=%f,rhw=%f\n", g_vecProjected[i].x, g_vecProjected[i].y, g_vecProjected[i].ProjectedPos.z, g_vecProjected[i].ProjectedPos.w);
-		}
-	}catch(...)
-	{
-		DebuggerAppendMsg("Invalid memory pointer of vertex array\n");
-	}
+
 }
 
 void DumpHex(uint32 rdramAddr, int count);
@@ -527,7 +514,7 @@ void DumpInfo(int thingToDump)
 		}
 		break;
 	case DUMP_COMBINED_MATRIX:
-		DumpMatrix2(gRSPworldProject,"Combined Matrix");
+		DumpMatrix2(gRSP.mWorldProject,"Combined Matrix");
 		break;
 	case DUMP_WORLD_TOP_MATRIX:
 		DumpMatrix2(gRSP.modelviewMtxs[gRSP.modelViewMtxTop],"World Top Matrix");

@@ -20,8 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "..\stdafx.h"
 #include "float.h"
 
-extern FiddledVtx * g_pVtxBase;
-
 #define ENABLE_CLIP_TRI
 #define X_CLIP_MAX	0x1
 #define X_CLIP_MIN	0x2
@@ -88,11 +86,6 @@ float				gRSPfFogDivider;
 uint32			gRSPnumLights;
 Light	gRSPlights[16];
 
-__declspec(align(16)) Matrix4x4	gRSPworldProject;
-__declspec(align(16)) Matrix4x4	gRSPmodelViewTop;
-
-
-
 void InitRenderBase()
 {
 	gRSPfFogMin = gRSPfFogMax = 0.0f;
@@ -110,7 +103,7 @@ void InitRenderBase()
 	gRDP.scissor.right=gRDP.scissor.bottom=640;
 	
 	gRSP.curTile=gRSPnumLights= 0;
-	gRSP.projectionMtxTop = gRSP.modelViewMtxTop = 0;
+	//gRSP.projectionMtxTop = gRSP.modelViewMtxTop = 0;
 	gRDP.fogColor = gRDP.primitiveColor = gRDP.envColor = gRDP.primitiveDepth = gRDP.primLODMin = gRDP.primLODFrac = gRDP.LODFrac = 0;
 	gRDP.fPrimitiveDepth = 0;
 	gRSP.numVertices = 0;
@@ -160,6 +153,44 @@ void InitRenderBase()
 		g_clipFlag[i] = 0;
 
 }
+
+//*****************************************************************************
+//
+//*****************************************************************************
+inline void UpdateWorldProject()
+{
+	if (!gRSP.mWorldProjectValid)
+	{
+		gRSP.mWorldProjectValid = true;
+		if (gRSP.mReloadProj)
+		{
+			gRSP.mReloadProj = false;
+			//sceGuSetMatrix(GU_PROJECTION, reinterpret_cast< const ScePspFMatrix4 * >(&mProjectionMat));
+		}
+		MatrixMultiplyAligned(&gRSP.mWorldProject, &gRSP.mModelViewStack[gRSP.mModelViewTop], &gRSP.mProjectionMat);
+	}
+}
+
+
+//If WoldProjectmatrix has been modified due to insert or force matrix (Kirby, SSB / Tarzan, Rayman2, Donald duck, SW racer, Robot on wheels)
+//we need to update sceGU projmtx //Corn
+inline void PokeWorldProject()
+{
+	if (gRSP.mWPmodified)
+	{
+		gRSP.mWPmodified = false;
+		gRSP.mReloadProj = true;
+		/*if (gGlobalPreferences.ViewportType == VT_FULLSCREEN_HD)
+		{	//proper 16:9 scale
+			mWorldProject.mRaw[0] *= HD_SCALE;
+			mWorldProject.mRaw[4] *= HD_SCALE;
+			mWorldProject.mRaw[8] *= HD_SCALE;
+			mWorldProject.mRaw[12] *= HD_SCALE;
+		}*/
+		gRSP.mModelViewStack[gRSP.mModelViewTop] = gMatrixIdentity;
+	}
+}
+
 
 void SetFogMinMax(float fMin, float fMax, float fMul, float fOffset)
 {
@@ -416,9 +447,6 @@ inline void ReplaceAlphaWithFogFactor(int i)
 
 void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
-
-	UpdateCombinedMatrix();
-
 	// This function is called upon SPvertex
 	// - do vertex matrix transform
 	// - do vertex lighting
@@ -432,7 +460,11 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	//			-g_vecProjected[i].Texture				-> vertex texture cooridinates
 
 	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
-	g_pVtxBase = pVtxBase;
+	UpdateWorldProject();
+	PokeWorldProject();
+
+	const Matrix4x4 & mat_world_project = gRSP.mWorldProject;
+	const Matrix4x4 & mat_world = gRSP.mModelViewStack[gRSP.mModelViewTop];
 
 	for (uint32 i = dwV0; i < dwV0 + dwNum; i++)
 	{
@@ -440,7 +472,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		v4 w(float(vert.x), float(vert.y), float(vert.z), 1.0f);
 
-		g_vecProjected[i].TransformedPos = gRSPworldProject.Transform(w);
+		g_vecProjected[i].TransformedPos = mat_world_project.Transform(w);
 
 		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
 		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
@@ -470,7 +502,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			
 			v3 model_normal((float)vert.norm_x, (float)vert.norm_y, (float)vert.norm_z);
 			v3 vecTransformedNormal;
-			vecTransformedNormal = gRSPmodelViewTop.TransformNormal(model_normal);
+			vecTransformedNormal = mat_world.TransformNormal(model_normal);
 			vecTransformedNormal.Normalise();
 
 			if (gRDP.tnl.PointLight)
@@ -758,12 +790,10 @@ extern bool gDKRBillBoard;
 
 void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
-	UpdateCombinedMatrix();
 
 	uint32 pVtxBase = uint32(g_pu8RamBase + dwAddr);
-	g_pVtxBase = (FiddledVtx*)pVtxBase;
 
-	Matrix4x4 &matWorldProject(gRSP.modelviewMtxs[gDKRCMatrixIndex]);
+	Matrix4x4 &matWorldProject(gRSP.mModelViewStack[gDKRCMatrixIndex]);
 
 	uint32 i;
 
@@ -847,17 +877,20 @@ void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 extern uint32 dwPDCIAddr;
 void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
-	UpdateCombinedMatrix();
 
 	N64VtxPD * pVtxBase = (N64VtxPD*)(g_pu8RamBase + dwAddr);
-	g_pVtxBase = (FiddledVtx*)pVtxBase;	// Fix me
+	UpdateWorldProject();
+	PokeWorldProject();
+
+	const Matrix4x4 & mat_world = gRSP.mModelViewStack[gRSP.mModelViewTop];
+	const Matrix4x4 & mat_project = gRSP.mProjectionMat;
 
 	for (uint32 i = dwV0; i < dwV0 + dwNum; i++)
 	{
 		N64VtxPD &vert = pVtxBase[i - dwV0];
 		v4 w(float(vert.x), float(vert.y), (float)vert.z, 1.0f);
 
-		g_vecProjected[i].TransformedPos = gRSPworldProject.Transform(w);
+		g_vecProjected[i].TransformedPos = mat_project.Transform(w);
 
 		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
 		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
@@ -881,7 +914,7 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			v3 model_normal((char)r, (char)g, (char)b);
 
 			v3 vecTransformedNormal;
-			vecTransformedNormal = gRSPworldProject.TransformNormal(model_normal);
+			vecTransformedNormal = mat_world.TransformNormal(model_normal);
 			vecTransformedNormal.Normalise();
 
 			g_dwVtxDifColor[i] = LightVert(vecTransformedNormal);
@@ -942,10 +975,12 @@ extern uint32 dwConkerVtxZAddr;
 
 void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
-	UpdateCombinedMatrix();
-
 	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
-	g_pVtxBase = pVtxBase;
+	UpdateWorldProject();
+	PokeWorldProject();
+
+	const Matrix4x4 & mat_project = gRSP.mProjectionMat;
+	const Matrix4x4 & mat_world = gRSP.mModelViewStack[gRSP.mModelViewTop];
 
 	//Model normal base vector
 	short *mn = (short*)(g_pu8RamBase + dwConkerVtxZAddr);
@@ -956,7 +991,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		v4 w(float(vert.x), float(vert.y), (float)vert.z, 1.0f);
 
-		g_vecProjected[i].TransformedPos = gRSPworldProject.Transform(w);
+		g_vecProjected[i].TransformedPos = mat_project.Transform(w);
 
 		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
 		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
@@ -980,7 +1015,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			uint32 b = gRSPlights[gRSPnumLights].Colour.z;
 
 			v3 model_normal(mn[((i << 1) + 0) ^ 3], mn[((i << 1) + 1) ^ 3], vert.normz);
-			v3 vecTransformedNormal = gRSPworldProject.TransformNormal(model_normal);
+			v3 vecTransformedNormal = mat_world.TransformNormal(model_normal);
 			vecTransformedNormal.Normalise();
 			const v3 & norm = vecTransformedNormal;
 
@@ -1085,7 +1120,6 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		if (options.bWinFrameMode)
 		{
-			//g_vecProjected[i].ProjectedPos.z = 0;
 			g_dwVtxDifColor[i] = COLOR_RGBA(vert.rgba_r, vert.rgba_g, vert.rgba_b, vert.rgba_a);
 		}
 
@@ -1142,6 +1176,7 @@ void SetLightEx(uint32 dwLight, float ca, float la, float qa)
 	gRSPlights[dwLight].qa = qa / (8.0f*65535.0f);
 }
 
+
 void ForceMainTextureIndex(int dwTile) 
 {
 	if( dwTile == 1 && !(CRender::g_pRender->IsTexel0Enable()) && CRender::g_pRender->IsTexel1Enable() )
@@ -1188,19 +1223,5 @@ void HackZAll()
 	{
 		g_vtxBuffer[i].z = HackZ(g_vtxBuffer[i].z);
 	}
-}
-
-
-extern Matrix4x4 reverseXY;
-extern Matrix4x4 reverseY;
-
-void UpdateCombinedMatrix()
-{
-	if( gRSP.bMatrixIsUpdated )
-	{
-		gRSPworldProject = gRSP.modelviewMtxs[gRSP.modelViewMtxTop] * gRSP.projectionMtxs[gRSP.projectionMtxTop];
-		gRSP.bMatrixIsUpdated = false;
-	}
-
 }
 
