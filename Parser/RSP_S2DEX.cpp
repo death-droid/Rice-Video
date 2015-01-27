@@ -375,7 +375,7 @@ void DLParser_TexRect(MicroCodeCommand command);
 // YoshiStory uses this - 0xe4
 void RSP_S2DEX_RDPHALF_0(MicroCodeCommand command)
 {
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 	uint32 dwNextUcode = *(uint32 *)(g_pu8RamBase + dwPC);
 
 	if( (dwNextUcode>>24) != S2DEX_SELECT_DL )

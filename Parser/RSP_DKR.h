@@ -137,10 +137,9 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 //*****************************************************************************
 void RDP_GFX_DLInMem(MicroCodeCommand command)
 {
-
 	gDlistStackPointer++;
-	gDlistStack[gDlistStackPointer].pc = command.inst.cmd1;
-	gDlistStack[gDlistStackPointer].countdown = (command.inst.cmd0 >> 16) & 0xFF;
+	gDlistStack.address[gDlistStackPointer] = command.inst.cmd1;
+	gDlistStack.limit = (command.inst.cmd0 >> 16) & 0xFF;
 }
 
 //*****************************************************************************

@@ -300,7 +300,7 @@ bool FrameBufferManager::IsDIaRenderTexture()
 	int height;
 	uint32 newFillColor;
 
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 
 	for( int i=0; i<10; i++ )
 	{
@@ -701,7 +701,7 @@ void FrameBufferManager::UpdateFrameBufferBeforeUpdateFrame()
 
 uint32 FrameBufferManager::ComputeCImgHeight(SetImgInfo &info, uint32 &height)
 {
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 
 	for( int i=0; i<10; i++ )
 	{

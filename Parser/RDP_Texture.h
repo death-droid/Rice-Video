@@ -1374,7 +1374,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4+8);
 	uint32 dwHalf1 = *(uint32 *)(g_pu8RamBase + dwPC);
@@ -1386,12 +1386,12 @@ void DLParser_TexRect(MicroCodeCommand command)
 			((dwHalf2>>24) == 0xb4 || (dwHalf2>>24) == 0xb3 || (dwHalf2>>24) == 0xb2 || (dwHalf2>>24) == 0xf1) )
 		{
 			// Increment PC so that it points to the right place
-			gDlistStack[gDlistStackPointer].pc += 16;
+			gDlistStack.address[gDlistStackPointer] += 16;
 		}
 		else
 		{
 			// Hack for some games, All_Star_Baseball_2000
-			gDlistStack[gDlistStackPointer].pc += 8;
+			gDlistStack.address[gDlistStackPointer] += 8;
 			dwCmd3 = dwCmd2;
 			//dwCmd2 = dwHalf1;
 			//dwCmd2 = 0;
@@ -1402,7 +1402,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 	}
 	else
 	{
-		gDlistStack[gDlistStackPointer].pc += 16;
+		gDlistStack.address[gDlistStackPointer] += 16;
 	}
 
 

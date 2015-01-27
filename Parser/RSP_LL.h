@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //*****************************************************************************
 void DLParser_RSP_Last_Legion_0x80(MicroCodeCommand command)
 {
-	gDlistStack[gDlistStackPointer].pc += 16;
+	gDlistStack.address[gDlistStackPointer] += 16;
 	LOG_UCODE("DLParser_RSP_Last_Legion_0x80");
 }
 
@@ -39,7 +39,7 @@ void DLParser_RSP_Last_Legion_0x80(MicroCodeCommand command)
 void DLParser_RSP_Last_Legion_0x00(MicroCodeCommand command)
 {
 	LOG_UCODE("DLParser_RSP_Last_Legion_0x00");
-	gDlistStack[gDlistStackPointer].pc += 16;
+	gDlistStack.address[gDlistStackPointer] += 16;
 
 	if( (command.inst.cmd0) == 0 && (command.inst.cmd1) )
 	{
@@ -59,15 +59,13 @@ void DLParser_RSP_Last_Legion_0x00(MicroCodeCommand command)
 		{
 			// Need to call both DL
 			gDlistStackPointer++;
-			gDlistStack[gDlistStackPointer].pc = pc1;
-			gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+			gDlistStack.address[gDlistStackPointer] = pc1;
 		}
 
 		if( pc2 && pc2 != 0xffffff && pc2 < g_dwRamSize )
 		{
 			gDlistStackPointer++;
-			gDlistStack[gDlistStackPointer].pc = pc2;
-			gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+			gDlistStack.address[gDlistStackPointer] = pc2;
 		}
 	}
 	else if( (command.inst.cmd1) == 0 )
@@ -91,11 +89,11 @@ void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC);
 	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 
-	gDlistStack[gDlistStackPointer].pc += 8;
+	gDlistStack.address[gDlistStackPointer] += 8;
 
 
 	LOG_UCODE("0x%08x: %08x %08x", dwPC, *(uint32 *)(g_pu8RamBase + dwPC+0), *(uint32 *)(g_pu8RamBase + dwPC+4));

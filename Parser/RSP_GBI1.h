@@ -68,7 +68,7 @@ void RSP_GBI1_ModifyVtx(MicroCodeCommand command)
 void RSP_GBI1_Tri2(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = false;
@@ -97,7 +97,7 @@ void RSP_GBI1_Tri2(MicroCodeCommand command)
 #endif
 
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC - 8;
 
 
 	if (bTrisAdded)	
@@ -125,8 +125,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 		uint32 dwAddr = RSPSegmentAddr(gRDPHalf1);
 
 		LOG_UCODE("BranchZ to DisplayList 0x%08x", dwAddr);
-		gDlistStack[gDlistStackPointer].pc = dwAddr;
-		gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+		gDlistStack.address[gDlistStackPointer] = dwAddr;
 	}
 }
 
@@ -266,7 +265,7 @@ void RSP_GBI1_SpNoop(MicroCodeCommand command)
 
 /*	if( (command+1)->inst.cmd == 0x00 && gRSP.ucode >= 17 )
 	{
-		RSP_RDP_NOIMPL("Double SPNOOP, Skip remain ucodes, PC=%08X, Cmd1=%08X", gDlistStack[gDlistStackPointer].pc, command.inst.cmd1);
+		RSP_RDP_NOIMPL("Double SPNOOP, Skip remain ucodes, PC=%08X, Cmd1=%08X", gDlistStack.address[gDlistStackPointer], command.inst.cmd1);
 		RDP_GFX_PopDL();
 		//if( gRSP.ucode < 17 ) TriggerDPInterrupt();
 	}*/
@@ -317,7 +316,7 @@ void RSP_GBI1_MoveMem(MicroCodeCommand command)
 			// Rayman 2, Donald Duck, Tarzan, all wrestling games use this
 			RSP_GFX_Force_Matrix(addr);
 			//Force matrix takes fource cmds
-			gDlistStack[gDlistStackPointer].pc += 24;
+			gDlistStack.address[gDlistStackPointer] += 24;
 			break;
 		case RSP_GBI1_MV_MEM_MATRIX_2:
 			break;
@@ -347,7 +346,7 @@ void RSP_GBI1_RDPHalf_1(MicroCodeCommand command)
 
 void RSP_GBI1_Line3D(MicroCodeCommand command)
 {
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = FALSE;
@@ -388,7 +387,7 @@ void RSP_GBI1_Line3D(MicroCodeCommand command)
 		} while (command.inst.cmd == (uint8)RSP_LINE3D);
 #endif
 
-		gDlistStack[gDlistStackPointer].pc = dwPC-8;
+		gDlistStack.address[gDlistStackPointer] = dwPC - 8;
 
 		if (bTrisAdded)	
 		{
@@ -688,7 +687,7 @@ void RSP_GBI1_Tri1(MicroCodeCommand command)
 	bool bTrisAdded = false;
 
 	// While the next command pair is Tri1, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase+  dwPC);
 	
 	do
@@ -711,7 +710,7 @@ void RSP_GBI1_Tri1(MicroCodeCommand command)
 	} while (command.inst.cmd == (uint8)RSP_TRI1);
 #endif
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC - 8;
 
 	if (bTrisAdded)	
 	{

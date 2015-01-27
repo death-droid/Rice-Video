@@ -44,7 +44,7 @@ SetImgInfo g_CI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
 SetImgInfo g_ZI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
 RenderTextureInfo g_ZI_saves[2];
 
-DListStack	gDlistStack[MAX_DL_STACK_SIZE];
+DListStack	gDlistStack;
 int		gDlistStackPointer= -1;
 
 TMEMLoadMapInfo g_tmemLoadAddrMap[0x200];	// Totally 4KB TMEM
@@ -160,8 +160,6 @@ void DLParser_Process()
 		return;
 	}
 
-	status.bScreenIsDrawn = true;
-
 	DebuggerPauseCountN( NEXT_DLIST );
 	status.gRDPTime = timeGetTime();
 	status.gDlistCount++;
@@ -181,13 +179,9 @@ void DLParser_Process()
 	// Initialize stack
 	status.bN64FrameBufferIsUsed = false;
 	gDlistStackPointer=0;
-	gDlistStack[gDlistStackPointer].pc = (uint32)pTask->t.data_ptr;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	gDlistStack.address[0] = (u32)pTask->t.data_ptr;
+	gDlistStack.limit = -1;
 	
-	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((gDlistStack[gDlistStackPointer].pc == 0 && pauseAtNext && eventToPause==NEXT_UNKNOWN_OP),
-			{DebuggerAppendMsg("Start Task without DLIST: ucode=%08X, data=%08X", (uint32)pTask->t.ucode, (uint32)pTask->t.ucode_data);});
-
-
 	// Check if we need to purge
 	if (status.gRDPTime - status.lastPurgeTimeTime > 5000)
 	{
@@ -209,6 +203,8 @@ void DLParser_Process()
 
 	try
 	{
+		MicroCodeCommand command;
+
 		// The main loop
 		while( gDlistStackPointer >= 0 )
 		{
@@ -223,15 +219,13 @@ void DLParser_Process()
 
 			status.gUcodeCount++;
 
-			MicroCodeCommand command;
-
 			DLParser_FetchNextCommand(&command);
 
 			gUcodeFunc[command.inst.cmd](command);
 
-			if (gDlistStack[gDlistStackPointer].countdown >= 0)
+			if (gDlistStack.limit >= 0)
 			{
-				if (--gDlistStack[gDlistStackPointer].countdown < 0)
+				if (--gDlistStack.limit < 0)
 				{
 					LOG_UCODE("**EndDLInMem");
 					gDlistStackPointer--;
@@ -258,9 +252,9 @@ void DLParser_Process()
 inline void DLParser_FetchNextCommand(MicroCodeCommand * p_command)
 {
 	// Current PC is the last value on the stack
-	*p_command = *(MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
+	*p_command = *(MicroCodeCommand*)&g_pu32RamBase[(gDlistStack.address[gDlistStackPointer] >> 2)];
 
-	gDlistStack[gDlistStackPointer].pc += 8;
+	gDlistStack.address[gDlistStackPointer] += 8;
 
 }
 
@@ -279,9 +273,9 @@ void RDP_NOIMPL_Real(LPCTSTR op, uint32 word0, uint32 word1)
 		TRACE0("Stack Trace");
 		for( int i=0; i<gDlistStackPointer; i++ )
 		{
-			DebuggerAppendMsg("  %08X", gDlistStack[i].pc);
+			DebuggerAppendMsg("  %08X", gDlistStack.address[i]);
 		}
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
+		uint32 dwPC = gDlistStack.address[gDlistStackPointer]-8;
 		DebuggerAppendMsg("PC=%08X",dwPC);
 		DebuggerAppendMsg(op, word0, word1);
 	}
@@ -459,7 +453,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 	if( options.enableHackForGames == HACK_FOR_MARIO_TENNIS )
 	{
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+		uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 		uint32 w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 		if( (w2>>24) == RDP_FILLRECT )
 		{
@@ -470,7 +464,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 				w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 			}
 
-			gDlistStack[gDlistStackPointer].pc = dwPC;
+			gDlistStack.address[gDlistStackPointer] = dwPC;
 			return;
 		}
 	}
@@ -583,7 +577,7 @@ void RSP_RDP_Nothing(MicroCodeCommand command)
 			DebuggerAppendMsg("  %08X", gDlistStack[i].pc);
 		}
 
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
+		uint32 dwPC = gDlistStack.address[gDlistStackPointer]-8;
 		DebuggerAppendMsg("PC=%08X",dwPC);
 		DebuggerAppendMsg("Warning, unknown ucode PC=%08X: 0x%08x 0x%08x\n", dwPC, command.inst.cmd0, command.inst.cmd1);
 	}
@@ -729,8 +723,8 @@ void RDP_DLParser_Process(void)
 	uint32 end = *(g_GraphicsInfo.DPC_END_REG);
 
 	gDlistStackPointer=0;
-	gDlistStack[gDlistStackPointer].pc = start;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	gDlistStack.address[gDlistStackPointer] = start;
+	gDlistStack.limit = -1;
 
 	// Check if we need to purge
 	if (status.gRDPTime - status.lastPurgeTimeTime > 5000)
@@ -748,10 +742,10 @@ void RDP_DLParser_Process(void)
 	CRender::g_pRender->BeginRendering();
 	CRender::g_pRender->SetViewport(0, 0, windowSetting.uViWidth, windowSetting.uViHeight, 0x3FF);
 
-	while( gDlistStack[gDlistStackPointer].pc < end )
+	while (gDlistStack.address[gDlistStackPointer] < end)
 	{
-		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
-		gDlistStack[gDlistStackPointer].pc += 8;
+		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack.address[gDlistStackPointer] >> 2)];
+		gDlistStack.address[gDlistStackPointer] += 8;
 		gUcodeFunc[p_command->inst.cmd0 >>24](*p_command);
 	}
 

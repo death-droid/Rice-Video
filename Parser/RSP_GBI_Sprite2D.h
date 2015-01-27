@@ -134,7 +134,7 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 	Sprite2DInfo info;
 	Sprite2DStruct *sprite;
 
-	u32 pc = gDlistStack[gDlistStackPointer].pc;
+	u32 pc = gDlistStack.address[gDlistStackPointer];
 	u32 * pCmdBase = (u32 *)(g_pu8RamBase + pc);
 
 	// Try to execute as many sprite2d ucodes as possible, I seen chains over 200! in FB
@@ -170,6 +170,6 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 		pc += 24;
 	}while(command.inst.cmd == G_GBI1_SPRITE2D_BASE);
 
-	gDlistStack[gDlistStackPointer].pc = pc-8;
+	gDlistStack.address[gDlistStackPointer] = pc-8;
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {DebuggerAppendMsg("Pause after Sprite2DBase: Addr=%08X\n", address);});
 }

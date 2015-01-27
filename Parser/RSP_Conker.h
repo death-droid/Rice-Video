@@ -45,7 +45,7 @@ void RSP_Tri4_Conker(MicroCodeCommand command)
 	uint32 w1 = command.inst.cmd1;
 
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 
 	bool bTrisAdded = false;
 
@@ -86,7 +86,7 @@ void RSP_Tri4_Conker(MicroCodeCommand command)
 	} while ((w0>>28) == 1);
 #endif
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC-8;
 
 	if (bTrisAdded)	
 	{

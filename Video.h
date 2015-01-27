@@ -93,9 +93,6 @@ struct PluginStatus{
 	bool	bHandleN64RenderTexture;	// Do we need to handle of the N64 render_texture stuff?
 	bool	bFrameBufferIsDrawn;		// flag to mark if the frame buffer is ever drawn
 	bool	bFrameBufferDrawnByTriangles;	// flag to tell if the buffer is even drawn by Triangle cmds
-
-	bool    bScreenIsDrawn;
-
 };
 
 extern PluginStatus status;

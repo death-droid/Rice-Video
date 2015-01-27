@@ -57,7 +57,7 @@ void RSP_GBI0_DL(MicroCodeCommand command)
 	LOG_UCODE("    Address=0x%08x Push: 0x%02x", addr, command.dlist.param);
 	if( addr > g_dwRamSize )
 	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", addr, gDlistStack[gDlistStackPointer].pc );
+		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", addr, gDlistStack.address[gDlistStackPointer] );
 		addr &= (g_dwRamSize-1);
 		DebuggerPauseCountN( NEXT_DLIST );
 	}
@@ -65,17 +65,16 @@ void RSP_GBI0_DL(MicroCodeCommand command)
 	if( command.dlist.param == RSP_DLIST_PUSH )
 		gDlistStackPointer++;
 
-	gDlistStack[gDlistStackPointer].pc = addr;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	gDlistStack.address[gDlistStackPointer] = addr;
 
-		LOG_UCODE("Level=%d", gDlistStackPointer+1);
-		LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+	LOG_UCODE("Level=%d", gDlistStackPointer+1);
+	LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 }
 
 void RSP_GBI0_Tri4(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 
 	bool bTrisAdded = false;
 
@@ -119,7 +118,7 @@ void RSP_GBI0_Tri4(MicroCodeCommand command)
 #endif
 
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC-8;
 
 
 	if (bTrisAdded)	

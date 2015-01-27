@@ -127,15 +127,14 @@ void DLParser_RSP_DL_WorldDriver(MicroCodeCommand command)
 	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
 	if( dwAddr > g_dwRamSize )
 	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", dwAddr, gDlistStack[gDlistStackPointer].pc );
+		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", dwAddr, gDlistStack.address[gDlistStackPointer] );
 		dwAddr &= (g_dwRamSize-1);
 		DebuggerPauseCountN( NEXT_DLIST );
 	}
 
 	LOG_UCODE("    WorldDriver DisplayList 0x%08x", dwAddr);
 	gDlistStackPointer++;
-	gDlistStack[gDlistStackPointer].pc = dwAddr;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	gDlistStack.address[gDlistStackPointer] = dwAddr;
 
 	LOG_UCODE("Level=%d", gDlistStackPointer+1);
 	LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");

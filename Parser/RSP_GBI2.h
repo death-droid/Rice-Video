@@ -194,7 +194,7 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 void RSP_GBI2_Tri1(MicroCodeCommand command)
 {
 	// While the next command pair is Tri1, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = false;
@@ -218,7 +218,7 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 	} while( command.inst.cmd == (uint8)RSP_ZELDATRI1);
 #endif
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC - 8;
 
 	if (bTrisAdded)	
 	{
@@ -231,7 +231,7 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 void RSP_GBI2_Tri2(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool bTrisAdded = false;
@@ -261,7 +261,7 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 #endif
 
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC - 8;
 
 	if (bTrisAdded)	
 	{
@@ -275,7 +275,7 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 void RSP_GBI2_Line3D(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	bool tris_added = false;
@@ -303,7 +303,7 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 	} while ( command.inst.cmd == (uint8)RSP_LINE3D);
 #endif
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC - 8;
 
 	if (tris_added)
 	{
@@ -478,7 +478,7 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 		// Rayman 2, Donald Duck, Tarzan, all wrestling games use this
 		RSP_GFX_Force_Matrix(addr);
 		// ForceMatrix takes two cmds
-		gDlistStack[gDlistStackPointer].pc += 8;
+		gDlistStack.address[gDlistStackPointer] += 8;
 		break;
 	case RSP_GBI2_MV_MEM_O_L0:
 	case RSP_GBI2_MV_MEM_O_L1:
@@ -511,39 +511,19 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 
 void RSP_GBI2_DL(MicroCodeCommand command)
 {
-	uint32 dwPush = ((command.inst.cmd0) >> 16) & 0xFF;
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
+	uint32 dwAddr = RSPSegmentAddr((command.dlist.addr));
 
 	if( dwAddr > g_dwRamSize )
 	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", dwAddr, gDlistStack[gDlistStackPointer].pc );
+		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", dwAddr, gDlistStack.address[gDlistStackPointer] );
 		dwAddr &= (g_dwRamSize-1);
 		DebuggerPauseCountN( NEXT_DLIST );
 	}
-
-	LOG_UCODE("    DL: Push:0x%02x Addr: 0x%08x", dwPush, dwAddr);
 	
-	switch (dwPush)
-	{
-	case RSP_DLIST_PUSH:
-		LOG_UCODE("    Pushing ZeldaDisplayList 0x%08x", dwAddr);
+	if (command.dlist.param == RSP_DLIST_PUSH)
 		gDlistStackPointer++;
-		gDlistStack[gDlistStackPointer].pc = dwAddr;
-		gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
 
-		break;
-	case RSP_DLIST_NOPUSH:
-		LOG_UCODE("    Jumping to ZeldaDisplayList 0x%08x", dwAddr);
-		if( gDlistStack[gDlistStackPointer].pc == dwAddr+8 )	//Is this a loop
-		{
-			//Hack for Gauntlet Legends
-			gDlistStack[gDlistStackPointer].pc = dwAddr+8;
-		}
-		else
-			gDlistStack[gDlistStackPointer].pc = dwAddr;
-		gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
-		break;
-	}
+	gDlistStack.address[gDlistStackPointer] = RSPSegmentAddr(command.dlist.addr) & (g_dwRamSize - 1);
 
 	LOG_UCODE("");
 	LOG_UCODE("\\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/");
@@ -569,17 +549,17 @@ void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 void RSP_GBI2_DL_Count(MicroCodeCommand command)
 {
 	// This cmd is likely to execute number of ucode at the given address
-	uint32 dwAddr = RSPSegmentAddr(command.inst.cmd1);
+	uint32 address = RSPSegmentAddr(command.inst.cmd1);
 
 	// For SSB and Kirby, otherwise we'll end up scrapping the pc
-	if (dwAddr == 0)
+	if (address == 0)
 	{
 		return;
 	}
 
 	gDlistStackPointer++;
-	gDlistStack[gDlistStackPointer].pc = dwAddr;
-	gDlistStack[gDlistStackPointer].countdown = (command.inst.cmd0) & 0xFFFF;
+	gDlistStack.address[gDlistStackPointer] = address;
+	gDlistStack.limit = (command.inst.cmd0) & 0xFFFF;
 }
 
 void RSP_GBI2_0x8(MicroCodeCommand command)

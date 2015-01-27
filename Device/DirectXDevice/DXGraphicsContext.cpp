@@ -129,8 +129,6 @@ void CDXGraphicsContext::UpdateFrame(bool swaponly)
 exit:
 	
 	Unlock();
-
-	status.bScreenIsDrawn = false;
 }
 
 //*****************************************************************************
