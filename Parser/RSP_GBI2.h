@@ -413,9 +413,6 @@ void RSP_GBI2_Mtx(MicroCodeCommand command)
 		command.mtx2.nopush==0 ? "Push" : "No Push",
 		command.mtx2.len, addr);
 
-
-	LoadMatrix(addr);
-
 	//Load Matrix from address
 	if (command.mtx2.projection)
 	{

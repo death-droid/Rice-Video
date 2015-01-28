@@ -771,37 +771,3 @@ void MatrixFromN64FixedPoint(Matrix4x4 & mat, u32 address)
 		mat.m[i][3] = ((Imat->h[i].w << 16) | Imat->l[i].w) * fRecip;
 	}
 }
-
-
-Matrix4x4 matToLoad;
-void LoadMatrix(uint32 addr)
-{
-	if (addr + 64 > g_dwRamSize)
-	{
-		TRACE1("Mtx: Address invalid (0x%08x)", addr);
-		return;
-	}
-
-	const float fRecip = 1.0f / 65536.0f;
-	const N64mat *Imat = (N64mat *)(g_pu8RamBase + addr);
-
-	for (int i = 0; i < 4; i++)
-	{
-		matToLoad.m[i][0] = ((Imat->h[i].x << 16) | Imat->l[i].x) * fRecip;
-		matToLoad.m[i][1] = ((Imat->h[i].y << 16) | Imat->l[i].y) * fRecip;
-		matToLoad.m[i][2] = ((Imat->h[i].z << 16) | Imat->l[i].z) * fRecip;
-		matToLoad.m[i][3] = ((Imat->h[i].w << 16) | Imat->l[i].w) * fRecip;
-	}
-
-#ifdef _DEBUG
-	LOG_UCODE(
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n"
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n"
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n"
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n",
-		matToLoad.m[0][0], matToLoad.m[0][1], matToLoad.m[0][2], matToLoad.m[0][3],
-		matToLoad.m[1][0], matToLoad.m[1][1], matToLoad.m[1][2], matToLoad.m[1][3],
-		matToLoad.m[2][0], matToLoad.m[2][1], matToLoad.m[2][2], matToLoad.m[2][3],
-		matToLoad.m[3][0], matToLoad.m[3][1], matToLoad.m[3][2], matToLoad.m[3][3]);
-#endif // _DEBUG
-}

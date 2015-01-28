@@ -249,7 +249,6 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 	int nRight = vec_trans.x + vec_scale.x;
 	int nBottom = vec_trans.y + vec_scale.y;
 
-	//LONG maxZ = scale[2];
 	int maxZ = 0x3FF;
 
 	CRender::g_pRender->SetViewport(nLeft, nTop, nRight, nBottom, maxZ);
@@ -263,12 +262,6 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 void RSP_GBI1_SpNoop(MicroCodeCommand command)
 {
 
-/*	if( (command+1)->inst.cmd == 0x00 && gRSP.ucode >= 17 )
-	{
-		RSP_RDP_NOIMPL("Double SPNOOP, Skip remain ucodes, PC=%08X, Cmd1=%08X", gDlistStack.address[gDlistStackPointer], command.inst.cmd1);
-		RDP_GFX_PopDL();
-		//if( gRSP.ucode < 17 ) TriggerDPInterrupt();
-	}*/
 }
 
 void RSP_GBI1_Reserved(MicroCodeCommand command)
@@ -607,8 +600,6 @@ void RSP_GBI1_Mtx(MicroCodeCommand command)
 		command.mtx1.load == 1 ? "Load" : "Mul",
 		command.mtx1.push == 1 ? "Push" : "NoPush",
 		command.mtx1.len, addr);
-
-	LoadMatrix(addr);
 
 	//Load matrix from address
 	if (command.mtx1.projection)

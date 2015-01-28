@@ -121,27 +121,3 @@ void DLParser_Bomberman2TextRect(MicroCodeCommand command)
 		}
 	);
 }
-
-void DLParser_RSP_DL_WorldDriver(MicroCodeCommand command)
-{
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	if( dwAddr > g_dwRamSize )
-	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", dwAddr, gDlistStack.address[gDlistStackPointer] );
-		dwAddr &= (g_dwRamSize-1);
-		DebuggerPauseCountN( NEXT_DLIST );
-	}
-
-	LOG_UCODE("    WorldDriver DisplayList 0x%08x", dwAddr);
-	gDlistStackPointer++;
-	gDlistStack.address[gDlistStackPointer] = dwAddr;
-
-	LOG_UCODE("Level=%d", gDlistStackPointer+1);
-	LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-}
-
-void DLParser_RSP_Pop_DL_WorldDriver(MicroCodeCommand command)
-{
-	RDP_GFX_PopDL();
-}
-

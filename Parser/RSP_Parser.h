@@ -551,7 +551,7 @@ extern TmemType g_Tmem;
 
 extern DListStack	gDlistStack;
 
-extern int				gDlistStackPointer;
+extern int gDlistStackPointer;
 
 void DLParser_Init();
 void RDP_GFX_Reset();
@@ -571,9 +571,7 @@ void RSP_GFX_InitGeometryMode();
 void RSP_SetUcode(int ucode, uint32 ucStart=0, uint32 ucDStart=0, uint32 cdSize=0);
 void RDP_GFX_PopDL();
 
-extern Matrix4x4 matToLoad;
 void MatrixFromN64FixedPoint(Matrix4x4 & mat, u32 address);
-void LoadMatrix(uint32 addr);
 
 ULONG ComputeCRC32(ULONG crc, const uint8 *buf, UINT len);
 
