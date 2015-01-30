@@ -233,6 +233,16 @@ inline float ViewPortTranslatei_y(LONG y) { return y*windowSetting.fMultY; }
 inline float ViewPortTranslatei_x(float x) { return x*windowSetting.fMultX; }
 inline float ViewPortTranslatei_y(float y) { return y*windowSetting.fMultY; }
 
+//*****************************************************************************
+// We round these value here, so that when we scale up the coords to our screen
+// coords we don't get any gaps.
+//*****************************************************************************
+inline void ConvertN64ToScreen(const v2 & n64_coords, v2 & answ)
+{
+	answ.x = roundf(ViewPortTranslatei_x(roundf(n64_coords.x)));
+	answ.y = roundf(ViewPortTranslatei_y(roundf(n64_coords.y)));
+}
+
 inline float GetPrimitiveDepth() { return gRDP.fPrimitiveDepth; }
 inline uint32 GetPrimitiveColor() { return gRDP.primitiveColor; }
 inline float* GetPrimitiveColorfv() { return gRDP.fvPrimitiveColor; }

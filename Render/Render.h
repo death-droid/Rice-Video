@@ -39,10 +39,6 @@ protected:
 	int TileVFlags[8];
 
 public:
-
-	float m_fScreenViewportMultX;
-	float m_fScreenViewportMultY;
-
 	BOOL	m_bZUpdate;
 	BOOL	m_bZCompare;
 	uint32	m_dwZBias;

@@ -345,8 +345,6 @@ void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 	gRDP.otherMode.L = (command.inst.cmd1);
 }
 
-
-
 void DLParser_RDPLoadSync(MicroCodeCommand command)	{	LOG_UCODE("LoadSync: (Ignored)"); }
 void DLParser_RDPPipeSync(MicroCodeCommand command)	{ 	LOG_UCODE("PipeSync: (Ignored)"); }
 void DLParser_RDPTileSync(MicroCodeCommand command)	{ 	LOG_UCODE("TileSync: (Ignored)"); }
@@ -400,7 +398,7 @@ void DLParser_SetScissor(MicroCodeCommand command)
 	//gRDP.scissor.right, gRDP.scissor.bottom, gRDP.scissor.mode););
 }
 
-
+//CLEAN ME
 void DLParser_FillRect(MicroCodeCommand command)
 {
 	if( status.bN64IsDrawingTextureBuffer && frameBufferOptions.bIgnore )
@@ -568,26 +566,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 //Nintro64 uses Sprite2d 
 void RSP_RDP_Nothing(MicroCodeCommand command)
 {
-#ifdef _DEBUG
-	if( logWarning )
-	{
-		TRACE0("Stack Trace");
-		for( int i=0; i<gDlistStackPointer; i++ )
-		{
-			DebuggerAppendMsg("  %08X", gDlistStack[i].pc);
-		}
 
-		uint32 dwPC = gDlistStack.address[gDlistStackPointer]-8;
-		DebuggerAppendMsg("PC=%08X",dwPC);
-		DebuggerAppendMsg("Warning, unknown ucode PC=%08X: 0x%08x 0x%08x\n", dwPC, command.inst.cmd0, command.inst.cmd1);
-	}
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_UNKNOWN_OP, {TRACE0("Paused at unknown ucode\n");})
-	if( debuggerContinueWithUnknown )
-	{
-		return;
-	}
-#endif
-		
 	RDP_GFX_PopDL();
 }
 
@@ -610,31 +589,16 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 	//Float
 	if ((command.inst.cmd0) & 0x20)
 	{
-		gRSP.mWorldProject.m[y][x] = (float)(int)gRSP.mWorldProject.m[y][x] + ((float)(command.inst.cmd1 >> 16) / 65536.0f);
+		gRSP.mWorldProject.m[y][x]     = (float)(int)gRSP.mWorldProject.m[y][x]		+ ((float)(command.inst.cmd1 >> 16) / 65536.0f);
 		gRSP.mWorldProject.m[y][x + 1] = (float)(int)gRSP.mWorldProject.m[y][x + 1] + ((float)(command.inst.cmd1 & 0xFFFF) / 65536.0f);
 	}
 	else
 	{
 		//Integer
-		gRSP.mWorldProject.m[y][x] = (float)(short)((command.inst.cmd1) >> 16);
+		gRSP.mWorldProject.m[y][x]	   = (float)(short)((command.inst.cmd1) >> 16);
 		gRSP.mWorldProject.m[y][x + 1] = (float)(short)((command.inst.cmd1) & 0xFFFF);
 	}
 
-#ifdef _DEBUG
-	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
-	{
-		pauseAtNext = false;
-		debuggerPause = true;
-		DebuggerAppendMsg("Pause after insert matrix: %08X, %08X", command.inst.cmd0, command.inst.cmd1);
-	}
-	else
-	{
-		if( pauseAtNext && logMatrix ) 
-		{
-			DebuggerAppendMsg("insert matrix: %08X, %08X", command.inst.cmd0, command.inst.cmd1);
-		}
-	}
-#endif
 }
 
 void DLParser_SetCImg(MicroCodeCommand command)
@@ -688,7 +652,6 @@ void DLParser_SetFillColor(MicroCodeCommand command)
 	gRDP.originalFillColor = (command.setcolor.color);
 
 	LOG_UCODE("    Color5551=0x%04x = 0x%08x", (uint16)command.inst.cmd1, gRDP.fillColor);
-
 }
 
 void DLParser_SetFogColor(MicroCodeCommand command)

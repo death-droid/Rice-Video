@@ -46,8 +46,6 @@ bool CRender::IsAvailable()
 }
 
 CRender::CRender() :
-	m_fScreenViewportMultX(2.0f),
-	m_fScreenViewportMultY(2.0f),
 	m_bZUpdate(FALSE),
 	m_bZCompare(FALSE),
 	m_dwZBias(0),
