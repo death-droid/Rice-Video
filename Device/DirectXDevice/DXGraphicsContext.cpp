@@ -261,6 +261,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	m_d3dpp.hDeviceWindow          = m_hWnd;
 	m_d3dpp.MultiSampleType        = D3DMULTISAMPLE_NONE;
 	m_d3dpp.BackBufferFormat	   = D3DFMT_X8R8G8B8;
+	m_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
 	m_FSAAIsEnabled = false;
 	if (options.DirectXAntiAliasingValue != 0)
