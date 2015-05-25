@@ -1200,8 +1200,8 @@ void CRender::UpdateScissorWithClipRatio()
 	{
 		w.clipping.needToClip = false;
 	}
-	w.clipping.width = (uint32)((gRSP.real_clip_scissor_right-gRSP.real_clip_scissor_left+1)*windowSetting.fMultX);
-	w.clipping.height = (uint32)((gRSP.real_clip_scissor_bottom-gRSP.real_clip_scissor_top+1)*windowSetting.fMultY);
+	w.clipping.width  = (uint32)max((gRSP.real_clip_scissor_right - gRSP.real_clip_scissor_left + 1)*windowSetting.fMultX, 0.0f);
+	w.clipping.height = (uint32)max((gRSP.real_clip_scissor_bottom - gRSP.real_clip_scissor_top + 1)*windowSetting.fMultY, 0.0f);
 
 	float halfx = gRSP.nVPWidthN/2.0f;
 	float halfy = gRSP.nVPHeightN/2.0f;
