@@ -52,54 +52,11 @@ void RSP_GBI2_Vtx(MicroCodeCommand command)
 	}
 }
 
-void RSP_GBI2_EndDL(MicroCodeCommand command)
-{
-	RDP_GFX_PopDL();
-}
-
-void RSP_GBI2_CullDL(MicroCodeCommand command)
-{
-#ifdef _DEBUG
-	if( !debuggerEnableCullFace )
-	{
-		return;	//Disable Culling
-	}
-#endif
-	if( g_curRomInfo.bDisableCulling )
-	{
-		return;	//Disable Culling
-	}
-
-	uint32 i;
-	uint32 dwVFirst = (((command.inst.cmd0)) & 0xfff) / gRSP.vertexMult;
-	uint32 dwVLast  = (((command.inst.cmd1)) & 0xfff) / gRSP.vertexMult;
-
-	LOG_UCODE("    Culling using verts %d to %d", dwVFirst, dwVLast);
-
-	// Mask into range
-	dwVFirst &= 0x1f;
-	dwVLast &= 0x1f;
-
-	if( dwVLast < dwVFirst )	return;
-	if( !gRSP.bRejectVtx )	return;
-
-	for (i = dwVFirst; i <= dwVLast; i++)
-	{
-		//if (g_dwVtxFlags[i] == 0)
-		if (g_clipFlag[i] == 0)
-		{
-			LOG_UCODE("    Vertex %d is visible, returning", i);
-			return;
-		}
-	}
-
-	status.dwNumDListsCulled++;
-
-	LOG_UCODE("    No vertices were visible, culling");
-
-	RDP_GFX_PopDL();
-}
-
+//*****************************************************************************
+//
+//*****************************************************************************
+//0016A710: DB020000 00000018 CMD Zelda_MOVEWORD  Mem[2][00]=00000018 Lightnum=0
+//001889F0: DB020000 00000030 CMD Zelda_MOVEWORD  Mem[2][00]=00000030 Lightnum=2
 void RSP_GBI2_MoveWord(MicroCodeCommand command)
 {
 	switch (command.mw2.type)
@@ -191,6 +148,9 @@ void RSP_GBI2_MoveWord(MicroCodeCommand command)
 	}
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_Tri1(MicroCodeCommand command)
 {
 	// While the next command pair is Tri1, add vertices
@@ -201,9 +161,9 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 
 	do
 	{
-		uint32 dwV0 = command.gbi2tri1.v0/gRSP.vertexMult;
-		uint32 dwV1 = command.gbi2tri1.v1/gRSP.vertexMult;
-		uint32 dwV2 = command.gbi2tri1.v2/gRSP.vertexMult;
+		uint32 dwV0 = command.gbi2tri1.v0 >> 1;
+		uint32 dwV1 = command.gbi2tri1.v1 >> 1;
+		uint32 dwV2 = command.gbi2tri1.v2 >> 1;
 
 		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
@@ -228,6 +188,9 @@ void RSP_GBI2_Tri1(MicroCodeCommand command)
 	DEBUG_TRIANGLE(TRACE0("Pause at GBI2 TRI1"));
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_Tri2(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
@@ -272,6 +235,9 @@ void RSP_GBI2_Tri2(MicroCodeCommand command)
 
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_Line3D(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
@@ -281,15 +247,15 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 	bool tris_added = false;
 
 	do {
-		uint32 dwV0 = command.gbi2line3d.v0/gRSP.vertexMult;
-		uint32 dwV1 = command.gbi2line3d.v1/gRSP.vertexMult;
-		uint32 dwV2 = command.gbi2line3d.v2/gRSP.vertexMult;
+		uint32 dwV0 = command.gbi2line3d.v0 >> 1;
+		uint32 dwV1 = command.gbi2line3d.v1 >> 1;
+		uint32 dwV2 = command.gbi2line3d.v2 >> 1;
 
 		tris_added |= AddTri(dwV0, dwV1, dwV2);
 
-		uint32 dwV3 = command.gbi2line3d.v3/gRSP.vertexMult;
-		uint32 dwV4 = command.gbi2line3d.v4/gRSP.vertexMult;
-		uint32 dwV5 = command.gbi2line3d.v5/gRSP.vertexMult;
+		uint32 dwV3 = command.gbi2line3d.v3 >> 1;
+		uint32 dwV4 = command.gbi2line3d.v4 >> 1;
+		uint32 dwV5 = command.gbi2line3d.v5 >> 1;
 
 		tris_added |= AddTri(dwV3, dwV4, dwV5);
 
@@ -311,6 +277,9 @@ void RSP_GBI2_Line3D(MicroCodeCommand command)
 	}
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_Texture(MicroCodeCommand command)
 {
 
@@ -318,23 +287,6 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 
 	float fTextureScaleS = (float)(command.texture.scaleS) / (65536.0f * 32.0f);
 	float fTextureScaleT = (float)(command.texture.scaleT) / (65536.0f * 32.0f);
-
-	if( (((command.inst.cmd1)>>16)&0xFFFF) == 0xFFFF ) //TEST FOR SIDE EFFECTS FIXME CLEANME
-	{
-		fTextureScaleS = 1/32.0f;
-	}
-	else if( (((command.inst.cmd1)>>16)&0xFFFF) == 0x8000 )
-	{
-		fTextureScaleS = 1/64.0f;
-	}
-	if( (((command.inst.cmd1)    )&0xFFFF) == 0xFFFF )
-	{
-		fTextureScaleT = 1/32.0f;
-	}
-	else if( (((command.inst.cmd1)    )&0xFFFF) == 0x8000 )
-	{
-		fTextureScaleT = 1/64.0f;
-	}
 
 	CRender::g_pRender->SetTextureScale(command.texture.tile, fTextureScaleS, fTextureScaleT);
 
@@ -350,8 +302,9 @@ void RSP_GBI2_Texture(MicroCodeCommand command)
 	LOG_UCODE("    ScaleS: %f, ScaleT: %f", fTextureScaleS*32.0f, fTextureScaleT*32.0f);
 }
 
-
-
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_PopMtx(MicroCodeCommand command)
 {
 	LOG_UCODE("    Command: (%s)",	command.inst.cmd1 ? "Projection" : "ModelView");
@@ -364,6 +317,9 @@ void RSP_GBI2_PopMtx(MicroCodeCommand command)
 
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_GeometryMode(MicroCodeCommand command)
 {
 	gGeometryMode._u32	&= command.inst.cmd0;
@@ -395,6 +351,9 @@ void RSP_GBI2_GeometryMode(MicroCodeCommand command)
 int dlistMtxCount=0;
 extern uint32 dwConkerVtxZAddr;
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_Mtx(MicroCodeCommand command)
 {	
 	dwConkerVtxZAddr = 0;	// For Conker BFD
@@ -434,6 +393,9 @@ void RSP_GBI2_Mtx(MicroCodeCommand command)
 	}
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_MoveMem(MicroCodeCommand command)
 {
 	uint32 addr = RSPSegmentAddr(command.inst.cmd1);
@@ -506,27 +468,9 @@ void RSP_GBI2_MoveMem(MicroCodeCommand command)
 	}
 }
 
-void RSP_GBI2_DL(MicroCodeCommand command)
-{
-	uint32 dwAddr = RSPSegmentAddr((command.dlist.addr));
-
-	if( dwAddr > g_dwRamSize )
-	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", dwAddr, gDlistStack.address[gDlistStackPointer] );
-		dwAddr &= (g_dwRamSize-1);
-		DebuggerPauseCountN( NEXT_DLIST );
-	}
-	
-	if (command.dlist.param == RSP_DLIST_PUSH)
-		gDlistStackPointer++;
-
-	gDlistStack.address[gDlistStackPointer] = RSPSegmentAddr(command.dlist.addr) & (g_dwRamSize - 1);
-
-	LOG_UCODE("");
-	LOG_UCODE("\\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/");
-	LOG_UCODE("#############################################");
-}
-
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_SetOtherModeL(MicroCodeCommand command)
 {
 	// Mask is constructed slightly differently
@@ -535,6 +479,9 @@ void RSP_GBI2_SetOtherModeL(MicroCodeCommand command)
 	gRDP.otherMode.L = (gRDP.otherMode.L & ~mask) | command.othermode.data;
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 {
 	// Mask is constructed slightly differently
@@ -543,6 +490,9 @@ void RSP_GBI2_SetOtherModeH(MicroCodeCommand command)
 	gRDP.otherMode.H = (gRDP.otherMode.H & ~mask) | command.othermode.data;
 }
 
+//*****************************************************************************
+// Kirby 64, SSB and Cruisn' Exotica use this
+//*****************************************************************************
 void RSP_GBI2_DL_Count(MicroCodeCommand command)
 {
 	// This cmd is likely to execute number of ucode at the given address

@@ -19,7 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef RSP_GBI0_H_
 #define RSP_GBI0_H_
 
-
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI0_Vtx(MicroCodeCommand command)
 {
 	uint32 addr = RSPSegmentAddr(command.vtx0.addr);
@@ -50,27 +52,9 @@ void RSP_GBI0_Vtx(MicroCodeCommand command)
 	}
 }
 
-void RSP_GBI0_DL(MicroCodeCommand command)
-{	
-	uint32 addr = RSPSegmentAddr((command.dlist.addr)) & (g_dwRamSize-1);
-
-	LOG_UCODE("    Address=0x%08x Push: 0x%02x", addr, command.dlist.param);
-	if( addr > g_dwRamSize )
-	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", addr, gDlistStack.address[gDlistStackPointer] );
-		addr &= (g_dwRamSize-1);
-		DebuggerPauseCountN( NEXT_DLIST );
-	}
-
-	if( command.dlist.param == RSP_DLIST_PUSH )
-		gDlistStackPointer++;
-
-	gDlistStack.address[gDlistStackPointer] = addr;
-
-	LOG_UCODE("Level=%d", gDlistStackPointer+1);
-	LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-}
-
+//*****************************************************************************
+// It's used by Golden Eye and Perfect Dark
+//*****************************************************************************
 void RSP_GBI0_Tri4(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices

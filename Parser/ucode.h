@@ -30,7 +30,7 @@ UcodeFunc(RSP_RDP_Nothing);
 
 UcodeFunc(RSP_GBI1_Mtx);
 UcodeFunc(RSP_Mtx_DKR);
-UcodeFunc(RSP_GBI0_DL);
+UcodeFunc(RSP_GBI1_DL);
 
 UcodeFunc(RSP_GBI0_Vtx);
 UcodeFunc(RSP_Vtx_DKR);
@@ -117,9 +117,6 @@ UcodeFunc(DLParser_SetCImg);
 
 UcodeFunc(DLParser_RDPHalf1_GoldenEye);
 
-UcodeFunc(RSP_GBI2_DL);
-UcodeFunc(RSP_GBI2_CullDL);
-UcodeFunc(RSP_GBI2_EndDL);
 UcodeFunc(RSP_GBI2_MoveWord);
 UcodeFunc(RSP_GBI2_Texture);
 UcodeFunc(RSP_GBI2_GeometryMode);
@@ -174,7 +171,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 	// Games: Super Mario 64, Tetrisphere, Demos
 	{
 		RSP_GBI1_SpNoop, RSP_GBI1_Mtx, RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
-		RSP_GBI0_Vtx, RSP_GBI1_Reserved, RSP_GBI0_DL, RSP_GBI1_Reserved,
+		RSP_GBI0_Vtx, RSP_GBI1_Reserved, RSP_GBI1_DL, RSP_GBI1_Reserved,
 		RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		//10
@@ -260,7 +257,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 	// games: Mario Kart, Star Fox
 	{
 		RSP_GBI1_SpNoop, RSP_GBI1_Mtx, RSP_GBI1_Reserved, RSP_GBI1_MoveMem,
-		RSP_GBI1_Vtx, RSP_GBI1_Reserved, RSP_GBI0_DL, RSP_GBI1_Reserved,
+		RSP_GBI1_Vtx, RSP_GBI1_Reserved, RSP_GBI1_DL, RSP_GBI1_Reserved,
 		RSP_GBI1_Reserved, RSP_GBI_Sprite2DBase, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		//10
@@ -345,7 +342,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 	// Ucode:F3DEX_GBI_2
 	// Zelda and new games
 	{
-		RSP_GBI1_Noop, RSP_GBI2_Vtx, RSP_GBI1_ModifyVtx, RSP_GBI2_CullDL,
+		RSP_GBI1_Noop, RSP_GBI2_Vtx, RSP_GBI1_ModifyVtx, RSP_GBI1_CullDL,
 		RSP_GBI1_BranchZ, RSP_GBI2_Tri1, RSP_GBI2_Tri2, RSP_GBI2_Line3D,
 		RSP_GBI2_0x8, RSP_S2DEX_BG_1CYC, RSP_S2DEX_BG_COPY, RSP_S2DEX_OBJ_RENDERMODE,
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
@@ -415,7 +412,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		RSP_RDP_Nothing, RSP_GBI2_DL_Count, RSP_GBI2_SubModule, RSP_GBI2_Texture,
 		RSP_GBI2_PopMtx, RSP_GBI2_GeometryMode, RSP_GBI2_Mtx, RSP_GBI2_MoveWord,
-		RSP_GBI2_MoveMem, RSP_GBI1_LoadUCode, RSP_GBI2_DL, RSP_GBI2_EndDL,
+		RSP_GBI2_MoveMem, RSP_GBI1_LoadUCode, RSP_GBI1_DL, RSP_GBI1_EndDL,
 		//e0
 		RSP_GBI1_SpNoop, RSP_GBI1_RDPHalf_1, RSP_GBI2_SetOtherModeL, RSP_GBI2_SetOtherModeH,
 		DLParser_TexRect, DLParser_TexRectFlip, DLParser_RDPLoadSync, DLParser_RDPPipeSync,
@@ -432,7 +429,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 	// Games: Yoshi's Story
 	{
 		RSP_GBI1_SpNoop, RSP_S2DEX_BG_1CYC_2, RSP_S2DEX_BG_COPY, RSP_S2DEX_OBJ_RECTANGLE,
-		RSP_S2DEX_OBJ_SPRITE, RSP_S2DEX_OBJ_MOVEMEM, RSP_GBI0_DL, RSP_GBI1_Reserved,
+		RSP_S2DEX_OBJ_SPRITE, RSP_S2DEX_OBJ_MOVEMEM, RSP_GBI1_DL, RSP_GBI1_Reserved,
 		RSP_GBI1_Reserved, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 
@@ -587,7 +584,7 @@ const MicroCodeInstruction gNormalInstruction[MAX_UCODE_TABLE][256] =
 		RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing, RSP_RDP_Nothing,
 		RSP_RDP_Nothing, RSP_GBI2_DL_Count, RSP_GBI2_SubModule, RSP_GBI2_Texture,
 		RSP_GBI2_PopMtx, RSP_GBI2_GeometryMode, RSP_S2DEX_OBJ_RECTANGLE_R, RSP_GBI2_MoveWord,
-		RSP_GBI2_MoveMem, RSP_GBI1_LoadUCode, RSP_GBI2_DL, RSP_GBI1_EndDL,
+		RSP_GBI2_MoveMem, RSP_GBI1_LoadUCode, RSP_GBI1_DL, RSP_GBI1_EndDL,
 		//e0
 		RSP_GBI1_SpNoop, RSP_GBI1_RDPHalf_1, RSP_GBI2_SetOtherModeL, RSP_GBI2_SetOtherModeH,
 		DLParser_TexRect, DLParser_TexRectFlip, DLParser_RDPLoadSync, DLParser_RDPPipeSync,

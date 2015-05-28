@@ -138,7 +138,6 @@ void InitRenderBase()
 	gRDP.originalFillColor	=0;
 
 	gRSP.bNearClip	= false;
-	gRSP.bRejectVtx	= false;
 
 	gRDP.texturesAreReloaded = false;
 	gRDP.textureIsChanged = false;
@@ -653,8 +652,6 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 	}
 	
 #ifdef ENABLE_CLIP_TRI
-	//if( gRSP.bRejectVtx && (g_clipFlag[dwV0]|g_clipFlag[dwV1]|g_clipFlag[dwV2]) )	
-	//	return;
 	if( g_clipFlag2[dwV0]&g_clipFlag2[dwV1]&g_clipFlag2[dwV2] )
 	{
 		//DebuggerAppendMsg("Clipped");

@@ -114,7 +114,6 @@ __declspec(align(16)) struct RSP_Options
 	int		vertexMult;
 
 	bool	bNearClip;
-	bool	bRejectVtx;
 
 	// For DirectX only
 	float	vtxXMul;
