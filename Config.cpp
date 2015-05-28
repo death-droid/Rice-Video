@@ -573,36 +573,6 @@ void __cdecl DebuggerAppendMsg (const char * Message, ...);
 
 GameSetting g_curRomInfo;
 
-// Swap bytes from 80 37 12 40
-// to              40 12 37 80
-void ROM_ByteSwap_3210(void *v, uint32 dwLen)
-{
-	__asm
-	{
-		mov		esi, v
-			mov		edi, v
-			mov		ecx, dwLen
-
-			add		edi, ecx
-
-		top :
-		mov		al, byte ptr[esi + 0]
-			mov		bl, byte ptr[esi + 1]
-			mov		cl, byte ptr[esi + 2]
-			mov		dl, byte ptr[esi + 3]
-
-			mov		byte ptr[esi + 0], dl		//3
-			mov		byte ptr[esi + 1], cl		//2
-			mov		byte ptr[esi + 2], bl		//1
-			mov		byte ptr[esi + 3], al		//0
-
-			add		esi, 4
-			cmp		esi, edi
-			jne		top
-
-	}
-}
-
 void ROM_GetRomNameFromHeader(TCHAR * szName, ROMHeader * pHdr)
 {
 	TCHAR * p;
