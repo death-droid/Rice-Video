@@ -673,17 +673,19 @@ void RSP_GBI1_CullDL(MicroCodeCommand command)
 	LOG_UCODE("    Culling using verts %d to %d", first, last);
 
 
-	if( first < last )	return;
+	if( last < first )	return;
 
-	for (uint32 i = first; i <= last; i++)
+	uint32 flags = g_vecProjected[first].ClipFlags;
+	for (uint32 i = first+1; i <= last; i++)
 	{
-		if (g_clipFlag[i] == 0)
-		{
-			LOG_UCODE("    Vertex %d is visible, continuing with display list processing", i);
-			return;
-		}
+		flags &= g_vecProjected[i].ClipFlags;
 	}
 
+	if(flags == 0)
+	{
+		LOG_UCODE("    Vertex %d is visible, continuing with display list processing");
+		return;
+	}
 	status.dwNumDListsCulled++;
 
 	LOG_UCODE("    No vertices were visible, culling rest of display list");
