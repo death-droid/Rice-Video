@@ -683,7 +683,7 @@ void RSP_GBI1_CullDL(MicroCodeCommand command)
 
 	if(flags == 0)
 	{
-		LOG_UCODE("    Vertex %d is visible, continuing with display list processing");
+		LOG_UCODE("   Display list is visible");
 		return;
 	}
 	status.dwNumDListsCulled++;

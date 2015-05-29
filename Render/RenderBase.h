@@ -49,8 +49,6 @@ extern unsigned int			g_vtxIndex[1000];
 extern TLITVERTEX			g_clippedVtxBuffer[2000];
 extern int					g_clippedVtxCount;
 
-extern uint32				g_clipFlag[MAX_VERTS];
-extern uint32				g_clipFlag2[MAX_VERTS];
 extern float				g_fFogCoord[MAX_VERTS];
 
 extern TLITVERTEX			g_texRectTVtx[4];

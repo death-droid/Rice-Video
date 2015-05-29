@@ -32,21 +32,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 inline void RSP_Vtx_Clipping(int i)
 {
-	g_clipFlag[i] = 0;
-	g_clipFlag2[i] = 0;
+	g_vecProjected[i].ClipFlags = 0;
 	if( g_vecProjected[i].ProjectedPos.w > 0 )
 	{
 		{
 			float scaleFactor = 1.0f;
 			if(windowSetting.uScreenScaleMode == 1)
 				scaleFactor = (3.0f * windowSetting.uDisplayWidth) / (4.0f * windowSetting.uDisplayHeight);
-
-			if (g_vecProjected[i].ProjectedPos.x > scaleFactor)   g_clipFlag2[i] |= X_CLIP_MAX;
-			if (g_vecProjected[i].ProjectedPos.x < -scaleFactor)  g_clipFlag2[i] |= X_CLIP_MIN;
-			if (g_vecProjected[i].ProjectedPos.y > 1)	g_clipFlag2[i] |= Y_CLIP_MAX;
-			if (g_vecProjected[i].ProjectedPos.y < -1)	g_clipFlag2[i] |= Y_CLIP_MIN;
-			//if( g_vecProjected[i].ProjectedPos.z > 1.0f )	g_clipFlag2[i] |= Z_CLIP_MAX;
-			//if( gRSP.bNearClip && g_vecProjected[i].ProjectedPos.z < -1.0f )	g_clipFlag2[i] |= Z_CLIP_MIN;
+			
+			if(g_vecProjected[i].ProjectedPos.x > scaleFactor)   g_vecProjected[i].ClipFlags |= X_CLIP_MAX;
+			if(g_vecProjected[i].ProjectedPos.x < -scaleFactor)  g_vecProjected[i].ClipFlags |= X_CLIP_MIN;
+			if(g_vecProjected[i].ProjectedPos.y > 1)	g_vecProjected[i].ClipFlags |= Y_CLIP_MAX;
+			if(g_vecProjected[i].ProjectedPos.y < -1)	g_vecProjected[i].ClipFlags |= Y_CLIP_MIN;
+			//if( g_vecProjected[i].ProjectedPos.z > 1.0f )	g_vecProjected[i].ClipFlags |= Z_CLIP_MAX;
+			//if( gRSP.bNearClip && g_vecProjected[i].ProjectedPos.z < -1.0f )	g_vecProjected[i].ClipFlags |= Z_CLIP_MIN;
 		}
 
 	}
@@ -67,8 +66,6 @@ static int norms[3];
 DaedalusVtx4 g_vecProjected[MAX_VERTS];
 
 uint32		g_dwVtxDifColor[MAX_VERTS];
-uint32		g_clipFlag[MAX_VERTS]; //Unused? Remove?
-uint32		g_clipFlag2[MAX_VERTS];
 RenderTexture g_textures[MAX_TEXTURES];
 float		g_fFogCoord[MAX_VERTS];
 
@@ -145,12 +142,6 @@ void InitRenderBase()
 
 	memset(&gRDP.otherMode,0,sizeof(RDP_OtherMode));
 	memset(&gRDP.tiles,0,sizeof(Tile)*8);
-
-	int i;
-
-	for( i=0; i<MAX_VERTS; i++ )
-		g_clipFlag[i] = 0;
-
 }
 
 //*****************************************************************************
@@ -652,7 +643,7 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 	}
 	
 #ifdef ENABLE_CLIP_TRI
-	if( g_clipFlag2[dwV0]&g_clipFlag2[dwV1]&g_clipFlag2[dwV2] )
+	if(g_vecProjected[dwV0].ClipFlags & g_vecProjected[dwV1].ClipFlags & g_vecProjected[dwV2].ClipFlags)
 	{
 		//DebuggerAppendMsg("Clipped");
 		return false;
