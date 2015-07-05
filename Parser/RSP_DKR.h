@@ -54,7 +54,7 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 			uint8 c = wB>>8;
 			uint8 d = (uint8)wB;
 
-			v4 & t = g_vecProjected[dwV];
+			v4 & t = g_vecProjected[dwV].ProjectedPos;
 
 
 			LOG_UCODE(" #%02d Pos: {% 6f,% 6f,% 6f} Extra: %02x %02x %02x %02x (transf: {% 6f,% 6f,% 6f})",

@@ -517,16 +517,16 @@ void DumpInfo(int thingToDump)
 		DumpMatrix2(gRSP.mWorldProject,"Combined Matrix");
 		break;
 	case DUMP_WORLD_TOP_MATRIX:
-		DumpMatrix2(gRSP.modelviewMtxs[gRSP.modelViewMtxTop],"World Top Matrix");
+		DumpMatrix2(gRSP.mModelViewStack[gRSP.mModelViewTop],"World Top Matrix");
 		break;
 	case DUMP_WORLD_MATRIX_AT:
 		{
 			int mtxno = GetInputHex();
-			if( mtxno < 4 ) DumpMatrix2(gRSP.modelviewMtxs[0],"World Matrix #");
+			if(mtxno < 4) DumpMatrix2(gRSP.mModelViewStack[0], "World Matrix #");
 		}
 		break;
 	case DUMP_PROJECTION_MATRIX:
-		DumpMatrix2(gRSP.projectionMtxs[gRSP.projectionMtxTop],"Projection Top Matrix");
+		//DumpMatrix2(mProjectionMat,"Projection Top Matrix");
 		break;
 	}
 }

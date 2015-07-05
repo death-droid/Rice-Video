@@ -82,8 +82,6 @@ uint16	g_wRDPTlut[0x200];
 
 void DLParser_Init()
 {
-	int i;
-
 	status.gRDPTime = 0;
 	status.gDlistCount = 0;
 	status.gUcodeCount = 0;
@@ -99,7 +97,7 @@ void DLParser_Init()
 
 	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)* 2);
 
-	for (i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		memset(&gRDP.tiles[i], 0, sizeof(Tile));
 	}
@@ -719,7 +717,7 @@ void MatrixFromN64FixedPoint(Matrix4x4 & mat, u32 address)
 {
 	if (address + 64 > g_dwRamSize)
 	{
-		TRACE1("Mtx: Address invalid (0x%08x)", addr);
+		TRACE1("Mtx: Address invalid (0x%08x)", address);
 		return;
 	}
 

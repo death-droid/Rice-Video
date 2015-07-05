@@ -115,8 +115,6 @@ void CRender::SetProjection(const u32 address, bool bReplace)
 	}
 
 	gRSP.mWorldProjectValid = false;
-
-	DumpMatrix(mat,"Set Projection Matrix");
 }
 
 void CRender::SetWorldView(const u32 address, bool bPush, bool bReplace)
@@ -153,8 +151,6 @@ void CRender::SetWorldView(const u32 address, bool bPush, bool bReplace)
 	}
 
 	gRSP.mWorldProjectValid = false;
-
-	DumpMatrix(mat,"Set WorldView Matrix");
 }
 
 

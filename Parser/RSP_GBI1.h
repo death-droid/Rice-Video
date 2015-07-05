@@ -126,7 +126,7 @@ void RSP_GBI1_BranchZ(MicroCodeCommand command)
 	float vtxdepth = g_vecProjected[vtx].ProjectedPos.z / g_vecProjected[vtx].ProjectedPos.w;
 
 #ifdef _DEBUG
-	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)command.inst.cmd1 || g_curRomInfo.bForceDepthBuffer )
+	if( debuggerEnableZBuffer==FALSE || vtxdepth <= (s32)command.inst.cmd1 )
 #else
 	if( vtxdepth <= (s32)(command.branchz.value) )
 #endif
@@ -194,7 +194,7 @@ void DisplayVertexInfo(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 			float tu = (float)(short)(psSrc[4^0x1]);
 			float tv = (float)(short)(psSrc[5^0x1]);
 
-			v4 & t = g_vecProjected[dwV];
+			v4 & t = g_vecProjected[dwV].ProjectedPos;
 
 			psSrc += 8;			// Increase by 16 bytes
 			pcSrc += 16;
@@ -656,22 +656,10 @@ void RSP_GBI1_DL(MicroCodeCommand command)
 //*****************************************************************************
 void RSP_GBI1_CullDL(MicroCodeCommand command)
 {
-#ifdef _DEBUG
-	if( !debuggerEnableCullFace )
-	{
-		return;	//Disable Culling
-	}
-#endif
-	if( g_curRomInfo.bDisableCulling )
-	{
-		return;	//Disable Culling
-	}
-
 	uint32 first = command.culldl.first;
 	uint32 last = command.culldl.end;;
 
 	LOG_UCODE("    Culling using verts %d to %d", first, last);
-
 
 	if( last < first )	return;
 
@@ -680,7 +668,7 @@ void RSP_GBI1_CullDL(MicroCodeCommand command)
 	{
 		flags &= g_vecProjected[i].ClipFlags;
 	}
-
+	
 	if(flags == 0)
 	{
 		LOG_UCODE("   Display list is visible");

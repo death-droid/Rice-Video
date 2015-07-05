@@ -28,8 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define Z_CLIP_MAX	0x10
 #define Z_CLIP_MIN	0x20
 
-#ifdef ENABLE_CLIP_TRI
-
 inline void RSP_Vtx_Clipping(int i)
 {
 	g_vecProjected[i].ClipFlags = 0;
@@ -42,18 +40,13 @@ inline void RSP_Vtx_Clipping(int i)
 			
 			if(g_vecProjected[i].ProjectedPos.x > scaleFactor)   g_vecProjected[i].ClipFlags |= X_CLIP_MAX;
 			if(g_vecProjected[i].ProjectedPos.x < -scaleFactor)  g_vecProjected[i].ClipFlags |= X_CLIP_MIN;
-			if(g_vecProjected[i].ProjectedPos.y > 1)	g_vecProjected[i].ClipFlags |= Y_CLIP_MAX;
-			if(g_vecProjected[i].ProjectedPos.y < -1)	g_vecProjected[i].ClipFlags |= Y_CLIP_MIN;
-			//if( g_vecProjected[i].ProjectedPos.z > 1.0f )	g_vecProjected[i].ClipFlags |= Z_CLIP_MAX;
-			//if( gRSP.bNearClip && g_vecProjected[i].ProjectedPos.z < -1.0f )	g_vecProjected[i].ClipFlags |= Z_CLIP_MIN;
+			if(g_vecProjected[i].ProjectedPos.y > 1)			 g_vecProjected[i].ClipFlags |= Y_CLIP_MAX;
+			if(g_vecProjected[i].ProjectedPos.y < -1)			 g_vecProjected[i].ClipFlags |= Y_CLIP_MIN;
+			if(g_vecProjected[i].ProjectedPos.z > 1.0f )		 g_vecProjected[i].ClipFlags |= Z_CLIP_MAX;
+			if(g_vecProjected[i].ProjectedPos.z < -1.0f )		 g_vecProjected[i].ClipFlags |= Z_CLIP_MIN;
 		}
-
 	}
 }
-
-#else
-inline void RSP_Vtx_Clipping(int i) {}
-#endif
 
 /*
  *	Global variables
@@ -603,6 +596,17 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 		return false;
 #endif
 
+	const u32 & f0 = g_vecProjected[dwV0].ClipFlags;
+	const u32 & f1 = g_vecProjected[dwV1].ClipFlags;
+	const u32 & f2 = g_vecProjected[dwV2].ClipFlags;
+
+	//If the clipflags are all set then this is already culled
+	if(f0 & f1 & f2)
+	{
+		//Kill it early in our pipeline
+		return false;
+	}
+
 	// Here we AND all the flags. If any of the bits is set for all
 	// 3 vertices, it means that all three x, y or z lie outside of
 	// the current viewing volume.
@@ -641,14 +645,6 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 			}
 		}
 	}
-	
-#ifdef ENABLE_CLIP_TRI
-	if(g_vecProjected[dwV0].ClipFlags & g_vecProjected[dwV1].ClipFlags & g_vecProjected[dwV2].ClipFlags)
-	{
-		//DebuggerAppendMsg("Clipped");
-		return false;
-	}
-#endif
 
 	return true;
 }
