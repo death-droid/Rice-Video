@@ -107,6 +107,8 @@ void CDXGraphicsContext::UpdateFrame(bool swaponly)
 			goto exit;
 		}
 
+		Clear(CLEAR_DEPTH_BUFFER);
+
 		if( m_bWindowed )
 		{
 			RECT dstrect={0,0,windowSetting.uDisplayWidth,windowSetting.uDisplayHeight};
