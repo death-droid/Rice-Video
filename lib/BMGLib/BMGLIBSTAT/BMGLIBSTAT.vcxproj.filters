@@ -23,9 +23,6 @@
     <ClCompile Include="..\BMGLib_DLL\BMGUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\BMGLib_DLL\bmp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\BMGLib_DLL\pngrw.c">
       <Filter>Source Files</Filter>
     </ClCompile>
