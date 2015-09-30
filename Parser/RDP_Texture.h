@@ -85,134 +85,92 @@ inline uint32 ReverseDXT(uint32 val, uint32 lrs, uint32 width, uint32 size)
 // Rice, 02/24/2004
 inline void UnswapCopy(void *src, void *dest, uint32 numBytes)
 {
-	__asm
+	// copy leading bytes
+	int leadingBytes = ((long)src) & 3;
+	if (leadingBytes != 0)
 	{
-		mov		ecx, 0
-			mov		esi, dword ptr[src]
-			mov		edi, dword ptr[dest]
+		leadingBytes = 4 - leadingBytes;
+		if ((unsigned int)leadingBytes > numBytes)
+			leadingBytes = numBytes;
+		numBytes -= leadingBytes;
 
-			mov		ebx, esi
-			and		ebx, 3			// ebx = number of leading bytes
+		src = (void *)((long)src ^ 3);
+		for (int i = 0; i < leadingBytes; i++)
+		{
+			*(u8 *)(dest) = *(u8 *)(src);
+			dest = (void *)((long)dest + 1);
+			src = (void *)((long)src - 1);
+		}
+		src = (void *)((long)src + 5);
+	}
 
-			cmp		ebx, 0
-			jz		StartDWordLoop
-			neg		ebx
-			add		ebx, 4
+	// copy dwords
+	int numDWords = numBytes >> 2;
+	while (numDWords--)
+	{
+		u32 dword = *(u32 *)src;
 
-			cmp		ebx, [numBytes]
-			jle		NotGreater
-			mov		ebx, [numBytes]
-		NotGreater:
-			mov		ecx, ebx
-				xor		esi, 3
-			LeadingLoop :				// Copies leading bytes, in reverse order (un-swaps)
-										mov		al, byte ptr[esi]
-										mov		byte ptr[edi], al
-										sub		esi, 1
-										add		edi, 1
-										loop	LeadingLoop
-										add		esi, 5
+		dword = ((dword << 24) | ((dword << 8) & 0x00FF0000) | ((dword >> 8) & 0x0000FF00) | (dword >> 24));
 
-									StartDWordLoop:
-			mov		ecx, dword ptr[numBytes]
-				sub		ecx, ebx		// Don't copy what's already been copied
+		*(u32 *)dest = dword;
+		dest = (void *)((long)dest + 4);
+		src = (void *)((long)src + 4);
+	}
 
-				mov		ebx, ecx
-				and		ebx, 3
-				//		add		ecx, 3			// Round up to nearest dword
-				shr		ecx, 2
-
-				cmp		ecx, 0			// If there's nothing to do, don't do it
-				jle		StartTrailingLoop
-
-				// Copies from source to destination, bswap-ing first
-			DWordLoop :
-			mov		eax, dword ptr[esi]
-				bswap	eax
-				mov		dword ptr[edi], eax
-				add		esi, 4
-				add		edi, 4
-				loop	DWordLoop
-			StartTrailingLoop :
-			cmp		ebx, 0
-				jz		Done
-				mov		ecx, ebx
-				xor		esi, 3
-
-			TrailingLoop :
-						 mov		al, byte ptr[esi]
-						 mov		byte ptr[edi], al
-						 sub		esi, 1
-						 add		edi, 1
-						 loop	TrailingLoop
-					 Done :
+	// copy trailing bytes
+	int trailingBytes = numBytes & 3;
+	if (trailingBytes)
+	{
+		src = (void *)((long)src ^ 3);
+		for (int i = 0; i < trailingBytes; i++)
+		{
+			*(u8 *)(dest) = *(u8 *)(src);
+			dest = (void *)((long)dest + 1);
+			src = (void *)((long)src - 1);
+		}
 	}
 }
 
 inline void DWordInterleave(void *mem, uint32 numDWords)
 {
-	__asm {
-		mov		esi, dword ptr[mem]
-			mov		edi, dword ptr[mem]
-			add		edi, 4
-			mov		ecx, dword ptr[numDWords]
-		DWordInterleaveLoop:
-			mov		eax, dword ptr[esi]
-				mov		ebx, dword ptr[edi]
-				mov		dword ptr[esi], ebx
-				mov		dword ptr[edi], eax
-				add		esi, 8
-				add		edi, 8
-				loop	DWordInterleaveLoop
+	int tmp;
+	while (numDWords--)
+	{
+		tmp = *(int *)((long)mem + 0);
+		*(int *)((long)mem + 0) = *(int *)((long)mem + 4);
+		*(int *)((long)mem + 4) = tmp;
+		mem = (void *)((long)mem + 8);
 	}
 }
 
 inline void QWordInterleave(void *mem, uint32 numDWords)
 {
-	__asm
+	numDWords >>= 1; // qwords
+	while (numDWords--)
 	{
-		// Interleave the line on the qword
-		mov		esi, dword ptr[mem]
-			mov		edi, dword ptr[mem]
-			add		edi, 8
-			mov		ecx, dword ptr[numDWords]
-			shr		ecx, 1
-		QWordInterleaveLoop:
-		mov		eax, dword ptr[esi]
-			mov		ebx, dword ptr[edi]
-			mov		dword ptr[esi], ebx
-			mov		dword ptr[edi], eax
-			add		esi, 4
-			add		edi, 4
-			mov		eax, dword ptr[esi]
-			mov		ebx, dword ptr[edi]
-			mov		dword ptr[esi], ebx
-			mov		dword ptr[edi], eax
-			add		esi, 12
-			add		edi, 12
-			loop	QWordInterleaveLoop
+		int tmp0, tmp1;
+		tmp0 = *(int *)((long)mem + 0);
+		tmp1 = *(int *)((long)mem + 4);
+		*(int *)((long)mem + 0) = *(int *)((long)mem + 8);
+		*(int *)((long)mem + 8) = tmp0;
+		*(int *)((long)mem + 4) = *(int *)((long)mem + 12);
+		*(int *)((long)mem + 12) = tmp1;
+		mem = (void *)((long)mem + 16);
 	}
 }
 
 inline uint32 swapdword(uint32 value)
 {
-	__asm
-	{
-		mov		eax, dword ptr[value]
-			bswap	eax
-	}
+	return ((value & 0xff000000) >> 24) |
+		((value & 0x00ff0000) >> 8) |
+		((value & 0x0000ff00) << 8) |
+		((value & 0x000000ff) << 24);
 }
 
 inline uint16 swapword(uint16 value)
 {
-	__asm
-	{
-		mov		ax, word ptr[value]
-			xchg	ah, al
-	}
+	return (value << 8) | (value >> 8);
 }
-
-
 
 void ComputeTileDimension(int mask, int clamp, int mirror, int width, uint32 &widthToCreate, uint32 &widthToLoad)
 {
