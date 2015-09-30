@@ -666,7 +666,7 @@ bool CDXGraphicsContext::IsResultGood(HRESULT hr, bool displayError)
 	{
 		if( displayError )
 		{
-			const char *errmsg = DXGetErrorString(hr);
+			const WCHAR *errmsg = DXGetErrorString(hr);
 			TRACE1("D3D Error: %s", errmsg);
 			//ErrorMsg(errmsg);
 		}
