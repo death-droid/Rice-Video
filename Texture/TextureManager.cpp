@@ -615,12 +615,35 @@ uint8 pnImgSize[4]   = {4, 8, 16, 32};
 char *textlutname[4] = {"RGB16", "I16?", "RGBA16", "IA16"};
 
 extern uint16 g_wRDPTlut[];
-extern ConvertFunction	gConvertFunctions[32];
+extern ConvertFunction	gConvertFunctions_FullTMEM[ 8 ][ 4 ];
+extern ConvertFunction	gConvertFunctions[ 8 ][ 4 ];
+extern ConvertFunction	gConvertTlutFunctions[ 8 ][ 4 ];
 void CTextureManager::ConvertTexture(TxtrCacheEntry * pEntry, bool fromTMEM)
 {
 	static uint32 dwCount = 0;
 	
-	const ConvertFunction pF = gConvertFunctions[(pEntry->ti.Format << 2) | pEntry->ti.Size];
+	ConvertFunction pF;
+	if( fromTMEM && status.bAllowLoadFromTMEM )//backtomenoww
+	{
+		pF = gConvertFunctions_FullTMEM[ pEntry->ti.Format ][ pEntry->ti.Size ];
+	}
+	else
+	{
+		if( gRDP.tiles[7].dwFormat == TXT_FMT_YUV )
+		{
+			if( gRDP.otherMode.text_tlut>=2 )
+				pF = gConvertTlutFunctions[ TXT_FMT_YUV ][ pEntry->ti.Size ];
+			else
+				pF = gConvertFunctions[ TXT_FMT_YUV ][ pEntry->ti.Size ];
+		}
+		else
+		{
+			if( gRDP.otherMode.text_tlut>=2 )
+				pF = gConvertTlutFunctions[ pEntry->ti.Format ][ pEntry->ti.Size ];
+			else
+				pF = gConvertFunctions[ pEntry->ti.Format ][ pEntry->ti.Size ];
+		}
+	}
 
 	if( pF )
 	{
