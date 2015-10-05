@@ -118,6 +118,7 @@ void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 
 	uint16  uDSDX 	= (uint16)((  dwCmd3>>16)&0xFFFF);
 	uint16  uDTDY	    = (uint16)((  dwCmd3    )&0xFFFF);
+
 	short	 s16DSDX  = *(short*)(&uDSDX);
 	short  s16DTDY	= *(short*)(&uDTDY);
 
@@ -129,6 +130,9 @@ void DLParser_TexRect_Last_Legion(MicroCodeCommand command)
 
 	float fDSDX = s16DSDX / 1024.0f;
 	float fDTDY = s16DTDY / 1024.0f;
+
+	if (s16DSDX<0) fS0 += 1.0f;	//Fix texture seams (California Speed)
+	if (s16DTDY<0) fT0 += 1.0f;	//Fix texture seams (California Speed)
 
 	uint32 cycletype = gRDP.otherMode.cycle_type;
 

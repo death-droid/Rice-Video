@@ -1394,7 +1394,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 	short s16S = *(short*)(&uS);
 	short s16T = *(short*)(&uT);
 
-	short	 s16DSDX  = *(short*)(&uDSDX);
+	short  s16DSDX  = *(short*)(&uDSDX);
 	short  s16DTDY	= *(short*)(&uDTDY);
 
 	uint32 curTile = gRSP.curTile;
@@ -1405,6 +1405,9 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 	float fDSDX = s16DSDX / 1024.0f;
 	float fDTDY = s16DTDY / 1024.0f;
+
+	if (s16DSDX<0) fS0 += 1.0f;	//Fix texture seams (California Speed)
+	if (s16DTDY<0) fT0 += 1.0f;	//Fix texture seams (California Speed)
 
 	uint32 cycletype = gRDP.otherMode.cycle_type;
 
