@@ -347,8 +347,8 @@ void SetVIScales()
 		windowSetting.fViWidth  = (hend - hstart) * fScaleX;
 		windowSetting.fViHeight = (vend - vstart) * fScaleY;
 
-		if (width > 0x300)
-			windowSetting.fViHeight *= 2.0f;
+		if (width > 0x300 || width >= ((uint32)windowSetting.fViWidth << 1))	//Fix menu in 40 winks 
+			windowSetting.fViHeight += windowSetting.fViHeight;
 
 		windowSetting.uViWidth = (unsigned short)(windowSetting.fViWidth / 4);
 		windowSetting.fViWidth = windowSetting.uViWidth *= 4;
