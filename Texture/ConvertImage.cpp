@@ -19,42 +19,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "..\stdafx.h"
 
-ConvertFunction		gConvertFunctions_FullTMEM[ 8 ][ 4 ] = 
+ConvertFunction		gConvertFunctions[32] =
 {
 	// 4bpp				8bpp			16bpp				32bpp
-	{  Convert4b,		Convert8b,		Convert16b,			ConvertRGBA32 },		// RGBA
-	{  NULL,			NULL,			ConvertYUV,			NULL },					// YUV
-	{  Convert4b,		Convert8b,		NULL,				NULL },					// CI
-	{  Convert4b,		Convert8b,		Convert16b,			NULL },					// IA
-	{  Convert4b,		Convert8b,		Convert16b,			NULL },					// I
-	{  NULL,			NULL,			NULL,				NULL },					// ?
-	{  NULL,			NULL,			NULL,				NULL },					// ?
-	{  NULL,			NULL,			NULL,				NULL }					// ?
-};
-ConvertFunction		gConvertFunctions[ 8 ][ 4 ] = 
-{
-	// 4bpp				8bpp			16bpp				32bpp
-	{  ConvertCI4,		ConvertCI8,		ConvertRGBA16,		ConvertRGBA32 },		// RGBA
-	{  NULL,			NULL,			ConvertYUV,			NULL },					// YUV
-	{  ConvertCI4,		ConvertCI8,		NULL,				NULL },					// CI
-	{  ConvertIA4,		ConvertIA8,		ConvertIA16,		NULL },					// IA
-	{  ConvertI4,		ConvertI8,		ConvertIA16,		NULL },					// I
-	{  NULL,			NULL,			NULL,				NULL },					// ?
-	{  NULL,			NULL,			NULL,				NULL },					// ?
-	{  NULL,			NULL,			NULL,				NULL }					// ?
-};
-
-ConvertFunction		gConvertTlutFunctions[ 8 ][ 4 ] = 
-{
-	// 4bpp				8bpp			16bpp				32bpp
-	{  ConvertCI4,		ConvertCI8,		ConvertRGBA16,		ConvertRGBA32 },		// RGBA
-	{  NULL,			NULL,			ConvertYUV,			NULL },					// YUV
-	{  ConvertCI4,		ConvertCI8,		NULL,				NULL },					// CI
-	{  ConvertCI4,		ConvertCI8,		ConvertIA16,		NULL },					// IA
-	{  ConvertCI4,		ConvertCI8,		ConvertIA16,		NULL },					// I
-	{  NULL,			NULL,			NULL,				NULL },					// ?
-	{  NULL,			NULL,			NULL,				NULL },					// ?
-	{  NULL,			NULL,			NULL,				NULL }					// ?
+	   NULL,			NULL,		    ConvertRGBA16,		ConvertRGBA32,		// RGBA
+	   NULL,			NULL,			NULL,				NULL,					// YUV
+	   ConvertCI4,		ConvertCI8,		NULL,				NULL,					// CI
+	   ConvertIA4,		ConvertIA8,		ConvertIA16,		NULL,					// IA
+	   ConvertI4,		ConvertI8,		NULL,				NULL,					// I
+	   NULL,			NULL,			NULL,				NULL,					// ?
+	   NULL,			NULL,			NULL,				NULL,					// ?
+	   NULL,			NULL,			NULL,				NULL					// ?
 };
 
 extern bool conkerSwapHack;
