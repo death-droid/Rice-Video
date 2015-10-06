@@ -556,55 +556,63 @@ void TexRectToN64FrameBuffer_16b(uint32 x0, uint32 y0, uint32 width, uint32 heig
 	g_textures[dwTile].m_pCTexture->EndUpdate(&srcInfo);
 }
 
-#define FAST_CRC_CHECKING_INC_X	13
-#define FAST_CRC_CHECKING_INC_Y	11
-#define FAST_CRC_MIN_Y_INC		2
-#define FAST_CRC_MIN_X_INC		2
-#define FAST_CRC_MAX_X_INC		7
-#define FAST_CRC_MAX_Y_INC		3
-extern uint32 dwAsmHeight;
-extern uint32 dwAsmPitch;
-extern uint32 dwAsmdwBytesPerLine;
-extern uint32 dwAsmCRC;
-extern uint8* pAsmStart;
 
+extern uint32 dwAsmCRC;
 uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes)
 {
-	dwAsmCRC = 0;
-	dwAsmdwBytesPerLine = ((width << size) + 1) / 2;
-
-	try{
-		dwAsmdwBytesPerLine = ((width << size) + 1) / 2;
-
-		pAsmStart = (uint8*)(pPhysicalAddress);
-		pAsmStart += (top * pitchInBytes) + (((left << size) + 1) >> 1);
-
-		dwAsmHeight = height - 1;
-		dwAsmPitch = pitchInBytes;
-
-		uint32 pitch = pitchInBytes >> 2;
-		uint32* pStart = (uint32*)pPhysicalAddress;
-		pStart += (top * pitch) + (((left << size) + 1) >> 3);
-
-		int y = dwAsmHeight;
-
-		while (y >= 0)
+	try
+	{
+		//If where not loading or dumping textures then lets use a speedy hash
+		if (!options.bLoadHiResTextures && !options.bDumpTexturesToFiles)
 		{
-			uint32 esi = 0;
-			int x = dwAsmdwBytesPerLine - 4;
-			while (x >= 0)
+			//Code by CornN64
+			dwAsmCRC = (uint32)pPhysicalAddress;
+			register uint32 *pStart = (uint32*)(pPhysicalAddress);
+			register uint32 *pEnd = pStart;
+			
+			uint32 pitch = pitchInBytes >> 2;
+			pStart += (top * pitch) + (((left << size) + 1) >> 3);
+			pEnd += ((top + height) * pitch) + ((((left + width) << size) + 1) >> 3);
+			
+			uint32 SizeInDWORD = (uint32)(pEnd - pStart);
+			uint32 pinc = SizeInDWORD >> 2;
+			
+			if (pinc < 1) pinc = 1;
+			if (pinc > 23) pinc = 23;
+			do
 			{
-				esi = *(uint32*)(pAsmStart + x);
-				esi ^= x;
+				dwAsmCRC = ((dwAsmCRC << 1) | (dwAsmCRC >> 31)) ^ *pStart;	//This combines to a single instruction in ARM assembler EOR ...,ROR #31 :)
+				pStart += pinc;
+			}while (pStart < pEnd);
+		}
+		else
+		{
+			dwAsmCRC = 0;
+			const uint32 bytesPerLine = ((width << size) + 1) / 2;
 
-				dwAsmCRC = (dwAsmCRC << 4) + ((dwAsmCRC >> 28) & 15);
+			uint8* pStart = (uint8*)(pPhysicalAddress);
+			pStart += (top * pitchInBytes) + (((left << size) + 1) >> 1);
+
+			int y = height - 1;
+
+			while (y >= 0)
+			{
+				uint32 esi = 0;
+				int x = bytesPerLine - 4;
+				while (x >= 0)
+				{
+					esi = *(uint32*)(pStart + x);
+					esi ^= x;
+
+					dwAsmCRC = (dwAsmCRC << 4) + ((dwAsmCRC >> 28) & 15);
+					dwAsmCRC += esi;
+					x -= 4;
+				}
+				esi ^= y;
 				dwAsmCRC += esi;
-				x -= 4;
+				pStart += pitchInBytes;
+				y--;
 			}
-			esi ^= y;
-			dwAsmCRC += esi;
-			pAsmStart += dwAsmPitch;
-			y--;
 		}
 	}
 	catch (...)

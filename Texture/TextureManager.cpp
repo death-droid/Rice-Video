@@ -351,14 +351,10 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 	return pEntry;	
 }
 
+uint32 dwAsmCRC;
+
 // If already in table, return
 // Otherwise, create surfaces, and load texture into memory
-uint32 dwAsmHeight;
-uint32 dwAsmPitch;
-uint32 dwAsmdwBytesPerLine;
-uint32 dwAsmCRC;
-uint8* pAsmStart;
-
 TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, bool AutoExtendTexture)
 {
 	TxtrCacheEntry *pEntry;
