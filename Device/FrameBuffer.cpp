@@ -557,16 +557,17 @@ void TexRectToN64FrameBuffer_16b(uint32 x0, uint32 y0, uint32 width, uint32 heig
 }
 
 
-extern uint32 dwAsmCRC;
 uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes)
 {
+	uint32 retCrc = 0;
+
 	try
 	{
 		//If where not loading or dumping textures then lets use a speedy hash
 		if (!options.bLoadHiResTextures && !options.bDumpTexturesToFiles)
 		{
 			//Code by CornN64
-			dwAsmCRC = (uint32)pPhysicalAddress;
+			retCrc = (uint32)pPhysicalAddress;
 			register uint32 *pStart = (uint32*)(pPhysicalAddress);
 			register uint32 *pEnd = pStart;
 			
@@ -581,13 +582,12 @@ uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32
 			if (pinc > 23) pinc = 23;
 			do
 			{
-				dwAsmCRC = ((dwAsmCRC << 1) | (dwAsmCRC >> 31)) ^ *pStart;	//This combines to a single instruction in ARM assembler EOR ...,ROR #31 :)
+				retCrc = ((retCrc << 1) | (retCrc >> 31)) ^ *pStart;	//This combines to a single instruction in ARM assembler EOR ...,ROR #31 :)
 				pStart += pinc;
 			}while (pStart < pEnd);
 		}
 		else
 		{
-			dwAsmCRC = 0;
 			const uint32 bytesPerLine = ((width << size) + 1) / 2;
 
 			uint8* pStart = (uint8*)(pPhysicalAddress);
@@ -604,12 +604,12 @@ uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32
 					esi = *(uint32*)(pStart + x);
 					esi ^= x;
 
-					dwAsmCRC = (dwAsmCRC << 4) + ((dwAsmCRC >> 28) & 15);
-					dwAsmCRC += esi;
+					retCrc = (retCrc << 4) + ((retCrc >> 28) & 15);
+					retCrc += esi;
 					x -= 4;
 				}
 				esi ^= y;
-				dwAsmCRC += esi;
+				retCrc += esi;
 				pStart += pitchInBytes;
 				y--;
 			}
@@ -619,7 +619,7 @@ uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32
 	{
 		TRACE0("Exception in texture CRC calculation");
 	}
-	return dwAsmCRC;
+	return retCrc;
 }
 
 BYTE CalculateMaxCI(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes )

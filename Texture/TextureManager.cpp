@@ -351,8 +351,6 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 	return pEntry;	
 }
 
-uint32 dwAsmCRC;
-
 // If already in table, return
 // Otherwise, create surfaces, and load texture into memory
 TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, bool AutoExtendTexture)
@@ -361,7 +359,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 
 	gRDP.texturesAreReloaded = true;
 
-	dwAsmCRC = 0;
+	uint32 dwCrc = 0;
 	uint32 dwPalCRC = 0;
 
 	pEntry = GetTxtrCacheEntry(pgti);
@@ -410,14 +408,14 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	if (pEntry && pEntry->dwTimeLastUsed == status.gRDPTime && status.gDlistCount != 0 && !status.bN64FrameBufferIsUsed )		// This is not good, Palatte may changes
 	{
 		// We've already calculated a CRC this frame!
-		dwAsmCRC = pEntry->dwCRC;
+		dwCrc = pEntry->dwCRC;
 	}
 	else
 	{
 		if( loadFromTextureBuffer )
-			dwAsmCRC = gRenderTextureInfos[txtBufIdxToLoadFrom].crcInRDRAM;
+			dwCrc = gRenderTextureInfos[txtBufIdxToLoadFrom].crcInRDRAM;
 		else
-			CalculateRDRAMCRC(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
+			dwCrc = CalculateRDRAMCRC(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
 	}
 
 	int maxCI = 0;
@@ -426,7 +424,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		//maxCI = pgti->Size == TXT_SIZE_8b ? 255 : 15;
 		extern BYTE CalculateMaxCI(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes );
 
-		if( !pEntry || pEntry->dwCRC != dwAsmCRC || pEntry->maxCI < 0 )
+		if( !pEntry || pEntry->dwCRC != dwCrc || pEntry->maxCI < 0 )
 		{
 			maxCI = CalculateMaxCI(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
 		}
@@ -436,7 +434,6 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		}
 
 		//Check PAL CRC
-		uint8 * pStart;
 		uint32 dwPalSize = 16;
 		uint32 dwOffset;
 
@@ -450,18 +447,16 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 			dwOffset = pgti->Palette << 4;
 		}
 
-		pStart = (uint8*)pgti->PalAddress+dwOffset*2;
+		uint8 * pStart = (uint8*)pgti->PalAddress+dwOffset*2;
 
-		uint32 dwAsmCRCSave = dwAsmCRC;
 		dwPalCRC = CalculateRDRAMCRC(pStart, 0, 0, maxCI+1, 1, TXT_SIZE_16b, dwPalSize*2);
-		dwAsmCRC = dwAsmCRCSave;
 	}
 
 	// Fix for textures where ti is identical. In this case just the first texture has been added to the Cache.
 	// for further instances this texture has just been replaced instead of adding the additional texture to the same index
 	// in the cachelist. This was causing the slowdowns. Thus we have to iterate through the bucket of the cache list and see
 	// which of the textures that have been placed to it is the one we are looking for
-	if(pEntry && pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC != dwPalCRC &&
+	if(pEntry && pEntry->dwCRC == dwCrc && pEntry->dwPalCRC != dwPalCRC &&
 			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
 	{
 		bool bChecksumDoMatch=false;
@@ -471,7 +466,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 			// check the next texture in the same bucket
 			pEntry = pEntry->pNext;
 				// let's see if this one is the one we are actually looking for
-				if(pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
+				if(pEntry->dwCRC == dwCrc && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
 				{
 					// found it in the neighbourhood
 					bChecksumDoMatch = true;
@@ -488,8 +483,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 
 	if (pEntry)
 	{
-		if(pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC == dwPalCRC &&
-			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ) )
+		if(pEntry->dwCRC == dwCrc && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ) )
 		{
 			// Tile is ok, return
 			pEntry->dwUses++;
@@ -517,7 +511,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	}
 
 	pEntry->ti = *pgti;
-	pEntry->dwCRC = dwAsmCRC;
+	pEntry->dwCRC = dwCrc;
 	pEntry->dwPalCRC = dwPalCRC;
 	pEntry->bExternalTxtrChecked = false;
 	pEntry->maxCI = maxCI;
