@@ -725,7 +725,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	//	gti.PalAddress += 16  * 2 * tile.dwPalette; BACKTOME
 
 	gti.Address = (info->dwLoadAddress+(tile.dwTMem-infoTmemAddr)*8) & (g_dwRamSize-1) ;
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
+	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = tileno;
 
 	if( g_curRomInfo.bTxtSizeMethod2 )

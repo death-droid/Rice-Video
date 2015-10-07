@@ -115,7 +115,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
 
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
+	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false, false);
 	if( pEntry ) SetCurrentTexture( 0, pEntry->pTexture, pEntry->ti.WidthToCreate, pEntry->ti.HeightToCreate, pEntry);
@@ -207,7 +207,7 @@ void CRender::LoadObjBGCopy(uObjBg &info)
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
+	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = -1;
 	// get the original texture
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
@@ -255,7 +255,7 @@ void CRender::LoadTxtrBufIntoTexture(void)
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
+	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
 	SetCurrentTexture(0,pEntry);
@@ -669,7 +669,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
+	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false,false);
 	// check if a hires has been enabled and not yet loaded
@@ -739,7 +739,7 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
+	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = -1;
 	TxtrCacheEntry *pEntry = gTextureManager.GetTexture(&gti, false);
 	SetCurrentTexture(0,pEntry);
