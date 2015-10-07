@@ -529,8 +529,6 @@ void D3DRender::UpdateScissor()
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
 		uint32 height = (gRDP.scissor.right*gRDP.scissor.bottom)/width;
 		D3DVIEWPORT9 vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
-		//if( !gRSP.bNearClip )
-		//	vp.MinZ = -10000;
 
 		if( vp.Width+vp.X > (DWORD)windowSetting.uDisplayWidth-1) vp.Width = windowSetting.uDisplayWidth-1-vp.X;
 		if( vp.Height+vp.Y > (DWORD)windowSetting.uDisplayHeight-1) vp.Height = windowSetting.uDisplayHeight-1-vp.Y;
@@ -554,8 +552,6 @@ void D3DRender::ApplyRDPScissor(bool force)
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
 		uint32 height = (gRDP.scissor.right*gRDP.scissor.bottom)/width;
 		D3DVIEWPORT9 vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
-		//if( !gRSP.bNearClip )
-		//	vp.MinZ = -10000;
 
 		if( vp.Width+vp.X > (DWORD)windowSetting.uDisplayWidth-1) vp.Width = windowSetting.uDisplayWidth-1-vp.X;
 		if( vp.Height+vp.Y > (DWORD)windowSetting.uDisplayHeight-1) vp.Height = windowSetting.uDisplayHeight-1-vp.Y;
@@ -574,8 +570,6 @@ void D3DRender::ApplyRDPScissor(bool force)
 		if( vp.Width+vp.X > (DWORD)windowSetting.uDisplayWidth-1) vp.Width = windowSetting.uDisplayWidth-1-vp.X;
 		if( vp.Height+vp.Y > (DWORD)windowSetting.uDisplayHeight-1) vp.Height = windowSetting.uDisplayHeight-1-vp.Y;
 
-		//if( !gRSP.bNearClip )
-		//	vp.MinZ = -10000;
 		gD3DDevWrapper.SetViewport(&vp);
 	}
 

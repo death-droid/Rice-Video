@@ -143,9 +143,6 @@ void CTextureManager::RecycleAllTextures()
 {
 	if (m_pCacheTxtrList == NULL)
 		return;
-	
-	uint32 dwCount = 0;
-	uint32 dwTotalUses = 0;
 
 	for (uint32 i = 0; i < m_numOfCachedTxtrList; i++)
 	{
@@ -154,8 +151,6 @@ void CTextureManager::RecycleAllTextures()
 			TxtrCacheEntry *pTVictim = m_pCacheTxtrList[i];
 			m_pCacheTxtrList[i] = pTVictim->pNext;
 			
-			dwTotalUses += pTVictim->dwUses;
-			dwCount++;
 			RecycleTexture(pTVictim);
 		}
 	}
@@ -339,7 +334,6 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 	// Initialize
 	pEntry->ti.Address = dwAddr;
 	pEntry->pNext = NULL;
-	pEntry->dwUses = 0;
 	pEntry->dwTimeLastUsed = status.gRDPTime;
 	pEntry->dwCRC = 0;
 	pEntry->FrameLastUsed = status.gDlistCount;
@@ -356,8 +350,6 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, bool AutoExtendTexture)
 {
 	TxtrCacheEntry *pEntry;
-
-	gRDP.texturesAreReloaded = true;
 
 	uint32 dwCrc = 0;
 	uint32 dwPalCRC = 0;
@@ -486,7 +478,6 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		if(pEntry->dwCRC == dwCrc && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ) )
 		{
 			// Tile is ok, return
-			pEntry->dwUses++;
 			pEntry->dwTimeLastUsed = status.gRDPTime;
 			pEntry->FrameLastUsed = status.gDlistCount;
 			LOG_TEXTURE(TRACE0("   Use current texture:\n"));

@@ -111,8 +111,6 @@ __declspec(align(16)) struct RSP_Options
 
 	int		vertexMult;
 
-	bool	bNearClip;
-
 	// For DirectX only
 	float	vtxXMul;
 	float	vtxXAdd;
@@ -191,8 +189,6 @@ __declspec(align(16)) struct RDP_Options{
 	ScissorType scissor;
 
 	bool	textureIsChanged;
-	bool	texturesAreReloaded;
-	bool	colorsAreReloaded;
 };
 
 extern RDP_Options gRDP;
@@ -246,7 +242,6 @@ inline float* GetPrimitiveColorfv() { return gRDP.fvPrimitiveColor; }
 inline uint32 GetLODFrac() { return gRDP.LODFrac; }
 inline void SetEnvColor(uint32 dwCol) 
 { 
-	gRDP.colorsAreReloaded = true;
 	gRDP.envColor = dwCol; 
 	gRDP.fvEnvColor[0] = ((dwCol>>16)&0xFF)/255.0f;		//r
 	gRDP.fvEnvColor[1] = ((dwCol>>8)&0xFF)/255.0f;			//g

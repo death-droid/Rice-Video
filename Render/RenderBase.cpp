@@ -93,7 +93,6 @@ void InitRenderBase()
 	gRDP.scissor.right=gRDP.scissor.bottom=640;
 	
 	gRSP.curTile=gRSPnumLights= 0;
-	//gRSP.projectionMtxTop = gRSP.modelViewMtxTop = 0;
 	gRDP.fogColor = gRDP.primitiveColor = gRDP.envColor = gRDP.primitiveDepth = gRDP.primLODMin = gRDP.primLODFrac = gRDP.LODFrac = 0;
 	gRDP.fPrimitiveDepth = 0;
 	gRSP.numVertices = 0;
@@ -127,11 +126,7 @@ void InitRenderBase()
 	gRDP.fillColor		= 0xFFFFFFFF;
 	gRDP.originalFillColor	=0;
 
-	gRSP.bNearClip	= false;
-
-	gRDP.texturesAreReloaded = false;
 	gRDP.textureIsChanged = false;
-	gRDP.colorsAreReloaded = false;
 
 	memset(&gRDP.otherMode,0,sizeof(RDP_OtherMode));
 	memset(&gRDP.tiles,0,sizeof(Tile)*8);
@@ -652,7 +647,6 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 
 void SetPrimitiveColor(uint32 dwCol, uint32 LODMin, uint32 LODFrac)
 {
-	gRDP.colorsAreReloaded = true;
 	gRDP.primitiveColor = dwCol;
 	gRDP.primLODMin = LODMin;
 	gRDP.primLODFrac = LODFrac;

@@ -333,8 +333,6 @@ void CDirectXPixelShaderCombiner::InitCombinerCycle12(void)
 		if( g_textures[(gRSP.curTile+1)&7].m_pCTexture != NULL )
 			gD3DDevWrapper.SetTexture( 1, g_textures[(gRSP.curTile+1)&7].m_lpsTexturePtr );
 	}
-
-	gRDP.texturesAreReloaded = false;
 }
 
 void CDirectXPixelShaderCombiner::InitCombinerCycleFill(void)

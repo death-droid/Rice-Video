@@ -134,7 +134,6 @@ typedef struct TxtrCacheEntry
 	uint32		dwPalCRC;
 	int			maxCI;
 
-	uint32	dwUses;			// Total times used (for stats)
 	uint32	dwTimeLastUsed;	// timeGetTime of time of last usage
 	uint32	FrameLastUsed;	// Frame # that this was last used
 
