@@ -26,10 +26,6 @@ uint32 GetValidTmemInfoIndex(uint32 tmemAddr);
 void EnhanceTexture(TxtrCacheEntry *pEntry);
 void LoadHiresTexture( TxtrCacheEntry &entry );
 
-
-extern TMEMLoadMapInfo g_tmemInfo0;				// Info for Tmem=0
-extern TMEMLoadMapInfo g_tmemInfo1;				// Info for Tmem=0x100
-
 TmemType g_Tmem;
 
 /************************************************************************/
@@ -937,29 +933,6 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 	info.dwTotalWords = size;
 	info.dwTmem = tile.dwTMem;
 
-	if( gRDP.tiles[tileno].dwTMem == 0 )
-	{
-		if( size >= 1024 )
-		{
-			memcpy(&g_tmemInfo0, &info, sizeof(TMEMLoadMapInfo) );
-			g_tmemInfo0.dwTotalWords = size>>2;
-		}
-		
-		if( size == 2048 )
-		{
-			memcpy(&g_tmemInfo1, &info, sizeof(TMEMLoadMapInfo) );
-			g_tmemInfo1.dwTotalWords = size>>2;
-		}
-	}
-	else if( tile.dwTMem == 0x100 )
-	{
-		if( size == 1024 )
-		{
-			memcpy(&g_tmemInfo1, &info, sizeof(TMEMLoadMapInfo) );
-			g_tmemInfo1.dwTotalWords = size>>2;
-		}
-	}
-
 	g_TxtLoadBy = CMD_LOADBLOCK;
 
 	uint32 bytes = (lrs + 1) << tile.dwSize >> 1;
@@ -1149,29 +1122,6 @@ void DLParser_LoadTile(MicroCodeCommand command)
 	info.bSwapped =FALSE;
 
 	g_TxtLoadBy = CMD_LOADTILE;
-
-	if( tile.dwTMem == 0 )
-	{
-		if( size >= 256 )
-		{
-			memcpy(&g_tmemInfo0, &info, sizeof(TMEMLoadMapInfo) );
-			g_tmemInfo0.dwTotalWords = size;
-		}
-
-		if( size == 512 )
-		{
-			memcpy(&g_tmemInfo1, &info, sizeof(TMEMLoadMapInfo) );
-			g_tmemInfo1.dwTotalWords = size;
-		}
-	}
-	else if( tile.dwTMem == 0x100 )
-	{
-		if( size == 256 )
-		{
-			memcpy(&g_tmemInfo1, &info, sizeof(TMEMLoadMapInfo) );
-			g_tmemInfo1.dwTotalWords = size;
-		}
-	}
 }
 
 
