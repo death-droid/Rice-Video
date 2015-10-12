@@ -18,11 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // Texture related ucode
 
-uint32 g_TmemFlag[16];
-void SetTmemFlag(uint32 tmemAddr, uint32 size);
-bool IsTmemFlagValid(uint32 tmemAddr);
-uint32 GetValidTmemInfoIndex(uint32 tmemAddr);
-
 void EnhanceTexture(TxtrCacheEntry *pEntry);
 void LoadHiresTexture( TxtrCacheEntry &entry );
 
@@ -690,13 +685,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	Tile &tile = gRDP.tiles[tileno];
 
 	// Retrieve the tile loading info
-	uint32 infoTmemAddr = tile.dwTMem;
-	TMEMLoadMapInfo *info = &g_tmemLoadAddrMap[infoTmemAddr];
-	if( !IsTmemFlagValid(infoTmemAddr) )
-	{
-		infoTmemAddr = GetValidTmemInfoIndex(infoTmemAddr);
-		info = &g_tmemLoadAddrMap[infoTmemAddr];
-	}
+	TMEMLoadMapInfo *info = &g_tmemLoadAddrMap[tile.dwTMem];
 
 	if( info->dwFormat != tile.dwFormat )
 	{
@@ -720,7 +709,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	//if( !options.bUseFullTMEM && tile.dwSize == TXT_SIZE_4b )
 	//	gti.PalAddress += 16  * 2 * tile.dwPalette; BACKTOME
 
-	gti.Address = (info->dwLoadAddress+(tile.dwTMem-infoTmemAddr)*8) & (g_dwRamSize-1) ;
+	gti.Address = (info->dwLoadAddress+(tile.dwTMem- tile.dwTMem)*8) & (g_dwRamSize-1) ;
 	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = tileno;
 
@@ -902,8 +891,6 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 	uint32 size		= lrs+1;
 	if( tile.dwSize == TXT_SIZE_32b )	size<<=1;
 
-	SetTmemFlag(tile.dwTMem, size>>2);
-
 	TMEMLoadMapInfo &info = g_tmemLoadAddrMap[tile.dwTMem];
 
 	info.bSwapped = (dxt == 0? TRUE : FALSE);
@@ -1079,7 +1066,6 @@ void DLParser_LoadTile(MicroCodeCommand command)
 
 	uint32 size = tile.dwLine*(lrt-ult+1);
 	if( tile.dwSize == TXT_SIZE_32b )	size<<=1;
-	SetTmemFlag(tile.dwTMem,size );
 
 	uint32 dwPitch = g_TI.dwWidth;
 	if( tile.dwSize != TXT_SIZE_4b )
@@ -1490,126 +1476,3 @@ void DLParser_TexRectFlip(MicroCodeCommand command)
 //	if( status.bHandleN64RenderTexture )	g_pRenderTextureInfo->maxUsedHeight = max(g_pRenderTextureInfo->maxUsedHeight,int(dwYL+(dwXH-dwXL)));
 	ForceMainTextureIndex(tex_rect.tile_idx);
 }
-
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
-/*
- *	TMEM emulation
- *  There are 0x200's 64bits entry in TMEM
- *  Usually, textures are loaded into TMEM at 0x0, and TLUT is loaded at 0x100
- *  of course, the whole TMEM can be used by textures if TLUT is not used, and TLUT
- *  can be at other address of TMEM.
- *
- *  We don't want to emulate TMEM by creating a block of memory for TMEM and load
- *  everything into the block of memory, this will be slow.
- */
-
-/*
- *  New implementation of texture loading
- */
-
-bool IsTmemFlagValid(uint32 tmemAddr)
-{
-	uint32 index = tmemAddr>>5;
-	uint32 bitIndex = (tmemAddr&0x1F);
-	return ((g_TmemFlag[index] & (1<<bitIndex))!=0);
-}
-
-uint32 GetValidTmemInfoIndex(uint32 tmemAddr)
-{
-	return 0;
-	uint32 index = tmemAddr>>5;
-	uint32 bitIndex = (tmemAddr&0x1F);
-
-	if ((g_TmemFlag[index] & (1<<bitIndex))!=0 )	//This address is valid
-		return tmemAddr;
-	else
-	{
-		for( uint32 x=index+1; x != 0; x-- )
-		{
-			uint32 i = x - 1;
-			if( g_TmemFlag[i] != 0 )
-			{
-				for( uint32 y=0x20; y != 0; y-- )
-				{
-					uint32 j = y - 1;
-					if( (g_TmemFlag[i] & (1<<j)) != 0 )
-					{
-						return ((i<<5)+j);
-					}
-				}
-			}
-		}
-		TRACE0("Error, check me");
-		return 0;
-	}
-}
-
-
-void SetTmemFlag(uint32 tmemAddr, uint32 size)
-{
-	uint32 index = tmemAddr>>5;
-	uint32 bitIndex = (tmemAddr&0x1F);
-
-#ifdef _DEBUG
-	if( size > 0x200 )
-	{
-		DebuggerAppendMsg("Check me: tmemaddr=%X, size=%x", tmemAddr, size);
-		size = 0x200-tmemAddr;
-	}
-#endif
-
-	if( bitIndex == 0 )
-	{
-		uint32 i;
-		for( i=0; i< (size>>5); i++ )
-		{
-			g_TmemFlag[index+i] = 0;
-		}
-
-		if( (size&0x1F) != 0 )
-		{
-			//ErrorMsg("Check me: tmemaddr=%X, size=%x", tmemAddr, size);
-			g_TmemFlag[index+i] &= ~((1<<(size&0x1F))-1);
-		}
-
-		g_TmemFlag[index] |= 1;
-	}
-	else
-	{
-		if( bitIndex + size <= 0x1F )
-		{
-			uint32 val = g_TmemFlag[index];
-			uint32 mask = (1<<(bitIndex))-1;
-			mask |= ~((1<<(bitIndex + size))-1);
-			val &= mask;
-			val |= (1<<bitIndex);
-			g_TmemFlag[index] = val;
-		}
-		else
-		{
-			//ErrorMsg("Check me: tmemaddr=%X, size=%x", tmemAddr, size);
-			uint32 val = g_TmemFlag[index];
-			uint32 mask = (1<<bitIndex)-1;
-			val &= mask;
-			val |= (1<<bitIndex);
-			g_TmemFlag[index] = val;
-			index++;
-			size -= (0x20-bitIndex);
-
-			uint32 i;
-			for( i=0; i< (size>>5); i++ )
-			{
-				g_TmemFlag[index+i] = 0;
-			}
-
-			if( (size&0x1F) != 0 )
-			{
-				//ErrorMsg("Check me: tmemaddr=%X, size=%x", tmemAddr, size);
-				g_TmemFlag[index+i] &= ~((1<<(size&0x1F))-1);
-			}
-		}
-	}
-}
-
