@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define RICEFVF_TEXRECTFVERTEX ( D3DFVF_XYZRHW | /*D3DFVF_DIFFUSE |*/ D3DFVF_TEX2 )
 #define RICE_FVF_FILLRECTVERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE  )
 
-extern FiddledVtx * g_pVtxBase;
 const int d3d_bias_factor = 4;
 
 //*****************************************************************************
@@ -32,7 +31,6 @@ const int d3d_bias_factor = 4;
 D3DRender::D3DRender()
 {
 	m_Mux = 0;
-	memset(&m_curCombineInfo, 0, sizeof( m_curCombineInfo) );
 }
 
 D3DRender::~D3DRender()
@@ -65,8 +63,8 @@ bool D3DRender::InitDeviceObjects()
 	gD3DDevWrapper.SetRenderState( D3DRS_CULLMODE,   D3DCULL_NONE );
 
 	// We do our own lighting
-	gD3DDevWrapper.SetRenderState( D3DRS_AMBIENT, COLOR_RGBA(255,255,255,255) );
-	gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING,	  FALSE);
+	gD3DDevWrapper.SetRenderState( D3DRS_AMBIENT,  COLOR_RGBA(255,255,255,255) );
+	gD3DDevWrapper.SetRenderState( D3DRS_LIGHTING, FALSE);
 
 	gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE,TRUE );
 	gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
@@ -96,7 +94,6 @@ bool D3DRender::InitDeviceObjects()
     gD3DDevWrapper.SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL );
 
 	m_Mux = 0;
-	memset(&m_curCombineInfo, 0, sizeof( m_curCombineInfo) );
 
 	gD3DDevWrapper.Initalize();
 
@@ -249,12 +246,10 @@ void D3DRender::SetTextureUFlag(int dwFlag, uint32 tile)
 	}
 	else
 	{
-		for( int i=0; i<m_curCombineInfo.nStages; i++ )
+		for (int i = 0; i < nStages; i++)
 		{
-			if( m_curCombineInfo.stages[i].dwTexture == tile-gRSP.curTile )
-			{
-				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSU, dwFlag );
-			}
+			if (nTextureStages[i] == tile-gRSP.curTile)
+				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSU, dwFlag);
 		}
 	}
 }
@@ -268,12 +263,10 @@ void D3DRender::SetTextureVFlag(int dwFlag, uint32 tile)
 	}
 	else
 	{
-		for( int i=0; i<m_curCombineInfo.nStages; i++ )
+		for (int i = 0; i < nStages; i++)
 		{
-			if( m_curCombineInfo.stages[i].dwTexture == tile-gRSP.curTile )
-			{
-				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSV, dwFlag );
-			}
+			if (nTextureStages[i] == tile - gRSP.curTile)
+				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSV, dwFlag);
 		}
 	}
 }
@@ -290,18 +283,12 @@ void D3DRender::SetAddressVAllStages(uint32 dwTile, int dwFlag)
 
 void D3DRender::ZBufferEnable(BOOL bZBuffer)
 {
-	if( g_curRomInfo.bForceDepthBuffer )
-		bZBuffer = TRUE;
-
 	SetZCompare(bZBuffer);
 	SetZUpdate(bZBuffer);
 }
  
 void D3DRender::SetZCompare(BOOL bZCompare)
 {
-	if( g_curRomInfo.bForceDepthBuffer )
-		bZCompare = TRUE;
-
 	gRDP.tnl.Zbuffer = bZCompare;
 	m_bZCompare = bZCompare;
 	gD3DDevWrapper.SetRenderState(D3DRS_ZENABLE, bZCompare ? D3DZB_TRUE : D3DZB_FALSE );
@@ -309,9 +296,6 @@ void D3DRender::SetZCompare(BOOL bZCompare)
 
 void D3DRender::SetZUpdate(BOOL bZUpdate)
 {
-	if( g_curRomInfo.bForceDepthBuffer )
-		bZUpdate = TRUE;
-
 	m_bZUpdate = bZUpdate;
 	if( bZUpdate )	
 	{
@@ -329,10 +313,10 @@ void D3DRender::ApplyTextureFilter()
 	}
 	else
 	{
-		for( int i=0; i<m_curCombineInfo.nStages; i++ )
+		for (int i = 0; i < nStages; i++)
 		{
-			D3DSetMinFilter( i, m_dwMinFilter );
-			D3DSetMagFilter( i, m_dwMagFilter );
+			D3DSetMinFilter(i, m_dwMinFilter);
+			D3DSetMagFilter(i, m_dwMagFilter);
 		}
 	}
 }
@@ -481,16 +465,8 @@ void D3DRender::TurnFogOnOff(bool flag)
 	gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, flag?TRUE:FALSE);
 }
 
-#define RSP_ZELDA_CULL_FRONT 0x00000400
 void D3DRender::SetFogEnable(bool bEnable)
 {
-	DEBUGGER_IF_DUMP( (gRDP.tnl.Fog != (bEnable==TRUE) && logFog ), TRACE1("Set Fog %s", bEnable? "enable":"disable"));
-
-	if( options.enableHackForGames == HACK_FOR_TWINE && gRDP.tnl.Fog == FALSE && bEnable == FALSE && (gRDP.tnl.TriCull) )
-	{
-		g_pD3DDev->Clear(1, NULL, D3DCLEAR_ZBUFFER, 0xFF000000, 1.0, 0);
-	}
-
 	DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("Set Fog %s", bEnable?"enable":"disable");});
 	
 	//gD3DDevWrapper.SetRenderState( D3DRS_FOGENABLE, FALSE);
@@ -553,8 +529,6 @@ void D3DRender::UpdateScissor()
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
 		uint32 height = (gRDP.scissor.right*gRDP.scissor.bottom)/width;
 		D3DVIEWPORT9 vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
-		//if( !gRSP.bNearClip )
-		//	vp.MinZ = -10000;
 
 		if( vp.Width+vp.X > (DWORD)windowSetting.uDisplayWidth-1) vp.Width = windowSetting.uDisplayWidth-1-vp.X;
 		if( vp.Height+vp.Y > (DWORD)windowSetting.uDisplayHeight-1) vp.Height = windowSetting.uDisplayHeight-1-vp.Y;
@@ -578,8 +552,6 @@ void D3DRender::ApplyRDPScissor(bool force)
 		uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
 		uint32 height = (gRDP.scissor.right*gRDP.scissor.bottom)/width;
 		D3DVIEWPORT9 vp = {0, 0, (uint32)(width*windowSetting.fMultX), (uint32)(height*windowSetting.fMultY), 0, 1};
-		//if( !gRSP.bNearClip )
-		//	vp.MinZ = -10000;
 
 		if( vp.Width+vp.X > (DWORD)windowSetting.uDisplayWidth-1) vp.Width = windowSetting.uDisplayWidth-1-vp.X;
 		if( vp.Height+vp.Y > (DWORD)windowSetting.uDisplayHeight-1) vp.Height = windowSetting.uDisplayHeight-1-vp.Y;
@@ -598,8 +570,6 @@ void D3DRender::ApplyRDPScissor(bool force)
 		if( vp.Width+vp.X > (DWORD)windowSetting.uDisplayWidth-1) vp.Width = windowSetting.uDisplayWidth-1-vp.X;
 		if( vp.Height+vp.Y > (DWORD)windowSetting.uDisplayHeight-1) vp.Height = windowSetting.uDisplayHeight-1-vp.Y;
 
-		//if( !gRSP.bNearClip )
-		//	vp.MinZ = -10000;
 		gD3DDevWrapper.SetViewport(&vp);
 	}
 

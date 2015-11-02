@@ -54,7 +54,7 @@ void RSP_Tri4_PD(MicroCodeCommand command)
 	uint32 w1 = command.inst.cmd1;
 
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 
 	BOOL bTrisAdded = FALSE;
 
@@ -99,7 +99,7 @@ void RSP_Tri4_PD(MicroCodeCommand command)
 	} while ((w0>>24) == (uint8)RSP_TRI2);
 #endif
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC-8;
 
 	if (bTrisAdded)	
 	{

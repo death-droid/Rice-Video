@@ -39,14 +39,6 @@ protected:
 	int TileVFlags[8];
 
 public:
-
-	float m_fScreenViewportMultX;
-	float m_fScreenViewportMultY;
-
-
-	uint32	m_dwTexturePerspective;
-	BOOL	m_bAlphaTestEnable;
-
 	BOOL	m_bZUpdate;
 	BOOL	m_bZCompare;
 	uint32	m_dwZBias;
@@ -57,7 +49,6 @@ public:
 	uint32	m_dwAlpha;
 
 	uint64		m_Mux;
-	BOOL	m_bBlendModeValid;
 
 	CColorCombiner *m_pColorCombiner;
 	
@@ -70,7 +61,6 @@ public:
 	inline RenderTexture& GetCurrentTexture() { return g_textures[gRSP.curTile]; }
 	inline RenderTexture& GetTexture(uint32 dwTile) { return g_textures[dwTile]; }
 	void SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ);
-	virtual void SetClipRatio(uint32 type, uint32 value);
 	virtual void UpdateScissor() {}
 	virtual void ApplyRDPScissor(bool force=false) {}
 	virtual void UpdateClipRectangle();
@@ -84,9 +74,6 @@ public:
 	virtual void SetFogEnable(bool bEnable) {}
 	virtual void SetFogMinMax(float fMin, float fMax) = 0;
 	virtual void TurnFogOnOff(bool flag)=0;
-	bool m_bFogStateSave;
-	void SetFogFlagForNegativeW();
-	void RestoreFogFlag();
 
 	virtual void SetFogColor(uint32 r, uint32 g, uint32 b, uint32 a) 
 	{ 
@@ -94,22 +81,18 @@ public:
 	}
 	uint32 GetFogColor() { return gRDP.fogColor; }
 
-	void SetProjection(const Matrix4x4 & mat, bool bPush, bool bReplace);
-	void SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace);
-	inline int GetProjectMatrixLevel(void) { return gRSP.projectionMtxTop; }
-	inline int GetWorldViewMatrixLevel(void) { return gRSP.modelViewMtxTop; }
+	void SetProjection(const u32 addr, bool bReplace);
+	void SetWorldView(const u32 addr, bool bPush, bool bReplace);
 
 	inline void PopProjection()
 	{
-		if (gRSP.projectionMtxTop > 0)
-			gRSP.projectionMtxTop--;
+	/*	if (gRSP.mProjectionTop > 0)
+			gRSP.mProjectionTop--;
 		else
-			TRACE0("Popping past projection stack limits");
+			TRACE0("Popping past projection stack limits");*/
 	}
 
 	void PopWorldView(u32 num = 1);
-	Matrix4x4 & GetWorldProjectMatrix(void);
-	void SetWorldProjectMatrix(Matrix4x4 &mtx);
 	
 	void ResetMatrices(uint32 size);
 
@@ -117,14 +100,14 @@ public:
 
 	inline void CopyVtx(uint32 dwSrc, uint32 dwDest)
 	{
-		g_fVtxTxtCoords[dwDest].x = g_fVtxTxtCoords[dwSrc].x;
-		g_fVtxTxtCoords[dwDest].y = g_fVtxTxtCoords[dwSrc].y;
+		g_vecProjected[dwDest].Texture.x = g_vecProjected[dwSrc].Texture.x;
+		g_vecProjected[dwDest].Texture.y = g_vecProjected[dwSrc].Texture.y;
 	}
 	inline void SetVtxTextureCoord(uint32 dwV, float tu, float tv)
 	{
 		
-		g_fVtxTxtCoords[dwV].x = tu;
-		g_fVtxTxtCoords[dwV].y = tv;
+		g_vecProjected[dwV].Texture.x = tu;
+		g_vecProjected[dwV].Texture.y = tv;
 	}
 
 	virtual void RenderReset();
@@ -183,11 +166,14 @@ public:
 	virtual bool SetCurrentTexture(int tile, TxtrCacheEntry *pTextureEntry)=0;
 	virtual bool SetCurrentTexture(int tile, CTexture *handler, uint32 dwTileWidth, uint32 dwTileHeight, TxtrCacheEntry *pTextureEntry) = 0;
 
+	void SaveTextureToFile(CTexture &texture, char *filename, int width, int height);
+
 	virtual bool InitDeviceObjects()=0;
 	virtual bool ClearDeviceObjects()=0;
 	virtual void Initialize(void);
 	virtual void CleanUp(void);
 	
+
 	virtual void SetFillMode(FillMode mode)=0;
 
 #ifdef _DEBUG
@@ -244,5 +230,7 @@ protected:
 											float &u0, float &u1);
 
 };
+
+bool SaveRGBABufferToPNGFile(char *filename, unsigned char *buf, int width, int height);
 
 #endif	//_RICE_RENDER_H

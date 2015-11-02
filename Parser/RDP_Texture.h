@@ -83,91 +83,94 @@ inline uint32 ReverseDXT(uint32 val, uint32 lrs, uint32 width, uint32 size)
 // The following inline assemble routines are borrowed from glN64, I am too tired to
 // rewrite these routine by myself.
 // Rice, 02/24/2004
-inline void UnswapCopy( void *src, void *dest, uint32 numBytes )
+inline void UnswapCopy(void *src, void *dest, uint32 numBytes)
 {
-    /* implementation borrowed from mupen64plus-libretro/gles2n64 */
-    int i, numDWords, trailingBytes;
-    // copy leading bytes
-    int leadingBytes = ((intptr_t)src) & 3;
+	// copy leading bytes
+	int leadingBytes = ((long)src) & 3;
+	if (leadingBytes != 0)
+	{
+		leadingBytes = 4 - leadingBytes;
+		if ((unsigned int)leadingBytes > numBytes)
+			leadingBytes = numBytes;
+		numBytes -= leadingBytes;
 
-    if (numBytes == 1)
-    {
-        *(u8 *)(dest) = *(u8 *)(src);
-        return;
-    }
+		src = (void *)((long)src ^ 3);
+		for (int i = 0; i < leadingBytes; i++)
+		{
+			*(u8 *)(dest) = *(u8 *)(src);
+			dest = (void *)((long)dest + 1);
+			src = (void *)((long)src - 1);
+		}
+		src = (void *)((long)src + 5);
+	}
 
-    if (leadingBytes != 0)
-    {
-        leadingBytes = 4 - leadingBytes;
-        if ((unsigned int)leadingBytes > numBytes)
-            leadingBytes = numBytes;
-        numBytes -= leadingBytes;
+	// copy dwords
+	int numDWords = numBytes >> 2;
+	while (numDWords--)
+	{
+		u32 dword = *(u32 *)src;
 
-        src = (void *)((intptr_t)src ^ 3);
-        for (i = 0; i < leadingBytes; i++)
-        {
-            *(u8 *)(dest) = *(u8 *)(src);
-            dest = (void *)((intptr_t)dest + 1);
-            src = (void *)((intptr_t)src - 1);
-        }
-        src = (void *)((intptr_t)src + 5);
-    }
+		dword = ((dword << 24) | ((dword << 8) & 0x00FF0000) | ((dword >> 8) & 0x0000FF00) | (dword >> 24));
 
-    // copy dwords
-    numDWords = numBytes >> 2;
-    while (numDWords--)
-    {
-        *(u32 *)dest = _byteswap_ulong(*(u32 *)src);
-        dest = (void *)((intptr_t)dest + 4);
-        src = (void *)((intptr_t)src + 4);
-    }
+		*(u32 *)dest = dword;
+		dest = (void *)((long)dest + 4);
+		src = (void *)((long)src + 4);
+	}
 
-    // copy trailing bytes
-    trailingBytes = numBytes & 3;
-    if (trailingBytes)
-    {
-        src = (void *)((intptr_t)src ^ 3);
-        for (i = 0; i < trailingBytes; i++)
-        {
-            *(u8 *)(dest) = *(u8 *)(src);
-            dest = (void *)((intptr_t)dest + 1);
-            src = (void *)((intptr_t)src - 1);
-        }
-    }
+	// copy trailing bytes
+	int trailingBytes = numBytes & 3;
+	if (trailingBytes)
+	{
+		src = (void *)((long)src ^ 3);
+		for (int i = 0; i < trailingBytes; i++)
+		{
+			*(u8 *)(dest) = *(u8 *)(src);
+			dest = (void *)((long)dest + 1);
+			src = (void *)((long)src - 1);
+		}
+	}
 }
 
-inline void DWordInterleave( void *mem, uint32 numDWords )
+inline void DWordInterleave(void *mem, uint32 numDWords)
 {
-    uint32 addr = 0;
-    uint32* dwordptr = (uint32*)mem;
-    for (uint32 i = 0; i < numDWords; i++)
-    {
-        std::swap(dwordptr[addr], dwordptr[addr + 1]);
-        addr += 2;
-    }
+	int tmp;
+	while (numDWords--)
+	{
+		tmp = *(int *)((long)mem + 0);
+		*(int *)((long)mem + 0) = *(int *)((long)mem + 4);
+		*(int *)((long)mem + 4) = tmp;
+		mem = (void *)((long)mem + 8);
+	}
 }
 
-inline void QWordInterleave( void *mem, uint32 numDWords )
+inline void QWordInterleave(void *mem, uint32 numDWords)
 {
-    uint32 addr = 0;
-    uint64* qwordptr = (uint64*)mem;
-    for (uint32 i = 0; i < numDWords/2; i++)
-    {
-        std::swap(qwordptr[addr], qwordptr[addr + 1]);
-        addr += 2;
-    }
+	numDWords >>= 1; // qwords
+	while (numDWords--)
+	{
+		int tmp0, tmp1;
+		tmp0 = *(int *)((long)mem + 0);
+		tmp1 = *(int *)((long)mem + 4);
+		*(int *)((long)mem + 0) = *(int *)((long)mem + 8);
+		*(int *)((long)mem + 8) = tmp0;
+		*(int *)((long)mem + 4) = *(int *)((long)mem + 12);
+		*(int *)((long)mem + 12) = tmp1;
+		mem = (void *)((long)mem + 16);
+	}
 }
 
-inline uint32 swapdword( uint32 value )
+inline uint32 swapdword(uint32 value)
 {
-    return _byteswap_ulong(value);
+	return ((value & 0xff000000) >> 24) |
+		((value & 0x00ff0000) >> 8) |
+		((value & 0x0000ff00) << 8) |
+		((value & 0x000000ff) << 24);
 }
 
-inline uint16 swapword( uint16 value )
+inline uint16 swapword(uint16 value)
 {
-    return _byteswap_ushort(value);
+	return (value << 8) | (value >> 8);
 }
-
 
 void ComputeTileDimension(int mask, int clamp, int mirror, int width, uint32 &widthToCreate, uint32 &widthToLoad)
 {
@@ -722,7 +725,7 @@ TxtrCacheEntry* LoadTexture(uint32 tileno)
 	//	gti.PalAddress += 16  * 2 * tile.dwPalette; BACKTOME
 
 	gti.Address = (info->dwLoadAddress+(tile.dwTMem-infoTmemAddr)*8) & (g_dwRamSize-1) ;
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase)+gti.Address;
+	gti.pPhysicalAddress = (g_pu8RamBase)+gti.Address;
 	gti.tileNo = tileno;
 
 	if( g_curRomInfo.bTxtSizeMethod2 )
@@ -789,16 +792,8 @@ void PrepareTextures()
 					}
 				}
 
-				CRender::g_pRender->SetCurrentTexture( tilenos[i], 
-					(pEntry->pEnhancedTexture)?pEntry->pEnhancedTexture:pEntry->pTexture,
-					pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
+				CRender::g_pRender->SetCurrentTexture( tilenos[i], (pEntry->pEnhancedTexture)? pEntry->pEnhancedTexture: pEntry->pTexture, pEntry->ti.WidthToLoad, pEntry->ti.HeightToLoad, pEntry);
 			}
-			else
-			{
-				pEntry = gTextureManager.GetBlackTexture();
-				CRender::g_pRender->SetCurrentTexture( tilenos[i], pEntry->pTexture, 4, 4, pEntry);
-			}
-
 		}
 
 		gRDP.textureIsChanged = false;
@@ -1337,7 +1332,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 	// This command used 128bits, and not 64 bits. This means that we have to look one 
 	// Command ahead in the buffer, and update the PC.
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 	uint32 dwCmd2 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 	uint32 dwCmd3 = *(uint32 *)(g_pu8RamBase + dwPC+4+8);
 	uint32 dwHalf1 = *(uint32 *)(g_pu8RamBase + dwPC);
@@ -1349,12 +1344,12 @@ void DLParser_TexRect(MicroCodeCommand command)
 			((dwHalf2>>24) == 0xb4 || (dwHalf2>>24) == 0xb3 || (dwHalf2>>24) == 0xb2 || (dwHalf2>>24) == 0xf1) )
 		{
 			// Increment PC so that it points to the right place
-			gDlistStack[gDlistStackPointer].pc += 16;
+			gDlistStack.address[gDlistStackPointer] += 16;
 		}
 		else
 		{
 			// Hack for some games, All_Star_Baseball_2000
-			gDlistStack[gDlistStackPointer].pc += 8;
+			gDlistStack.address[gDlistStackPointer] += 8;
 			dwCmd3 = dwCmd2;
 			//dwCmd2 = dwHalf1;
 			//dwCmd2 = 0;
@@ -1365,7 +1360,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 	}
 	else
 	{
-		gDlistStack[gDlistStackPointer].pc += 16;
+		gDlistStack.address[gDlistStackPointer] += 16;
 	}
 
 
@@ -1399,7 +1394,7 @@ void DLParser_TexRect(MicroCodeCommand command)
 	short s16S = *(short*)(&uS);
 	short s16T = *(short*)(&uT);
 
-	short	 s16DSDX  = *(short*)(&uDSDX);
+	short  s16DSDX  = *(short*)(&uDSDX);
 	short  s16DTDY	= *(short*)(&uDTDY);
 
 	uint32 curTile = gRSP.curTile;
@@ -1410,6 +1405,9 @@ void DLParser_TexRect(MicroCodeCommand command)
 
 	float fDSDX = s16DSDX / 1024.0f;
 	float fDTDY = s16DTDY / 1024.0f;
+
+	if (s16DSDX<0) fS0 += 1.0f;	//Fix texture seams (California Speed)
+	if (s16DTDY<0) fT0 += 1.0f;	//Fix texture seams (California Speed)
 
 	uint32 cycletype = gRDP.otherMode.cycle_type;
 

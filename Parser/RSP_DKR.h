@@ -54,7 +54,7 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 			uint8 c = wB>>8;
 			uint8 d = (uint8)wB;
 
-			v4 & t = g_vecProjected[dwV];
+			v4 & t = g_vecProjected[dwV].ProjectedPos;
 
 
 			LOG_UCODE(" #%02d Pos: {% 6f,% 6f,% 6f} Extra: %02x %02x %02x %02x (transf: {% 6f,% 6f,% 6f})",
@@ -87,8 +87,11 @@ void RDP_GFX_DumpVtxInfoDKR(uint32 dwAddr, uint32 dwV0, uint32 dwN)
 void RSP_Vtx_DKR(MicroCodeCommand command)
 {
 	uint32 address = command.inst.cmd1 + gDKRVtxAddr;
-	uint32 num_verts  = ((command.inst.cmd0 >>19 )&0x1F)+1;
+	uint32 num_verts  = (command.inst.cmd0 >>19 )&0x1F;
 	uint32 v0_idx = 0;
+
+	//Increase num_verts by 1 for diddy kong racing, needed to avoid having a seperate method just for gemini
+	if (options.enableHackForGames == HACK_FOR_DIDDY_KONG_RACING) num_verts++;
 
 	if( command.inst.cmd0 & 0x00010000 )
 	{
@@ -132,12 +135,11 @@ void RSP_Vtx_DKR(MicroCodeCommand command)
 //*****************************************************************************
 //
 //*****************************************************************************
-void RSP_DL_In_MEM_DKR(MicroCodeCommand command)
+void RDP_GFX_DLInMem(MicroCodeCommand command)
 {
-	// This cmd is likely to execute number of ucode at the given address
 	gDlistStackPointer++;
-	gDlistStack[gDlistStackPointer].pc = command.inst.cmd1;
-	gDlistStack[gDlistStackPointer].countdown = (command.inst.cmd0 >> 16) & 0xFF;
+	gDlistStack.address[gDlistStackPointer] = command.inst.cmd1;
+	gDlistStack.limit = (command.inst.cmd0 >> 16) & 0xFF;
 }
 
 //*****************************************************************************
@@ -162,18 +164,17 @@ void RSP_Mtx_DKR(MicroCodeCommand command)
 		mul = ((command.inst.cmd0 >> 23) & 0x1);
 	}
 
-	// Load matrix from address
-	Matrix4x4 &mat = gRSP.modelviewMtxs[mtx_command];
-	LoadMatrix(address);
+	gRSP.mWPmodified = true;
 
 	//Perform any required modifications to the matrix (aka if it needs multiply)
 	if( mul )
 	{
-		mat = matToLoad* gRSP.modelviewMtxs[0];
+		MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+		MatrixMultiplyAligned(&gRSP.mModelViewStack[mtx_command], &gRSP.mTempMat, &gRSP.mModelViewStack[0]);
 	}
 	else
 	{
-		mat = matToLoad;
+		MatrixFromN64FixedPoint(gRSP.mModelViewStack[mtx_command], address);
 	}
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_MATRIX_CMD,{TRACE0("Paused at DKR Matrix Cmd");});
@@ -196,6 +197,7 @@ void RSP_MoveWord_DKR(MicroCodeCommand command)
 
 	case RSP_MOVE_WORD_LIGHTCOL:
 		gDKRCMatrixIndex = (command.inst.cmd1 >> 6) & 0x3;
+		gRSP.mWPmodified = true;
 		LOG_UCODE("    gDKRCMatrixIndex = %d", gDKRCMatrixIndex);
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_MATRIX_CMD, {DebuggerAppendMsg("DKR Moveword, select matrix %d, cmd0=%08X, cmd1=%08X", gDKRCMatrixIndex, (command.inst.cmd0), (command.inst.cmd1));});
 		break;
@@ -224,16 +226,10 @@ void DLParser_Set_Addr_DKR(MicroCodeCommand command)
 void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 {
 	u32 dwAddr = RSPSegmentAddr(command.inst.cmd1);
-	u32 dwNum = (((command.inst.cmd0) &  0xFFF0) >>4 );
+	u32 dwNum = (command.inst.cmd0 >> 4) & 0x1F; //Count should never exceed 16
 
 	//Unlike normal tri ucodes, this has the tri's stored in rdram
-	TriDKR *tri = (TriDKR*)&g_pu32RamBase[ dwAddr >> 2];
-
-	if( dwAddr+16*dwNum >= g_dwRamSize )
-	{
-		TRACE0("DMATRI invalid memory pointer");
-		return;
-	}
+	TriDKR *tri = (TriDKR*)(g_pu8RamBase + dwAddr);
 
 	TRI_DUMP(TRACE2("DMATRI, addr=%08X, Cmd0=%08X\n", dwAddr, (command.inst.cmd0)));
 
@@ -245,30 +241,20 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 		uint32 dwV1 = tri->v1;
 		uint32 dwV2 = tri->v2;
 
-		CRender::g_pRender->SetCullMode(!(tri->flag & 0x40), false);
+		CRender::g_pRender->SetCullMode(!(tri->flag & 0x40), true);
 
 		TRI_DUMP(TRACE5("DMATRI: %d, %d, %d (%08X-%08X)", dwV0,dwV1,dwV2,(command.inst.cmd0),(command.inst.cmd1)));
 
 		DEBUG_DUMP_VERTEXES("DmaTri", dwV0, dwV1, dwV2);
 		LOG_UCODE("   Tri: %d,%d,%d", dwV0, dwV1, dwV2);
-		if (!bTrisAdded )//&& CRender::g_pRender->IsTextureEnabled())
-		{
-			PrepareTextures();
-			InitVertexTextureConstants();
-		}
 
-		// Generate texture coordinates
+		//Lets set the vtx texture coords always 
 		CRender::g_pRender->SetVtxTextureCoord(dwV0, tri->s0, tri->t0);
 		CRender::g_pRender->SetVtxTextureCoord(dwV1, tri->s1, tri->t1);
 		CRender::g_pRender->SetVtxTextureCoord(dwV2, tri->s2, tri->t2);
 
-		if( !bTrisAdded )
-		{
-			CRender::g_pRender->SetCombinerAndBlender();
-		}
+		bTrisAdded |= AddTri(dwV0, dwV1, dwV2);
 
-		bTrisAdded = true;
-		PrepareTriangle(dwV0, dwV1, dwV2);
 		tri++;
 	}
 
@@ -276,6 +262,7 @@ void RSP_DMA_Tri_DKR(MicroCodeCommand command)
 	{
 		CRender::g_pRender->DrawTriangles();
 	}
+
 	gDKRVtxCount=0;
 }
 #endif //RSP_DKR_H__

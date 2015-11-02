@@ -34,8 +34,7 @@ void CloseHiresTextures(void);
 void InitHiresCache(void);
 void ClearHiresCache(void);
 
-void InitTextureDump(void);
-void CloseTextureDump(void);
+void CreateDumpFolders();
 
 typedef enum _IMAGE_FILEFORMAT 
 {

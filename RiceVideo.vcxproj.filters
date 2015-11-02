@@ -36,9 +36,6 @@
     <Filter Include="Graphics\Device\DirectXDevice">
       <UniqueIdentifier>{ec6d4633-fd45-4fee-a57b-dfab7f5c170b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graphics\Utility">
-      <UniqueIdentifier>{d42a32a1-8e48-4bb7-8baa-bf1301581898}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphics\Texture">
       <UniqueIdentifier>{ea6f7774-37cb-4d68-b9bb-ccd6b7d909be}</UniqueIdentifier>
     </Filter>
@@ -56,6 +53,9 @@
     </Filter>
     <Filter Include="Math">
       <UniqueIdentifier>{bd33d62c-85ad-44b5-b4e2-8e9f99c7aa77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{d42a32a1-8e48-4bb7-8baa-bf1301581898}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -123,10 +123,10 @@
       <Filter>Graphics\Device\DirectXDevice</Filter>
     </ClInclude>
     <ClInclude Include="Utility\CritSect.h">
-      <Filter>Graphics\Utility</Filter>
+      <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="Utility\CSortedList.h">
-      <Filter>Graphics\Utility</Filter>
+      <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="Texture\ConvertImage.h">
       <Filter>Graphics\Texture</Filter>
@@ -214,6 +214,15 @@
     </ClInclude>
     <ClInclude Include="math\Matrix4x4.h">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\ColourValue.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\DaedalusVtx.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\dxerr.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -303,6 +312,12 @@
     </ClCompile>
     <ClCompile Include="math\Matrix4x4.cpp">
       <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\ColourValue.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\dxerr.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

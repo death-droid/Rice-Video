@@ -35,9 +35,9 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <d3d9types.h>
-#include <D3dx9math.h>
-#include <dxerr.h>
+#include "./Utility/dxerr.h"
 #include <vector>
+#include "./Utility/DaedalusVtx.h"
 #include "./math/Vector2.h"
 #include "./math/Vector3.h"
 #include "./math/Vector4.h"

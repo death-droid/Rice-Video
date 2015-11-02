@@ -300,7 +300,7 @@ bool FrameBufferManager::IsDIaRenderTexture()
 	int height;
 	uint32 newFillColor;
 
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 
 	for( int i=0; i<10; i++ )
 	{
@@ -556,55 +556,70 @@ void TexRectToN64FrameBuffer_16b(uint32 x0, uint32 y0, uint32 width, uint32 heig
 	g_textures[dwTile].m_pCTexture->EndUpdate(&srcInfo);
 }
 
-#define FAST_CRC_CHECKING_INC_X	13
-#define FAST_CRC_CHECKING_INC_Y	11
-#define FAST_CRC_MIN_Y_INC		2
-#define FAST_CRC_MIN_X_INC		2
-#define FAST_CRC_MAX_X_INC		7
-#define FAST_CRC_MAX_Y_INC		3
-extern uint32 dwAsmHeight;
-extern uint32 dwAsmPitch;
-extern uint32 dwAsmdwBytesPerLine;
-extern uint32 dwAsmCRC;
-extern uint8* pAsmStart;
 
-uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes )
+uint32 CalculateRDRAMCRC(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes)
 {
-    /* implementation borrowed from mupen64plus-libretro/gles2n64 */
-    dwAsmdwBytesPerLine = ((width << size) + 1) / 2;
+	uint32 retCrc = 0;
 
-    pAsmStart = (uint8*)(pPhysicalAddress);
-    pAsmStart += (top * pitchInBytes) + (((left << size) + 1) >> 1);
+	try
+	{
+		//If where not loading or dumping textures then lets use a speedy hash
+		if (!options.bLoadHiResTextures && !options.bDumpTexturesToFiles)
+		{
+			//Code by CornN64
+			retCrc = (uint32)pPhysicalAddress;
+			register uint32 *pStart = (uint32*)(pPhysicalAddress);
+			register uint32 *pEnd = pStart;
+			
+			uint32 pitch = pitchInBytes >> 2;
+			pStart += (top * pitch) + (((left << size) + 1) >> 3);
+			pEnd += ((top + height) * pitch) + ((((left + width) << size) + 1) >> 3);
+			
+			uint32 SizeInDWORD = (uint32)(pEnd - pStart);
+			uint32 pinc = SizeInDWORD >> 2;
+			
+			if (pinc < 1) pinc = 1;
+			if (pinc > 23) pinc = 23;
+			do
+			{
+				retCrc = ((retCrc << 1) | (retCrc >> 31)) ^ *pStart;	//This combines to a single instruction in ARM assembler EOR ...,ROR #31 :)
+				pStart += pinc;
+			}while (pStart < pEnd);
+		}
+		else
+		{
+			const uint32 bytesPerLine = ((width << size) + 1) / 2;
 
-    dwAsmHeight = height - 1;
-    dwAsmPitch = pitchInBytes;
+			uint8* pStart = (uint8*)(pPhysicalAddress);
+			pStart += (top * pitchInBytes) + (((left << size) + 1) >> 1);
 
-    uint32 pitch = pitchInBytes >> 2;
-    uint32* pStart = (uint32*)pPhysicalAddress;
-    pStart += (top * pitch) + (((left << size) + 1) >> 3);
+			int y = height - 1;
 
-    int y = dwAsmHeight;
+			while (y >= 0)
+			{
+				uint32 esi = 0;
+				int x = bytesPerLine - 4;
+				while (x >= 0)
+				{
+					esi = *(uint32*)(pStart + x);
+					esi ^= x;
 
-    while (y >= 0)
-    {
-        uint32 esi = 0;
-        int x = dwAsmdwBytesPerLine - 4;
-        while (x >= 0)
-        {
-            esi = *(uint32*)(pAsmStart + x);
-            esi ^= x;
-
-            dwAsmCRC = (dwAsmCRC << 4) + ((dwAsmCRC >> 28) & 15);
-            dwAsmCRC += esi;
-            x -= 4;
-        }
-        esi ^= y;
-        dwAsmCRC += esi;
-        pAsmStart += dwAsmPitch;
-        y--;
-    }
-
-	return dwAsmCRC;
+					retCrc = (retCrc << 4) + ((retCrc >> 28) & 15);
+					retCrc += esi;
+					x -= 4;
+				}
+				esi ^= y;
+				retCrc += esi;
+				pStart += pitchInBytes;
+				y--;
+			}
+		}
+	}
+	catch (...)
+	{
+		TRACE0("Exception in texture CRC calculation");
+	}
+	return retCrc;
 }
 
 BYTE CalculateMaxCI(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes )
@@ -649,137 +664,6 @@ BYTE CalculateMaxCI(void *pPhysicalAddress, uint32 left, uint32 top, uint32 widt
 	return val;
 }
 
-//
-//uint32 CalculateRDRAMCRC2(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes )
-//{
-//	dwAsmCRC = 0;
-//	dwAsmdwBytesPerLine = ((width<<size)+1)/2;
-//
-//	if( currentRomOptions.bFastTexCRC && !options.bLoadHiResTextures && (height>=32 || (dwAsmdwBytesPerLine>>2)>=16))
-//	{
-//		uint32 realWidthInDWORD = dwAsmdwBytesPerLine>>2;
-//		uint32 xinc = realWidthInDWORD / FAST_CRC_CHECKING_INC_X;	
-//		if( xinc < FAST_CRC_MIN_X_INC )
-//		{
-//			xinc = min(FAST_CRC_MIN_X_INC, width);
-//		}
-//		if( xinc > FAST_CRC_MAX_X_INC )
-//		{
-//			xinc = FAST_CRC_MAX_X_INC;
-//		}
-//
-//		uint32 yinc = height / FAST_CRC_CHECKING_INC_Y;	
-//		if( yinc < FAST_CRC_MIN_Y_INC ) 
-//		{
-//			yinc = min(FAST_CRC_MIN_Y_INC, height);
-//		}
-//		if( yinc > FAST_CRC_MAX_Y_INC )
-//		{
-//			yinc = FAST_CRC_MAX_Y_INC;
-//		}
-//
-//		uint32 pitch = pitchInBytes>>2;
-//		register uint32 *pStart = (uint32*)(pPhysicalAddress);
-//		pStart += (top * pitch) + (((left<<size)+1)>>3);
-//
-//		/*
-//		uint32 x,y;
-//		for (y = 0; y < height; y+=yinc)		// Do every nth line?
-//		{
-//		for (x = 0; x < realWidthInDWORD; x+=xinc)
-//		{
-//		dwAsmCRC += *(pStart+x);
-//		dwAsmCRC ^= x;
-//		}
-//		pStart += pitch;
-//		dwAsmCRC ^= y;
-//		}
-//		*/
-//
-//
-//		__asm
-//		{
-//			push	esi;
-//			mov		esi, DWORD PTR [xinc]; 
-//			mov		ebx, DWORD PTR [pStart];
-//			mov		eax,0;	// EAX = the CRC
-//			mov		edx,0x0;
-//loop1:
-//			cmp		edx, height;
-//			jae		endloop1;
-//			mov		ecx, 0x0;
-//loop2:
-//			add		eax, ecx;
-//			cmp		ecx, DWORD PTR [realWidthInDWORD]
-//			jae		endloop2;
-//
-//			add		eax, DWORD PTR [ebx][ecx*4];
-//
-//			add		ecx, esi;
-//			jmp		loop2;
-//endloop2:
-//			xor		eax, edx;
-//			add		edx, DWORD PTR [yinc];
-//			add		ebx, DWORD PTR [pitch];
-//			jmp		loop1;
-//endloop1:
-//			mov		DWORD PTR [dwAsmCRC], eax;
-//			pop		esi;
-//		}
-//	}
-//	else
-//	{
-//		try{
-//			dwAsmdwBytesPerLine = ((width<<size)+1)/2;
-//
-//			pAsmStart = (uint8*)(pPhysicalAddress);
-//			pAsmStart += (top * pitchInBytes) + (((left<<size)+1)>>1);
-//
-//			dwAsmHeight = height - 1;
-//			dwAsmPitch = pitchInBytes;
-//
-//
-//			__asm 
-//			{
-//				push eax
-//					push ebx
-//					push ecx
-//					push edx
-//					push esi
-//
-//					mov	ecx, pAsmStart;	// = pStart
-//				mov	edx, 0			// The CRC
-//					mov	eax, dwAsmHeight	// = y
-//l2:				mov	ebx, dwAsmdwBytesPerLine	// = x
-//				sub	ebx, 4
-//l1:				mov	esi, [ecx+ebx]
-//				xor esi, ebx
-//					add edx, esi
-//					sub	ebx, 4
-//					jge l1
-//					xor esi, eax
-//					add edx, esi
-//					add ecx, dwAsmPitch
-//					dec eax
-//					jge l2
-//
-//					mov	dwAsmCRC, edx
-//
-//					pop esi
-//					pop edx
-//					pop ecx
-//					pop ebx
-//					pop	eax
-//			}
-//		}
-//		catch(...)
-//		{
-//			TRACE0("Exception in texture CRC calculation");
-//		}
-//	}
-//	return dwAsmCRC;
-//}
-
 bool FrameBufferManager::FrameBufferInRDRAMCheckCRC()
 {
 	RecentCIInfo &p = *(g_uRecentCIInfoPtrs[0]);
@@ -798,259 +682,24 @@ bool FrameBufferManager::FrameBufferInRDRAMCheckCRC()
 	}
 }
 
-extern std::vector<uint32> frameWriteRecord;
-void FrameBufferManager::FrameBufferWriteByCPU(uint32 addr, uint32 size)
-{
-	if( !frameBufferOptions.bProcessCPUWrite )	return;
-	//WARNING(TRACE2("Frame Buffer Write, addr=%08X, CI Addr=%08X", addr, g_CI.dwAddr));
-	status.frameWriteByCPU = TRUE;
-	frameWriteRecord.push_back(addr&(g_dwRamSize-1));
-}
-
-extern RECT frameWriteByCPURect;
-extern std::vector<RECT> frameWriteByCPURects;
-extern RECT frameWriteByCPURectArray[20][20];
-extern bool frameWriteByCPURectFlag[20][20];
-#define FRAMEBUFFER_IN_BLOCK
-bool FrameBufferManager::ProcessFrameWriteRecord()
-{
-	int size = frameWriteRecord.size();
-	if( size == 0 ) return false;
-
-	int index = FindRecentCIInfoIndex(frameWriteRecord[0]);
-	if( index == -1 )
-	{
-		LOG_TEXTURE(TRACE1("Frame Buffer Write to non-record addr = %08X", frameWriteRecord[0]));
-		frameWriteRecord.clear();
-		return false;
-	}
-	else
-	{
-		uint32 base = g_uRecentCIInfoPtrs[index]->dwAddr;
-		uint32 uwidth = g_uRecentCIInfoPtrs[index]->dwWidth;
-		uint32 uheight = g_uRecentCIInfoPtrs[index]->dwHeight;
-		uint32 upitch = uwidth<<1;
-
-		frameWriteByCPURect.left=uwidth-1;
-		frameWriteByCPURect.top = uheight-1;
-
-		frameWriteByCPURect.right=0;
-		frameWriteByCPURect.bottom = 0;
-
-		int x, y, off;
-
-		for( int i=0; i<size; i++ )
-		{
-			off = frameWriteRecord[i]-base;
-			if( off < (int)g_uRecentCIInfoPtrs[index]->dwMemSize )
-			{
-				y = off/upitch;
-				x = (off - y*upitch)>>1;
-
-#ifdef FRAMEBUFFER_IN_BLOCK
-				int xidx=x/32;
-				int yidx=y/24;
-
-				RECT &rect = frameWriteByCPURectArray[xidx][yidx];
-
-				if( !frameWriteByCPURectFlag[xidx][yidx] )
-				{
-					rect.left=rect.right=x;
-					rect.top=rect.bottom=y;
-					frameWriteByCPURectFlag[xidx][yidx]=true;
-				}
-				else
-				{
-					if( x < rect.left )	rect.left = x;
-					if( x > rect.right ) rect.right = x;
-					if( y < rect.top )	rect.top = y;
-					if( y > rect.bottom ) rect.bottom = y;
-				}
-#else
-
-				/*
-				int index = -1;
-				int rectsize = frameWriteByCPURects.size();
-
-				if( rectsize == 0 )
-				{
-				RECT rect;
-				rect.left=rect.right=x;
-				rect.top=rect.bottom=y;
-				frameWriteByCPURects.push_back(rect);
-				continue;
-				}
-
-				for( int j=0; j<rectsize; j++ )
-				{
-				if( ( (x >= frameWriteByCPURects[j].left && (x<=frameWriteByCPURects[j].right || x-frameWriteByCPURects[j].left<=30)) ||
-				(x < frameWriteByCPURects[j].left && frameWriteByCPURects[j].right-x <= 30) ) &&
-				( (y >= frameWriteByCPURects[j].top && (x<=frameWriteByCPURects[j].bottom || x-frameWriteByCPURects[j].top<=30)) ||
-				(y < frameWriteByCPURects[j].top && frameWriteByCPURects[j].bottom-y <= 30) ) )
-				{
-				index = j;
-				break;
-				}
-				}
-
-				if( index < 0 )
-				{
-				RECT rect;
-				rect.left=rect.right=x;
-				rect.top=rect.bottom=y;
-				frameWriteByCPURects.push_back(rect);
-				continue;
-				}
-
-				RECT &rect = frameWriteByCPURects[index];
-				if( x < rect.left )	rect.left = x;
-				if( x > rect.right ) rect.right = x;
-				if( y < rect.top )	rect.top = y;
-				if( y > rect.bottom ) rect.bottom = y;
-				*/
-
-				if( x < frameWriteByCPURect.left )	frameWriteByCPURect.left = x;
-				if( x > frameWriteByCPURect.right ) frameWriteByCPURect.right = x;
-				if( y < frameWriteByCPURect.top )	frameWriteByCPURect.top = y;
-				if( y > frameWriteByCPURect.bottom ) frameWriteByCPURect.bottom = y;
-#endif
-			}
-		}
-
-		frameWriteRecord.clear();
-		LOG_TEXTURE(TRACE4("Frame Buffer Write: Left=%d, Top=%d, Right=%d, Bottom=%d", frameWriteByCPURect.left,
-			frameWriteByCPURect.top, frameWriteByCPURect.right, frameWriteByCPURect.bottom));
-		return true;
-	}
-}
-
-void FrameBufferManager::FrameBufferReadByCPU( uint32 addr )
-{
-	///return;	// it does not work very well anyway
-
-
-	if( !frameBufferOptions.bProcessCPURead )	return;
-
-	addr &= (g_dwRamSize-1);
-	int index = FindRecentCIInfoIndex(addr);
-	if( index == -1 ) 
-	{
-		// Check if this is the depth buffer
-		uint32 size = 2*g_RecentCIInfo[0].dwWidth*g_RecentCIInfo[0].dwHeight;
-		addr &= 0x3FFFFFFF;
-
-		if( addr >= g_ZI.dwAddr && addr < g_ZI.dwAddr + size )
-		{
-			TXTRBUF_OR_CI_DUMP(TRACE1("Depth Buffer read, reported by emulator, addr=%08X", addr));
-		}
-		else
-		{
-			return;
-		}
-	}
-
-	if( status.gDlistCount - g_uRecentCIInfoPtrs[index]->lastUsedFrame > 3 )
-	{
-		// Ok, we don't have this frame anymore
-		return;
-	}
-
-	//TXTRBUF_OR_CI_DUMP(TRACE1("FB Read By CPU at %08X", addr));
-	if( g_uRecentCIInfoPtrs[index]->bCopied )	return;
-	//if( addr != g_uRecentCIInfoPtrs[index]->dwAddr )	return;
-
-	TXTRBUF_OR_CI_DUMP(TRACE1("Frame Buffer read, reported by emulator, addr=%08X", addr));
-	uint32 size = 0x1000 - addr%0x1000;
-	CheckAddrInBackBuffers(addr, size, true);
-
-	DEBUGGER_IF_DUMP(pauseAtNext,{TRACE0("Frame Buffer read");});
-	DEBUGGER_PAUSE_AND_DUMP_NO_UPDATE(NEXT_RENDER_TEXTURE, 
-	{DebuggerAppendMsg("Paused after setting Frame Buffer read:\n Cur CI Addr: 0x%08x, Fmt: %s Size: %s Width: %d",
-	g_CI.dwAddr, pszImgFormat[g_CI.dwFormat], pszImgSize[g_CI.dwSize], g_CI.dwWidth);});
-}
-
-
-
-extern RECT frameWriteByCPURect;
-extern std::vector<RECT> frameWriteByCPURects;
-extern RECT frameWriteByCPURectArray[20][20];
-extern bool frameWriteByCPURectFlag[20][20];
-#define FRAMEBUFFER_IN_BLOCK
-
 void FrameBufferManager::UpdateFrameBufferBeforeUpdateFrame()
 {
-	if( (frameBufferOptions.bProcessCPUWrite && status.frameWriteByCPU ) ||
-		(frameBufferOptions.bLoadBackBufFromRDRAM && !FrameBufferInRDRAMCheckCRC() ) )		
+	if( (frameBufferOptions.bLoadBackBufFromRDRAM && !FrameBufferInRDRAMCheckCRC() ) )		
 		// Checks if frame buffer has been modified by CPU
 		// Only happens to Dr. Mario
 	{
-		if( frameBufferOptions.bProcessCPUWrite )
+		if (CRender::IsAvailable())
 		{
-			if( ProcessFrameWriteRecord() )
-			{
-#ifdef FRAMEBUFFER_IN_BLOCK
-				int i,j;
-				for( i=0; i<20; i++)
-				{
-					for( j=0; j<20; j++ )
-					{
-						if( frameWriteByCPURectFlag[i][j] )
-						{
-							CRender::GetRender()->DrawFrameBuffer(false, frameWriteByCPURectArray[i][j].left, frameWriteByCPURectArray[i][j].top,
-								frameWriteByCPURectArray[i][j].right-frameWriteByCPURectArray[i][j].left+1, frameWriteByCPURectArray[i][j].bottom-frameWriteByCPURectArray[i][j].top+1);
-						}
-					}
-				}
-				for( i=0; i<20; i++)
-				{
-					for( j=0; j<20; j++ )
-					{
-						if( frameWriteByCPURectFlag[i][j] )
-						{
-							ClearN64FrameBufferToBlack(frameWriteByCPURectArray[i][j].left, frameWriteByCPURectArray[i][j].top,
-								frameWriteByCPURectArray[i][j].right-frameWriteByCPURectArray[i][j].left+1, frameWriteByCPURectArray[i][j].bottom-frameWriteByCPURectArray[i][j].top+1);
-							frameWriteByCPURectFlag[i][j] = false;
-						}
-					}
-				}
-				//memset(frameWriteByCPURectArray, 0, sizeof(frameWriteByCPURectArray));
-				//memset(frameWriteByCPURectFlag, 0, sizeof(frameWriteByCPURectFlag));
-#else
-				CRender::GetRender()->DrawFrameBuffer(false, frameWriteByCPURect.left, frameWriteByCPURect.top,
-					frameWriteByCPURect.right-frameWriteByCPURect.left, frameWriteByCPURect.bottom-frameWriteByCPURect.top);
-				ClearN64FrameBufferToBlack(frameWriteByCPURect.left, frameWriteByCPURect.top,
-					frameWriteByCPURect.right-frameWriteByCPURect.left+1, frameWriteByCPURect.bottom-frameWriteByCPURect.top+1);
-
-				/*
-				int size = frameWriteByCPURects.size();
-				for( int i=0; i<size; i++)
-				{
-				CRender::GetRender()->DrawFrameBuffer(false, frameWriteByCPURects[i].left, frameWriteByCPURects[i].top,
-				frameWriteByCPURects[i].right-frameWriteByCPURects[i].left, frameWriteByCPURects[i].bottom-frameWriteByCPURects[i].top);
-				ClearN64FrameBufferToBlack(frameWriteByCPURects[i].left, frameWriteByCPURects[i].top,
-				frameWriteByCPURects[i].right-frameWriteByCPURects[i].left+1, frameWriteByCPURects[i].bottom-frameWriteByCPURects[i].top+1);
-				}
-				frameWriteByCPURects.clear();
-				*/
-#endif
-			}
-			status.frameWriteByCPU = FALSE;
-		}
-		else
-		{
-			if (CRender::IsAvailable())
-			{
-				RecentCIInfo &p = *(g_uRecentCIInfoPtrs[0]);
-				CRender::GetRender()->DrawFrameBuffer(false, 0,0,p.dwWidth,p.dwHeight);
-				ClearN64FrameBufferToBlack();
-			}
+			RecentCIInfo &p = *(g_uRecentCIInfoPtrs[0]);
+			CRender::GetRender()->DrawFrameBuffer(false, 0,0,p.dwWidth,p.dwHeight);
+			ClearN64FrameBufferToBlack();
 		}
 	}
 }
 
 uint32 FrameBufferManager::ComputeCImgHeight(SetImgInfo &info, uint32 &height)
 {
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 
 	for( int i=0; i<10; i++ )
 	{
@@ -1424,21 +1073,6 @@ void InitTlutReverseLookup(void)
 		}
 
 		RevTlutTableNeedUpdate = false;
-	}
-}
-
-//copies backbuffer to N64 framebuffer by notification by emu core
-// **buggy**
-void FrameBufferManager::CopyBackToFrameBufferIfReadByCPU(uint32 addr)
-{
-	int i = FindRecentCIInfoIndex(addr);
-	if( i != -1 )
-	{
-		//if( i == 0 ) CGraphicsContext::Get()->UpdateFrame();
-		RecentCIInfo *info = g_uRecentCIInfoPtrs[i];
-		StoreBackBufferToRDRAM( info->dwAddr, info->dwFormat, info->dwSize, info->dwWidth, info->dwHeight, 
-			windowSetting.uDisplayWidth, windowSetting.uDisplayHeight, addr, 0x1000-addr%0x1000);
-		TRACE1("Copy back for CI Addr=%08X", info->dwAddr);
 	}
 }
 

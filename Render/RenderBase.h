@@ -38,10 +38,8 @@ enum { MAX_VERTS = 80 };		// F3DLP.Rej supports up to 80 verts!
 
 // All these arrays are moved out of the class CRender
 // to be accessed in faster speed
-extern v4	g_vecProjected[MAX_VERTS];
-extern v2		g_fVtxTxtCoords[MAX_VERTS];
+extern DaedalusVtx4	g_vecProjected[MAX_VERTS];
 extern uint32		g_dwVtxDifColor[MAX_VERTS];
-//extern uint32		g_dwVtxFlags[MAX_VERTS];			// Z_POS Z_NEG etc
 
 extern RenderTexture g_textures[MAX_TEXTURES];
 
@@ -51,8 +49,6 @@ extern unsigned int			g_vtxIndex[1000];
 extern TLITVERTEX			g_clippedVtxBuffer[2000];
 extern int					g_clippedVtxCount;
 
-extern uint32				g_clipFlag[MAX_VERTS];
-extern uint32				g_clipFlag2[MAX_VERTS];
 extern float				g_fFogCoord[MAX_VERTS];
 
 extern TLITVERTEX			g_texRectTVtx[4];
@@ -70,8 +66,6 @@ extern TLITVERTEX			g_texRectTVtx[4];
 
 extern uint32	gRSPnumLights;
 extern Light	gRSPlights[16];
-extern Matrix4x4	gRSPworldProject;
-extern Matrix4x4	gRSPmodelViewTop;
 extern float	gRSPfFogMin;
 extern float	gRSPfFogMax;
 extern float	gRSPfFogDivider;
@@ -91,25 +85,24 @@ __declspec(align(16)) struct RSP_Options
 
 	RenderShadeMode	shadeMode;
 
-	uint32	ambientLightIndex;
-
-	uint32	projectionMtxTop;
-	uint32	modelViewMtxTop;
-
 	uint32	numVertices;
 	uint32  maxVertexID;
 
 	int		nVPLeftN, nVPTopN, nVPRightN, nVPBottomN, nVPWidthN, nVPHeightN, maxZ;
-	int		clip_ratio_negx,	clip_ratio_negy,	clip_ratio_posx,	clip_ratio_posy;
 	int		clip_ratio_left,	clip_ratio_top,	clip_ratio_right,	clip_ratio_bottom;
 	int		real_clip_scissor_left,	real_clip_scissor_top,	real_clip_scissor_right,	real_clip_scissor_bottom;
-	float	real_clip_ratio_negx,	real_clip_ratio_negy,	real_clip_ratio_posx,	real_clip_ratio_posy;
 
-	Matrix4x4	projectionMtxs[RICE_MATRIX_STACK];
-	Matrix4x4	modelviewMtxs[RICE_MATRIX_STACK];
-	u32		mMatStackSize;
+	mutable Matrix4x4	mWorldProject;
+	Matrix4x4			mTempMat;
+	Matrix4x4			mProjectionMat;
+	Matrix4x4			mModelViewStack[RICE_MATRIX_STACK];	//DKR reuses these and need at least 4 //Corn
+	u32					mModelViewTop;
+	u32					mMatStackSize;
+	mutable bool		mWorldProjectValid;
+	bool				mReloadProj;
+	bool				mWPmodified;
+	u32					mDKRMatIdx;
 
-	bool	bMatrixIsUpdated;
 	bool	bLightIsUpdated;
 
 	uint32		segments[16];
@@ -117,9 +110,6 @@ __declspec(align(16)) struct RSP_Options
 	v4		DKRBaseVec;
 
 	int		vertexMult;
-
-	bool	bNearClip;
-	bool	bRejectVtx;
 
 	// For DirectX only
 	float	vtxXMul;
@@ -172,14 +162,6 @@ extern RSP_Options gRSP;
 
 
 __declspec(align(16)) struct RDP_Options{
-	uint32	keyR;
-	uint32	keyG;
-	uint32	keyB;
-	uint32	keyA;
-	uint32	keyRGB;
-	uint32	keyRGBA;
-	float	fKeyA;
-	
 	bool	bFogEnableInBlender;
 
 	uint32	fogColor;
@@ -207,8 +189,6 @@ __declspec(align(16)) struct RDP_Options{
 	ScissorType scissor;
 
 	bool	textureIsChanged;
-	bool	texturesAreReloaded;
-	bool	colorsAreReloaded;
 };
 
 extern RDP_Options gRDP;
@@ -236,7 +216,6 @@ void SetLightCBFD(uint32 dwLight, short nonzero);
 void SetLightEx(uint32 dwLight, float ca, float la, float qa);
 
 void ForceMainTextureIndex(int dwTile); 
-void UpdateCombinedMatrix();
 
 void ClipVertexes();
 
@@ -247,13 +226,22 @@ inline float ViewPortTranslatei_y(LONG y) { return y*windowSetting.fMultY; }
 inline float ViewPortTranslatei_x(float x) { return x*windowSetting.fMultX; }
 inline float ViewPortTranslatei_y(float y) { return y*windowSetting.fMultY; }
 
+//*****************************************************************************
+// We round these value here, so that when we scale up the coords to our screen
+// coords we don't get any gaps.
+//*****************************************************************************
+inline void ConvertN64ToScreen(const v2 & n64_coords, v2 & answ)
+{
+	answ.x = roundf(ViewPortTranslatei_x(roundf(n64_coords.x)));
+	answ.y = roundf(ViewPortTranslatei_y(roundf(n64_coords.y)));
+}
+
 inline float GetPrimitiveDepth() { return gRDP.fPrimitiveDepth; }
 inline uint32 GetPrimitiveColor() { return gRDP.primitiveColor; }
 inline float* GetPrimitiveColorfv() { return gRDP.fvPrimitiveColor; }
 inline uint32 GetLODFrac() { return gRDP.LODFrac; }
 inline void SetEnvColor(uint32 dwCol) 
 { 
-	gRDP.colorsAreReloaded = true;
 	gRDP.envColor = dwCol; 
 	gRDP.fvEnvColor[0] = ((dwCol>>16)&0xFF)/255.0f;		//r
 	gRDP.fvEnvColor[1] = ((dwCol>>8)&0xFF)/255.0f;			//g
@@ -272,6 +260,5 @@ inline void SetNumLights(uint32 dwNumLights)
 inline uint32 GetNumLights() { return gRSPnumLights; }
 inline D3DCOLOR GetVertexDiffuseColor(uint32 ver) { return g_dwVtxDifColor[ver]; }
 inline void SetScreenMult(float fMultX, float fMultY) { windowSetting.fMultX = fMultX; windowSetting.fMultY = fMultY; }
-inline D3DCOLOR GetLightCol(uint32 dwLight) { return gRSPlights[dwLight].colour.col; }
 
 #endif

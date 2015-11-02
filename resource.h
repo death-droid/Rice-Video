@@ -74,11 +74,9 @@
 #define IDC_SETTING_LABEL1              1071
 #define IDC_SETTING_LABEL2              1072
 #define IDC_SETTING_LABEL3              1073
-#define IDC_FORCE_DEPTH_COMPARE         1074
 #define IDC_SETTING_LABEL4              1075
 #define IDC_TEXTURE_ENHANCEMENT         1076
 #define IDC_FORCE_TEXTURE_FILTER        1077
-#define IDC_FORCE_BUFFER_CLEAR          1079
 #define IDC_OPTION_GROUP                1080
 #define IDC_OPTION_GROUP2               1081
 #define IDC_ABOUT                       1082
@@ -99,14 +97,11 @@
 #define IDC_ALPHA_TEST                  1103
 #define IDC_PRIMARY_DEPTH_HACK          1104
 #define IDC_FASTER_LOADING_TILE         1105
-#define IDC_TEXTURE_SCALE_HACK          1106
-#define IDC_EMULATE_CLEAR               1107
 #define IDC_SKIP_FRAME                  1110
 #define IDC_INCREASE_TEXTRECT_EDGE      1112
 #define IDC_SKIP_FRAME2                 1113
 #define IDC_Z_HACK                      1114
 #define IDC_FRAME_BUFFER_SETTING2       1115
-#define IDC_DISABLE_BG                  1117
 #define IDC_WINFRAME_MODE               1118
 #define IDC_DISABLE_CULLING             1119
 #define IDC_RENDER_TO_TEXTURE_SETTING   1124

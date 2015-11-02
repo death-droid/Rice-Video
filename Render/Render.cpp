@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "..\stdafx.h"
 #include "BMGDLL.h"
 
-extern FiddledVtx * g_pVtxBase;
 CRender * CRender::g_pRender=NULL;
 int CRender::gRenderReferenceCount=0;
 
@@ -47,18 +46,11 @@ bool CRender::IsAvailable()
 }
 
 CRender::CRender() :
-	m_fScreenViewportMultX(2.0f),
-	m_fScreenViewportMultY(2.0f),
 	m_bZUpdate(FALSE),
 	m_bZCompare(FALSE),
 	m_dwZBias(0),
 
-	m_dwTexturePerspective(FALSE),
-	m_bAlphaTestEnable(FALSE),
-
 	m_dwAlpha(0xFF),
-
-	m_bBlendModeValid(FALSE),
 	
 	m_dwMinFilter(D3DTEXF_POINT),
 	m_dwMagFilter(D3DTEXF_POINT)
@@ -103,63 +95,44 @@ void CRender::ResetMatrices(uint32 size)
 	if (size == 0)
 		size = RICE_MATRIX_STACK;
 
-	mat.m[0][1] = mat.m[0][2] = mat.m[0][3] =
-	mat.m[1][0] = mat.m[1][2] = mat.m[1][3] =
-	mat.m[2][0] = mat.m[2][1] = mat.m[2][3] =
-	mat.m[3][0] = mat.m[3][1] = mat.m[3][2] = 0.0f;
-
-	mat.m[0][0] = mat.m[1][1] = mat.m[2][2] = mat.m[3][3] = 1.0f;
-
-	gRSP.projectionMtxTop = 0;
-	gRSP.modelViewMtxTop = 0;
-	gRSP.projectionMtxs[0] = mat;
-	gRSP.modelviewMtxs[0] = mat;
 	gRSP.mMatStackSize = (size > RICE_MATRIX_STACK) ? RICE_MATRIX_STACK : size;
-
-	gRSP.bMatrixIsUpdated = true;
-	UpdateCombinedMatrix();
+	gRSP.mModelViewTop = 0;
+	gRSP.mProjectionMat = gRSP.mModelViewStack[0] = gMatrixIdentity;
+	gRSP.mWorldProjectValid = false;
 }
 
-void CRender::SetProjection(const Matrix4x4 & mat, bool bPush, bool bReplace)
+void CRender::SetProjection(const u32 address, bool bReplace)
 {
-	if (gRSP.projectionMtxTop >= (RICE_MATRIX_STACK-1) && bPush)
-	{
-		TRACE0("Pushing past proj stack limits!");
-	}
-	else if (bPush)
-		gRSP.projectionMtxTop++;
-
 	if (bReplace)
 	{
-		// Load projection matrix
-		gRSP.projectionMtxs[gRSP.projectionMtxTop] = mat;
+		MatrixFromN64FixedPoint(gRSP.mProjectionMat, address);
+
 	}
 	else
 	{
-		gRSP.projectionMtxs[gRSP.projectionMtxTop] = bPush ? mat * gRSP.projectionMtxs[gRSP.projectionMtxTop - 1] : mat * gRSP.projectionMtxs[gRSP.projectionMtxTop];
+		MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+		MatrixMultiplyAligned(&gRSP.mProjectionMat, &gRSP.mTempMat, &gRSP.mProjectionMat);
 	}
 
-	gRSP.bMatrixIsUpdated = true;
-
-	DumpMatrix(mat,"Set Projection Matrix");
+	gRSP.mWorldProjectValid = false;
 }
 
-bool mtxPopUpError = false;
-void CRender::SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace)
+void CRender::SetWorldView(const u32 address, bool bPush, bool bReplace)
 {
-	if (bPush && (gRSP.modelViewMtxTop < gRSP.mMatStackSize))
+	if (bPush && (gRSP.mModelViewTop < gRSP.mMatStackSize))
 	{
-		gRSP.modelViewMtxTop++;
+		gRSP.mModelViewTop++;
 
 		// We should store the current projection matrix...
 		if (bReplace)
 		{
-			// Load projection matrix
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat;
+			//Load Modelview matrix
+			MatrixFromN64FixedPoint(gRSP.mModelViewStack[gRSP.mModelViewTop], address);
 		}
 		else // Multiply projection matrix
 		{
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat * gRSP.modelviewMtxs[gRSP.modelViewMtxTop-1];
+			MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+			MatrixMultiplyAligned(&gRSP.mModelViewStack[gRSP.mModelViewTop], &gRSP.mTempMat, &gRSP.mModelViewStack[gRSP.mModelViewTop - 1]);
 		}
 	}
 	else	// NoPush
@@ -167,76 +140,28 @@ void CRender::SetWorldView(const Matrix4x4 & mat, bool bPush, bool bReplace)
 		if (bReplace)
 		{
 			// Load projection matrix
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat;
+			MatrixFromN64FixedPoint(gRSP.mModelViewStack[gRSP.mModelViewTop], address);
 		}
 		else
 		{
 			// Multiply projection matrix
-			gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat * gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
+			MatrixFromN64FixedPoint(gRSP.mTempMat, address);
+			MatrixMultiplyAligned(&gRSP.mModelViewStack[gRSP.mModelViewTop], &gRSP.mTempMat, &gRSP.mModelViewStack[gRSP.mModelViewTop]);
 		}
 	}
 
-	gRSPmodelViewTop = gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
-	if( options.enableHackForGames == HACK_REVERSE_XY_COOR )
-	{
-		gRSPmodelViewTop = gRSPmodelViewTop * reverseXY;
-	}
-	if( options.enableHackForGames == HACK_REVERSE_Y_COOR )
-	{
-		gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
-	}
-
-	gRSP.bMatrixIsUpdated = true;
-
-	DumpMatrix(mat,"Set WorldView Matrix");
+	gRSP.mWorldProjectValid = false;
 }
 
 
 void CRender::PopWorldView(u32 num)
 {
-	if (gRSP.modelViewMtxTop > (num-1))
+	if (gRSP.mModelViewTop > (num - 1))
 	{
-		gRSP.modelViewMtxTop-=num;
-		gRSPmodelViewTop = gRSP.modelviewMtxs[gRSP.modelViewMtxTop];
-		if( options.enableHackForGames == HACK_REVERSE_XY_COOR )
-		{
-			gRSPmodelViewTop = gRSPmodelViewTop * reverseXY;
-		}
-		if( options.enableHackForGames == HACK_REVERSE_Y_COOR )
-		{
-			gRSPmodelViewTop = gRSPmodelViewTop * reverseY;
-		}
-		gRSP.bMatrixIsUpdated = true;
+		gRSP.mModelViewTop -= num;
+
+		gRSP.mWorldProjectValid = false;
 	}
-	else
-	{
-#ifdef _DEBUG
-		if( pauseAtNext )
-			TRACE0("Popping past worldview stack limits");
-#endif
-		mtxPopUpError = true;
-	}
-}
-
-
-Matrix4x4 & CRender::GetWorldProjectMatrix(void)
-{
-	return gRSPworldProject;
-}
-
-void CRender::SetWorldProjectMatrix(Matrix4x4 &mtx)
-{
-#ifdef _DEBUG
-	if( pauseAtNext && (eventToPause == NEXT_TRIANGLE || eventToPause == NEXT_FLUSH_TRI || eventToPause == NEXT_MATRIX_CMD ) )
-	{
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
-		DebuggerAppendMsg("Force Matrix: pc=%08X", dwPC);
-		DumpMatrix(mtx, "Force Matrix, loading new world-project matrix");
-	}
-#endif
-	gRSPworldProject = mtx;
-
-	gRSP.bMatrixIsUpdated = false;
 }
 
 void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)
@@ -245,7 +170,6 @@ void CRender::SetMux(uint32 dwMux0, uint32 dwMux1)
 	if( m_Mux != tempmux )
 	{
 		m_Mux = tempmux;
-		m_bBlendModeValid = FALSE;
 		m_pColorCombiner->UpdateCombiner(dwMux0, dwMux1);
 	}
 }
@@ -258,6 +182,8 @@ void CRender::SetCombinerAndBlender()
 	CBlender::InitBlenderMode();
 
 	m_pColorCombiner->InitCombinerMode();
+
+	ApplyTextureFilter();
 }
 
 void CRender::RenderReset()
@@ -285,45 +211,31 @@ bool CRender::FillRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, uint32 dwColor)
 
 	bool res=true;
 
-	/*
-	//CHECKME if statement was previously disabled
-	*/
-	if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL && nX0 == 0 && nY0 == 0 && ((nX1==windowSetting.uViWidth && nY1==windowSetting.uViHeight)||(nX1==windowSetting.uViWidth-1 && nY1==windowSetting.uViHeight-1)) )
-	{
-		CGraphicsContext::g_pGraphicsContext->Clear(CLEAR_COLOR_BUFFER,dwColor);
-	}
-	else
-	{
-		ZBufferEnable( FALSE );
+	ZBufferEnable( FALSE );
 
-		m_fillRectVtx[0].x = ViewPortTranslatei_x(nX0);
-		m_fillRectVtx[0].y = ViewPortTranslatei_y(nY0);
-		m_fillRectVtx[1].x = ViewPortTranslatei_x(nX1);
-		m_fillRectVtx[1].y = ViewPortTranslatei_y(nY1);
+	m_fillRectVtx[0].x = ViewPortTranslatei_x(nX0);
+	m_fillRectVtx[0].y = ViewPortTranslatei_y(nY0);
+	m_fillRectVtx[1].x = ViewPortTranslatei_x(nX1);
+	m_fillRectVtx[1].y = ViewPortTranslatei_y(nY1);
 
-		SetCombinerAndBlender();
+	SetCombinerAndBlender();
 
-		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			ZBufferEnable(FALSE);
-		else
-			dwColor = gRDP.primitiveColor;
+	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
+		ZBufferEnable(FALSE);
 
-		float depth = (gRDP.otherMode.depth_source == 1 ? gRDP.fPrimitiveDepth : 0 );
+	float depth = (gRDP.otherMode.depth_source == 1 ? gRDP.fPrimitiveDepth : 0 );
 
-		ApplyRDPScissor();
-		TurnFogOnOff(false);
-		res = RenderFillRect(dwColor, depth);
-		TurnFogOnOff(gRDP.tnl.Fog);
+	ApplyRDPScissor();
+	TurnFogOnOff(false);
+	res = RenderFillRect(dwColor, depth);
+	TurnFogOnOff(gRDP.tnl.Fog);
 
-		if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-			ZBufferEnable(gRDP.tnl.Zbuffer);
-	}
+	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
+		ZBufferEnable(gRDP.tnl.Zbuffer);
 
 	if( options.bWinFrameMode )	SetFillMode(RICE_FILLMODE_WINFRAME );
 
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", nX0, nY0, nX1, nY1, dwColor);
-			DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", dwColor);if( logCombiners ) m_pColorCombiner->DisplayMuxString();});
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", nX0, nY0, nX1, nY1, dwColor);
 			DebuggerAppendMsg("Pause after FillRect: Color=%08X\n", dwColor);if( logCombiners ) m_pColorCombiner->DisplayMuxString();});
 
 	return res;
@@ -335,8 +247,8 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 	LOG_UCODE("Line3D: Vtx0=%d, Vtx1=%d, Width=%d", dwV0, dwV1, dwWidth);
 	if( !status.bCIBufferIsRendered ) g_pFrameBufferManager->ActiveTextureBuffer();
 
-	m_line3DVtx[0].z = (g_vecProjected[dwV0].z + 1.0f) * 0.5f;
-	m_line3DVtx[1].z = (g_vecProjected[dwV1].z + 1.0f) * 0.5f;
+	m_line3DVtx[0].z = (g_vecProjected[dwV0].ProjectedPos.z + 1.0f) * 0.5f;
+	m_line3DVtx[1].z = (g_vecProjected[dwV1].ProjectedPos.z + 1.0f) * 0.5f;
 
 	if( m_line3DVtx[0].z != m_line3DVtx[1].z )  
 		return false;
@@ -348,14 +260,14 @@ bool CRender::Line3D(uint32 dwV0, uint32 dwV1, uint32 dwWidth)
 		status.bFrameBufferDrawnByTriangles = true;
 	}
 
-	m_line3DVtx[0].x = ViewPortTranslatef_x(g_vecProjected[dwV0].x);
-	m_line3DVtx[0].y = ViewPortTranslatef_y(g_vecProjected[dwV0].y);
-	m_line3DVtx[0].rhw = g_vecProjected[dwV0].w;
+	m_line3DVtx[0].x = ViewPortTranslatef_x(g_vecProjected[dwV0].ProjectedPos.x);
+	m_line3DVtx[0].y = ViewPortTranslatef_y(g_vecProjected[dwV0].ProjectedPos.y);
+	m_line3DVtx[0].rhw = g_vecProjected[dwV0].ProjectedPos.w;
 	m_line3DVtx[0].dcDiffuse = g_dwVtxDifColor[dwV0];
 
-	m_line3DVtx[1].x = ViewPortTranslatef_x(g_vecProjected[dwV1].x);
-	m_line3DVtx[1].y = ViewPortTranslatef_y(g_vecProjected[dwV1].y);
-	m_line3DVtx[1].rhw = g_vecProjected[dwV1].w;
+	m_line3DVtx[1].x = ViewPortTranslatef_x(g_vecProjected[dwV1].ProjectedPos.x);
+	m_line3DVtx[1].y = ViewPortTranslatef_y(g_vecProjected[dwV1].ProjectedPos.y);
+	m_line3DVtx[1].rhw = g_vecProjected[dwV1].ProjectedPos.w;
 	m_line3DVtx[1].dcDiffuse = g_dwVtxDifColor[dwV1];
 
 	float width = dwWidth*0.5f+1.5f;
@@ -489,7 +401,6 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 		return true;
 	}
 
-
 	if( IsUsedAsDI(g_CI.dwAddr) && !status.bHandleN64RenderTexture )
 	{
 		status.bFrameBufferIsDrawn = true;
@@ -528,12 +439,10 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 
 	SetCombinerAndBlender();
 	
-
 	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY || !gRDP.otherMode.z_cmp )
 	{
 		ZBufferEnable(FALSE);
 	}
-
 
 	CTexture *surf = g_textures[gRSP.curTile].m_pCTexture;
 	RenderTexture &tex0 = g_textures[gRSP.curTile];
@@ -672,31 +581,9 @@ bool CRender::TexRect(LONG nX0, LONG nY0, LONG nX1, LONG nY1, float fS0, float f
 
 	bool res;
 	TurnFogOnOff(false);
-	if( TileUFlags[gRSP.curTile]==D3DTADDRESS_CLAMP && TileVFlags[gRSP.curTile]==D3DTADDRESS_CLAMP && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
-	{
-		int dwFilter = m_dwMagFilter;
-		m_dwMagFilter = m_dwMinFilter = D3DTEXF_LINEAR;
-		ApplyTextureFilter();
-		ApplyRDPScissor();
-		res = RenderTexRect();
-		m_dwMagFilter = m_dwMinFilter = dwFilter;
-		ApplyTextureFilter();
-	}
-	else if( fScaleS >= 1 && fScaleT >= 1 && options.forceTextureFilter == FORCE_DEFAULT_FILTER )
-	{
-		int dwFilter = m_dwMagFilter;
-		m_dwMagFilter = m_dwMinFilter = D3DTEXF_POINT;
-		ApplyTextureFilter();
-		ApplyRDPScissor();
-		res = RenderTexRect();
-		m_dwMagFilter = m_dwMinFilter = dwFilter;
-		ApplyTextureFilter();
-	}
-	else
-	{
-		ApplyRDPScissor();
-		res = RenderTexRect();
-	}
+
+	ApplyRDPScissor();
+	res = RenderTexRect();
 
 	TurnFogOnOff(gRDP.tnl.Fog);
 
@@ -952,29 +839,6 @@ void CRender::SetTextureScale(int dwTile,  float fScaleX, float fScaleY)
 	}	
 }
 
-void CRender::SetFogFlagForNegativeW()
-{
-	if( !gRDP.tnl.Fog )	return;
-
-	m_bFogStateSave = gRDP.tnl.Fog;
-
-	bool flag=gRDP.tnl.Fog;
-	
-	for (uint32 i = 0; i < gRSP.numVertices; i++) 
-	{
-		if( g_vtxBuffer[i].rhw < 0 )
-			flag = FALSE;
-	}
-
-	TurnFogOnOff(flag);
-}
-
-void CRender::RestoreFogFlag()
-{
-	if( !gRDP.tnl.Fog )	return;
-	TurnFogOnOff(m_bFogStateSave);
-}
-
 void CRender::SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ)
 {
 	if( status.bHandleN64RenderTexture )
@@ -1005,8 +869,6 @@ void CRender::SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ
 
 	LOG_UCODE("SetViewport (%d,%d - %d,%d)",gRSP.nVPLeftN, gRSP.nVPTopN, gRSP.nVPRightN, gRSP.nVPBottomN);
 }
-
-extern bool bHalfTxtScale;
 
 bool CRender::DrawTriangles()
 {
@@ -1080,7 +942,6 @@ bool CRender::DrawTriangles()
 		else
 		{
 			if( ( gRDP.tiles[gRSP.curTile].dwSize == TXT_SIZE_32b && options.enableHackForGames == HACK_FOR_RUMBLE ) ||
-                (bHalfTxtScale && g_curRomInfo.bTextureScaleHack ) ||
 				(options.enableHackForGames == HACK_FOR_POLARISSNOCROSS && gRDP.tiles[7].dwFormat == TXT_FMT_CI && gRDP.tiles[7].dwSize == TXT_SIZE_8b 
 				&& gRDP.tiles[0].dwFormat == TXT_FMT_CI && gRDP.tiles[0].dwSize == TXT_SIZE_8b && gRSP.curTile == 0 ))
 			{
@@ -1151,20 +1012,6 @@ bool CRender::DrawTriangles()
 
 	return res;
 }
-
-//MOVE THIS STUFF OUT OF HERE? Doesnt feel like it should be in the renderer XD
-inline int ReverseCITableLookup(uint32 *pTable, int size, uint32 val)
-{
-	for( int i=0; i<size; i++)
-	{
-		if( pTable[i] == val )
-			return i;
-	}
-
-	TRACE0("Cannot find value in CI table");
-	return 0;
-}
-
 
 #ifdef _DEBUG
 bool CRender::DrawTexture(int tex, TextureChannel channel)
@@ -1263,51 +1110,6 @@ void CRender::SetVertexTextureUVCoord(TLITVERTEX &v, float fTex0S, float fTex0T,
 	}
 }
 
-void CRender::SetClipRatio(uint32 type, uint32 w1)
-{
-	bool modified = false;
-	switch(type)
-	{
-	case RSP_MV_WORD_OFFSET_CLIP_RNX:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  NegX: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_negx != (short)w1 )
-		{
-			gRSP.clip_ratio_negx = (short)w1;
-			modified = true;
-		}
-		break;
-	case RSP_MV_WORD_OFFSET_CLIP_RNY:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  NegY: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_negy != (short)w1 )
-		{
-			gRSP.clip_ratio_negy = (short)w1;
-			modified = true;
-		}
-		break;
-	case RSP_MV_WORD_OFFSET_CLIP_RPX:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  PosX: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_posx != -(short)w1 )
-		{
-			gRSP.clip_ratio_posx = -(short)w1;
-			modified = true;
-		}
-		break;
-	case RSP_MV_WORD_OFFSET_CLIP_RPY:
-		LOG_UCODE("    RSP_MOVE_WORD_CLIP  PosY: %d", (LONG)(short)w1);
-		if( gRSP.clip_ratio_posy != -(short)w1 )
-		{
-			gRSP.clip_ratio_posy = -(short)w1;
-			modified = true;
-		}
-		break;
-	}
-
-	if( modified )
-	{
-		UpdateClipRectangle();
-	}
-
-}
 void CRender::UpdateClipRectangle()
 {
 	if( status.bHandleN64RenderTexture )
@@ -1323,7 +1125,7 @@ void CRender::UpdateClipRectangle()
 		gRSP.vtxXMul = windowSetting.vpWidthW/2.0f;
 		gRSP.vtxXAdd = gRSP.vtxXMul + windowSetting.vpLeftW;
 		gRSP.vtxYMul = -windowSetting.vpHeightW/2.0f;
-		gRSP.vtxYAdd = windowSetting.vpHeightW/2.0f + windowSetting.vpTopW+windowSetting.toolbarHeightToUse;
+		gRSP.vtxYAdd = windowSetting.vpHeightW/2.0f + windowSetting.vpTopW;
 
 		// Update clip rectangle by setting scissor
 
@@ -1332,10 +1134,10 @@ void CRender::UpdateClipRectangle()
 		int centerx = halfx;
 		int centery = halfy;
 
-		gRSP.clip_ratio_left = centerx - halfx * gRSP.clip_ratio_negx;
-		gRSP.clip_ratio_top = centery - halfy * gRSP.clip_ratio_negy;
-		gRSP.clip_ratio_right = centerx + halfx * gRSP.clip_ratio_posx;
-		gRSP.clip_ratio_bottom = centery + halfy * gRSP.clip_ratio_posy;
+		gRSP.clip_ratio_left = centerx - halfx;
+		gRSP.clip_ratio_top = centery - halfy;
+		gRSP.clip_ratio_right = centerx + halfx;
+		gRSP.clip_ratio_bottom = centery + halfy;
 	}
 	else
 	{
@@ -1349,7 +1151,7 @@ void CRender::UpdateClipRectangle()
 		gRSP.vtxXMul = windowSetting.vpWidthW/2.0f;
 		gRSP.vtxXAdd = gRSP.vtxXMul + windowSetting.vpLeftW;
 		gRSP.vtxYMul = -windowSetting.vpHeightW/2.0f;
-		gRSP.vtxYAdd = windowSetting.vpHeightW/2.0f + windowSetting.vpTopW+windowSetting.toolbarHeightToUse;
+		gRSP.vtxYAdd = windowSetting.vpHeightW/2.0f + windowSetting.vpTopW;
 
 		// Update clip rectangle by setting scissor
 
@@ -1358,10 +1160,10 @@ void CRender::UpdateClipRectangle()
 		int centerx = gRSP.nVPLeftN+halfx;
 		int centery = gRSP.nVPTopN+halfy;
 
-		gRSP.clip_ratio_left = centerx - halfx * gRSP.clip_ratio_negx;
-		gRSP.clip_ratio_top = centery - halfy * gRSP.clip_ratio_negy;
-		gRSP.clip_ratio_right = centerx + halfx * gRSP.clip_ratio_posx;
-		gRSP.clip_ratio_bottom = centery + halfy * gRSP.clip_ratio_posy;
+		gRSP.clip_ratio_left = centerx - halfx;
+		gRSP.clip_ratio_top = centery - halfy;
+		gRSP.clip_ratio_right = centerx + halfx;
+		gRSP.clip_ratio_bottom = centery + halfy;
 	}
 
 
@@ -1394,94 +1196,69 @@ void CRender::UpdateScissorWithClipRatio()
 	{
 		w.clipping.needToClip = false;
 	}
-	w.clipping.width = (uint32)((gRSP.real_clip_scissor_right-gRSP.real_clip_scissor_left+1)*windowSetting.fMultX);
-	w.clipping.height = (uint32)((gRSP.real_clip_scissor_bottom-gRSP.real_clip_scissor_top+1)*windowSetting.fMultY);
+	w.clipping.width  = (uint32)max((gRSP.real_clip_scissor_right - gRSP.real_clip_scissor_left + 1)*windowSetting.fMultX, 0.0f);
+	w.clipping.height = (uint32)max((gRSP.real_clip_scissor_bottom - gRSP.real_clip_scissor_top + 1)*windowSetting.fMultY, 0.0f);
 
 	float halfx = gRSP.nVPWidthN/2.0f;
 	float halfy = gRSP.nVPHeightN/2.0f;
 	float centerx = gRSP.nVPLeftN+halfx;
 	float centery = gRSP.nVPTopN+halfy;
 
-	gRSP.real_clip_ratio_negx = (gRSP.real_clip_scissor_left - centerx)/halfx;
-	gRSP.real_clip_ratio_negy = (gRSP.real_clip_scissor_top - centery)/halfy;
-	gRSP.real_clip_ratio_posx = (gRSP.real_clip_scissor_right - centerx)/halfx;
-	gRSP.real_clip_ratio_posy = (gRSP.real_clip_scissor_bottom - centery)/halfy;
-
 	ApplyScissorWithClipRatio(true);
 }
 
 
+//MOVE ME//REPLACE ME//WE SHOULD DO THIS ELSEWHERE
 void CRender::InitOtherModes(void)					// Set other modes not covered by color combiner or alpha blender
 {
-	ApplyTextureFilter();
 
-	//
-	// I can't think why the hand in mario's menu screen is rendered with an opaque rendermode,
-	// and no alpha threshold. We set the alpha reference to 1 to ensure that the transparent pixels
-	// don't get rendered. I hope this doesn't fuck anything else up.
-	//
-	if ( gRDP.otherMode.alpha_compare == 0 )
+	if (gRDP.otherMode.text_filt != 0) //If not point
 	{
-		if ( gRDP.otherMode.cvg_x_alpha && (gRDP.otherMode.alpha_cvg_sel || gRDP.otherMode.aa_en ) )
-		{
-			ForceAlphaRef(128);	// Strange, I have to use value=2 for pixel shader combiner for Nvidia FX5200
-								// for other video cards, value=1 is good enough.
-			SetAlphaTestEnable(TRUE);
-		}
-		else
-		{
-			SetAlphaTestEnable(FALSE);
-		}
+		CRender::g_pRender->SetTextureFilter(RDP_TFILTER_BILERP);
 	}
-	else if ( gRDP.otherMode.alpha_compare == 3 )
+	else
 	{
-		//RDP_ALPHA_COMPARE_DITHER
+		CRender::g_pRender->SetTextureFilter(RDP_TFILTER_POINT);
+	}
+
+	if (gRDP.otherMode.zmode == 3)
+		CRender::g_pRender->SetZBias(2);
+	else
+		CRender::g_pRender->SetZBias(0);
+
+
+	if ((gRDP.tnl.Zbuffer & gRDP.otherMode.z_cmp) | gRDP.otherMode.z_upd)
+	{
+		CRender::g_pRender->SetZCompare(true);
+	}
+	else
+	{
+		CRender::g_pRender->SetZCompare(false);
+	}
+
+	CRender::g_pRender->SetZUpdate(gRDP.otherMode.z_upd ? true : false);
+
+	if ((gRDP.otherMode.alpha_compare == 1) && !gRDP.otherMode.alpha_cvg_sel)
+	{
+		ForceAlphaRef(m_dwAlpha);
+		SetAlphaTestEnable(TRUE);
+	}
+	else if (gRDP.otherMode.cvg_x_alpha)
+	{
+		ForceAlphaRef(128);
+		SetAlphaTestEnable(TRUE);
+	}
+	else
+	{
 		SetAlphaTestEnable(FALSE);
 	}
+
+	uint16 blender = gRDP.otherMode.blender;
+	RDP_BlenderSetting &bl = *(RDP_BlenderSetting*)(&(blender));
+	if (bl.c1_m1a == 3 || bl.c1_m2a == 3 || bl.c2_m1a == 3 || bl.c2_m2a == 3)
+		gRDP.bFogEnableInBlender = true;
 	else
-	{
-		if( (gRDP.otherMode.alpha_cvg_sel ) && !gRDP.otherMode.cvg_x_alpha )
-		{
-			// Use CVG for pixel alpha
-			SetAlphaTestEnable(FALSE);
-		}
-		else
-		{
-			// RDP_ALPHA_COMPARE_THRESHOLD || RDP_ALPHA_COMPARE_DITHER
-			if(	m_dwAlpha==0 )
-				ForceAlphaRef(1);
-			else
-				ForceAlphaRef(m_dwAlpha);
-			SetAlphaTestEnable(TRUE);
-		}
-	}
-
-	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
-		gRDP.tnl.TriCull && gRDP.otherMode.aa_en && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd)
-	{
-		SetZCompare(FALSE);
-	}
-
-
-	if( gRDP.otherMode.cycle_type  >= CYCLE_TYPE_COPY )
-	{
-		// Disable zbuffer for COPY and FILL mode
-		SetZCompare(FALSE);
-	}
-	else
-	{
-		SetZCompare(gRDP.otherMode.z_cmp);
-		SetZUpdate(gRDP.otherMode.z_upd);
-	}
-
-	/*
-	if( options.enableHackForGames == HACK_FOR_SOUTH_PARK_RALLY && m_Mux == 0x00121824ff33ffff &&
-		gRSP.bCullFront && gRDP.otherMode.z_cmp && gRDP.otherMode.z_upd )//&& gRDP.otherMode.aa_en )
-	{
-		SetZCompare(FALSE);
-		SetZUpdate(FALSE);
-	}
-	*/
+		gRDP.bFogEnableInBlender = false;
 }
 
 
@@ -1511,4 +1288,63 @@ void CRender::SetTextureFilter(uint32 dwFilter)
 	}
 
 	ApplyTextureFilter();
+}
+
+void CRender::SaveTextureToFile(CTexture &texture, char *filename, int width, int height)
+{
+	if (width < 0 || height < 0)
+	{
+		width = texture.m_dwWidth;
+		height = texture.m_dwHeight;
+	}
+
+	BYTE *pbuf = new BYTE[width*height*4];
+	if (pbuf)
+	{
+		DrawInfo srcInfo;
+		if (texture.StartUpdate(&srcInfo))
+		{
+			uint32 *pbuf2 = (uint32*)pbuf;
+			for (int i = height - 1; i >= 0; i--)
+			{
+				uint32 *pSrc = (uint32*)((BYTE*)srcInfo.lpSurface + srcInfo.lPitch * i);
+				for (int j = 0; j<width; j++)
+				{
+					*pbuf2++ = *pSrc++;
+				}
+			}
+
+			SaveRGBABufferToPNGFile(filename, (BYTE*)pbuf, width, height);
+			texture.EndUpdate(&srcInfo);
+		}
+		else
+		{
+			TRACE0("Cannot lock texture");
+		}
+		delete[] pbuf;
+	}
+	else
+	{
+		TRACE0("Out of memory");
+	}
+}
+
+bool SaveRGBABufferToPNGFile(char *filename, unsigned char *buf, int width, int height)
+{
+
+	if (_stricmp(right(filename, 4), ".png") != 0)	strcat(filename, ".png");
+
+	struct BMGImageStruct img;
+	InitBMGImage(&img);
+	img.bits = buf;
+	img.bits_per_pixel = 32;
+	img.height = height;
+	img.width = width;
+	img.scan_width = width * 4;
+	BMG_Error code = WritePNG(filename, img);
+
+	if (code == BMG_OK)
+		return true;
+	else
+		return false;
 }

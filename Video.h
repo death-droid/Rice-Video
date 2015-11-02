@@ -35,7 +35,7 @@ typedef struct {
 	float	fMultX, fMultY;
 	int		vpLeftW, vpTopW, vpRightW, vpBottomW, vpWidthW, vpHeightW;
 
-	int		statusBarHeight, statusBarHeightToUse, toolbarHeight, toolbarHeightToUse;
+	int		statusBarHeight, statusBarHeightToUse;
 	bool	screenSaverStatus;
 
 	struct{
@@ -61,10 +61,6 @@ enum CurScissorType
 struct PluginStatus{
 	bool	bGameIsRunning;	  
 	uint32	dwTvSystem;
-	float	fRatio;
-
-	BOOL	frameReadByCPU;
-	BOOL	frameWriteByCPU;
 
 	uint32	dwNumTrisRendered;
 	uint32	dwNumDListsCulled;
@@ -72,11 +68,9 @@ struct PluginStatus{
 	uint32	dwNumVertices;
 
 	uint32	gDlistCount;
-	uint32	gFrameCount;
 	uint32	gUcodeCount;
 	uint32	gRDPTime;
 	BOOL	ToToggleFullScreen;
-	bool	bDisableFPS;
 
 	uint32	curRenderBuffer;
 	uint32	curVIOriginReg;
@@ -99,9 +93,6 @@ struct PluginStatus{
 	bool	bHandleN64RenderTexture;	// Do we need to handle of the N64 render_texture stuff?
 	bool	bFrameBufferIsDrawn;		// flag to mark if the frame buffer is ever drawn
 	bool	bFrameBufferDrawnByTriangles;	// flag to tell if the buffer is even drawn by Triangle cmds
-
-	bool    bScreenIsDrawn;
-
 };
 
 extern PluginStatus status;

@@ -30,15 +30,6 @@ signed char *g_ps8RamBase = NULL;
 unsigned char *g_pu8RamBase = NULL;
 
 CCritSect g_CritialSection;
-
-//=======================================================
-// User Options
-RECT frameWriteByCPURect;
-std::vector<RECT> frameWriteByCPURects;
-RECT frameWriteByCPURectArray[20][20];
-bool frameWriteByCPURectFlag[20][20];
-std::vector<uint32> frameWriteRecord;
-
 //---------------------------------------------------------------------------------------
 
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL,  // DLL module handle
@@ -129,19 +120,17 @@ void ChangeWinSize( void )
 //---------------------------------------------------------------------------------------
 
 FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
-{
-	
+{	
 	if( status.ToToggleFullScreen )
 		status.ToToggleFullScreen = FALSE;
 	else
 		status.ToToggleFullScreen = TRUE;
 
-	status.bDisableFPS = true;
 	windowSetting.bDisplayFullscreen = !windowSetting.bDisplayFullscreen;
 	g_CritialSection.Lock();
 	windowSetting.bDisplayFullscreen = CGraphicsContext::Get()->ToggleFullscreen();
 
-	if( g_GraphicsInfo.hStatusBar != NULL )
+	if (g_GraphicsInfo.hStatusBar != NULL)
 		ShowWindow(g_GraphicsInfo.hStatusBar, windowSetting.bDisplayFullscreen ? SW_HIDE : SW_SHOW);
 
 	ShowCursor(windowSetting.bDisplayFullscreen ? FALSE : TRUE);
@@ -149,7 +138,6 @@ FUNC_TYPE(void) NAME_DEFINE(ChangeWindow) ()
 	CGraphicsContext::Get()->Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
 	CGraphicsContext::Get()->UpdateFrame();
 	g_CritialSection.Unlock();
-	status.bDisableFPS = false;
 	status.ToToggleFullScreen = FALSE;
 }
 
@@ -179,7 +167,18 @@ bool StartVideo(void)
 	g_CritialSection.Lock();
 
 	memcpy(&g_curRomInfo.romheader, g_GraphicsInfo.HEADER, sizeof(ROMHeader));
-	ROM_ByteSwap_3210( &g_curRomInfo.romheader, sizeof(ROMHeader) );
+	unsigned char *puc = (unsigned char *) &g_curRomInfo.romheader;
+	unsigned char temp;
+	for(uint32 i = 0; i < sizeof(ROMHeader); i += 4) /* byte-swap the ROM header */
+	{
+		temp = puc[i];
+		puc[i] = puc[i + 3];
+		puc[i + 3] = temp;
+		temp = puc[i + 1];
+		puc[i + 1] = puc[i + 2];
+		puc[i + 2] = temp;
+	}
+
 	ROM_GetRomNameFromHeader(g_curRomInfo.szGameName, &g_curRomInfo.romheader);
 	Ini_GetRomOptions(&g_curRomInfo);
 
@@ -196,13 +195,7 @@ bool StartVideo(void)
 
 	//Lets figure out what the tv system is
 	status.dwTvSystem = CountryCodeToTVSystem(g_curRomInfo.romheader.nCountryID);
-	
-	//Now we have determined the tv system of the rom, lets set the frame ratio's
-	if( status.dwTvSystem == TV_SYSTEM_NTSC )
-		status.fRatio = 0.75f;
-	else
-		status.fRatio = 9/11.0f;
-	
+
 	//Grab any external textures.
 	InitExternalTextures();
 	
@@ -275,7 +268,7 @@ void StopVideo()
 	}
 
 	g_CritialSection.Unlock();
-	status.gDlistCount = status.gFrameCount = 0;
+	status.gDlistCount = 0;
 
 	if( windowSetting.screenSaverStatus )	
 		SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, 0, 0);	// Enable screen saver
@@ -301,8 +294,6 @@ FUNC_TYPE(bool) NAME_DEFINE(RomOpen) (void)
 		g_CritialSection.Unlock();
 		TRACE0("g_CritialSection is locked when game is starting, unlock it now.");
 	}
-
-	status.bDisableFPS=false;
 
 #ifdef _DEBUG
 	if( debuggerPause )
@@ -356,8 +347,8 @@ void SetVIScales()
 		windowSetting.fViWidth  = (hend - hstart) * fScaleX;
 		windowSetting.fViHeight = (vend - vstart) * fScaleY;
 
-		if (width > 0x300)
-			windowSetting.fViHeight *= 2.0f;
+		if (width > 0x300 || width >= ((uint32)windowSetting.fViWidth << 1))	//Fix menu in 40 winks 
+			windowSetting.fViHeight += windowSetting.fViHeight;
 
 		windowSetting.uViWidth = (unsigned short)(windowSetting.fViWidth / 4);
 		windowSetting.fViWidth = windowSetting.uViWidth *= 4;
@@ -449,7 +440,6 @@ FUNC_TYPE(BOOL) NAME_DEFINE(InitiateGFX)(GFX_INFO Gfx_Info)
 	windowSetting.fViWidth = 320;
 	windowSetting.fViHeight = 240;
 	status.ToToggleFullScreen = FALSE;
-	status.bDisableFPS=false;
 
 	InitConfiguration();
 	CGraphicsContext::InitWindowInfo();

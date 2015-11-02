@@ -65,7 +65,6 @@ bool debuggerDropCombinerInfos=false;
 char msgBuf[0x20000+2];
 bool msgBufUpdated = false;
 static HWND myDialogWnd = NULL;
-extern FiddledVtx * g_pVtxBase;
 HWND hWndDlg = NULL;
 
 bool debuggerWinActive = false;
@@ -190,9 +189,6 @@ H_START:\t%08X\nV_START:\t%08X\nVI Width=%f(x %f), VI Height=%f(x %f)\n\n",
 	DebuggerAppendMsg("Effective scissor: x0=%d y0=%d x1=%d y1=%d",
 		gRSP.real_clip_scissor_left, gRSP.real_clip_scissor_top,
 		gRSP.real_clip_scissor_right, gRSP.real_clip_scissor_bottom);
-	DebuggerAppendMsg("Clipping: (%d) left=%f top=%f right=%f bottom=%f",
-		gRSP.clip_ratio_posx, gRSP.real_clip_ratio_negx , gRSP.real_clip_ratio_negy,
-		gRSP.real_clip_ratio_posx, gRSP.real_clip_ratio_posy);
 	DebuggerAppendMsg("Viewport: left=%d top=%d right=%d bottom=%d",
 		gRSP.nVPLeftN, gRSP.nVPTopN , gRSP.nVPRightN,
 		gRSP.nVPBottomN);
@@ -204,19 +200,7 @@ H_START:\t%08X\nV_START:\t%08X\nVI Width=%f(x %f), VI Height=%f(x %f)\n\n",
 
 void DumpVertexArray(void)
 {
-	DebuggerAppendMsg("----Vertexes----\n");
-	try{
-		for( int i=0; i<32; i++ )
-		{
-			FiddledVtx &v = g_pVtxBase[i];
-			DebuggerAppendMsg("[%d] x=%d,y=%d,z=%d -- r=%d,g=%d,b=%d,a=%d\n", i, v.x, v.y, v.z, 
-				v.rgba.r, v.rgba.g, v.rgba.b, v.rgba.a);
-			DebuggerAppendMsg("\tx=%f,y=%f,z=%f,rhw=%f\n", g_vecProjected[i].x, g_vecProjected[i].y, g_vecProjected[i].z, g_vecProjected[i].w);
-		}
-	}catch(...)
-	{
-		DebuggerAppendMsg("Invalid memory pointer of vertex array\n");
-	}
+
 }
 
 void DumpHex(uint32 rdramAddr, int count);
@@ -530,19 +514,19 @@ void DumpInfo(int thingToDump)
 		}
 		break;
 	case DUMP_COMBINED_MATRIX:
-		DumpMatrix2(gRSPworldProject,"Combined Matrix");
+		DumpMatrix2(gRSP.mWorldProject,"Combined Matrix");
 		break;
 	case DUMP_WORLD_TOP_MATRIX:
-		DumpMatrix2(gRSP.modelviewMtxs[gRSP.modelViewMtxTop],"World Top Matrix");
+		DumpMatrix2(gRSP.mModelViewStack[gRSP.mModelViewTop],"World Top Matrix");
 		break;
 	case DUMP_WORLD_MATRIX_AT:
 		{
 			int mtxno = GetInputHex();
-			if( mtxno < 4 ) DumpMatrix2(gRSP.modelviewMtxs[0],"World Matrix #");
+			if(mtxno < 4) DumpMatrix2(gRSP.mModelViewStack[0], "World Matrix #");
 		}
 		break;
 	case DUMP_PROJECTION_MATRIX:
-		DumpMatrix2(gRSP.projectionMtxs[gRSP.projectionMtxTop],"Projection Top Matrix");
+		//DumpMatrix2(mProjectionMat,"Projection Top Matrix");
 		break;
 	}
 }

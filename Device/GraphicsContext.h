@@ -63,7 +63,6 @@ public:
 public:
 	static	HWND		m_hWnd;
 	static	HWND		m_hWndStatus;
-	static	HWND		m_hWndToolbar;
 	static	HMENU		m_hMenu;
 	static  int			m_FullScreenResolutions[40][2];
 	static  int			m_numOfResolutions;

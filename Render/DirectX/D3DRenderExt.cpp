@@ -44,15 +44,6 @@ void D3DRender::LoadTxtrBufFromRDRAM(void)
 	if( d3dSprite != NULL )
 	{
 		d3dSprite->Draw(g_textures[0].m_lpsTexturePtr, NULL, NULL, NULL, 0xFFFFFFFF);
-#ifdef _DEBUG
-		if( pauseAtNext && eventToPause == NEXT_RENDER_TEXTURE )
-		{
-			LPDIRECT3DTEXTURE9 pD3DTexture = g_textures[0].m_lpsTexturePtr;
-			LPDIRECT3DSURFACE9 pD3DSurface = NULL;
-			pD3DTexture->GetSurfaceLevel(0,&pD3DSurface);
-			D3DXSaveSurfaceToFile("\\DxTxtBuf25", D3DXIFF_BMP, pD3DSurface, NULL, NULL);
-		}
-#endif
 	}
 	FinishSpriteDraw(d3dSprite);
 }

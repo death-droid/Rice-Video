@@ -37,7 +37,6 @@ const MicroCodeInstruction *gUcodeFunc = NULL;
 
 void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 data_size);
 
-FiddledVtx * g_pVtxBase=NULL;
 static RDP_GeometryMode gGeometryMode;
 
 SetImgInfo g_TI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
@@ -45,7 +44,7 @@ SetImgInfo g_CI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
 SetImgInfo g_ZI = { TXT_FMT_RGBA, TXT_SIZE_16b, 1, 0 };
 RenderTextureInfo g_ZI_saves[2];
 
-DListStack	gDlistStack[MAX_DL_STACK_SIZE];
+DListStack	gDlistStack;
 int		gDlistStackPointer= -1;
 
 TMEMLoadMapInfo g_tmemLoadAddrMap[0x200];	// Totally 4KB TMEM
@@ -83,13 +82,9 @@ uint16	g_wRDPTlut[0x200];
 
 void DLParser_Init()
 {
-	int i;
-
 	status.gRDPTime = 0;
 	status.gDlistCount = 0;
 	status.gUcodeCount = 0;
-	status.frameReadByCPU = FALSE;
-	status.frameWriteByCPU = FALSE;
 	status.bN64IsDrawingTextureBuffer = false;
 	status.bHandleN64RenderTexture = false;
 
@@ -100,38 +95,35 @@ void DLParser_Init()
 
 	status.lastPurgeTimeTime = 0;		// Time textures were last purged
 
-	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)*2);
+	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)* 2);
 
-	for( i=0; i<8; i++ )
+	for (int i = 0; i < 8; i++)
 	{
 		memset(&gRDP.tiles[i], 0, sizeof(Tile));
 	}
 	memset(g_tmemLoadAddrMap, 0, sizeof(g_tmemLoadAddrMap));
 
 	status.bAllowLoadFromTMEM = true;
-	
+
 	char name[200];
 	strcpy(name, g_curRomInfo.szGameName);
 
 	GBIMicrocode_Reset();
 
 	memset(&g_TmemFlag, 0, sizeof(g_TmemFlag));
-	memset(&g_RecentCIInfo, 0, sizeof(RecentCIInfo)*5);
-	memset(&g_RecentVIOriginInfo, 0, sizeof(RecentViOriginInfo)*5);
-	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)*2);
+	memset(&g_RecentVIOriginInfo, 0, sizeof(RecentViOriginInfo)* 5);
+	memset(&g_ZI_saves, 0, sizeof(RenderTextureInfo)* 2);
 	memset(&g_ZI, 0, sizeof(SetImgInfo));
 	memset(&g_CI, 0, sizeof(SetImgInfo));
 	memset(&g_TI, 0, sizeof(SetImgInfo));
 
 }
 
-
 void RDP_GFX_Reset()
 {
 	gDlistStackPointer=-1;
 	gTextureManager.RecycleAllTextures();
 }
-
 
 void RDP_Cleanup()
 {
@@ -142,7 +134,6 @@ void RDP_Cleanup()
 }
 
 extern int dlistMtxCount;
-extern bool bHalfTxtScale;
 
 //*****************************************************************************
 //
@@ -162,14 +153,10 @@ void DLParser_InitMicrocode(u32 code_base, u32 code_size, u32 data_base, u32 dat
 void DLParser_Process()
 {
 	dlistMtxCount = 0;
-	bHalfTxtScale = false;
-
 	if ( CRender::g_pRender == NULL)
 	{
 		return;
 	}
-
-	status.bScreenIsDrawn = true;
 
 	DebuggerPauseCountN( NEXT_DLIST );
 	status.gRDPTime = timeGetTime();
@@ -190,13 +177,9 @@ void DLParser_Process()
 	// Initialize stack
 	status.bN64FrameBufferIsUsed = false;
 	gDlistStackPointer=0;
-	gDlistStack[gDlistStackPointer].pc = (uint32)pTask->t.data_ptr;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	gDlistStack.address[0] = (u32)pTask->t.data_ptr;
+	gDlistStack.limit = -1;
 	
-	DEBUGGER_PAUSE_AT_COND_AND_DUMP_COUNT_N((gDlistStack[gDlistStackPointer].pc == 0 && pauseAtNext && eventToPause==NEXT_UNKNOWN_OP),
-			{DebuggerAppendMsg("Start Task without DLIST: ucode=%08X, data=%08X", (uint32)pTask->t.ucode, (uint32)pTask->t.ucode_data);});
-
-
 	// Check if we need to purge
 	if (status.gRDPTime - status.lastPurgeTimeTime > 5000)
 	{
@@ -208,12 +191,6 @@ void DLParser_Process()
 	status.dwNumTrisRendered = 0;
 	status.dwNumTrisClipped = 0;
 	status.dwNumVertices = 0;
-	
-	if( g_curRomInfo.bForceScreenClear && CGraphicsContext::needCleanScene )
-	{
-		CRender::g_pRender->ClearBuffer(true,true);
-		CGraphicsContext::needCleanScene = false;
-	}
 
 	SetVIScales();
 	CRender::g_pRender->RenderReset();
@@ -224,6 +201,8 @@ void DLParser_Process()
 
 	try
 	{
+		MicroCodeCommand command;
+
 		// The main loop
 		while( gDlistStackPointer >= 0 )
 		{
@@ -238,16 +217,17 @@ void DLParser_Process()
 
 			status.gUcodeCount++;
 
-			MicroCodeCommand command;
-
 			DLParser_FetchNextCommand(&command);
 
 			gUcodeFunc[command.inst.cmd](command);
 
-			if ( gDlistStackPointer >= 0 && --gDlistStack[gDlistStackPointer].countdown < 0 )
+			if (gDlistStack.limit >= 0)
 			{
-				LOG_UCODE("**EndDLInMem");
-				gDlistStackPointer--;
+				if (--gDlistStack.limit < 0)
+				{
+					LOG_UCODE("**EndDLInMem");
+					gDlistStackPointer--;
+				}
 			}
 		}
 
@@ -270,9 +250,9 @@ void DLParser_Process()
 inline void DLParser_FetchNextCommand(MicroCodeCommand * p_command)
 {
 	// Current PC is the last value on the stack
-	*p_command = *(MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
+	*p_command = *(MicroCodeCommand*)&g_pu32RamBase[(gDlistStack.address[gDlistStackPointer] >> 2)];
 
-	gDlistStack[gDlistStackPointer].pc += 8;
+	gDlistStack.address[gDlistStackPointer] += 8;
 
 }
 
@@ -291,9 +271,9 @@ void RDP_NOIMPL_Real(LPCTSTR op, uint32 word0, uint32 word1)
 		TRACE0("Stack Trace");
 		for( int i=0; i<gDlistStackPointer; i++ )
 		{
-			DebuggerAppendMsg("  %08X", gDlistStack[i].pc);
+			DebuggerAppendMsg("  %08X", gDlistStack.address[i]);
 		}
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
+		uint32 dwPC = gDlistStack.address[gDlistStackPointer]-8;
 		DebuggerAppendMsg("PC=%08X",dwPC);
 		DebuggerAppendMsg(op, word0, word1);
 	}
@@ -334,97 +314,43 @@ void RDP_GFX_PopDL()
 
 void DLParser_SetKeyGB(MicroCodeCommand command)
 {
-	gRDP.keyB = ((command.inst.cmd1)>>8)&0xFF;
-	gRDP.keyG = ((command.inst.cmd1)>>24)&0xFF;
-	gRDP.keyA = (gRDP.keyR+gRDP.keyG+gRDP.keyB)/3;
-	gRDP.fKeyA = gRDP.keyA/255.0f;
+	LOG_UCODE("SetKeyGB: (Ignored)");
 }
 void DLParser_SetKeyR(MicroCodeCommand command)
 {
-	gRDP.keyR = ((command.inst.cmd1)>>8)&0xFF;
-	gRDP.keyA = (gRDP.keyR+gRDP.keyG+gRDP.keyB)/3;
-	gRDP.fKeyA = gRDP.keyA/255.0f;
+	LOG_UCODE("SetKeyR: (Ignored)");
 }
 
 void DLParser_SetConvert(MicroCodeCommand command)
 {
 	LOG_UCODE("SetConvert: (Ignored)");
 }
+
 void DLParser_SetPrimDepth(MicroCodeCommand command)
 {
-	uint32 dwZ  = ((command.inst.cmd1) >> 16) & 0xFFFF;
-	uint32 dwDZ = ((command.inst.cmd1)      ) & 0xFFFF;
-
-	LOG_UCODE("SetPrimDepth: 0x%08x 0x%08x - z: 0x%04x dz: 0x%04x",
-		command.inst.cmd0, command.inst.cmd1, dwZ, dwDZ);
 	
-	SetPrimitiveDepth(dwZ, dwDZ);
+	LOG_UCODE("SetPrimDepth: 0x%08x 0x%08x - z: 0x%04x dz: 0x%04x",
+		command.inst.cmd0, command.inst.cmd1, command.primdepth.z, command.primdepth.dz);
+	
+	SetPrimitiveDepth(command.primdepth.z, command.primdepth.dz);
 	DEBUGGER_PAUSE(NEXT_SET_PRIM_COLOR);
 }
 
+//BACKTOMERIGHTNOW
 void DLParser_RDPSetOtherMode(MicroCodeCommand command)
 {
-	if( gRDP.otherMode.H != ((command.inst.cmd0)) )
-	{
-		gRDP.otherMode.H = ((command.inst.cmd0));
-
-		uint32 dwTextFilt  = (gRDP.otherMode.H>>RSP_SETOTHERMODE_SHIFT_TEXTFILT)&0x3;
-		CRender::g_pRender->SetTextureFilter(dwTextFilt<<RSP_SETOTHERMODE_SHIFT_TEXTFILT);
-	}
-	//RDP_TFILTER_BILERP
-
-	if( gRDP.otherMode.L != (command.inst.cmd1) )
-	{
-
-		gRDP.otherMode.L = (command.inst.cmd1);
-
-		if (gRDP.otherMode.zmode == 3) //DKR doesnt seem to like the zbias being set for some odd reason :S
-			CRender::g_pRender->SetZBias(2);
-		else
-			CRender::g_pRender->SetZBias(0);
-
-
-		if ((gRDP.tnl.Zbuffer * gRDP.otherMode.z_cmp) | gRDP.otherMode.z_upd)
-		{
-			CRender::g_pRender->SetZCompare(true);
-		}
-		else
-		{
-			CRender::g_pRender->SetZCompare(false);
-		}
-		
-		CRender::g_pRender->SetZUpdate( gRDP.otherMode.z_upd ? true : false );
-
-		uint32 dwAlphaTestMode = (gRDP.otherMode.L >> RSP_SETOTHERMODE_SHIFT_ALPHACOMPARE) & 0x3;
-
-		if ((dwAlphaTestMode) != 0)
-			CRender::g_pRender->SetAlphaTestEnable( TRUE );
-		else
-			CRender::g_pRender->SetAlphaTestEnable( FALSE );
-	}
-
-	uint16 blender = gRDP.otherMode.blender;
-	RDP_BlenderSetting &bl = *(RDP_BlenderSetting*)(&(blender));
-	if( bl.c1_m1a==3 || bl.c1_m2a == 3 || bl.c2_m1a == 3 || bl.c2_m2a == 3 )
-		gRDP.bFogEnableInBlender = true;
-	else
-		gRDP.bFogEnableInBlender = false;
+	gRDP.otherMode.H = (command.inst.cmd0);
+	gRDP.otherMode.L = (command.inst.cmd1);
 }
 
+void DLParser_RDPLoadSync(MicroCodeCommand command)	{	LOG_UCODE("LoadSync: (Ignored)"); }
+void DLParser_RDPPipeSync(MicroCodeCommand command)	{ 	LOG_UCODE("PipeSync: (Ignored)"); }
+void DLParser_RDPTileSync(MicroCodeCommand command)	{ 	LOG_UCODE("TileSync: (Ignored)"); }
 
-
-void DLParser_RDPLoadSync(MicroCodeCommand command)	
-{ 
-	LOG_UCODE("LoadSync: (Ignored)"); 
-}
-
-void DLParser_RDPPipeSync(MicroCodeCommand command)	
-{ 
-	LOG_UCODE("PipeSync: (Ignored)"); 
-}
-void DLParser_RDPTileSync(MicroCodeCommand command)	
-{ 
-	LOG_UCODE("TileSync: (Ignored)"); 
+//You will never see these any HLE emulation, and since where a HLE plugin ignore them completely
+void DLParser_TriRSP(MicroCodeCommand command)
+{
+	LOG_UCODE("DLParser_TriRSP: (Ignored)");
 }
 
 void DLParser_RDPFullSync(MicroCodeCommand command)
@@ -436,26 +362,11 @@ void DLParser_RDPFullSync(MicroCodeCommand command)
 void DLParser_SetScissor(MicroCodeCommand command)
 {
 	// The coords are all in 10:2 fixed point
-	gRDP.scissor.left = command.scissor.x0 >> 2;
-	gRDP.scissor.top = command.scissor.y0 >> 2;
-	gRDP.scissor.right = command.scissor.x1 >> 2;
+	gRDP.scissor.left	= command.scissor.x0 >> 2;
+	gRDP.scissor.top	= command.scissor.y0 >> 2;
+	gRDP.scissor.right	= command.scissor.x1 >> 2;
 	gRDP.scissor.bottom = command.scissor.y1 >> 2;
 
-	/*if( options.bEnableHacks )
-	{
-		if( g_CI.dwWidth == 0x200 && tempScissor.right == 0x200 )
-		{
-			uint32 width = *g_GraphicsInfo.VI_WIDTH_REG & 0xFFF;
-
-			if( width != 0x200 )
-			{
-				// Hack for RE2
-				tempScissor.bottom = tempScissor.right*tempScissor.bottom/width;
-				tempScissor.right = width;
-			}
-
-		}
-	}*/
 
 	if( !status.bHandleN64RenderTexture )
 		SetVIScales();
@@ -485,7 +396,7 @@ void DLParser_SetScissor(MicroCodeCommand command)
 	//gRDP.scissor.right, gRDP.scissor.bottom, gRDP.scissor.mode););
 }
 
-
+//CLEAN ME
 void DLParser_FillRect(MicroCodeCommand command)
 {
 	if( status.bN64IsDrawingTextureBuffer && frameBufferOptions.bIgnore )
@@ -538,7 +449,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 	if( options.enableHackForGames == HACK_FOR_MARIO_TENNIS )
 	{
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc;		// This points to the next instruction
+		uint32 dwPC = gDlistStack.address[gDlistStackPointer];		// This points to the next instruction
 		uint32 w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 		if( (w2>>24) == RDP_FILLRECT )
 		{
@@ -549,7 +460,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 				w2 = *(uint32 *)(g_pu8RamBase + dwPC);
 			}
 
-			gDlistStack[gDlistStackPointer].pc = dwPC;
+			gDlistStack.address[gDlistStackPointer] = dwPC;
 			return;
 		}
 	}
@@ -613,21 +524,14 @@ void DLParser_FillRect(MicroCodeCommand command)
 
 		status.bFrameBufferIsDrawn = true;
 
-		//if( x0==0 && y0==0 && (x1 == g_pRenderTextureInfo->N64Width || x1 == g_pRenderTextureInfo->N64Width-1 ) && gRDP.fillColor == 0)
-		//{
-		//	CRender::g_pRender->ClearBuffer(true,false);
-		//}
-		//else
+		if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
 		{
-			if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
-			{
-				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
-			}
-			else
-			{
-				D3DCOLOR primColor = GetPrimitiveColor();
-				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
-			}
+			CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
+		}
+		else
+		{
+			D3DCOLOR primColor = GetPrimitiveColor();
+			CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
 		}
 
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect\n");});
@@ -647,20 +551,9 @@ void DLParser_FillRect(MicroCodeCommand command)
 			status.bottomRendered = status.bottomRendered<0 ? command.fillrect.y1 : max((int)command.fillrect.y1,status.bottomRendered);
 		}
 
-		if( gRDP.otherMode.cycle_type == CYCLE_TYPE_FILL )
+		if( !status.bHandleN64RenderTexture || g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_16b )
 		{
-			if( !status.bHandleN64RenderTexture || g_pRenderTextureInfo->CI_Info.dwSize == TXT_SIZE_16b )
-			{
-				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
-			}
-		}
-		else
-		{
-			D3DCOLOR primColor = GetPrimitiveColor();
-			//if( RGBA_GETALPHA(primColor) != 0 )
-			{
-				CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, primColor);
-			}
+			CRender::g_pRender->FillRect(command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.fillColor);
 		}
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FLUSH_TRI,{TRACE0("Pause after FillRect\n");});
 		DEBUGGER_PAUSE_AND_DUMP_COUNT_N( NEXT_FILLRECT, {DebuggerAppendMsg("FillRect: X0=%d, Y0=%d, X1=%d, Y1=%d, Color=0x%08X", command.fillrect.x0, command.fillrect.y0, command.fillrect.x1, command.fillrect.y1, gRDP.originalFillColor);
@@ -671,35 +564,21 @@ void DLParser_FillRect(MicroCodeCommand command)
 //Nintro64 uses Sprite2d 
 void RSP_RDP_Nothing(MicroCodeCommand command)
 {
-#ifdef _DEBUG
-	if( logWarning )
-	{
-		TRACE0("Stack Trace");
-		for( int i=0; i<gDlistStackPointer; i++ )
-		{
-			DebuggerAppendMsg("  %08X", gDlistStack[i].pc);
-		}
 
-		uint32 dwPC = gDlistStack[gDlistStackPointer].pc-8;
-		DebuggerAppendMsg("PC=%08X",dwPC);
-		DebuggerAppendMsg("Warning, unknown ucode PC=%08X: 0x%08x 0x%08x\n", dwPC, command.inst.cmd0, command.inst.cmd1);
-	}
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_UNKNOWN_OP, {TRACE0("Paused at unknown ucode\n");})
-	if( debuggerContinueWithUnknown )
-	{
-		return;
-	}
-#endif
-		
-	if( options.bEnableHacks )
-		return;
-	gDlistStackPointer=-1;
+	RDP_GFX_PopDL();
 }
 
 
 void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 {
-	UpdateCombinedMatrix();
+	gRSP.mWPmodified = true; //Signal that worldproject matrix is changed 
+
+	//Make sure WP matrix is up to date before changing WP matrix
+	if (!gRSP.mWorldProjectValid)
+	{
+		gRSP.mWorldProject = gRSP.mModelViewStack[gRSP.mModelViewTop] * gRSP.mProjectionMat;
+		gRSP.mWorldProjectValid = true;
+	}
 
 	int x = ((command.inst.cmd0) & 0x1F) >> 1;
 	int y = x >> 2;
@@ -708,42 +587,25 @@ void RSP_RDP_InsertMatrix(MicroCodeCommand command)
 	//Float
 	if ((command.inst.cmd0) & 0x20)
 	{
-		gRSPworldProject.m[y][x]     = (float)(int)gRSPworldProject.m[y][x] + ((float) (command.inst.cmd1 >> 16) / 65536.0f);
-		gRSPworldProject.m[y][x + 1] = (float)(int)gRSPworldProject.m[y][x + 1] + ((float) (command.inst.cmd1 & 0xFFFF) / 65536.0f);
+		gRSP.mWorldProject.m[y][x]     = (float)(int)gRSP.mWorldProject.m[y][x]		+ ((float)(command.inst.cmd1 >> 16) / 65536.0f);
+		gRSP.mWorldProject.m[y][x + 1] = (float)(int)gRSP.mWorldProject.m[y][x + 1] + ((float)(command.inst.cmd1 & 0xFFFF) / 65536.0f);
 	}
 	else
 	{
 		//Integer
-		gRSPworldProject.m[y][x]     = (float)(short)((command.inst.cmd1)>>16);
-		gRSPworldProject.m[y][x + 1] = (float)(short)((command.inst.cmd1) & 0xFFFF);
+		gRSP.mWorldProject.m[y][x]	   = (float)(short)((command.inst.cmd1) >> 16);
+		gRSP.mWorldProject.m[y][x + 1] = (float)(short)((command.inst.cmd1) & 0xFFFF);
 	}
 
-	gRSP.bMatrixIsUpdated = false;
-
-#ifdef _DEBUG
-	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
-	{
-		pauseAtNext = false;
-		debuggerPause = true;
-		DebuggerAppendMsg("Pause after insert matrix: %08X, %08X", command.inst.cmd0, command.inst.cmd1);
-	}
-	else
-	{
-		if( pauseAtNext && logMatrix ) 
-		{
-			DebuggerAppendMsg("insert matrix: %08X, %08X", command.inst.cmd0, command.inst.cmd1);
-		}
-	}
-#endif
 }
 
 void DLParser_SetCImg(MicroCodeCommand command)
 {
-	g_CI.dwFormat = command.img.fmt;
-	g_CI.dwSize = command.img.siz;
-	g_CI.dwWidth = command.img.width + 1;
-	g_CI.dwAddr = RSPSegmentAddr(command.img.addr) & 0x00FFFFFF;
-	g_CI.bpl = g_CI.dwWidth << g_CI.dwSize >> 1;
+	g_CI.dwFormat	= command.img.fmt;
+	g_CI.dwSize		= command.img.siz;
+	g_CI.dwWidth	= command.img.width + 1;
+	g_CI.dwAddr		= RSPSegmentAddr(command.img.addr) & 0x00FFFFFF;
+	g_CI.bpl		= g_CI.dwWidth << g_CI.dwSize >> 1;
 
 	TXTRBUF_DETAIL_DUMP(DebuggerAppendMsg("SetCImg: Addr=0x%08X, Fmt:%s-%sb, Width=%d\n", g_CI.dwAddr, pszImgFormat[g_CI.dwFormat], pszImgSize[g_CI.dwSize], g_CI.dwWidth););
 
@@ -788,7 +650,6 @@ void DLParser_SetFillColor(MicroCodeCommand command)
 	gRDP.originalFillColor = (command.setcolor.color);
 
 	LOG_UCODE("    Color5551=0x%04x = 0x%08x", (uint16)command.inst.cmd1, gRDP.fillColor);
-
 }
 
 void DLParser_SetFogColor(MicroCodeCommand command)
@@ -805,8 +666,7 @@ void DLParser_SetBlendColor(MicroCodeCommand command)
 
 void DLParser_SetPrimColor(MicroCodeCommand command)
 {
-	SetPrimitiveColor( COLOR_RGBA(command.setcolor.r, command.setcolor.g, command.setcolor.b, command.setcolor.a), 
-		command.setcolor.prim_min_level, command.setcolor.prim_level);
+	SetPrimitiveColor( COLOR_RGBA(command.setcolor.r, command.setcolor.g, command.setcolor.b, command.setcolor.a), command.setcolor.prim_min_level, command.setcolor.prim_level);
 }
 
 void DLParser_SetEnvColor(MicroCodeCommand command)
@@ -824,8 +684,8 @@ void RDP_DLParser_Process(void)
 	uint32 end = *(g_GraphicsInfo.DPC_END_REG);
 
 	gDlistStackPointer=0;
-	gDlistStack[gDlistStackPointer].pc = start;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
+	gDlistStack.address[gDlistStackPointer] = start;
+	gDlistStack.limit = -1;
 
 	// Check if we need to purge
 	if (status.gRDPTime - status.lastPurgeTimeTime > 5000)
@@ -843,51 +703,32 @@ void RDP_DLParser_Process(void)
 	CRender::g_pRender->BeginRendering();
 	CRender::g_pRender->SetViewport(0, 0, windowSetting.uViWidth, windowSetting.uViHeight, 0x3FF);
 
-	while( gDlistStack[gDlistStackPointer].pc < end )
+	while (gDlistStack.address[gDlistStackPointer] < end)
 	{
-		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack[gDlistStackPointer].pc>>2)];
-		gDlistStack[gDlistStackPointer].pc += 8;
+		MicroCodeCommand *p_command = (MicroCodeCommand*)&g_pu32RamBase[(gDlistStack.address[gDlistStackPointer] >> 2)];
+		gDlistStack.address[gDlistStackPointer] += 8;
 		gUcodeFunc[p_command->inst.cmd0 >>24](*p_command);
 	}
 
 	CRender::g_pRender->EndRendering();
 }
 
-//You will never see these any HLE emulation, and since where a HLE plugin ignore them completely
-void DLParser_TriRSP(MicroCodeCommand command)
+void MatrixFromN64FixedPoint(Matrix4x4 & mat, u32 address)
 {
-	LOG_UCODE("DLParser_TriRSP: (Ignored)");
-}
-
-Matrix4x4 matToLoad;
-void LoadMatrix(uint32 addr)
-{
-	if (addr + 64 > g_dwRamSize)
+	if (address + 64 > g_dwRamSize)
 	{
-		TRACE1("Mtx: Address invalid (0x%08x)", addr);
+		TRACE1("Mtx: Address invalid (0x%08x)", address);
 		return;
 	}
 
 	const float fRecip = 1.0f / 65536.0f;
-	const N64mat *Imat = (N64mat *)(g_pu8RamBase + addr);
+	const N64mat *Imat = (N64mat *)(g_pu8RamBase + address);
 
 	for (int i = 0; i < 4; i++)
 	{
-		matToLoad.m[i][0] = ((Imat->h[i].x << 16) | Imat->l[i].x) * fRecip;
-		matToLoad.m[i][1] = ((Imat->h[i].y << 16) | Imat->l[i].y) * fRecip;
-		matToLoad.m[i][2] = ((Imat->h[i].z << 16) | Imat->l[i].z) * fRecip;
-		matToLoad.m[i][3] = ((Imat->h[i].w << 16) | Imat->l[i].w) * fRecip;
+		mat.m[i][0] = ((Imat->h[i].x << 16) | Imat->l[i].x) * fRecip;
+		mat.m[i][1] = ((Imat->h[i].y << 16) | Imat->l[i].y) * fRecip;
+		mat.m[i][2] = ((Imat->h[i].z << 16) | Imat->l[i].z) * fRecip;
+		mat.m[i][3] = ((Imat->h[i].w << 16) | Imat->l[i].w) * fRecip;
 	}
-
-#ifdef _DEBUG
-	LOG_UCODE(
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n"
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n"
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n"
-		" %#+12.5f %#+12.5f %#+12.5f %#+12.5f\r\n",
-		matToLoad.m[0][0], matToLoad.m[0][1], matToLoad.m[0][2], matToLoad.m[0][3],
-		matToLoad.m[1][0], matToLoad.m[1][1], matToLoad.m[1][2], matToLoad.m[1][3],
-		matToLoad.m[2][0], matToLoad.m[2][1], matToLoad.m[2][2], matToLoad.m[2][3],
-		matToLoad.m[3][0], matToLoad.m[3][1], matToLoad.m[3][2], matToLoad.m[3][3]);
-#endif // _DEBUG
 }

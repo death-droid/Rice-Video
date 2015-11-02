@@ -19,68 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef RSP_GBI0_H_
 #define RSP_GBI0_H_
 
-void RSP_GBI0_Mtx(MicroCodeCommand command)
-{	
-	uint32 addr = RSPSegmentAddr((command.mtx1.addr));
-
-	LOG_UCODE("    Command: %s %s %s Length %d Address 0x%08x",
-		command.mtx1.projection == 1 ? "Projection" : "ModelView",
-		command.mtx1.load == 1 ? "Load" : "Mul",	
-		command.mtx1.push == 1 ? "Push" : "NoPush",
-		command.mtx1.len, addr);
-
-	if (addr + 64 > g_dwRamSize)
-	{
-		TRACE1("Mtx: Address invalid (0x%08x)", addr);
-		return;
-	}
-
-	LoadMatrix(addr);
-	
-	if (command.mtx1.projection)
-	{
-		CRender::g_pRender->SetProjection(matToLoad, command.mtx1.push, command.mtx1.load);
-	}
-	else
-	{
-		CRender::g_pRender->SetWorldView(matToLoad, command.mtx1.push, command.mtx1.load);
-	}
-
-#ifdef _DEBUG
-	char *loadstr = command.mtx1.load?"Load":"Mul";
-	char *pushstr = command.mtx1.push?"Push":"Nopush";
-	int projlevel = CRender::g_pRender->GetProjectMatrixLevel();
-	int worldlevel = CRender::g_pRender->GetWorldViewMatrixLevel();
-	if( pauseAtNext && eventToPause == NEXT_MATRIX_CMD )
-	{
-		pauseAtNext = false;
-		debuggerPause = true;
-		if (command.mtx1.projection)
-		{
-			TRACE3("Pause after %s and %s Matrix: Projection, level=%d\n", loadstr, pushstr, projlevel );
-		}
-		else
-		{
-			TRACE3("Pause after %s and %s Matrix: WorldView level=%d\n", loadstr, pushstr, worldlevel);
-		}
-	}
-	else
-	{
-		if( pauseAtNext && logMatrix ) 
-		{
-			if (command.mtx1.projection)
-			{
-				TRACE3("Matrix: %s and %s Projection level=%d\n", loadstr, pushstr, projlevel);
-			}
-			else
-			{
-				TRACE3("Matrix: %s and %s WorldView\n level=%d", loadstr, pushstr, worldlevel);
-			}
-		}
-	}
-#endif
-}
-
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_GBI0_Vtx(MicroCodeCommand command)
 {
 	uint32 addr = RSPSegmentAddr(command.vtx0.addr);
@@ -111,32 +52,13 @@ void RSP_GBI0_Vtx(MicroCodeCommand command)
 	}
 }
 
-void RSP_GBI0_DL(MicroCodeCommand command)
-{	
-	uint32 addr = RSPSegmentAddr((command.dlist.addr)) & (g_dwRamSize-1);
-
-	LOG_UCODE("    Address=0x%08x Push: 0x%02x", addr, command.dlist.param);
-	if( addr > g_dwRamSize )
-	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", addr, gDlistStack[gDlistStackPointer].pc );
-		addr &= (g_dwRamSize-1);
-		DebuggerPauseCountN( NEXT_DLIST );
-	}
-
-	if( command.dlist.param == RSP_DLIST_PUSH )
-		gDlistStackPointer++;
-
-	gDlistStack[gDlistStackPointer].pc = addr;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
-
-		LOG_UCODE("Level=%d", gDlistStackPointer+1);
-		LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-}
-
+//*****************************************************************************
+// It's used by Golden Eye and Perfect Dark
+//*****************************************************************************
 void RSP_GBI0_Tri4(MicroCodeCommand command)
 {
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 
 	bool bTrisAdded = false;
 
@@ -180,7 +102,7 @@ void RSP_GBI0_Tri4(MicroCodeCommand command)
 #endif
 
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC-8;
 
 
 	if (bTrisAdded)	

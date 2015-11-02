@@ -511,8 +511,8 @@ enum SetTileCmdType
 
 struct DListStack
 {
-	uint32 pc;
-	int countdown;
+	u32 address[MAX_DL_STACK_SIZE];
+	s32 limit;
 };
 
 struct ScissorType
@@ -549,9 +549,9 @@ extern SetImgInfo g_ZI;
 extern SetImgInfo g_TI;
 extern TmemType g_Tmem;
 
-extern DListStack	gDlistStack[MAX_DL_STACK_SIZE];
+extern DListStack	gDlistStack;
 
-extern int				gDlistStackPointer;
+extern int gDlistStackPointer;
 
 void DLParser_Init();
 void RDP_GFX_Reset();
@@ -571,8 +571,7 @@ void RSP_GFX_InitGeometryMode();
 void RSP_SetUcode(int ucode, uint32 ucStart=0, uint32 ucDStart=0, uint32 cdSize=0);
 void RDP_GFX_PopDL();
 
-extern Matrix4x4 matToLoad;
-void LoadMatrix(uint32 addr);
+void MatrixFromN64FixedPoint(Matrix4x4 & mat, u32 address);
 
 ULONG ComputeCRC32(ULONG crc, const uint8 *buf, UINT len);
 

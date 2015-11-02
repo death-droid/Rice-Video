@@ -16,40 +16,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-
-// A few ucode used in DKR and Others Special games
-uint32 GSBlkAddrSaves[100][2];
-
-void RDP_GFX_DLInMem(MicroCodeCommand command)
-{
-	uint32 dwLimit = ((command.inst.cmd0) >> 16) & 0xFF;
-	uint32 dwPush = RSP_DLIST_PUSH; //((command.inst.cmd0) >> 16) & 0xFF;
-	uint32 dwAddr = 0x00000000 | (command.inst.cmd1); //RSPSegmentAddr((command.inst.cmd1));
-
-	LOG_UCODE("    Address=0x%08x Push: 0x%02x", dwAddr, dwPush);
-	
-	switch (dwPush)
-	{
-	case RSP_DLIST_PUSH:
-		LOG_UCODE("    Pushing DisplayList 0x%08x", dwAddr);
-		gDlistStackPointer++;
-		gDlistStack[gDlistStackPointer].pc = dwAddr;
-		gDlistStack[gDlistStackPointer].countdown = dwLimit;
-
-		break;
-	case RSP_DLIST_NOPUSH:
-		LOG_UCODE("    Jumping to DisplayList 0x%08x", dwAddr);
-		gDlistStack[gDlistStackPointer].pc = dwAddr;
-		gDlistStack[gDlistStackPointer].countdown = dwLimit;
-		break;
-	}
-
-	LOG_UCODE("");
-	LOG_UCODE("\\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/ \\/");
-	LOG_UCODE("#############################################");
-}
-
-
 uint16 ConvertYUVtoR5G5B5X1(int y, int u, int v)
 {
 	float r = y + (1.370705f * (v-128));
@@ -155,28 +121,3 @@ void DLParser_Bomberman2TextRect(MicroCodeCommand command)
 		}
 	);
 }
-
-void DLParser_RSP_DL_WorldDriver(MicroCodeCommand command)
-{
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	if( dwAddr > g_dwRamSize )
-	{
-		RSP_RDP_NOIMPL("Error: DL addr = %08X out of range, PC=%08X", dwAddr, gDlistStack[gDlistStackPointer].pc );
-		dwAddr &= (g_dwRamSize-1);
-		DebuggerPauseCountN( NEXT_DLIST );
-	}
-
-	LOG_UCODE("    WorldDriver DisplayList 0x%08x", dwAddr);
-	gDlistStackPointer++;
-	gDlistStack[gDlistStackPointer].pc = dwAddr;
-	gDlistStack[gDlistStackPointer].countdown = MAX_DL_COUNT;
-
-	LOG_UCODE("Level=%d", gDlistStackPointer+1);
-	LOG_UCODE("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-}
-
-void DLParser_RSP_Pop_DL_WorldDriver(MicroCodeCommand command)
-{
-	RDP_GFX_PopDL();
-}
-

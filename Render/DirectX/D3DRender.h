@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __RICE_D3DRENDER_H__
 #define __RICE_D3DRENDER_H__
 
-#include "stdafx.h"
+#include "../../stdafx.h"
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(p)  { if(p) { (p)->Release();     (p)=NULL; } }
@@ -74,7 +74,6 @@ public:
 		gD3DDevWrapper.SetRenderState(D3DRS_TEXTUREFACTOR, dwCol);
 	}
 
-
 	void SetShadeMode(RenderShadeMode mode);
 	void ZBufferEnable(BOOL bZBuffer);
 	void ClearZBuffer(float depth);
@@ -104,11 +103,10 @@ public:
 	void ApplyRDPScissor(bool force=false);
 	void ApplyScissorWithClipRatio(bool force=false);
 
-
 protected:
-	SetCombineInfo m_curCombineInfo;
 
-protected:
+	uint32 nStages;
+	uint32 nTextureStages[2];
 
 	// Basic render drawing functions
 	bool RenderFlushTris();

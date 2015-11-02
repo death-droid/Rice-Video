@@ -95,8 +95,6 @@ const SettingInfo TextureEnhancementSettings[] =
 void WriteConfiguration(void);
 void GenerateCurrentRomOptions();
 
-int DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
-int DialogToStartRomIsNotRunning = PSH_OPTIONS;
 HWND hPropSheetHwnd = NULL;
 
 inline void ShowItem(HWND hDlg, UINT item, bool flag)
@@ -469,6 +467,12 @@ void GenerateCurrentRomOptions()
 	{
 		options.enableHackForGames = HACK_FOR_MARIO_KART;
 	}
+	else if ((_stricmp(g_curRomInfo.szGameName, "Diddy Kong Racing") == 0))
+	{
+		options.enableHackForGames = HACK_FOR_DIDDY_KONG_RACING;
+	}
+
+
 
 	if( currentRomOptions.N64FrameBufferEmuType == 0 )		currentRomOptions.N64FrameBufferEmuType = defaultRomOptions.N64FrameBufferEmuType;
 	else currentRomOptions.N64FrameBufferEmuType--;
@@ -492,7 +496,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->bDisableCulling		= perRomIni.GetBoolValue(szCRC, "bDisableCulling", false);
 	pGameSetting->bIncTexRectEdge		= perRomIni.GetBoolValue(szCRC, "bIncTexRectEdge", false);
 	pGameSetting->bZHack				= perRomIni.GetBoolValue(szCRC, "bZHack", false);
-	pGameSetting->bTextureScaleHack		= perRomIni.GetBoolValue(szCRC, "bTextureScaleHack", false);
 	pGameSetting->bPrimaryDepthHack		= perRomIni.GetBoolValue(szCRC, "bPrimaryDepthHack", false);
 	pGameSetting->bTexture1Hack			= perRomIni.GetBoolValue(szCRC, "bTexture1Hack", false);
 
@@ -501,12 +504,6 @@ void Ini_GetRomOptions(LPGAMESETTING pGameSetting)
 	pGameSetting->UseCIWidthAndRatio	= perRomIni.GetLongValue(szCRC, "UseCIWidthAndRatio", NOT_USE_CI_WIDTH_AND_RATIO);
 	pGameSetting->bTxtSizeMethod2		= perRomIni.GetBoolValue(szCRC, "bTxtSizeMethod2", false);
 	pGameSetting->bEnableTxtLOD			= perRomIni.GetBoolValue(szCRC, "bEnableTxtLOD", false);
-
-	pGameSetting->bEmulateClear			= perRomIni.GetBoolValue(szCRC, "bEmulateClear", false);
-	pGameSetting->bForceScreenClear		= perRomIni.GetBoolValue(szCRC, "bForceScreenClear", false);
-
-	pGameSetting->bForceDepthBuffer		= perRomIni.GetBoolValue(szCRC, "bForceDepthBuffer", false);
-	pGameSetting->bDisableObjBG			= perRomIni.GetBoolValue(szCRC, "bDisableObjBG", false);
 
 	pGameSetting->dwFrameBufferOption	= perRomIni.GetLongValue(szCRC, "dwFrameBufferOption", 0);
 	pGameSetting->dwRenderToTextureOption	= perRomIni.GetLongValue(szCRC, "dwRenderToTextureOption", 0);
@@ -519,15 +516,10 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 	wsprintf(szCRC, "%08x%08x-%02x", pGameSetting->romheader.dwCRC1,  pGameSetting->romheader.dwCRC2, pGameSetting->romheader.nCountryID);
 
 	perRomIni.SetLongValue(szCRC, "bDisableCulling", pGameSetting->bDisableCulling);
-	perRomIni.SetLongValue(szCRC, "bEmulateClear", pGameSetting->bEmulateClear);
-	perRomIni.SetLongValue(szCRC, "bForceScreenClear", pGameSetting->bForceScreenClear);
-	perRomIni.SetLongValue(szCRC, "bForceDepthBuffer", pGameSetting->bForceDepthBuffer);
-	perRomIni.SetLongValue(szCRC, "bDisableObjBG", pGameSetting->bDisableObjBG);
 	perRomIni.SetLongValue(szCRC, "dwFrameBufferOption", pGameSetting->dwFrameBufferOption);
 	perRomIni.SetLongValue(szCRC, "dwRenderToTextureOption", pGameSetting->dwRenderToTextureOption);
 	perRomIni.SetLongValue(szCRC, "bIncTexRectEdge", pGameSetting->bIncTexRectEdge);
 	perRomIni.SetLongValue(szCRC, "bZHack", pGameSetting->bZHack);
-	perRomIni.SetLongValue(szCRC, "bTextureScaleHack", pGameSetting->bTextureScaleHack);
 	perRomIni.SetLongValue(szCRC, "bPrimaryDepthHack", pGameSetting->bPrimaryDepthHack);
 	perRomIni.SetLongValue(szCRC, "bTexture1Hack", pGameSetting->bTexture1Hack);
 	perRomIni.SetLongValue(szCRC, "VIWidth", pGameSetting->VIWidth);
@@ -580,19 +572,6 @@ char * right(char *src, int nchars)
 void __cdecl DebuggerAppendMsg (const char * Message, ...);
 
 GameSetting g_curRomInfo;
-
-// Swap bytes from 80 37 12 40
-// to              40 12 37 80
-void ROM_ByteSwap_3210(void *v, uint32 dwLen)
-{
-    uint8* byteptr = (uint8*)v;
-    for (int i = 0; i < dwLen; i += 4)
-    {
-        std::swap(byteptr[i], byteptr[i + 3]);
-        std::swap(byteptr[i + 1], byteptr[i + 2]);
-    }
-}
-
 
 void ROM_GetRomNameFromHeader(TCHAR * szName, ROMHeader * pHdr)
 {
@@ -810,14 +789,6 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
                 //Handle a Cancel button click, if necessary
                 EndDialog(lpnm->hwndFrom, TRUE);
 				break;
-			case PSN_SETACTIVE :
-
-				if(status.bGameIsRunning)
-					DialogToStartRomIsRunning = PSH_OPTIONS;
-				else
-					DialogToStartRomIsNotRunning = PSH_OPTIONS;
-
-				break;
 			default:
 				return 0;
 			}
@@ -828,9 +799,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		switch (LOWORD(wParam))
 		{
 		case IDOK:
+		{
 			options.bEnableFog = (SendDlgItemMessage(hDlg, IDC_FOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			
+
 			//Begin Resolutioon Handling
 			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
 
@@ -854,33 +826,41 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			//--------------------------------------------------------------
 			// Begin texture enhancement code
 			//--------------------------------------------------------------
-			
+
+			//We need to make sure the option has actually changed otherwise it recalls same methods when no setting has been changed.
+			bool bTempLoadHiRes = options.bLoadHiResTextures;
+			bool bTempCacheTex = options.bCacheHiResTextures;
+
 			options.textureEnhancement = TextureEnhancementSettings[SendDlgItemMessage(hDlg, IDC_TEXTURE_ENHANCEMENT, CB_GETCURSEL, 0, 0)].setting;
 			options.forceTextureFilter = ForceTextureFilterSettings[SendDlgItemMessage(hDlg, IDC_FORCE_TEXTURE_FILTER, CB_GETCURSEL, 0, 0)].setting;
-			options.bMipMaps			 = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bLoadHiResTextures   = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE,    BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bMipMaps = (SendDlgItemMessage(hDlg, IDC_MIPMAPS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bLoadHiResTextures = (SendDlgItemMessage(hDlg, IDC_LOAD_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			options.bDumpTexturesToFiles = (SendDlgItemMessage(hDlg, IDC_DUMP_TEXTURE_TO_FILES, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			options.bCacheHiResTextures  = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE,   BM_GETCHECK, 0, 0) == BST_CHECKED);
+			options.bCacheHiResTextures = (SendDlgItemMessage(hDlg, IDC_CACHE_HIRES_TEXTURE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			if (status.bGameIsRunning) //BACKTOME, NEEDS RETHINKING -- CLEAN ME
 			{
-				if (options.bLoadHiResTextures)
+				if (bTempLoadHiRes != options.bLoadHiResTextures)
 				{
-					InitHiresTextures();
-					gTextureManager.RecheckHiresForAllTextures();
+					if (options.bLoadHiResTextures)
+					{
+						InitHiresTextures();
+						gTextureManager.RecheckHiresForAllTextures();
+					}
+					else
+						CloseHiresTextures();
 				}
-				else
-					CloseHiresTextures();
-	
-				if (options.bCacheHiResTextures)
-					InitHiresCache();
-				else
-					ClearHiresCache();
+
+				if (bTempCacheTex != options.bCacheHiResTextures)
+				{
+					if (options.bCacheHiResTextures)
+						InitHiresCache();
+					else
+						ClearHiresCache();
+				}
 
 				if (options.bDumpTexturesToFiles)
-					InitTextureDump();
-				else
-					CloseTextureDump();
+					CreateDumpFolders();
 			}
 
 			//--------------------------------------------------------------
@@ -893,7 +873,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 
 			WriteConfiguration();
 			EndDialog(hDlg, TRUE);
-
+			}
 			return(TRUE);
 
 		case IDCANCEL:
@@ -916,10 +896,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 	case WM_INITDIALOG:
 
 		// Normal bi-state variable
-		SendDlgItemMessage(hDlg, IDC_FORCE_DEPTH_COMPARE, BM_SETCHECK, g_curRomInfo.bForceDepthBuffer?BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_FORCE_BUFFER_CLEAR, BM_SETCHECK, g_curRomInfo.bForceScreenClear?BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_EMULATE_CLEAR, BM_SETCHECK, g_curRomInfo.bEmulateClear?BST_CHECKED:BST_UNCHECKED, 0);
-
 		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_RESETCONTENT, 0, 0);
 		SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_INSERTSTRING, 0, (LPARAM) "Default");
 		for(int i=0; i<sizeof(frameBufferSettings)/sizeof(char*); i++ )
@@ -942,17 +918,9 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_INSERTSTRING, 2, (LPARAM) "PAL");
 		SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_SETCURSEL, g_curRomInfo.UseCIWidthAndRatio, 0);
 
-		if( status.bGameIsRunning )
-		{
-			ShowItem(hDlg, IDC_FORCE_DEPTH_COMPARE, TRUE);
-			ShowItem(hDlg, IDC_FORCE_BUFFER_CLEAR, TRUE);
-		}
-
 		// Less useful options
-		SendDlgItemMessage(hDlg, IDC_DISABLE_BG, BM_SETCHECK, g_curRomInfo.bDisableObjBG?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_INCREASE_TEXTRECT_EDGE, BM_SETCHECK,	g_curRomInfo.bIncTexRectEdge?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_Z_HACK, BM_SETCHECK,	g_curRomInfo.bZHack?BST_CHECKED:BST_UNCHECKED, 0);
-		SendDlgItemMessage(hDlg, IDC_TEXTURE_SCALE_HACK, BM_SETCHECK,		g_curRomInfo.bTextureScaleHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_SETCHECK,		g_curRomInfo.bPrimaryDepthHack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_SETCHECK,			g_curRomInfo.bTexture1Hack?BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_SETCHECK,			g_curRomInfo.bDisableCulling?BST_CHECKED:BST_UNCHECKED, 0);
@@ -988,10 +956,6 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
                 //Handle a Cancel button click, if necessary
                 EndDialog(lpnm->hwndFrom, TRUE);
 				break;
-			case PSN_SETACTIVE:
-				if(status.bGameIsRunning)
-					DialogToStartRomIsRunning = PSH_ROM_SETTINGS;
-				break;
 			default:
 				return 0;
 			}
@@ -1003,19 +967,13 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		{
         case IDOK:
 			// Bi-state options
-			g_curRomInfo.bEmulateClear = (SendDlgItemMessage(hDlg, IDC_EMULATE_CLEAR, BM_GETCHECK, 0, 0)==BST_CHECKED);
-			g_curRomInfo.bForceDepthBuffer = (SendDlgItemMessage(hDlg, IDC_FORCE_DEPTH_COMPARE, BM_GETCHECK, 0, 0)==BST_CHECKED);
-			g_curRomInfo.bForceScreenClear = (SendDlgItemMessage(hDlg, IDC_FORCE_BUFFER_CLEAR, BM_GETCHECK, 0, 0)==BST_CHECKED);
-
 			g_curRomInfo.dwFrameBufferOption = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
 			g_curRomInfo.dwRenderToTextureOption = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
 			g_curRomInfo.UseCIWidthAndRatio = SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_GETCURSEL, 0, 0);
 
 			// Less useful variables
-			g_curRomInfo.bDisableObjBG		= (SendDlgItemMessage(hDlg, IDC_DISABLE_BG, BM_GETCHECK, 0, 0)==BST_CHECKED);
 			g_curRomInfo.bIncTexRectEdge	= (SendDlgItemMessage(hDlg, IDC_INCREASE_TEXTRECT_EDGE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bZHack	= (SendDlgItemMessage(hDlg, IDC_Z_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-			g_curRomInfo.bTextureScaleHack	= (SendDlgItemMessage(hDlg, IDC_TEXTURE_SCALE_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bPrimaryDepthHack	= (SendDlgItemMessage(hDlg, IDC_PRIMARY_DEPTH_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bTexture1Hack		= (SendDlgItemMessage(hDlg, IDC_TEXTURE_1_HACK, BM_GETCHECK, 0, 0) == BST_CHECKED);
 			g_curRomInfo.bDisableCulling	= (SendDlgItemMessage(hDlg, IDC_DISABLE_CULLING, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1147,15 +1105,7 @@ void CreateOptionsDialogs(HWND hParent)
 	psh.pszCaption = (LPSTR) generalText;
 	psh.nPages = sizeof(psp) / sizeof(PROPSHEETPAGE);
 	psh.ppsp = (LPCPROPSHEETPAGE) & psp;
-	if(status.bGameIsRunning)
-	{
-		psh.nStartPage = DialogToStartRomIsRunning;
-	}
-	else
-	{
-		psh.nStartPage = DialogToStartRomIsNotRunning;
-	}
-
+	psh.nStartPage = PSH_OPTIONS;
 	hPropSheetHwnd = (HWND) PropertySheet(&psh);	// Start the Property Sheet
 
 #endif

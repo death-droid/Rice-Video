@@ -58,7 +58,7 @@ void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
 	// While the next command pair is Tri2, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 
 	do {
@@ -83,7 +83,7 @@ void RSP_Quad3d_ShadowOfEmpire(MicroCodeCommand command)
 #endif
 
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC-8;
 
 
 	if (bTrisAdded)	
@@ -104,7 +104,7 @@ void RSP_Tri1_ShadowOfEmpire(MicroCodeCommand command)
 	bool bTexturesAreEnabled = CRender::g_pRender->IsTextureEnabled();
 
 	// While the next command pair is Tri1, add vertices
-	uint32 dwPC = gDlistStack[gDlistStackPointer].pc;
+	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 	uint32 * pCmdBase = (uint32 *)(g_pu8RamBase + dwPC);
 	
 	do
@@ -125,7 +125,7 @@ void RSP_Tri1_ShadowOfEmpire(MicroCodeCommand command)
 	} while (command.inst.cmd == (uint8)RSP_TRI1);
 #endif
 
-	gDlistStack[gDlistStackPointer].pc = dwPC-8;
+	gDlistStack.address[gDlistStackPointer] = dwPC-8;
 
 	if (bTrisAdded)	
 	{

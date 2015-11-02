@@ -48,7 +48,6 @@ public:
 	void		LoadTextureFromRenderTexture(TxtrCacheEntry* pEntry, int infoIdx);
 	void		UpdateFrameBufferBeforeUpdateFrame();
 	void RestoreNormalBackBuffer();					// restore the normal back buffer
-	void CopyBackToFrameBufferIfReadByCPU(uint32 addr);
 	void SetRenderTexture(void);
 	void CloseRenderTexture(bool toSave);
 	 void ActiveTextureBuffer(void);
@@ -61,9 +60,6 @@ public:
 
 	int FindASlot(void);
 
-	bool ProcessFrameWriteRecord();
-	void FrameBufferWriteByCPU(uint32 addr, uint32 size);
-	void FrameBufferReadByCPU( uint32 addr );
 	bool FrameBufferInRDRAMCheckCRC();
 	void StoreRenderTextureToRDRAM(int infoIdx = -1);
 

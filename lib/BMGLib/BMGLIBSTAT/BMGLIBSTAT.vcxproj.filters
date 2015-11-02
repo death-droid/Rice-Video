@@ -17,19 +17,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\BMGLib_DLL\bcBMGLib.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\BMGLib_DLL\BMGDLL.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\BMGLib_DLL\BMGImage.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\BMGLib_DLL\BMGUtils.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\BMGLib_DLL\bmp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\BMGLib_DLL\pngrw.c">

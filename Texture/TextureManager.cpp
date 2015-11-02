@@ -35,12 +35,6 @@ CTextureManager::CTextureManager() :
 
 	for (uint32 i = 0; i < m_numOfCachedTxtrList; i++)
 		m_pCacheTxtrList[i] = NULL;
-
-	memset(&m_blackTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_PrimColorTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_EnvColorTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_LODFracTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_PrimLODFracTextureEntry, 0, sizeof(TxtrCacheEntry));
 }
 
 CTextureManager::~CTextureManager()
@@ -72,17 +66,6 @@ bool CTextureManager::CleanUp()
 		//Delete it
 		delete pVictim;
 	}
-
-	if( m_blackTextureEntry.pTexture )		delete m_blackTextureEntry.pTexture;	
-	if( m_PrimColorTextureEntry.pTexture )	delete m_PrimColorTextureEntry.pTexture;
-	if( m_EnvColorTextureEntry.pTexture )	delete m_EnvColorTextureEntry.pTexture;
-	if( m_LODFracTextureEntry.pTexture )	delete m_LODFracTextureEntry.pTexture;
-	if( m_PrimLODFracTextureEntry.pTexture )	delete m_PrimLODFracTextureEntry.pTexture;
-	memset(&m_blackTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_PrimColorTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_EnvColorTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_LODFracTextureEntry, 0, sizeof(TxtrCacheEntry));
-	memset(&m_PrimLODFracTextureEntry, 0, sizeof(TxtrCacheEntry));
 
 	return true;
 }
@@ -160,9 +143,6 @@ void CTextureManager::RecycleAllTextures()
 {
 	if (m_pCacheTxtrList == NULL)
 		return;
-	
-	uint32 dwCount = 0;
-	uint32 dwTotalUses = 0;
 
 	for (uint32 i = 0; i < m_numOfCachedTxtrList; i++)
 	{
@@ -171,8 +151,6 @@ void CTextureManager::RecycleAllTextures()
 			TxtrCacheEntry *pTVictim = m_pCacheTxtrList[i];
 			m_pCacheTxtrList[i] = pTVictim->pNext;
 			
-			dwTotalUses += pTVictim->dwUses;
-			dwCount++;
 			RecycleTexture(pTVictim);
 		}
 	}
@@ -298,7 +276,7 @@ TxtrCacheEntry * CTextureManager::GetTxtrCacheEntry(TxtrInfo * pti)
 
 void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 {
-	TxtrCacheEntry * pPrev;
+	TxtrCacheEntry * pPrev= NULL;
 	TxtrCacheEntry * pCurr;
 	
 	if (m_pCacheTxtrList == NULL)
@@ -307,7 +285,6 @@ void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 	// See if it is already in the hash table
 	uint32 dwKey = Hash(pEntry->ti.Address);
 	
-	pPrev = NULL;
 	pCurr = m_pCacheTxtrList[dwKey];
 	
 	while (pCurr)
@@ -328,7 +305,6 @@ void CTextureManager::RemoveTexture(TxtrCacheEntry * pEntry)
 		pPrev = pCurr;
 		pCurr = pCurr->pNext;
 	}
-	
 }
 	
 TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWidth, uint32 dwHeight)
@@ -358,12 +334,9 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 	// Initialize
 	pEntry->ti.Address = dwAddr;
 	pEntry->pNext = NULL;
-	pEntry->dwUses = 0;
 	pEntry->dwTimeLastUsed = status.gRDPTime;
 	pEntry->dwCRC = 0;
 	pEntry->FrameLastUsed = status.gDlistCount;
-	pEntry->FrameLastUpdated = 0;
-	pEntry->lastEntry = NULL;
 	pEntry->bExternalTxtrChecked = false;
 	pEntry->maxCI = -1;
 
@@ -374,21 +347,11 @@ TxtrCacheEntry * CTextureManager::CreateNewCacheEntry(uint32 dwAddr, uint32 dwWi
 
 // If already in table, return
 // Otherwise, create surfaces, and load texture into memory
-uint32 dwAsmHeight;
-uint32 dwAsmPitch;
-uint32 dwAsmdwBytesPerLine;
-uint32 dwAsmCRC;
-uint8* pAsmStart;
-TxtrCacheEntry *g_lastTextureEntry=NULL;
-bool lastEntryModified = false;
-
 TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, bool AutoExtendTexture)
 {
 	TxtrCacheEntry *pEntry;
 
-	gRDP.texturesAreReloaded = true;
-
-	dwAsmCRC = 0;
+	uint32 dwCrc = 0;
 	uint32 dwPalCRC = 0;
 
 	pEntry = GetTxtrCacheEntry(pgti);
@@ -437,14 +400,14 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	if (pEntry && pEntry->dwTimeLastUsed == status.gRDPTime && status.gDlistCount != 0 && !status.bN64FrameBufferIsUsed )		// This is not good, Palatte may changes
 	{
 		// We've already calculated a CRC this frame!
-		dwAsmCRC = pEntry->dwCRC;
+		dwCrc = pEntry->dwCRC;
 	}
 	else
 	{
 		if( loadFromTextureBuffer )
-			dwAsmCRC = gRenderTextureInfos[txtBufIdxToLoadFrom].crcInRDRAM;
+			dwCrc = gRenderTextureInfos[txtBufIdxToLoadFrom].crcInRDRAM;
 		else
-			CalculateRDRAMCRC(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
+			dwCrc = CalculateRDRAMCRC(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
 	}
 
 	int maxCI = 0;
@@ -453,7 +416,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		//maxCI = pgti->Size == TXT_SIZE_8b ? 255 : 15;
 		extern BYTE CalculateMaxCI(void *pPhysicalAddress, uint32 left, uint32 top, uint32 width, uint32 height, uint32 size, uint32 pitchInBytes );
 
-		if( !pEntry || pEntry->dwCRC != dwAsmCRC || pEntry->maxCI < 0 )
+		if( !pEntry || pEntry->dwCRC != dwCrc || pEntry->maxCI < 0 )
 		{
 			maxCI = CalculateMaxCI(pgti->pPhysicalAddress, pgti->LeftToLoad, pgti->TopToLoad, pgti->WidthToLoad, pgti->HeightToLoad, pgti->Size, pgti->Pitch);
 		}
@@ -463,7 +426,6 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 		}
 
 		//Check PAL CRC
-		uint8 * pStart;
 		uint32 dwPalSize = 16;
 		uint32 dwOffset;
 
@@ -477,18 +439,16 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 			dwOffset = pgti->Palette << 4;
 		}
 
-		pStart = (uint8*)pgti->PalAddress+dwOffset*2;
+		uint8 * pStart = (uint8*)pgti->PalAddress+dwOffset*2;
 
-		uint32 dwAsmCRCSave = dwAsmCRC;
 		dwPalCRC = CalculateRDRAMCRC(pStart, 0, 0, maxCI+1, 1, TXT_SIZE_16b, dwPalSize*2);
-		dwAsmCRC = dwAsmCRCSave;
 	}
 
 	// Fix for textures where ti is identical. In this case just the first texture has been added to the Cache.
 	// for further instances this texture has just been replaced instead of adding the additional texture to the same index
 	// in the cachelist. This was causing the slowdowns. Thus we have to iterate through the bucket of the cache list and see
 	// which of the textures that have been placed to it is the one we are looking for
-	if(pEntry && pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC != dwPalCRC &&
+	if(pEntry && pEntry->dwCRC == dwCrc && pEntry->dwPalCRC != dwPalCRC &&
 			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
 	{
 		bool bChecksumDoMatch=false;
@@ -498,7 +458,7 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 			// check the next texture in the same bucket
 			pEntry = pEntry->pNext;
 				// let's see if this one is the one we are actually looking for
-				if(pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
+				if(pEntry->dwCRC == dwCrc && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ))
 				{
 					// found it in the neighbourhood
 					bChecksumDoMatch = true;
@@ -515,17 +475,12 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 
 	if (pEntry)
 	{
-		if(pEntry->dwCRC == dwAsmCRC && pEntry->dwPalCRC == dwPalCRC &&
-			(!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ) )
+		if(pEntry->dwCRC == dwCrc && pEntry->dwPalCRC == dwPalCRC && (!loadFromTextureBuffer || gRenderTextureInfos[txtBufIdxToLoadFrom].updateAtFrame < pEntry->FrameLastUsed ) )
 		{
 			// Tile is ok, return
-			pEntry->dwUses++;
 			pEntry->dwTimeLastUsed = status.gRDPTime;
 			pEntry->FrameLastUsed = status.gDlistCount;
 			LOG_TEXTURE(TRACE0("   Use current texture:\n"));
-			pEntry->lastEntry = g_lastTextureEntry;
-			g_lastTextureEntry = pEntry;
-			lastEntryModified = false;
 
 			DEBUGGER_IF_DUMP((pauseAtNext && loadFromTextureBuffer) ,
 			{DebuggerAppendMsg("Load cached texture from render_texture");}
@@ -542,13 +497,12 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 
 		if (pEntry == NULL)
 		{
-			g_lastTextureEntry = pEntry;
 			return NULL;
 		}
 	}
 
 	pEntry->ti = *pgti;
-	pEntry->dwCRC = dwAsmCRC;
+	pEntry->dwCRC = dwCrc;
 	pEntry->dwPalCRC = dwPalCRC;
 	pEntry->bExternalTxtrChecked = false;
 	pEntry->maxCI = maxCI;
@@ -590,7 +544,6 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 			{
 				LOG_TEXTURE(TRACE0("   Load new texture from RDRAM:\n"));
 				ConvertTexture(pEntry, fromTMEM);
-				pEntry->FrameLastUpdated = status.gDlistCount;
 				SAFE_DELETE(pEntry->pEnhancedTexture);
 				pEntry->dwEnhancementFlag = TEXTURE_NO_ENHANCEMENT;
 			}
@@ -632,18 +585,11 @@ TxtrCacheEntry * CTextureManager::GetTexture(TxtrInfo * pgti, bool fromTMEM, boo
 	catch (...)
 	{
 		TRACE0("Exception in texture decompression");
-		g_lastTextureEntry = NULL;
 		return NULL;
 	}
 
-	pEntry->lastEntry = g_lastTextureEntry;
-	g_lastTextureEntry = pEntry;
-	lastEntryModified = true;
 	return pEntry;
 }
-
-
-
 
 char *pszImgFormat[8] = {"RGBA", "YUV", "CI", "IA", "I", "?1", "?2", "?3"};
 uint8 pnImgSize[4]   = {4, 8, 16, 32};
@@ -952,154 +898,6 @@ uint32 CTextureManager::GetNumOfCachedTexture()
 	return size;
 }
 #endif
-
-
-TxtrCacheEntry * CTextureManager::GetBlackTexture(void)
-{
-	if( m_blackTextureEntry.pTexture == NULL )
-	{
-		m_blackTextureEntry.pTexture = new CTexture(4, 4);
-		m_blackTextureEntry.ti.WidthToCreate = 4;
-		m_blackTextureEntry.ti.HeightToCreate = 4;
-		updateColorTexture(m_blackTextureEntry.pTexture,0x00000000);
-	}
-	return &m_blackTextureEntry;
-}
-TxtrCacheEntry * CTextureManager::GetPrimColorTexture(uint32 color)
-{
-	static uint32 mcolor = 0;
-	if( m_PrimColorTextureEntry.pTexture == NULL )
-	{
-		m_PrimColorTextureEntry.pTexture = new CTexture(4, 4);
-		m_PrimColorTextureEntry.ti.WidthToCreate = 4;
-		m_PrimColorTextureEntry.ti.HeightToCreate = 4;
-		updateColorTexture(m_PrimColorTextureEntry.pTexture,color);
-		gRDP.texturesAreReloaded = true;
-	}
-	else if( mcolor != color )
-	{
-		updateColorTexture(m_PrimColorTextureEntry.pTexture,color);
-		gRDP.texturesAreReloaded = true;
-	}
-
-	mcolor = color;
-	return &m_PrimColorTextureEntry;
-}
-TxtrCacheEntry * CTextureManager::GetEnvColorTexture(uint32 color)
-{
-	static uint32 mcolor = 0;
-	if( m_EnvColorTextureEntry.pTexture == NULL )
-	{
-		m_EnvColorTextureEntry.pTexture = new CTexture(4, 4);
-		m_EnvColorTextureEntry.ti.WidthToCreate = 4;
-		m_EnvColorTextureEntry.ti.HeightToCreate = 4;
-		gRDP.texturesAreReloaded = true;
-
-		updateColorTexture(m_EnvColorTextureEntry.pTexture,color);
-	}
-	else if( mcolor != color )
-	{
-		updateColorTexture(m_EnvColorTextureEntry.pTexture,color);
-		gRDP.texturesAreReloaded = true;
-	}
-
-	mcolor = color;
-	return &m_EnvColorTextureEntry;
-}
-TxtrCacheEntry * CTextureManager::GetLODFracTexture(uint8 fac)
-{
-	static uint8 mfac = 0;
-	if( m_LODFracTextureEntry.pTexture == NULL )
-	{
-		m_LODFracTextureEntry.pTexture = new CTexture(4, 4);
-		m_LODFracTextureEntry.ti.WidthToCreate = 4;
-		m_LODFracTextureEntry.ti.HeightToCreate = 4;
-		uint32 factor = fac;
-		uint32 color = fac;
-		color |= factor << 8;
-		color |= color << 16;
-		updateColorTexture(m_LODFracTextureEntry.pTexture,color);
-		gRDP.texturesAreReloaded = true;
-	}
-	else if( mfac != fac )
-	{
-		uint32 factor = fac;
-		uint32 color = fac;
-		color |= factor << 8;
-		color |= color << 16;
-		updateColorTexture(m_LODFracTextureEntry.pTexture,color);
-		gRDP.texturesAreReloaded = true;
-	}
-
-	mfac = fac;
-	return &m_LODFracTextureEntry;
-}
-
-TxtrCacheEntry * CTextureManager::GetPrimLODFracTexture(uint8 fac)
-{
-	static uint8 mfac = 0;
-	if( m_PrimLODFracTextureEntry.pTexture == NULL )
-	{
-		m_PrimLODFracTextureEntry.pTexture = new CTexture(4, 4);
-		m_PrimLODFracTextureEntry.ti.WidthToCreate = 4;
-		m_PrimLODFracTextureEntry.ti.HeightToCreate = 4;
-		uint32 factor = fac;
-		uint32 color = fac;
-		color |= factor << 8;
-		color |= color << 16;
-		updateColorTexture(m_PrimLODFracTextureEntry.pTexture,color);
-		gRDP.texturesAreReloaded = true;
-	}
-	else if( mfac != fac )
-	{
-		uint32 factor = fac;
-		uint32 color = fac;
-		color |= factor << 8;
-		color |= color << 16;
-		updateColorTexture(m_PrimLODFracTextureEntry.pTexture,color);
-		gRDP.texturesAreReloaded = true;
-	}
-
-	mfac = fac;
-	return &m_PrimLODFracTextureEntry;
-}
-
-TxtrCacheEntry * CTextureManager::GetConstantColorTexture(uint32 constant)
-{
-	switch( constant )
-	{
-	case MUX_PRIM:
-		return GetPrimColorTexture(gRDP.primitiveColor);
-		break;
-	case MUX_ENV:
-		return GetEnvColorTexture(gRDP.envColor);
-		break;
-	case MUX_LODFRAC:
-		return GetLODFracTexture((uint8)gRDP.LODFrac);
-		break;
-	default:	// MUX_PRIMLODFRAC
-		return GetPrimLODFracTexture((uint8)gRDP.primLODFrac);
-		break;
-	}
-}
-
-void CTextureManager::updateColorTexture(CTexture *ptexture, uint32 color)
-{
-	DrawInfo di;
-	if( !(ptexture->StartUpdate(&di)) )
-	{
-		TRACE0("Cann't update the texture");
-		return;
-	}
-
-	uint32 *buf = (uint32*)di.lpSurface;
-	for( int i=0; i<16; i++ )
-	{
-		buf[i] = color;
-	}
-
-	ptexture->EndUpdate(&di);
-}
 
 void ConvertTextureRGBAtoI(TxtrCacheEntry* pEntry, bool alpha)
 {

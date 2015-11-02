@@ -55,10 +55,6 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 		status.bFrameBufferDrawnByTriangles = true;
 	}
 
-	//Wipeout seems to have sprites with a width of 0, handle this
-	if (sprite->width == 0)
-		return;
-
 	TxtrInfo gti;
 
 	gti.Format = sprite->format;
@@ -68,20 +64,20 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 
 	gti.PalAddress = (uintptr_t)(g_pu8RamBase+RSPSegmentAddr(sprite->tlut));
 
-	gti.WidthToCreate = sprite->width;
+	gti.WidthToCreate  = sprite->width;
 	gti.HeightToCreate = sprite->height;
-	gti.LeftToLoad = sprite->imageX;
-	gti.TopToLoad = sprite->imageY;
-	gti.Pitch = sprite->Stride << sprite->size >> 1;
+	gti.LeftToLoad	   = sprite->imageX;
+	gti.TopToLoad	   = sprite->imageY;
+	gti.Pitch		   = sprite->Stride << sprite->size >> 1;
 
-	gti.HeightToLoad = gti.HeightToCreate;
-	gti.WidthToLoad = gti.WidthToCreate;
+	gti.HeightToLoad   = gti.HeightToCreate;
+	gti.WidthToLoad    = gti.WidthToCreate;
 
 	gti.TLutFmt = TLUT_FMT_RGBA16;	//RGBA16
 	gti.Palette = 0;
 	gti.bSwapped = FALSE;
-
-	gti.pPhysicalAddress = ((uint8*)g_pu32RamBase) + gti.Address;
+	
+	gti.pPhysicalAddress = (g_pu8RamBase) + gti.Address;
 	gti.tileNo = -1;
 
 	CRender::GetRender()->SetCurrentTexture(0, gTextureManager.GetTexture(&gti, false));
@@ -121,10 +117,10 @@ void RSP_Sprite2DScaleFlip(MicroCodeCommand command, Sprite2DInfo *info)
 {
 
 	info->scaleX = (((command.inst.cmd1) >> 16) & 0xFFFF) / 1024.0f;
-	info->scaleY = ((command.inst.cmd1) & 0xFFFF) / 1024.0f;
+	info->scaleY = ((command.inst.cmd1)			& 0xFFFF) / 1024.0f;
 
 	info->flipX = (uint8)(((command.inst.cmd0) >> 8) & 0xFF);
-	info->flipY = (uint8)((command.inst.cmd0) & 0xFF);
+	info->flipY = (uint8)((command.inst.cmd0)		 & 0xFF);
 
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D,
 	{ DebuggerAppendMsg("Pause after Sprite2DScaleFlip, Flip (%d,%d), Scale (%f, %f)\n", info->flipX, info->flipY,
@@ -138,7 +134,7 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 	Sprite2DInfo info;
 	Sprite2DStruct *sprite;
 
-	u32 pc = gDlistStack[gDlistStackPointer].pc;
+	u32 pc = gDlistStack.address[gDlistStackPointer];
 	u32 * pCmdBase = (u32 *)(g_pu8RamBase + pc);
 
 	// Try to execute as many sprite2d ucodes as possible, I seen chains over 200! in FB
@@ -174,6 +170,6 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 		pc += 24;
 	}while(command.inst.cmd == G_GBI1_SPRITE2D_BASE);
 
-	gDlistStack[gDlistStackPointer].pc = pc-8;
+	gDlistStack.address[gDlistStackPointer] = pc-8;
 	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {DebuggerAppendMsg("Pause after Sprite2DBase: Addr=%08X\n", address);});
 }
