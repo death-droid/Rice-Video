@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "TextureFilters.h"
 #include "..\..\SimpleIni.h"
 #include "BMGDll.h"
+#include "../../Utility/util.h"
 
 void EnhanceTexture(TxtrCacheEntry *pEntry)
 {
@@ -136,7 +137,6 @@ void CacheHiresTexture( ExtTxtrInfo &ExtTexInfo );
 CSortedList<uint64,ExtTxtrInfo> gHiresTxtrInfos;
 
 extern void GetPluginDir( char * Directory );
-extern char * right(char * src, int nchars);
 
 int GetImageInfoFromFile(char* pSrcFile, IMAGE_INFO *pSrcInfo)
 {

@@ -22,18 +22,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _TYPEDEFS_H_
 #define _TYPEDEFS_H_
 
-#define uint16 unsigned __int16
-#define uint32 unsigned __int32
-#define uint64 unsigned __int64
+#include <cstdint>
 
+typedef uint16_t                    uint16;
+typedef uint32_t                    uint32;
+typedef uint64_t                    uint64;
+typedef uint8_t				        uint8;
 
-typedef unsigned char				uint8;
-
-typedef signed char					s8;
-typedef signed short				s16;
-typedef long						s32;
-typedef unsigned long				u32;
-typedef unsigned char				u8;
+typedef int8_t  					s8;
+typedef int16_t				        s16;
+typedef int32_t						s32;
+typedef uint32_t				    u32;
+typedef uint8_t				        u8;
 
 //Fix me, these macro should not be used anymore in DirectX 8
 
@@ -352,7 +352,7 @@ typedef struct {
 	uint32 dwLoadAddress;
 	uint32 dwTotalWords;
 	uint32 dxt;
-	BOOL  bSwapped;
+	bool   bSwapped;
 
 	uint32 dwWidth;
 	uint32 dwLine;

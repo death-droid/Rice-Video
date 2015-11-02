@@ -75,7 +75,7 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 
 	gti.TLutFmt = TLUT_FMT_RGBA16;	//RGBA16
 	gti.Palette = 0;
-	gti.bSwapped = FALSE;
+	gti.bSwapped = false;
 	
 	gti.pPhysicalAddress = (g_pu8RamBase) + gti.Address;
 	gti.tileNo = -1;

@@ -539,33 +539,6 @@ void Ini_StoreRomOptions(LPGAMESETTING pGameSetting)
 //// Constructors / Deconstructors
 ///////////////////////////////////////////////
 
-char * left(char * src, int nchars)
-{
-	static char dst[300];			// BUGFIX (STRMNNRM)
-	strncpy(dst,src,nchars);
-	dst[nchars]=0;
-	return dst;
-}
-
-char * right(char *src, int nchars)
-{
-	static char dst[300];
-
-	int srclen = strlen(src);
-	if (nchars >= srclen)
-	{
-		strcpy(dst, src);
-	}
-	else
-	{
-		strncpy(dst, src + srclen - nchars, nchars);
-		dst[nchars]=0;
-	}
-	
-	return dst;
-}
-
-
 // Find the entry corresponding to the specified rom. 
 // If the rom is not found, a new entry is created
 // The resulting value is returned
@@ -626,7 +599,7 @@ uint32 CountryCodeToTVSystem(uint32 countryCode)
 	return system;
 }
 
-LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
+LRESULT APIENTRY OptionsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int i;
 
@@ -759,14 +732,14 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 		case TB_THUMBTRACK:
 		case TB_PAGEDOWN:
 		case TB_PAGEUP:
-			if (lParam == (LONG)GetDlgItem(hDlg, IDC_SLIDER_FSAA))
+			if ((HWND)lParam == GetDlgItem(hDlg, IDC_SLIDER_FSAA))
 			{
-				sprintf(generalText, "Full Screen Anti-Aliasing: %d X", SendMessage(GetDlgItem(hDlg, IDC_SLIDER_FSAA), TBM_GETPOS, 0, 0));
+				sprintf(generalText, "Full Screen Anti-Aliasing: %llu X", SendMessage(GetDlgItem(hDlg, IDC_SLIDER_FSAA), TBM_GETPOS, 0, 0));
 				SetWindowText(GetDlgItem(hDlg, IDC_ANTI_ALIASING_TEXT), generalText);
 			}
-			else if (lParam == (LONG)GetDlgItem(hDlg, IDC_SLIDER_ANISO))
+			else if ((HWND)lParam == GetDlgItem(hDlg, IDC_SLIDER_ANISO))
 			{
-				sprintf(generalText, "Anisotropic Filtering: %d X", SendMessage(GetDlgItem(hDlg, IDC_SLIDER_ANISO), TBM_GETPOS, 0, 0));
+				sprintf(generalText, "Anisotropic Filtering: %llu X", SendMessage(GetDlgItem(hDlg, IDC_SLIDER_ANISO), TBM_GETPOS, 0, 0));
 				SetWindowText(GetDlgItem(hDlg, IDC_ANISOTROPIC_TEXT), generalText);
 			}
 			break;
@@ -804,13 +777,13 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			options.bWinFrameMode = (SendDlgItemMessage(hDlg, IDC_WINFRAME_MODE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 			//Begin Resolutioon Handling
-			windowSetting.uScreenScaleMode = SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
+			windowSetting.uScreenScaleMode = (int) SendDlgItemMessage(hDlg, IDC_SCALE_MODE, CB_GETCURSEL, 0, 0);
 
-			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_GETCURSEL, 0, 0);
+			i = (int) SendDlgItemMessage(hDlg, IDC_RESOLUTION_WINDOW_MODE, CB_GETCURSEL, 0, 0);
 			windowSetting.uWindowDisplayWidth = CGraphicsContext::m_FullScreenResolutions[i][0];
 			windowSetting.uWindowDisplayHeight = CGraphicsContext::m_FullScreenResolutions[i][1];
 
-			i = SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_GETCURSEL, 0, 0);
+			i = (int) SendDlgItemMessage(hDlg, IDC_RESOLUTION_FULL_SCREEN_MODE, CB_GETCURSEL, 0, 0);
 			windowSetting.uFullScreenDisplayWidth = CGraphicsContext::m_FullScreenResolutions[i][0];
 			windowSetting.uFullScreenDisplayHeight = CGraphicsContext::m_FullScreenResolutions[i][1];
 
@@ -818,10 +791,10 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			windowSetting.uDisplayHeight = windowSetting.uWindowDisplayHeight;
 			//End Resolution Handling
 
-			options.DirectXAntiAliasingValue = SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_GETPOS, 0, 0);
+			options.DirectXAntiAliasingValue = (uint32_t) SendDlgItemMessage(hDlg, IDC_SLIDER_FSAA, TBM_GETPOS, 0, 0);
 			if (options.DirectXAntiAliasingValue == 1)
 				options.DirectXAntiAliasingValue = 0;
-			options.DirectXAnisotropyValue = SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_GETPOS, 0, 0);
+			options.DirectXAnisotropyValue = (uint32_t) SendDlgItemMessage(hDlg, IDC_SLIDER_ANISO, TBM_GETPOS, 0, 0);
 
 			//--------------------------------------------------------------
 			// Begin texture enhancement code
@@ -867,9 +840,9 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 			// End texture enhancement code
 			//--------------------------------------------------------------
 
-			defaultRomOptions.N64FrameBufferEmuType = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.N64FrameBufferWriteBackControl = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
-			defaultRomOptions.N64RenderToTextureEmuType = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
+			defaultRomOptions.N64FrameBufferEmuType = (uint32_t) SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
+			defaultRomOptions.N64FrameBufferWriteBackControl = (uint32_t) SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_WRITE_BACK_CONTROL, CB_GETCURSEL, 0, 0);
+			defaultRomOptions.N64RenderToTextureEmuType = (uint32_t) SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
 
 			WriteConfiguration();
 			EndDialog(hDlg, TRUE);
@@ -889,7 +862,7 @@ LRESULT APIENTRY OptionsDialogProc(HWND hDlg, unsigned message, LONG wParam, LON
 }
 
 //We need to keep these rom setting page, they should ALWAYS overide any other option --clean me --fix me
-LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
+LRESULT APIENTRY RomSettingProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{
@@ -967,9 +940,9 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 		{
         case IDOK:
 			// Bi-state options
-			g_curRomInfo.dwFrameBufferOption = SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
-			g_curRomInfo.dwRenderToTextureOption = SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
-			g_curRomInfo.UseCIWidthAndRatio = SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_GETCURSEL, 0, 0);
+			g_curRomInfo.dwFrameBufferOption = (uint32_t) SendDlgItemMessage(hDlg, IDC_FRAME_BUFFER_SETTING, CB_GETCURSEL, 0, 0);
+			g_curRomInfo.dwRenderToTextureOption = (uint32_t) SendDlgItemMessage(hDlg, IDC_RENDER_TO_TEXTURE_SETTING, CB_GETCURSEL, 0, 0);
+			g_curRomInfo.UseCIWidthAndRatio = (uint32_t) SendDlgItemMessage(hDlg, IDC_USE_CI_WIDTH_AND_RATIO, CB_GETCURSEL, 0, 0);
 
 			// Less useful variables
 			g_curRomInfo.bIncTexRectEdge	= (SendDlgItemMessage(hDlg, IDC_INCREASE_TEXTRECT_EDGE, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1016,7 +989,7 @@ LRESULT APIENTRY RomSettingProc(HWND hDlg, unsigned message, LONG wParam, LONG l
 
     return FALSE;
 }
-LRESULT APIENTRY UnavailableProc(HWND hDlg, unsigned message, LONG wParam, LONG lParam)
+LRESULT APIENTRY UnavailableProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{

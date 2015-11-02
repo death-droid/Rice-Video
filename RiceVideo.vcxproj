@@ -273,6 +273,7 @@
     <ClInclude Include="Utility\ColourValue.h" />
     <ClInclude Include="Utility\DaedalusVtx.h" />
     <ClInclude Include="Utility\dxerr.h" />
+    <ClInclude Include="Utility\util.h" />
     <ClInclude Include="_BldNum.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Video.h" />
@@ -332,6 +333,7 @@
     </ClCompile>
     <ClCompile Include="Utility\ColourValue.cpp" />
     <ClCompile Include="Utility\dxerr.cpp" />
+    <ClCompile Include="Utility\util.cpp" />
     <ClCompile Include="Video.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>

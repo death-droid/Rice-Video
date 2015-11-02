@@ -145,9 +145,9 @@ bool ClipFor1LineXY( std::vector<PointInfo> &in, int lineno, TLITVERTEX &vec1, T
 
 	LineEuqationType &line = alllines[lineno];
 
-	int insize = in.size();
-	int thisInd=insize-1;
-	int nextInd=0;
+	size_t insize = in.size();
+    size_t thisInd=insize-1;
+    size_t nextInd=0;
 
 	double thisRes = EvaLine( line, in[thisInd].x, in[thisInd].y );
 	double nextRes;
@@ -176,7 +176,7 @@ bool ClipFor1LineXY( std::vector<PointInfo> &in, int lineno, TLITVERTEX &vec1, T
 
 	in = out;	// Copy element from one vector to another vector
 
-	return( (int)in.size() >= insize );
+	return( in.size() >= insize );
 }
 
 float interp2p(float a, float b, double r)
@@ -190,11 +190,11 @@ float interp2p(float a, float b, double r)
 bool InsertPointsAtNearPlane(std::vector<PointInfo> &in)
 {
 	std::vector<PointInfo> out;
-	int insize = in.size();
+	size_t insize = in.size();
 	out.clear();
 
-	int i;
-	int needclip = 0;
+	size_t i;
+	size_t needclip = 0;
 	for( i=0; i<insize; i++)
 	{
 		if( in[i].z < 0 )
@@ -208,7 +208,7 @@ bool InsertPointsAtNearPlane(std::vector<PointInfo> &in)
 		return false;	// No need to clip
 	}
 
-	int start_z_idx=0;
+	size_t start_z_idx=0;
 	for( start_z_idx=0; start_z_idx<insize; start_z_idx++)
 	{
 		PointInfo &vtx = in[start_z_idx];
@@ -219,8 +219,8 @@ bool InsertPointsAtNearPlane(std::vector<PointInfo> &in)
 	out.push_back(in[start_z_idx]);
 	for( i=0; i<insize; i++ )
 	{
-		int a = (start_z_idx+i)%insize;
-		int b = (start_z_idx+i+1)%insize;
+        size_t a = (start_z_idx+i)%insize;
+        size_t b = (start_z_idx+i+1)%insize;
 
 		if( in[a].z * in[b].z < 0 )
 		{
@@ -250,8 +250,8 @@ void SplitPointsToTwoPolygons(std::vector<PointInfo> &points, std::vector<PointI
 	polygon1.clear();
 	polygon2.clear();
 
-	int size = points.size();
-	for( int i=0; i<size; i++ )
+	size_t size = points.size();
+	for(size_t i=0; i<size; i++ )
 	{
 		if( points[i].z <= 0 )
 			polygon1.push_back(points[i]);
@@ -268,9 +268,9 @@ bool ClipFarPlane( std::vector<PointInfo> &in )
 
 	const float farz = 1-1e-4f;
 
-	int insize = in.size();
-	int thisInd=insize-1;
-	int nextInd=0;
+    size_t insize = in.size();
+    size_t thisInd=insize-1;
+    size_t nextInd=0;
 
 	bool thisRes = (in[thisInd].z <= farz) ;
 	bool nextRes;
@@ -316,7 +316,7 @@ bool ClipFarPlane( std::vector<PointInfo> &in )
 	}
 
 	in = out;
-	return( (int)out.size() >= insize );
+	return( out.size() >= insize );
 }
 
 void Create1LineEq(LineEuqationType &l, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3)
@@ -635,7 +635,7 @@ void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITVER
 {
 	// now compute z and rhw values
 	int i;
-	int size = points.size();
+	int size = (int) points.size();
 	TLITVERTEX  *newvertexes = new TLITVERTEX[size];
 
 	for( i=0; i<size; i++ )
@@ -752,8 +752,8 @@ void InterpolatePoints(std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITVER
 void InterpolatePointsZ(std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3)
 {
 	// now compute z values
-	int i;
-	int size = points.size();
+    size_t i;
+    size_t size = points.size();
 
 	for( i=0; i<size; i++ )
 	{
@@ -835,7 +835,7 @@ void ClipVertexes()
 	for( uint32 i=0; i<gRSP.numVertices/3; i++)
 	{
 		int firstidx = i*3;
-		int size;
+        size_t size;
 		TLITVERTEX &vec1 = g_vtxBuffer[firstidx];
 		TLITVERTEX &vec2 = g_vtxBuffer[firstidx+1];
 		TLITVERTEX &vec3 = g_vtxBuffer[firstidx+2];
