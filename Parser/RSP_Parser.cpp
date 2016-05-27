@@ -237,9 +237,6 @@ void DLParser_Process()
 		TRACE0("Unknown exception happens in ProcessDList");
 	}
 
-	//Do this regardless
-	TriggerDPInterrupt();
-
 	CRender::g_pRender->EndRendering();
 		
 }
@@ -355,8 +352,7 @@ void DLParser_TriRSP(MicroCodeCommand command)
 
 void DLParser_RDPFullSync(MicroCodeCommand command)
 { 
-	//We do this regardless now
-	//This tends to be called after DLIST processing anyway
+    TriggerDPInterrupt();
 }
 
 void DLParser_SetScissor(MicroCodeCommand command)
