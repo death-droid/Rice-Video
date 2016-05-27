@@ -48,8 +48,6 @@ DListStack	gDlistStack;
 int		gDlistStackPointer= -1;
 
 TMEMLoadMapInfo g_tmemLoadAddrMap[0x200];	// Totally 4KB TMEM
-TMEMLoadMapInfo g_tmemInfo0;				// Info for Tmem=0
-TMEMLoadMapInfo g_tmemInfo1;				// Info for Tmem=0x100
 
 char *pszImgSize[4] = {"4", "8", "16", "32"};
 const char *textluttype[4] = {"RGB16", "I16?", "RGBA16", "IA16"};
