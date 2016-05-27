@@ -86,22 +86,22 @@ inline uint32 ReverseDXT(uint32 val, uint32 lrs, uint32 width, uint32 size)
 inline void UnswapCopy(void *src, void *dest, uint32 numBytes)
 {
 	// copy leading bytes
-	int leadingBytes = ((long)src) & 3;
+    uint32_t leadingBytes = ((uintptr_t) src) & 3;
 	if (leadingBytes != 0)
 	{
 		leadingBytes = 4 - leadingBytes;
-		if ((unsigned int)leadingBytes > numBytes)
+		if (leadingBytes > numBytes)
 			leadingBytes = numBytes;
 		numBytes -= leadingBytes;
 
-		src = (void *)((long)src ^ 3);
-		for (int i = 0; i < leadingBytes; i++)
+		src = (void *)((uintptr_t) src ^ 3);
+		for (uintptr_t i = 0; i < leadingBytes; i++)
 		{
 			*(u8 *)(dest) = *(u8 *)(src);
-			dest = (void *)((long)dest + 1);
-			src = (void *)((long)src - 1);
+			dest = (void *)((uintptr_t) dest + 1);
+			src = (void *)((uintptr_t) src - 1);
 		}
-		src = (void *)((long)src + 5);
+		src = (void *)((uintptr_t) src + 5);
 	}
 
 	// copy dwords
@@ -113,20 +113,20 @@ inline void UnswapCopy(void *src, void *dest, uint32 numBytes)
 		dword = ((dword << 24) | ((dword << 8) & 0x00FF0000) | ((dword >> 8) & 0x0000FF00) | (dword >> 24));
 
 		*(u32 *)dest = dword;
-		dest = (void *)((long)dest + 4);
-		src = (void *)((long)src + 4);
+		dest = (void *)((uintptr_t) dest + 4);
+		src = (void *)((uintptr_t) src + 4);
 	}
 
 	// copy trailing bytes
 	int trailingBytes = numBytes & 3;
 	if (trailingBytes)
 	{
-		src = (void *)((long)src ^ 3);
+		src = (void *)((uintptr_t) src ^ 3);
 		for (int i = 0; i < trailingBytes; i++)
 		{
 			*(u8 *)(dest) = *(u8 *)(src);
-			dest = (void *)((long)dest + 1);
-			src = (void *)((long)src - 1);
+			dest = (void *)((uintptr_t) dest + 1);
+			src = (void *)((uintptr_t) src - 1);
 		}
 	}
 }
@@ -136,10 +136,10 @@ inline void DWordInterleave(void *mem, uint32 numDWords)
 	int tmp;
 	while (numDWords--)
 	{
-		tmp = *(int *)((long)mem + 0);
-		*(int *)((long)mem + 0) = *(int *)((long)mem + 4);
-		*(int *)((long)mem + 4) = tmp;
-		mem = (void *)((long)mem + 8);
+		tmp = *(int *)((uintptr_t) mem + 0);
+		*(int *)((uintptr_t) mem + 0) = *(int *)((uintptr_t) mem + 4);
+		*(int *)((uintptr_t) mem + 4) = tmp;
+		mem = (void *)((uintptr_t) mem + 8);
 	}
 }
 
@@ -149,13 +149,13 @@ inline void QWordInterleave(void *mem, uint32 numDWords)
 	while (numDWords--)
 	{
 		int tmp0, tmp1;
-		tmp0 = *(int *)((long)mem + 0);
-		tmp1 = *(int *)((long)mem + 4);
-		*(int *)((long)mem + 0) = *(int *)((long)mem + 8);
-		*(int *)((long)mem + 8) = tmp0;
-		*(int *)((long)mem + 4) = *(int *)((long)mem + 12);
-		*(int *)((long)mem + 12) = tmp1;
-		mem = (void *)((long)mem + 16);
+		tmp0 = *(int *)((uintptr_t)mem + 0);
+		tmp1 = *(int *)((uintptr_t)mem + 4);
+		*(int *)((uintptr_t)mem + 0) = *(int *)((uintptr_t)mem + 8);
+		*(int *)((uintptr_t)mem + 8) = tmp0;
+		*(int *)((uintptr_t)mem + 4) = *(int *)((uintptr_t)mem + 12);
+		*(int *)((uintptr_t)mem + 12) = tmp1;
+		mem = (void *)((uintptr_t)mem + 16);
 	}
 }
 
@@ -394,7 +394,7 @@ bool CalculateTileSizes_method_2(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		if (info->dxt == 0 || info->dwTmem != tile.dwTMem )
 		{
 			dwPitch = tile.dwLine << 3;
-			gti.bSwapped = TRUE;
+			gti.bSwapped = true;
 			if( info->dwTmem != tile.dwTMem && info->dxt != 0 && info->dwSize == TXT_SIZE_16b && tile.dwSize == TXT_SIZE_4b )
 				conkerSwapHack = true;
 		}
@@ -542,7 +542,7 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		else if (info->dxt == 0 )
 		{
 			tile.dwPitch = tile.dwLine << 3;
-			gti.bSwapped = TRUE;
+			gti.bSwapped = true;
 			if( info->dwTmem != tile.dwTMem && info->dxt != 0 && info->dwSize == TXT_SIZE_16b && tile.dwSize == TXT_SIZE_4b )
 				conkerSwapHack = true;
 		}
@@ -910,7 +910,7 @@ void DLParser_LoadBlock(MicroCodeCommand command)
 
 	TMEMLoadMapInfo &info = g_tmemLoadAddrMap[tile.dwTMem];
 
-	info.bSwapped = (dxt == 0? TRUE : FALSE);
+	info.bSwapped = (dxt == 0);
 
 	info.sl = tile.hilite_sl = tile.sl = uls;
 	info.sh = tile.hilite_sh = tile.sh = lrs;
@@ -1146,7 +1146,7 @@ void DLParser_LoadTile(MicroCodeCommand command)
 	info.dwTotalWords = size<<2;
 
 	info.bSetBy = CMD_LOADTILE;
-	info.bSwapped =FALSE;
+	info.bSwapped = false;
 
 	g_TxtLoadBy = CMD_LOADTILE;
 

@@ -246,7 +246,7 @@ void D3DRender::SetTextureUFlag(int dwFlag, uint32 tile)
 	}
 	else
 	{
-		for (int i = 0; i < nStages; i++)
+		for (uint32_t i = 0; i < nStages; i++)
 		{
 			if (nTextureStages[i] == tile-gRSP.curTile)
 				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSU, dwFlag);
@@ -263,7 +263,7 @@ void D3DRender::SetTextureVFlag(int dwFlag, uint32 tile)
 	}
 	else
 	{
-		for (int i = 0; i < nStages; i++)
+		for (uint32_t i = 0; i < nStages; i++)
 		{
 			if (nTextureStages[i] == tile - gRSP.curTile)
 				g_pD3DDev->SetSamplerState(i, D3DSAMP_ADDRESSV, dwFlag);
@@ -313,7 +313,7 @@ void D3DRender::ApplyTextureFilter()
 	}
 	else
 	{
-		for (int i = 0; i < nStages; i++)
+		for (uint32_t i = 0; i < nStages; i++)
 		{
 			D3DSetMinFilter(i, m_dwMinFilter);
 			D3DSetMagFilter(i, m_dwMagFilter);

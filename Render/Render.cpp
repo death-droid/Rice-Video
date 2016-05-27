@@ -19,14 +19,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "..\stdafx.h"
 #include "BMGDLL.h"
+#include "../Utility/util.h"
 
 CRender * CRender::g_pRender=NULL;
 int CRender::gRenderReferenceCount=0;
 
 Matrix4x4 reverseXY(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 Matrix4x4 reverseY(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-
-extern char* right (char * src, int nchars);
 
 //========================================================================
 CRender * CRender::GetRender(void)

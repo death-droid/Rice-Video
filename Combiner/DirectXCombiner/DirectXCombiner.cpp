@@ -75,8 +75,8 @@ CDirectXPixelShaderCombiner::CDirectXPixelShaderCombiner(CRender *pRender)
 void CDirectXPixelShaderCombiner::CleanUp(void)
 {
 	gD3DDevWrapper.SetPixelShader(NULL);
-	int n = m_pixelShaderList.size();
-	for( int i=0; i<n; i++)
+	size_t n = m_pixelShaderList.size();
+	for( size_t i=0; i<n; i++)
 	{
 		if( m_pixelShaderList[i].pShaderText )
 		{
@@ -97,15 +97,13 @@ CDirectXPixelShaderCombiner::~CDirectXPixelShaderCombiner()
 
 int CDirectXPixelShaderCombiner::FindCompiledShader(void)
 {
-	int n = m_pixelShaderList.size();
-	bool found=false;
+	size_t n = m_pixelShaderList.size();
 
-	for( int i=0; i<n; i++ )
+	for( size_t i=0; i<n; i++ )
 	{
 		if( m_pixelShaderList[i].mux64 == m_pD3DRender->m_Mux )
 		{
-			found = true;
-			return i;
+			return (int) i;
 		}
 	}
 
@@ -257,7 +255,7 @@ int CDirectXPixelShaderCombiner::GeneratePixelShaderFromMux(void)
 	PixelShaderEntry newEntry;
 	newEntry.mux64 = m_pD3DRender->m_Mux;
 
-	HRESULT e = D3DXAssembleShader( m_textBuf, strlen(m_textBuf),  0, NULL, NULL, &(newEntry.pVS), NULL );
+	HRESULT e = D3DXAssembleShader( m_textBuf, (UINT) strlen(m_textBuf),  0, NULL, NULL, &(newEntry.pVS), NULL );
 	if( e != S_OK )
 	{
 #ifdef _DEBUG
@@ -286,7 +284,7 @@ int CDirectXPixelShaderCombiner::GeneratePixelShaderFromMux(void)
 
 	m_pixelShaderList.push_back(newEntry);
 
-	return m_pixelShaderList.size()-1;
+	return (int)(m_pixelShaderList.size()-1);
 }
 
 

@@ -51,7 +51,7 @@ public:
 	void UpdateFrame(bool swaponly=false);
 	bool IsFSAAEnable() {return m_FSAAIsEnabled;}
 
-	int ToggleFullscreen();		// return 0 as the result is windowed
+	bool ToggleFullscreen();		// return false as the result is windowed
 	static bool IsResultGood(HRESULT hr, bool displayError = false);
 	static void InitDeviceParameters();
 

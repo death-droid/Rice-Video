@@ -605,7 +605,7 @@ VOID CDXGraphicsContext::CleanUp()
 }
 
 
-int CDXGraphicsContext::ToggleFullscreen()
+bool CDXGraphicsContext::ToggleFullscreen()
 {
     // Toggle the fullscreen/window mode
     if( m_bActive && m_bReady )
@@ -626,7 +626,7 @@ int CDXGraphicsContext::ToggleFullscreen()
 		m_pd3dDevice->ShowCursor( TRUE );
 	}
 
-	return m_bWindowed?0:1;
+	return !m_bWindowed;
 }
 
 
@@ -767,8 +767,8 @@ HRESULT CD3DDevWrapper::SetViewport(D3DVIEWPORT9* pViewport)
 		//Preliminary support for pillarboxing
 		if(windowSetting.uScreenScaleMode == 1)
 		{
-			float scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
-			int offset = (windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3) / 2;
+			float scaleFactor = (float) ((4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth));
+            int offset = (windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3) / 2;
 
 			pViewport->X = pViewport->X * scaleFactor + offset;
 			pViewport->Width = pViewport->Width * scaleFactor;
@@ -777,8 +777,8 @@ HRESULT CD3DDevWrapper::SetViewport(D3DVIEWPORT9* pViewport)
 		{
 			if (pViewport->Width < windowSetting.uDisplayWidth * 0.9)
 			{
-				float scaleFactor = (4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth);
-                int offset = (windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3 - pViewport->Width * scaleFactor / 2) / 2 ;
+				float scaleFactor = (float) ((4.0 * windowSetting.uDisplayHeight) / (3.0 * windowSetting.uDisplayWidth));
+                int offset = (int)((windowSetting.uDisplayWidth - windowSetting.uDisplayHeight * 4 / 3 - pViewport->Width * scaleFactor / 2) / 2);
 
 				pViewport->X = pViewport->X * scaleFactor + offset;
 			}

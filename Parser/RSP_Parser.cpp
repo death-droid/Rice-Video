@@ -491,7 +491,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 			{
 				uint16 color = (uint16)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width<<1;
-				uint32 base = (uint32)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
+                uintptr_t base = (uintptr_t)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
 				for( uint32 i =command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
 					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )
@@ -504,7 +504,7 @@ void DLParser_FillRect(MicroCodeCommand command)
 			{
 				uint8 color = (uint8)fill_colour;
 				uint32 pitch = g_pRenderTextureInfo->N64Width;
-				uint32 base = (uint32)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
+                uintptr_t base = (uintptr_t)(g_pu8RamBase + g_pRenderTextureInfo->CI_Info.dwAddr);
 				for( uint32 i=command.fillrect.y0; i<command.fillrect.y1; i++ )
 				{
 					for( uint32 j=command.fillrect.x0; j<command.fillrect.x1; j++ )

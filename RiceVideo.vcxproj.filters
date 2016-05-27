@@ -224,6 +224,9 @@
     <ClInclude Include="Utility\dxerr.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\util.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">
@@ -317,6 +320,9 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="Utility\dxerr.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\util.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>

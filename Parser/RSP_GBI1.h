@@ -254,10 +254,10 @@ void RSP_MoveMemViewport(uint32 dwAddr)
 	if (vec_scale.x < 0)	vec_scale.x = -vec_scale.x;
 	if (vec_scale.y < 0)	vec_scale.y = -vec_scale.y;
 
-	int nLeft = vec_trans.x - vec_scale.x;
-	int nTop = vec_trans.y - vec_scale.y;
-	int nRight = vec_trans.x + vec_scale.x;
-	int nBottom = vec_trans.y + vec_scale.y;
+	int nLeft = (int) (vec_trans.x - vec_scale.x);
+	int nTop = (int) (vec_trans.y - vec_scale.y);
+	int nRight = (int) (vec_trans.x + vec_scale.x);
+	int nBottom = (int) (vec_trans.y + vec_scale.y);
 
 	int maxZ = 0x3FF;
 

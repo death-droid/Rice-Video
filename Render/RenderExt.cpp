@@ -36,7 +36,7 @@ void CRender::LoadFrameBuffer(bool useVIreg, uint32 left, uint32 top, uint32 wid
 	gti.clampS = gti.clampT = 0;
 	gti.maskS = gti.maskT = gti.mirrorS = gti.mirrorT = 0;
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
+	gti.bSwapped = false;
 	gti.Palette	= 0;
 
 	if( useVIreg && *g_GraphicsInfo.VI_ORIGIN_REG > VIwidth*2 )
@@ -129,7 +129,7 @@ void CRender::LoadTextureFromMemory(void *buf, uint32 left, uint32 top, uint32 w
 	gti.Palette	= 0;
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
 	gti.PalAddress = 0;
-	gti.bSwapped	= FALSE;
+	gti.bSwapped = false;
 	gti.Address	= 0;
 	gti.LeftToLoad		= 0;
 	gti.TopToLoad		= 0;
@@ -178,7 +178,7 @@ void CRender::LoadObjBGCopy(uObjBg &info)
 	gti.Palette		= info.imagePal;
 
     gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 	gti.TLutFmt		= TLUT_FMT_RGBA16;	//RGBA16
 
 	gti.WidthToCreate	= info.imageW/4;
@@ -245,7 +245,7 @@ void CRender::LoadTxtrBufIntoTexture(void)
 	gti.Palette	= 0;
 
     gti.PalAddress = (uintptr_t)(&g_wRDPTlut[0]);
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 
 	gti.WidthToCreate		= g_pRenderTextureInfo->N64Width;
 	gti.HeightToCreate		= g_pRenderTextureInfo->N64Height;
@@ -665,7 +665,7 @@ void CRender::LoadObjBG1CYC(uObjScaleBg &bg)
 	}
 
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;
@@ -735,7 +735,7 @@ void CRender::LoadObjSprite(uObjTxSprite &sprite, bool useTIAddr)//backtomenow
 	}
 
 	gti.TLutFmt	= TLUT_FMT_RGBA16;	//RGBA16
-	gti.bSwapped	= FALSE;
+	gti.bSwapped	= false;
 
 	gti.HeightToLoad = gti.HeightToCreate;
 	gti.WidthToLoad = gti.WidthToCreate;

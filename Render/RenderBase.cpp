@@ -247,7 +247,7 @@ void ComputeLOD()
 	double intptr;
 	float frac = log10f(lod)/log10f(2.0f);
 	//DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("LOD frac = %f", frac);});
-	int lod_tile = min((int)(log10f((float)ilod)/log10f(2.0f)), gRSP.curTile + floorf(frac));
+	int lod_tile = (int) min((int)(log10f((float)ilod)/log10f(2.0f)), gRSP.curTile + floorf(frac));
 	frac = max((float)modf(lod / pow(2.,lod_tile),&intptr), gRDP.primLODMin / 255.0f);
 	//DEBUGGER_IF_DUMP(pauseAtNext,{DebuggerAppendMsg("LOD = %f, frac = %f", lod, frac);});
 	gRDP.LODFrac = (uint32)(frac*255);
@@ -769,7 +769,7 @@ extern bool gDKRBillBoard;
 void ProcessVertexDataDKR(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 
-	uint32 pVtxBase = uint32(g_pu8RamBase + dwAddr);
+	uintptr_t pVtxBase = uintptr_t(g_pu8RamBase + dwAddr);
 
 	Matrix4x4 &matWorldProject(gRSP.mModelViewStack[gDKRCMatrixIndex]);
 
@@ -988,9 +988,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 		if (gRDP.tnl.Light)
 		{
-			uint32 r = gRSPlights[gRSPnumLights].Colour.x;
-			uint32 g = gRSPlights[gRSPnumLights].Colour.y;
-			uint32 b = gRSPlights[gRSPnumLights].Colour.z;
+			uint32 r = (uint32) gRSPlights[gRSPnumLights].Colour.x;
+			uint32 g = (uint32) gRSPlights[gRSPnumLights].Colour.y;
+			uint32 b = (uint32) gRSPlights[gRSPnumLights].Colour.z;
 
 			v3 model_normal(mn[((i << 1) + 0) ^ 3], mn[((i << 1) + 1) ^ 3], vert.normz);
 			v3 vecTransformedNormal = mat_world.TransformNormal(model_normal);
@@ -1020,9 +1020,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 							if (pi < 1.0f)
 								fCosT *= pi;
 
-							r += gRSPlights[k].Colour.x *fCosT;
-							g += gRSPlights[k].Colour.y *fCosT;
-							b += gRSPlights[k].Colour.z *fCosT;
+							r += (uint32) (gRSPlights[k].Colour.x *fCosT);
+							g += (uint32) (gRSPlights[k].Colour.y *fCosT);
+							b += (uint32) (gRSPlights[k].Colour.z *fCosT);
 						}
 					}
 				}
@@ -1030,9 +1030,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 				fCosT = norm.Dot(gRSPlights[k].Direction);
 				if (fCosT > 0.0f)
 				{
-					r += gRSPlights[k].Colour.x *fCosT;
-					g += gRSPlights[k].Colour.y *fCosT;
-					b += gRSPlights[k].Colour.z *fCosT;
+					r += (uint32) (gRSPlights[k].Colour.x *fCosT);
+					g += (uint32) (gRSPlights[k].Colour.y *fCosT);
+					b += (uint32) (gRSPlights[k].Colour.z *fCosT);
 				}
 			}
 			else
@@ -1044,9 +1044,9 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 						float pi = gRSPlights[k].Iscale / (Pos - gRSPlights[k].Position).LengthSq();
 						if (pi > 1.0f) pi = 1.0f;
 
-						r += gRSPlights[k].Colour.x *pi;
-						g += gRSPlights[k].Colour.y *pi;
-						b += gRSPlights[k].Colour.z *pi;
+						r += (uint32) (gRSPlights[k].Colour.x *pi);
+						g += (uint32) (gRSPlights[k].Colour.y *pi);
+						b += (uint32) (gRSPlights[k].Colour.z *pi);
 					}
 				}
 			}
@@ -1187,8 +1187,8 @@ float HackZ(float z)
 //CheckMe
 void HackZ(std::vector<v3>& points)
 {
-	int size = points.size();
-	for( int i=0; i<size; i++)
+	size_t size = points.size();
+	for( size_t i=0; i<size; i++)
 	{
 		v3 &v = points[i];
 		v.z = (float)HackZ(v.z);
