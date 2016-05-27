@@ -526,15 +526,20 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		loadwidth = abs(tile.sh - tile.sl) +1;
 		if( tile.dwMaskS )	
 		{
-			loadwidth = maskwidth;
+            if (!tile.bSizeIsValid)
+                loadwidth = maskwidth;
+            else
+                loadwidth = min(loadwidth, maskwidth);
 		}
 
 		loadheight = abs(tile.th - tile.tl) +1;
 		if( tile.dwMaskT )	
 		{
-			loadheight = maskheight;
+            if (!tile.bSizeIsValid)
+                loadheight = maskheight;
+            else
+                loadheight = min(loadheight, maskheight);
 		}
-
 
 		// It was a block load - the pitch is determined by the tile size
 		if (tile.dwSize == TXT_SIZE_32b)
