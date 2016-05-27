@@ -260,6 +260,65 @@ void SplitPointsToTwoPolygons(std::vector<PointInfo> &points, std::vector<PointI
 	}
 }
 
+
+// Clipping using the Sutherland-Hodgeman algorithm
+bool ClipFarPlane( std::vector<PointInfo> &in )
+{
+	std::vector<PointInfo> out;
+
+	const float farz = 1-1e-4f;
+
+	int insize = in.size();
+	int thisInd=insize-1;
+	int nextInd=0;
+
+	bool thisRes = (in[thisInd].z <= farz) ;
+	bool nextRes;
+
+	out.clear();
+
+	for( nextInd=0; nextInd<insize; nextInd++ )
+	{
+		nextRes = (in[nextInd].z <= farz) ;
+
+		if( thisRes )
+		{
+			// Add the point
+#ifdef _DEBUG
+			PointInfo &vtx = in[thisInd];
+			out.push_back(vtx);
+#else
+			out.push_back(in[thisInd]);
+#endif
+		}
+
+		if( ( !thisRes && nextRes ) || ( thisRes && !nextRes ) )
+		{
+			// Add the split point
+			PointInfo newvtx;
+			PointInfo &vec1 = in[thisInd];
+			PointInfo &vec2 = in[nextInd];
+
+			newvtx.z = farz;
+
+			float r = (vec1.z - newvtx.z )/(vec1.z-vec2.z);
+			if( r != r )
+			{
+				r = (vec1.z - newvtx.z )/(vec1.z-vec2.z);
+			}
+			newvtx.x = vec1.x - r*(vec1.x-vec2.x);
+			newvtx.y = vec1.y - r*(vec1.y-vec2.y);
+			out.push_back( newvtx );
+		}
+
+		thisInd = nextInd;
+		thisRes = nextRes;
+	}
+
+	in = out;
+	return( (int)out.size() >= insize );
+}
+
 void Create1LineEq(LineEuqationType &l, TLITVERTEX &vec1, TLITVERTEX &vec2, TLITVERTEX &vec3)
 {
 	// Line between (x1,y1) to (x2,y2)
@@ -754,6 +813,16 @@ void InitTrianglePoints( std::vector<PointInfo> &points, TLITVERTEX &vec1, TLITV
 	points.push_back(p);
 }
 
+bool OffScreen(TLITVERTEX &v)
+{
+	if( !windowSetting.clipping.needToClip ) return false;
+
+	return		v.x	<	windowSetting.clipping.left
+		||	v.x >	windowSetting.clipping.right
+		||	v.y	<	windowSetting.clipping.top
+		||	v.y	>	windowSetting.clipping.bottom;
+}
+
 void ClipVertexes()
 {
 	// transverse the list of transformed vertex for each triangles
@@ -763,91 +832,85 @@ void ClipVertexes()
 
 	int dstidx = 0;
 
-	for (uint32 i = 0; i<gRSP.numVertices / 3; i++)
+	for( uint32 i=0; i<gRSP.numVertices/3; i++)
 	{
-		int firstidx = i * 3;
+		int firstidx = i*3;
 		int size;
-		TLITVERTEX &v1 = g_vtxBuffer[firstidx];
-		TLITVERTEX &v2 = g_vtxBuffer[firstidx + 1];
-		TLITVERTEX &v3 = g_vtxBuffer[firstidx + 2];
+		TLITVERTEX &vec1 = g_vtxBuffer[firstidx];
+		TLITVERTEX &vec2 = g_vtxBuffer[firstidx+1];
+		TLITVERTEX &vec3 = g_vtxBuffer[firstidx+2];
 
-		if (v1.rhw < 0 && v2.rhw < 0 && v3.rhw < 0)
+		if( vec1.rhw < 0 && vec2.rhw < 0 && vec3.rhw < 0 )
 			continue;	// Skip this triangle
 
 		std::vector<PointInfo> points;
 
-		TRI_DUMP(
+		bool vtxoffscreen = false;
+		bool vtxOffFar = false;
+		bool vtxOffNear = false;
+
+		TRI_DUMP( 
 		{
 			TRACE1("Clip triangle %d for negative w", i);
-		TRACE4("V1: x=%f, y=%f, z=%f, rhw=%f", v1.x, v1.y, v1.z, v1.rhw);
-		TRACE4("V2: x=%f, y=%f, z=%f, rhw=%f", v2.x, v2.y, v2.z, v2.rhw);
-		TRACE4("V3: x=%f, y=%f, z=%f, rhw=%f", v3.x, v3.y, v3.z, v3.rhw);
+			TRACE4("vec1: x=%f, y=%f, z=%f, rhw=%f", vec1.x, vec1.y, vec1.z, vec1.rhw);
+			TRACE4("vec2: x=%f, y=%f, z=%f, rhw=%f", vec2.x, vec2.y, vec2.z, vec2.rhw);
+			TRACE4("vec3: x=%f, y=%f, z=%f, rhw=%f", vec3.x, vec3.y, vec3.z, vec3.rhw);
 		});
 
 		SwapVertexPos(firstidx);
-		CreateLineEquations(v1, v2, v3);
+		CreateLineEquations(vec1,vec2,vec3);
 		InitScreenPoints(points);
-		InterpolatePointsZ(points, v1, v2, v3);
-		ClipXYBy1Triangle(points, v1, v2, v3);
+		InterpolatePointsZ(points,vec1,vec2,vec3);
+		ClipXYBy1Triangle(points, vec1, vec2, vec3);
 
-		TRI_DUMP(
+		TRI_DUMP( 
 		{
 			TRACE1("Got %d vertex after clipping", points.size());
-		for (unsigned int k = 0; k<points.size(); k++)
-		{
-			TRACE4("V(%d): x=%f, y=%f, z=%f", k, points[k].x, points[k].y, points[k].z);
-		}
+			for( unsigned int k=0; k<points.size(); k++)
+			{
+				TRACE4("V(%d): x=%f, y=%f, z=%f", k, points[k].x, points[k].y, points[k].z);
+			}
 		});
 
-		if( v1.rhw >= 0 && v2.rhw >= 0 && v3.rhw >= 0 )
-		{
-			CopyVertexData(firstidx, g_vtxBuffer, dstidx++, g_clippedVtxBuffer);
-			CopyVertexData(firstidx+1, g_vtxBuffer, dstidx++, g_clippedVtxBuffer);
-			CopyVertexData(firstidx+2, g_vtxBuffer, dstidx++, g_clippedVtxBuffer);
-			continue;
-		}
-		else
-		{
-			SwapVertexPos(firstidx);
-			CreateLineEquations(v1,v2,v3);
-			InitScreenPoints(points);
-			InterpolatePointsZ(points,v1,v2,v3);
-			ClipXYBy1Triangle(points, v1, v2, v3);
-		}
-
 		size = points.size();
-		if (size < 3) continue;
+		if( size < 3 ) continue;
 
-		if (gRDP.otherMode.z_cmp)
+		if( gRDP.otherMode.z_cmp )
 		{
-			if (InsertPointsAtNearPlane(points))
+			if( vtxOffFar )
+			{
+				ClipFarPlane(points);	// Clip for far plane
+				if( points.size() < 3 )	continue;
+			}
+
+			if( InsertPointsAtNearPlane(points) )
 			{
 				std::vector<PointInfo> polygon1;
 				std::vector<PointInfo> polygon2;
 
-				SplitPointsToTwoPolygons(points, polygon1, polygon2);
+				SplitPointsToTwoPolygons(points,polygon1,polygon2);
 
-				InterpolatePoints(polygon1, v1, v2, v3, dstidx);
-				InterpolatePoints(polygon2, v1, v2, v3, dstidx);
+				InterpolatePoints(polygon1,vec1,vec2,vec3,dstidx);
+				InterpolatePoints(polygon2,vec1,vec2,vec3,dstidx);
 				polygon1.clear();
 				polygon2.clear();
 			}
 			else
 			{
-				InterpolatePoints(points, v1, v2, v3, dstidx);
+				InterpolatePoints(points,vec1,vec2,vec3,dstidx);
 			}
 		}
 		else
 		{
-			InterpolatePoints(points, v1, v2, v3, dstidx);
+			InterpolatePoints(points,vec1,vec2,vec3,dstidx);
 		}
 
 		points.clear();
 	}
 
 	g_clippedVtxCount = dstidx;
-	for (int m = 0; m<dstidx; m++)
+	for( int m=0; m<dstidx; m++ )
 	{
-		if (g_clippedVtxBuffer[m].z < 0) g_clippedVtxBuffer[m].z = 0;
+		if( g_clippedVtxBuffer[m].z < 0 ) g_clippedVtxBuffer[m].z = 0;
 	}
 }
