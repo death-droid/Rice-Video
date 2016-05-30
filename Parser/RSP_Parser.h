@@ -332,7 +332,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 
-typedef struct 
+struct OSTask_t
 {
 	uint32	type;
 	uint32	flags;
@@ -357,17 +357,17 @@ typedef struct
 
 	uint32	yield_data_ptr;
 	uint32	yield_data_size;
-} OSTask_t;
+};
 
-typedef union {
+union OSTask {
 	OSTask_t		t;
 	uint64	force_structure_alignment;
-} OSTask;
+};
 
 #define MAX_DL_STACK_SIZE	32
 #define MAX_DL_COUNT		1000000
 
-typedef struct
+struct UcodeData
 {
 	uint32		ucode;
 	uint32		crc_size;
@@ -375,32 +375,6 @@ typedef struct
 	const CHAR * ucode_name;
 	bool		non_nearclip;
 	bool		reject;
-} UcodeData;
-
-struct TileDescriptor
-{
-	// Set by SetTile
-	unsigned int dwFormat	:3;		// e.g. RGBA, YUV etc
-	unsigned int dwSize		:2;		// e.g 4/8/16/32bpp
-	unsigned int dwLine		:9;		// Ummm...
-	unsigned int dwPalette	:4;		// 0..15 - a palette index?
-	uint32 dwTMem;					// Texture memory location
-
-	unsigned int bClampS	:1;
-	unsigned int bClampT	:1;
-	unsigned int bMirrorS	:1;
-	unsigned int bMirrorT	:1;
-
-	unsigned int dwMaskS	:4;
-	unsigned int dwMaskT	:4;
-	unsigned int dwShiftS	:4;
-	unsigned int dwShiftT	:4;
-
-	// Set by SetTileSize
-	unsigned int sl		:10;	// Upper left S		- 8:3
-	unsigned int tl		:10;	// Upper Left T		- 8:3
-	unsigned int sh		:10;	// Lower Right S
-	unsigned int th		:10;	// Lower Right T
 };
 
 enum LoadType
@@ -433,66 +407,320 @@ struct RDP_BlenderSetting
 	unsigned int	c1_m1a:2;
 };
 
+//Todo, move these out into another file
+inline uint32 pixels2bytes(uint32 pixels, uint32 size)
+{
+    return ((pixels << size) + 1) >> 1;
+}
+
+inline u32 bytes2pixels(uint32 bytes, uint32 size)
+{
+    return (bytes << 1) >> size;
+}
+
+struct SImageDescriptor
+{
+    uint32 Format;		// "RGBA", "YUV", "CI", "IA", "I", "?1", "?2", "?3"
+    uint32 Size;		// "4bpp", "8bpp", "16bpp", "32bpp"
+    uint32 Width;		// Num Pixels
+    uint32 Address;	// Location
+
+    inline uint32 GetPitch() const
+    {
+        return ((Width << Size) >> 1);
+    }
+
+    //Get Bpl -> ( Width << Size >> 1 )
+    inline uint32 GetAddress(uint32 x, uint32 y) const
+    {
+        return Address + y * ((Width << Size) >> 1) + ((x << Size) >> 1);
+    }
+
+    // Optimised version when Size == G_IM_SIZ_16b
+    inline uint32 GetPitch16bpp() const
+    {
+        return Width << 1;
+    }
+    inline uint32 GetAddress16bpp(uint32 x, uint32 y) const
+    {
+        return Address + ((y * Width + x) << 1);
+    }
+
+};
+
+struct RDP_GeometryMode
+{
+    union
+    {
+        uint32	_u32;
+
+        struct
+        {
+            uint32 GBI1_Zbuffer : 1;		// 0x1
+            uint32 GBI1_Texture : 1;		// 0x2
+            uint32 GBI1_Shade : 1;			// 0x4
+            uint32 GBI1_pad0 : 6;			// 0x0
+            uint32 GBI1_ShadingSmooth : 1;	// 0x200
+            uint32 GBI1_pad1 : 2;			// 0x0
+            uint32 GBI1_CullFront : 1;		// 0x1000
+            uint32 GBI1_CullBack : 1;		// 0x2000
+            uint32 GBI1_pad2 : 2;			// 0x0
+            uint32 GBI1_Fog : 1;			// 0x10000
+            uint32 GBI1_Lighting : 1;		// 0x20000
+            uint32 GBI1_TexGen : 1;		// 0x40000
+            uint32 GBI1_TexGenLin : 1;		// 0x80000
+            uint32 GBI1_Lod : 1;			// 0x100000
+            uint32 GBI1_pad3 : 11;			// 0x0
+        };
+        struct
+        {
+            uint32 GBI2_Zbuffer : 1;		// 0x1
+            uint32 GBI2_pad0 : 8;			// 0x0
+            uint32 GBI2_CullBack : 1;		// 0x200
+            uint32 GBI2_CullFront : 1;		// 0x400
+            uint32 GBI2_pad1 : 5;			// 0x0
+            uint32 GBI2_Fog : 1;			// 0x10000
+            uint32 GBI2_Lighting : 1;		// 0x20000
+            uint32 GBI2_TexGen : 1;		// 0x40000
+            uint32 GBI2_TexGenLin : 1;		// 0x80000
+            uint32 GBI2_Lod : 1;			// 0x100000
+            uint32 GBI2_ShadingSmooth : 1;	// 0x200000
+            uint32 GBI2_PointLight : 1;	// 0x400000
+            uint32 GBI2_pad2 : 9;			// 0x0
+        };
+    };
+};
+
 struct RDP_OtherMode
 {
 	union
 	{
+        uint64			_u64;
+
 		struct
 		{
 			// Low bits
-			unsigned int		alpha_compare : 2;			// 0..1
-			unsigned int		depth_source : 1;			// 2..2
+            uint32		alpha_compare : 2;			// 0..1
+            uint32		depth_source : 1;			// 2..2
 
-			unsigned int		aa_en : 1;					// 3
-			unsigned int		z_cmp : 1;					// 4
-			unsigned int		z_upd : 1;					// 5
-			unsigned int		im_rd : 1;					// 6
-			unsigned int		clr_on_cvg : 1;				// 7
+            uint32		aa_en : 1;					// 3
+            uint32		z_cmp : 1;					// 4
+            uint32		z_upd : 1;					// 5
+            uint32		im_rd : 1;					// 6
+            uint32		clr_on_cvg : 1;				// 7
 
-			unsigned int		cvg_dst : 2;				// 8..9
-			unsigned int		zmode : 2;					// 10..11
+            uint32		cvg_dst : 2;				// 8..9
+            uint32		zmode : 2;					// 10..11
 
-			unsigned int		cvg_x_alpha : 1;			// 12
-			unsigned int		alpha_cvg_sel : 1;			// 13
-			unsigned int		force_bl : 1;				// 14
-			unsigned int		tex_edge : 1;				// 15 - Not used
+            uint32		cvg_x_alpha : 1;			// 12
+            uint32		alpha_cvg_sel : 1;			// 13
+            uint32		force_bl : 1;				// 14
+            uint32		tex_edge : 1;				// 15 - Not used
 
-			unsigned int		blender : 16;				// 16..31
+            uint32		blender : 16;				// 16..31
 
 			// High bits
-			unsigned int		blend_mask : 4;				// 0..3 - not supported
-			unsigned int		alpha_dither : 2;			// 4..5
-			unsigned int		rgb_dither : 2;				// 6..7
+            uint32		blend_mask : 4;				// 0..3 - not supported
+            uint32		alpha_dither : 2;			// 4..5
+            uint32		rgb_dither : 2;				// 6..7
 			
-			unsigned int		key_en : 1;					// 8..8
-			unsigned int		text_conv : 3;				// 9..11
-			unsigned int		text_filt : 2;				// 12..13
-			unsigned int		text_tlut : 2;				// 14..15
+            uint32		key_en : 1;					// 8..8
+            uint32		text_conv : 3;				// 9..11
+            uint32		text_filt : 2;				// 12..13
+            uint32		text_tlut : 2;				// 14..15
 
-			unsigned int		text_lod : 1;				// 16..16
-			unsigned int		text_sharpen : 1;			// 17..18
-			unsigned int		text_detail : 1;			// 17..18
-			unsigned int		text_persp : 1;				// 19..19
-			unsigned int		cycle_type : 2;				// 20..21
-			unsigned int		color_dither : 1;				// 22..22 - not supported
-			unsigned int		atomic_prim : 1;			// 23..23
+            uint32		text_lod : 1;				// 16..16
+            uint32		text_sharpen : 1;			// 17..18
+            uint32		text_detail : 1;			// 17..18
+            uint32		text_persp : 1;				// 19..19
+            uint32		cycle_type : 2;				// 20..21
+            uint32		color_dither : 1;				// 22..22 - not supported
+            uint32		atomic_prim : 1;			// 23..23
 
-			unsigned int		pad : 8;					// 24..31 - padding
+            uint32		pad : 8;					// 24..31 - padding
 
 		};
-		uint64			_u64;
 
 		struct
 		{
-			u32	L;
-			u32	H;
+            uint32	L;
+            uint32	H;
 		};
 
 	};
 };
 
+struct RDP_TexRect
+{
+    union
+    {
+        struct
+        {
+            u32 cmd3;
+            u32 cmd2;
+            u32 cmd1;
+            u32 cmd0;
+        };
+
+        struct
+        {
+            // cmd3
+            s32		dtdy : 16;
+            s32		dsdx : 16;
+
+            // cmd2
+            s32		t : 16;
+            s32		s : 16;
+
+            // cmd1
+            u32		y0 : 12;
+            u32		x0 : 12;
+            u32		tile_idx : 3;
+            s32		pad1 : 5;
+
+            // cmd0
+            u32		y1 : 12;
+            u32		x1 : 12;
+
+            u32		cmd : 8;
+        };
+    };
+};
+
+struct RDP_MemRect
+{
+    union
+    {
+        struct
+        {
+            u32 cmd2;
+            u32 cmd1;
+            u32 cmd0;
+        };
+
+        struct
+        {
+
+            // cmd2
+            s32		t : 16;
+            s32		s : 16;
+
+            // cmd1
+            u32		pad3 : 2;
+            u32		y0 : 10;
+            u32		pad2 : 2;
+            u32		x0 : 10;
+            u32		tile_idx : 3;
+            s32		pad1 : 5;
+
+            // cmd0
+            u32		pad5 : 2;
+            u32		y1 : 10;
+            u32		pad4 : 2;
+            u32		x1 : 10;
+
+            u32		cmd : 8;
+        };
+
+    };
+};
+
+struct RDP_Tile
+{
+    union
+    {
+        struct
+        {
+            u32		cmd1;
+            u32		cmd0;
+        };
+
+        struct
+        {
+            // cmd1
+            u32		shift_s : 4;
+            u32		mask_s : 4;
+            u32		mirror_s : 1;
+            u32		clamp_s : 1;
+
+            u32		shift_t : 4;
+            u32		mask_t : 4;
+            u32		mirror_t : 1;
+            u32		clamp_t : 1;
+
+            u32		palette : 4;
+            u32		tile_idx : 3;
+
+            u32		pad1 : 5;
+
+            // cmd0
+            u32		tmem : 9;
+            u32		line : 9;
+            u32		pad0 : 1;
+            u32		size : 2;
+            u32		format : 3;
+            u32		cmd : 8;
+        };
+
+    };
+
+    bool	operator==(const RDP_Tile & rhs) const
+    {
+        return cmd0 == rhs.cmd0 && cmd1 == rhs.cmd1;
+    }
+    bool	operator!=(const RDP_Tile & rhs) const
+    {
+        return cmd0 != rhs.cmd0 || cmd1 != rhs.cmd1;
+    }
+};
+
+struct RDP_TileSize
+{
+    union
+    {
+        struct
+        {
+            u32		cmd1;
+            u32		cmd0;
+        };
+
+        struct
+        {
+            // cmd1
+            u32		bottom : 12;
+            u32		right : 12;
+
+            u32		tile_idx : 3;
+            u32		pad1 : 5;
+
+            // cmd0
+            u32		top : 12;
+            u32		left : 12;
+
+            u32		cmd : 8;
+        };
+    };
 
 
+    uint16 GetWidth() const
+    {
+        return ((right - left) / 4) + 1;
+    }
+
+    uint16 GetHeight() const
+    {
+        return ((bottom - top) / 4) + 1;
+    }
+
+    bool operator==(const RDP_TileSize & rhs) const
+    {
+        return cmd0 == rhs.cmd0 && cmd1 == rhs.cmd1;
+    }
+    bool operator!=(const RDP_TileSize & rhs) const
+    {
+        return cmd0 != rhs.cmd0 || cmd1 != rhs.cmd1;
+    }
+};
 
 enum SetTileCmdType
 { 

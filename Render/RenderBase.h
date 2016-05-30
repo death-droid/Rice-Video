@@ -160,6 +160,12 @@ struct TnLMode
 
 extern RSP_Options gRSP;
 
+struct TimgLoadDetails
+{
+    u32					Address;		// Base address of texture (same address as from Timg ucode)
+    u32					Pitch;			// May be different from that derived from Image.Pitch
+    bool				Swapped;
+};
 
 __declspec(align(16)) struct RDP_Options{
 	bool	bFogEnableInBlender;
@@ -185,7 +191,14 @@ __declspec(align(16)) struct RDP_Options{
 
 	RDP_OtherMode otherMode;
 
+    //Move this out of here
 	Tile	tiles[8];
+    RDP_Tile mTiles[8];
+    RDP_TileSize mTileSize[8];
+    TimgLoadDetails mTmemLoadInfo[32];
+
+    bool mTileTextureInfoValid[8];
+    //
 	ScissorType scissor;
 
 	bool	textureIsChanged;
