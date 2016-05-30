@@ -22,20 +22,21 @@ struct Sprite2DStruct
 	uint32 address;
 	uint32 tlut;
 
-	short width;
-	short Stride;
+    uint16 width;
+    uint16 Stride;
 
-	char  size;
-	char  format;
-	short height;
+	uint8  size;
+    uint8  format;
+    uint16 height;
 
-	short imageY;
-	short imageX;
+    uint16 imageY;
+	uint16 imageX;
 
 	char	dummy[4];
-};			//Converted Sprint struct in Intel format
+};			//Converted Sprite struct in Intel format
 
-struct Sprite2DInfo{
+struct Sprite2DInfo
+{
 	float scaleX;
 	float scaleY;
 
@@ -43,6 +44,22 @@ struct Sprite2DInfo{
 	uint8  flipY;
 };
 
+//*****************************************************************************
+//
+//*****************************************************************************
+void RSP_Sprite2DScaleFlip(MicroCodeCommand command, Sprite2DInfo *info)
+{
+
+    info->scaleX = (((command.inst.cmd1) >> 16) & 0xFFFF) / 1024.0f;
+    info->scaleY = ((command.inst.cmd1) & 0xFFFF) / 1024.0f;
+
+    info->flipX = (uint8)(((command.inst.cmd0) >> 8) & 0xFF);
+    info->flipY = (uint8)((command.inst.cmd0) & 0xFF);
+}
+
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStruct *sprite)
 {
 	// This ucode is shared by PopMtx and gSPSprite2DDraw
@@ -63,7 +80,7 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 	gti.Address = RSPSegmentAddr(sprite->address);
 
 	gti.PalAddress = (uintptr_t)(g_pu8RamBase+RSPSegmentAddr(sprite->tlut));
-
+ 
 	gti.WidthToCreate  = sprite->width;
 	gti.HeightToCreate = sprite->height;
 	gti.LeftToLoad	   = sprite->imageX;
@@ -113,21 +130,10 @@ void RSP_Sprite2DDraw(MicroCodeCommand command, Sprite2DInfo &info, Sprite2DStru
 
 }
 
-void RSP_Sprite2DScaleFlip(MicroCodeCommand command, Sprite2DInfo *info)
-{
-
-	info->scaleX = (((command.inst.cmd1) >> 16) & 0xFFFF) / 1024.0f;
-	info->scaleY = ((command.inst.cmd1)			& 0xFFFF) / 1024.0f;
-
-	info->flipX = (uint8)(((command.inst.cmd0) >> 8) & 0xFF);
-	info->flipY = (uint8)((command.inst.cmd0)		 & 0xFF);
-
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D,
-	{ DebuggerAppendMsg("Pause after Sprite2DScaleFlip, Flip (%d,%d), Scale (%f, %f)\n", info->flipX, info->flipY,
-	info->scaleX, info->scaleY); });
-}
-
-// Sprite2D Ucodes
+//*****************************************************************************
+//
+//*****************************************************************************
+// Used by Flying Dragon
 void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 {
 	u32 address;
@@ -171,5 +177,4 @@ void RSP_GBI_Sprite2DBase(MicroCodeCommand command)
 	}while(command.inst.cmd == G_GBI1_SPRITE2D_BASE);
 
 	gDlistStack.address[gDlistStackPointer] = pc-8;
-	DEBUGGER_PAUSE_AND_DUMP_COUNT_N(NEXT_SPRITE_2D, {DebuggerAppendMsg("Pause after Sprite2DBase: Addr=%08X\n", address);});
 }

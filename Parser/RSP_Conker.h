@@ -24,14 +24,14 @@ uint32 dwConkerVtxZAddr=0;
 extern void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum);
 void RSP_Vtx_Conker(MicroCodeCommand command)
 {
-	uint32 dwAddr = RSPSegmentAddr((command.inst.cmd1));
-	uint32 dwVEnd   = ((command.inst.cmd0 >> 1 )&0x7F);
-	uint32 dwN      = ((command.inst.cmd0 >> 12)&0xFF);
-	uint32 dwV0		= dwVEnd - dwN;
+	uint32 address = RSPSegmentAddr((command.inst.cmd1));
+	uint32 len   = ((command.inst.cmd0 >> 1 )&0x7F);
+	uint32 n     = ((command.inst.cmd0 >> 12)&0xFF);
+	uint32 v0	 = len - n;
 
-	LOG_UCODE("    Vtx: Address 0x%08x, vEnd: %d, v0: %d, Num: %d", dwAddr, dwVEnd, dwV0, dwN);
+	LOG_UCODE("    Vtx: Address 0x%08x, vEnd: %d, v0: %d, Num: %d", address, len, v0, n);
 
-	ProcessVertexDataConker(dwAddr, dwV0, dwN);
+	ProcessVertexDataConker(address, v0, n);
 
 #ifdef _DEBUG
 	status.dwNumVertices += dwN;
