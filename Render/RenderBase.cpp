@@ -1116,18 +1116,16 @@ void SetLightCol(uint32 dwLight, u8 r, u8 g, u8 b)
 	gRSPlights[dwLight].Colour.x = r;
 	gRSPlights[dwLight].Colour.y = g;
 	gRSPlights[dwLight].Colour.z = b;
-
-	//TRACE1("Set light %d color", dwLight);
-//	LIGHT_DUMP(TRACE2("Set Light %d color: %08X", dwLight, dwCol));
 }
 
 void SetLightDirection(uint32 dwLight, float x, float y, float z)
 {
-	float w = sqrt(x*x + y*y + z*z);
+    v3 n(x, y, z);
+    n.Normalise();
 
-	gRSPlights[dwLight].Direction.x = x/w;
-	gRSPlights[dwLight].Direction.y = y/w;
-	gRSPlights[dwLight].Direction.z = z/w;
+	gRSPlights[dwLight].Direction.x = n.x;
+	gRSPlights[dwLight].Direction.y = n.y;
+	gRSPlights[dwLight].Direction.z = n.z;
 
 	DEBUGGER_PAUSE_AND_DUMP(NEXT_SET_LIGHT,TRACE4("Set Light %d dir: %.4f, %.4f, %.4f", dwLight, x, y, z));
 }
