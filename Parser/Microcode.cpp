@@ -274,8 +274,8 @@ static void GBIMicrocode_SetCustom(u32 ucode, u32 offset)
 		break;
 	case GBI_CONKER:
 		SetCommand(0x01, RSP_Vtx_Conker, "G_Vtx_Conker");
-		//SetCommand(0x05, RSP_Tri1_Conker, "G_Tri1_Conker");
-		//SetCommand(0x06, DLParser_Tri2_Conker, "G_Tri2_Conker");
+		SetCommand(0x05, RSP_Tri1_Conker, "G_Tri1_Conker");
+		SetCommand(0x06, RSP_Tri2_Conker, "G_Tri2_Conker");
 		SetCommand(0x10, RSP_Tri4_Conker, "G_Tri4_Conker");
 		SetCommand(0x11, RSP_Tri4_Conker, "G_Tri4_Conker");
 		SetCommand(0x12, RSP_Tri4_Conker, "G_Tri4_Conker");

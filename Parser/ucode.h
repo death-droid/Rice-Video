@@ -54,6 +54,8 @@ UcodeFunc(RSP_Tri4_PD);
 
 UcodeFunc(RSP_Vtx_Conker);
 UcodeFunc(RSP_MoveWord_Conker);
+UcodeFunc(RSP_Tri1_Conker);
+UcodeFunc(RSP_Tri2_Conker);
 UcodeFunc(RSP_Tri4_Conker);
 UcodeFunc(RSP_MoveMem_Conker);
 

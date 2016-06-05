@@ -39,51 +39,169 @@ void RSP_Vtx_Conker(MicroCodeCommand command)
 #endif
 }
 
+//*****************************************************************************
+//
+//*****************************************************************************
+void RSP_Tri1_Conker(MicroCodeCommand command)
+{
+
+    u32 pc = gDlistStack.address[gDlistStackPointer];
+    u32 * pCmdBase = (u32 *)(g_pu8RamBase + pc);
+
+    // If Off screen rendering is true then just skip the whole list of tris //Corn
+    // Skip shadow as well
+    if (g_CI.dwFormat != TXT_FMT_RGBA)
+    {
+        do
+        {
+            command.inst.cmd0 = *pCmdBase++;
+            command.inst.cmd1 = *pCmdBase++;
+            pc += 8;
+        } while (command.inst.cmd == RSP_ZELDATRI1);
+        gDlistStack.address[gDlistStackPointer] = pc - 8;
+        return;
+    }
+
+    bool tris_added = false;
+
+    do
+    {
+        //DL_PF("    0x%08x: %08x %08x %-10s", pc-8, command.inst.cmd0, command.inst.cmd1, "G_GBI2_TRI2");
+
+        // Vertex indices already divided in ucodedef
+        u32 v0_idx = command.gbi2tri1.v0 >> 1;
+        u32 v1_idx = command.gbi2tri1.v1 >> 1;
+        u32 v2_idx = command.gbi2tri1.v2 >> 1;
+
+        tris_added |= AddTri(v0_idx, v1_idx, v2_idx);
+
+        command.inst.cmd0 = *pCmdBase++;
+        command.inst.cmd1 = *pCmdBase++;
+        pc += 8;
+    } while (command.inst.cmd == RSP_ZELDATRI1);
+
+    gDlistStack.address[gDlistStackPointer] = pc - 8;
+
+    if (tris_added)
+    {
+        CRender::g_pRender->DrawTriangles();
+    }
+}
+
+//*****************************************************************************
+//
+//*****************************************************************************
+void RSP_Tri2_Conker(MicroCodeCommand command)
+{
+
+    u32 pc = gDlistStack.address[gDlistStackPointer];
+    u32 * pCmdBase = (u32 *)(g_pu8RamBase + pc);
+
+    // If Off screen rendering is true then just skip the whole list of tris //Corn
+    // Skip shadow as well
+    if (g_CI.dwFormat != TXT_FMT_RGBA)
+    {
+        do
+        {
+            command.inst.cmd0 = *pCmdBase++;
+            command.inst.cmd1 = *pCmdBase++;
+            pc += 8;
+        } while (command.inst.cmd == RSP_ZELDATRI2);
+        gDlistStack.address[gDlistStackPointer] = pc - 8;
+        return;
+    }
+
+    bool tris_added = false;
+
+    do
+    {
+        //DL_PF("    0x%08x: %08x %08x %-10s", pc-8, command.inst.cmd0, command.inst.cmd1, "G_GBI2_TRI2");
+
+        // Vertex indices already divided in ucodedef
+        u32 v0_idx = command.gbi2tri2.v0;
+        u32 v1_idx = command.gbi2tri2.v1;
+        u32 v2_idx = command.gbi2tri2.v2;
+
+        tris_added |= AddTri(v0_idx, v1_idx, v2_idx);
+
+        u32 v3_idx = command.gbi2tri2.v3;
+        u32 v4_idx = command.gbi2tri2.v4;
+        u32 v5_idx = command.gbi2tri2.v5;
+
+        tris_added |= AddTri(v3_idx, v4_idx, v5_idx);
+
+        command.inst.cmd0 = *pCmdBase++;
+        command.inst.cmd1 = *pCmdBase++;
+        pc += 8;
+    } while (command.inst.cmd == RSP_ZELDATRI2);
+
+    gDlistStack.address[gDlistStackPointer] = pc - 8;
+
+    if (tris_added)
+    {
+        CRender::g_pRender->DrawTriangles();
+    }
+}
+
+//*****************************************************************************
+//
+//*****************************************************************************
 void RSP_Tri4_Conker(MicroCodeCommand command)
 {
-	uint32 w0 = command.inst.cmd0;
-	uint32 w1 = command.inst.cmd1;
 
 	// While the next command pair is Tri2, add vertices
 	uint32 dwPC = gDlistStack.address[gDlistStackPointer];
 
+    // If Off screen rendering is true then just skip the whole list of tris //Corn
+    if (g_CI.dwFormat != TXT_FMT_RGBA)
+    {
+        do
+        {
+            command.inst.cmd0 = *(u32 *)(g_pu8RamBase + dwPC + 0);
+            command.inst.cmd1 = *(u32 *)(g_pu8RamBase + dwPC + 4);
+            dwPC += 8;
+        } while ((command.inst.cmd0 >> 28) == 1);
+        gDlistStack.address[gDlistStackPointer] = dwPC - 8;
+        return;
+    }
+
 	bool bTrisAdded = false;
 
 	do {
-		LOG_UCODE("    Conker Tri4: 0x%08x 0x%08x", w0, w1);
+		LOG_UCODE("    Conker Tri4: 0x%08x 0x%08x", command.inst.cmd0, command.inst.cmd1);
 		uint32 idx[12];
-		idx[0] = (w1      )&0x1F;
-		idx[1] = (w1 >>  5)&0x1F;
-		idx[2] = (w1 >> 10)&0x1F;
+		idx[0] = (command.inst.cmd1      )&0x1F;
+		idx[1] = (command.inst.cmd1 >>  5)&0x1F;
+		idx[2] = (command.inst.cmd1 >> 10)&0x1F;
 
 		bTrisAdded |= AddTri(idx[0], idx[1], idx[2]);
 
-		idx[3] = (w1 >> 15)&0x1F;
-		idx[4] = (w1 >> 20)&0x1F;
-		idx[5] = (w1 >> 25)&0x1F;
+		idx[3] = (command.inst.cmd1 >> 15)&0x1F;
+		idx[4] = (command.inst.cmd1 >> 20)&0x1F;
+		idx[5] = (command.inst.cmd1 >> 25)&0x1F;
 
 		bTrisAdded |= AddTri(idx[3], idx[4], idx[5]);
 
-		idx[6] = (w0    )&0x1F;
-		idx[7] = (w0 >> 5)&0x1F;
-		idx[8] = (w0 >> 10)&0x1F;
+		idx[6] = (command.inst.cmd0    )&0x1F;
+		idx[7] = (command.inst.cmd0 >> 5)&0x1F;
+		idx[8] = (command.inst.cmd0 >> 10)&0x1F;
 
 		bTrisAdded |= AddTri(idx[6], idx[7], idx[8]);
 
-		idx[ 9] = ((((w0 >> 15)&0x7)<<2)|(w1>>30));
-		idx[10] = (w0>>18)&0x1F;
-		idx[11] = (w0>>23)&0x1F;
+		idx[ 9] = ((((command.inst.cmd0 >> 15)&0x7)<<2)|(command.inst.cmd1>>30));
+		idx[10] = (command.inst.cmd0>>18)&0x1F;
+		idx[11] = (command.inst.cmd0>>23)&0x1F;
 
 		bTrisAdded |= AddTri(idx[9], idx[10], idx[11]);
 
-		w0 = *(uint32 *)(g_pu8RamBase + dwPC+0);
-		w1 = *(uint32 *)(g_pu8RamBase + dwPC+4);
+        command.inst.cmd0 = *(uint32 *)(g_pu8RamBase + dwPC+0);
+        command.inst.cmd1 = *(uint32 *)(g_pu8RamBase + dwPC+4);
 		dwPC += 8;
 
 #ifdef _DEBUG
 	} while (!(pauseAtNext && eventToPause==NEXT_TRIANGLE) && (w0>>28) == 1 );
 #else
-	} while ((w0>>28) == 1);
+	} while ((command.inst.cmd0>>28) == 1);
 #endif
 
 	gDlistStack.address[gDlistStackPointer] = dwPC-8;
