@@ -352,9 +352,8 @@ void InitVertex(uint32 dwV, uint32 vtxIndex, bool bTexture)
 uint32 LightVert(v3 & norm)
 {
 	// Do ambient
-	float r = gRSPlights[gRSPnumLights].Colour.x;
-	float g = gRSPlights[gRSPnumLights].Colour.y;
-	float b = gRSPlights[gRSPnumLights].Colour.z;
+    const v3 & col = gRSPlights[gRSPnumLights].Colour;
+    v3 result(col.x, col.y, col.z);
 
 	for (unsigned int l=0; l < gRSPnumLights; l++)
 	{
@@ -363,26 +362,25 @@ uint32 LightVert(v3 & norm)
 		
 		if (fCosT > 0.0f)
 		{
-			r += gRSPlights[l].Colour.x * fCosT;
-			g += gRSPlights[l].Colour.y * fCosT;
-			b += gRSPlights[l].Colour.z * fCosT;
+            result.x += gRSPlights[l].Colour.x * fCosT;
+            result.y += gRSPlights[l].Colour.y * fCosT;
+            result.z += gRSPlights[l].Colour.z * fCosT;
 		}
 	}
 
-	if (r > 255) r = 255;
-	if (g > 255) g = 255;
-	if (b > 255) b = 255;
-	return ((0xff000000)|(((uint32)r)<<16)|(((uint32)g)<<8)|((uint32)b));
+	if (result.x > 255) result.x = 255;
+	if (result.y > 255) result.y = 255;
+	if (result.z > 255) result.z = 255;
+	return ((0xff000000) | (((uint32)result.x) << 16) | (((uint32)result.y) << 8) | ((uint32)result.z));
 }
 
 uint32 LightPointVert(v4 & w)
 {
 	// Do ambient
-	float r = gRSPlights[gRSPnumLights].Colour.x;
-	float g = gRSPlights[gRSPnumLights].Colour.y;
-	float b = gRSPlights[gRSPnumLights].Colour.z;
+    const v3 & col = gRSPlights[gRSPnumLights].Colour;
+    v3 result(col.x, col.y, col.z);
 
-	for (unsigned int l = 0; l < gRSPnumLights; l++)
+	for (uint32 l = 0; l < gRSPnumLights; l++)
 	{
 		if (gRSPlights[l].SkipIfZero)
 		{
@@ -396,17 +394,17 @@ uint32 LightPointVert(v4 & w)
 			if (at > 0.0f)
 			{
 				float fCosT = 1.0f / at;
-				r += gRSPlights[l].Colour.x * fCosT;
-				g += gRSPlights[l].Colour.y * fCosT;
-				b += gRSPlights[l].Colour.z * fCosT;
+				result.x += gRSPlights[l].Colour.x * fCosT;
+                result.y += gRSPlights[l].Colour.y * fCosT;
+                result.z += gRSPlights[l].Colour.z * fCosT;
 			}
 		}
 	}
 
-	if (r > 255) r = 255;
-	if (g > 255) g = 255;
-	if (b > 255) b = 255;
-	return ((0xff000000) | (((uint32)r) << 16) | (((uint32)g) << 8) | ((uint32)b));
+	if (result.x > 255) result.x = 255;
+	if (result.y > 255) result.y = 255;
+	if (result.z > 255) result.z = 255;
+	return ((0xff000000) | (((uint32)result.x) << 16) | (((uint32)result.y) << 8) | ((uint32)result.z));
 }
 
 inline void ReplaceAlphaWithFogFactor(int i)
@@ -437,7 +435,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 	//			- g_dwVtxDifColor[i]			-> vertex color
 	//			-g_vecProjected[i].Texture				-> vertex texture cooridinates
 
-	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
+	const FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
 	UpdateWorldProject();
 	PokeWorldProject();
 
@@ -446,7 +444,7 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 	for (uint32 i = dwV0; i < dwV0 + dwNum; i++)
 	{
-		FiddledVtx & vert = pVtxBase[i - dwV0];
+		const FiddledVtx & vert = pVtxBase[i - dwV0];
 
 		v4 w(float(vert.x), float(vert.y), float(vert.z), 1.0f);
 
@@ -496,16 +494,21 @@ void ProcessVertexData(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 			if (gRDP.tnl.TexGen)
 			{
+                // Lets use mat_world_project instead of mat_world for nicer effect (see SSV space ship) //Corn
+                vecTransformedNormal = mat_world_project.TransformNormal(model_normal);
+                vecTransformedNormal.Normalise();
+
 				const v3 & norm = vecTransformedNormal;
+
 				if (gRDP.tnl.TexGenLin)
 				{
-					g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
-					g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
+                    g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
+                    g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
 				}
 				else
 				{
-					g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
-					g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
+                    g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
+                    g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
 				}
 			}
 			else
@@ -605,7 +608,6 @@ bool IsTriangleVisible(uint32 dwV0, uint32 dwV1, uint32 dwV2)
 	// Here we AND all the flags. If any of the bits is set for all
 	// 3 vertices, it means that all three x, y or z lie outside of
 	// the current viewing volume.
-	// Currently disabled - still seems a bit dodgy
 	if (gRDP.tnl.TriCull)
 	{
 		v4 & v0 = g_vecProjected[dwV0].ProjectedPos;
@@ -954,8 +956,8 @@ extern uint32 dwConkerVtxZAddr;
 void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
-	UpdateWorldProject();
-	PokeWorldProject();
+	//UpdateWorldProject();
+	//PokeWorldProject();
 
 	const Matrix4x4 & mat_project = gRSP.mProjectionMat;
 	const Matrix4x4 & mat_world = gRSP.mModelViewStack[gRSP.mModelViewTop];
@@ -1075,13 +1077,13 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			{
 				if (gRDP.tnl.TexGenLin)
 				{
-					g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
-					g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
+                    g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
+                    g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
 				}
 				else
 				{
-					g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
-					g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
+                    g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
+                    g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
 				}
 			}
 			else
