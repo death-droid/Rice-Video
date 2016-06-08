@@ -714,8 +714,8 @@ void ModifyVertexInfo(uint32 where, uint32 vertex, uint32 val)
 		break;
 	case RSP_MV_WORD_OFFSET_POINT_XYSCREEN:		// Modify X,Y
 		{
-			uint16 x = (uint16)(val >> 16) >> 2;
-			uint16 y = (uint16)(val & 0xFFFF) >> 2;
+			int16_t x = (uint16)(val >> 16) >> 2;
+			int16_t y = (uint16)(val & 0xFFFF) >> 2;
 			// Should do viewport transform
 
 			//Fixes the blocks linking up backwards in New Tetris
