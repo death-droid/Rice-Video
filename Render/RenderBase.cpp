@@ -955,11 +955,11 @@ extern uint32 dwConkerVtxZAddr;
 
 void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
-	FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
-	//UpdateWorldProject();
-	//PokeWorldProject();
+	const FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
+	UpdateWorldProject();
+	PokeWorldProject();
 
-	const Matrix4x4 & mat_project = gRSP.mProjectionMat;
+    const Matrix4x4 & mat_world_project = gRSP.mWorldProject;
 	const Matrix4x4 & mat_world = gRSP.mModelViewStack[gRSP.mModelViewTop];
 
 	//Model normal base vector
@@ -967,11 +967,11 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 
 	for (uint32 i = dwV0; i < dwV0 + dwNum; i++)
 	{
-		FiddledVtx & vert = pVtxBase[i - dwV0];
+		const FiddledVtx & vert = pVtxBase[i - dwV0];
 
 		v4 w(float(vert.x), float(vert.y), (float)vert.z, 1.0f);
 
-		g_vecProjected[i].TransformedPos = mat_project.Transform(w);
+		g_vecProjected[i].TransformedPos = mat_world_project.Transform(w);
 
 		g_vecProjected[i].ProjectedPos.w = 1.0f / g_vecProjected[i].TransformedPos.w;
 		g_vecProjected[i].ProjectedPos.x = g_vecProjected[i].TransformedPos.x * g_vecProjected[i].ProjectedPos.w;
@@ -995,7 +995,7 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			uint32 b = (uint32) gRSPlights[gRSPnumLights].Colour.z;
 
 			v3 model_normal(mn[((i << 1) + 0) ^ 3], mn[((i << 1) + 1) ^ 3], vert.normz);
-			v3 vecTransformedNormal = mat_world.TransformNormal(model_normal);
+			v3 vecTransformedNormal = mat_world_project.TransformNormal(model_normal);
 			vecTransformedNormal.Normalise();
 			const v3 & norm = vecTransformedNormal;
 
