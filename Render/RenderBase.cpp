@@ -948,11 +948,6 @@ void ProcessVertexDataPD(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 }
 
 extern uint32 dwConkerVtxZAddr;
-#define N64COL_GETR( col )		(uint8((col) >> 24))
-#define N64COL_GETG( col )		(uint8((col) >> 16))
-#define N64COL_GETB( col )		(uint8((col) >>  8))
-#define N64COL_GETA( col )		(uint8((col)      ))
-
 void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 {
 	const FiddledVtx * pVtxBase = (FiddledVtx*)(g_pu8RamBase + dwAddr);
@@ -1060,9 +1055,12 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			if (b>255)
 				b = 255;
 
-			g_dwVtxDifColor[i] = N64COL_GETR(g_dwVtxDifColor[i]) * r;
-			g_dwVtxDifColor[i] = N64COL_GETG(g_dwVtxDifColor[i]) * g;
-			g_dwVtxDifColor[i] = N64COL_GETB(g_dwVtxDifColor[i]) * b;
+            r *= vert.rgba_r;
+            g *= vert.rgba_g;
+            b *= vert.rgba_b;
+            r >>= 8;
+            g >>= 8;
+            b >>= 8;
 
 			g_dwVtxDifColor[i] = 0xFF000000;
 			g_dwVtxDifColor[i] |= (r << 16);
@@ -1077,13 +1075,13 @@ void ProcessVertexDataConker(uint32 dwAddr, uint32 dwV0, uint32 dwNum)
 			{
 				if (gRDP.tnl.TexGenLin)
 				{
-                    g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
-                    g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
+                    g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
+                    g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
 				}
 				else
 				{
-                    g_vecProjected[i].Texture.x = acosf(norm.x) / 3.14f;
-                    g_vecProjected[i].Texture.y = acosf(norm.y) / 3.14f;
+                    g_vecProjected[i].Texture.x = 0.5f * (1.0f + norm.x);
+                    g_vecProjected[i].Texture.y = 0.5f * (1.0f - norm.y);
 				}
 			}
 			else
