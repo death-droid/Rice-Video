@@ -523,18 +523,18 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		if( tile.dwMaskS )	
 		{
 			if ((!tile.bSizeIsValid) || (options.enableHackForGames != HACK_FOR_TOPGEAROVERDRIVE))
-                loadwidth = maskwidth;
-            else
-                loadwidth = min(loadwidth, maskwidth);
+				loadwidth = maskwidth;
+			else
+				loadwidth = min(loadwidth, maskwidth);
 		}
 
 		loadheight = abs(tile.th - tile.tl) +1;
 		if( tile.dwMaskT )	
 		{
 			if ((!tile.bSizeIsValid) || (options.enableHackForGames != HACK_FOR_TOPGEAROVERDRIVE))
-                loadheight = maskheight;
-            else
-                loadheight = min(loadheight, maskheight);
+				loadheight = maskheight;
+			else
+				loadheight = min(loadheight, maskheight);
 		}
 
 		// It was a block load - the pitch is determined by the tile size
