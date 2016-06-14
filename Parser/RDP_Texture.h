@@ -522,7 +522,7 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		loadwidth = abs(tile.sh - tile.sl) +1;
 		if( tile.dwMaskS )	
 		{
-            if (!tile.bSizeIsValid)
+			if ((!tile.bSizeIsValid) || (options.enableHackForGames != HACK_FOR_TOPGEAROVERDRIVE))
                 loadwidth = maskwidth;
             else
                 loadwidth = min(loadwidth, maskwidth);
@@ -531,7 +531,7 @@ bool CalculateTileSizes_method_1(int tileno, TMEMLoadMapInfo *info, TxtrInfo &gt
 		loadheight = abs(tile.th - tile.tl) +1;
 		if( tile.dwMaskT )	
 		{
-            if (!tile.bSizeIsValid)
+			if ((!tile.bSizeIsValid) || (options.enableHackForGames != HACK_FOR_TOPGEAROVERDRIVE))
                 loadheight = maskheight;
             else
                 loadheight = min(loadheight, maskheight);
