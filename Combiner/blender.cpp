@@ -165,6 +165,23 @@ Possible Blending Factors:
 	// 	// Hmm - not sure about what this is doing. Zelda OoT pause screen.
 	// 	type = kBlendModeAlphaTrans;
 	// 	break;
+	case 0x0044:
+	case 0x0051:
+	case 0x0055:
+	case 0x0C19:
+	case 0x8040:
+	case 0xc411:
+	case 0xC811:
+		type = kBlendModeAlphaTrans;
+		break;
+	case 0x4000:
+		type = kBlendModeAlphaTransInvSrc;
+		break;
+	case 0x0448:
+	case 0x4008:
+		type = kBlendModeOneSrc;
+		break;
+
 
 	default:
 #ifdef _DEBUG
