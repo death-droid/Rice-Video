@@ -84,6 +84,10 @@ Possible Blending Factors:
 		kBlendModeOpaque,
 		kBlendModeAlphaTrans,
 		kBlendModeFade,
+		kBlendModeOne,
+		kBlendModeZeroOne,
+		kBlendModeAlphaTransInvSrc,
+		kBlendModeOneSrc
 	};
 
 	BlendType type = kBlendModeOpaque;
@@ -124,6 +128,9 @@ Possible Blending Factors:
 		// Extreme-G.
 		type = kBlendModeFade;
 		break;
+	case 0x0c48: // In * 0 + Mem * 1
+		type = kBlendModeZeroOne;
+		break;
 	case 0x0f0a: // In * 0 + In * 1 | In * 0 + In * 1
 		// Zelda OoT.
 		type = kBlendModeOpaque;
@@ -158,6 +165,23 @@ Possible Blending Factors:
 	// 	// Hmm - not sure about what this is doing. Zelda OoT pause screen.
 	// 	type = kBlendModeAlphaTrans;
 	// 	break;
+	case 0x0044:
+	case 0x0051:
+	case 0x0055:
+	case 0x0C19:
+	case 0x8040:
+	case 0xc411:
+	case 0xC811:
+		type = kBlendModeAlphaTrans;
+		break;
+	case 0x4000:
+		type = kBlendModeAlphaTransInvSrc;
+		break;
+	case 0x0448:
+	case 0x4008:
+		type = kBlendModeOneSrc;
+		break;
+
 
 	default:
 #ifdef _DEBUG
@@ -186,6 +210,26 @@ Possible Blending Factors:
 	case kBlendModeFade:
 		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ZERO);
 		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeOne:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeZeroOne:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeAlphaTransInvSrc:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeOneSrc:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
 		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 		break;
 	}
