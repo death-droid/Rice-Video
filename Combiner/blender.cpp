@@ -128,6 +128,9 @@ Possible Blending Factors:
 		// Extreme-G.
 		type = kBlendModeFade;
 		break;
+	case 0x0c48: // In * 0 + Mem * 1
+		type = kBlendModeZeroOne;
+		break;
 	case 0x0f0a: // In * 0 + In * 1 | In * 0 + In * 1
 		// Zelda OoT.
 		type = kBlendModeOpaque;
