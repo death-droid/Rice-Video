@@ -84,6 +84,10 @@ Possible Blending Factors:
 		kBlendModeOpaque,
 		kBlendModeAlphaTrans,
 		kBlendModeFade,
+		kBlendModeOne,
+		kBlendModeZeroOne,
+		kBlendModeAlphaTransInvSrc,
+		kBlendModeOneSrc
 	};
 
 	BlendType type = kBlendModeOpaque;
@@ -186,6 +190,26 @@ Possible Blending Factors:
 	case kBlendModeFade:
 		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND,  D3DBLEND_ZERO);
 		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeOne:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeZeroOne:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeAlphaTransInvSrc:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		break;
+	case kBlendModeOneSrc:
+		gD3DDevWrapper.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+		gD3DDevWrapper.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
 		gD3DDevWrapper.SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 		break;
 	}
