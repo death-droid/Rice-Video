@@ -143,7 +143,6 @@ LPDIRECT3DTEXTURE9 CTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, Text
 
 	if( m_Usage == AS_RENDER_TARGET)
 	{
-		D3DXCheckTextureRequirements(g_pD3DDev, &m_dwCreatedTextureWidth, &m_dwCreatedTextureHeight, &dwNumMaps,D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET, &pf, D3DPOOL_DEFAULT);
 		if(options.bMipMaps)
 		{
 			hr = g_pD3DDev->CreateTexture(m_dwCreatedTextureWidth, m_dwCreatedTextureHeight, 0 , D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_RENDERTARGET, pf, D3DPOOL_DEFAULT, &lpSurf,NULL);
@@ -156,7 +155,6 @@ LPDIRECT3DTEXTURE9 CTexture::CreateTexture(uint32 dwWidth, uint32 dwHeight, Text
 	}
 	else
 	{
-		D3DXCheckTextureRequirements(g_pD3DDev, &m_dwCreatedTextureWidth, &m_dwCreatedTextureHeight, &dwNumMaps, D3DUSAGE_AUTOGENMIPMAP, &pf, D3DPOOL_MANAGED);
 		if(options.bMipMaps)
 		{
 			hr = g_pD3DDev->CreateTexture(m_dwCreatedTextureWidth, m_dwCreatedTextureHeight, 0, D3DUSAGE_AUTOGENMIPMAP, pf, D3DPOOL_MANAGED, &lpSurf,NULL);

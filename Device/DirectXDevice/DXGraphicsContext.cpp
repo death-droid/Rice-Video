@@ -263,7 +263,7 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 	m_d3dpp.hDeviceWindow          = m_hWnd;
 	m_d3dpp.MultiSampleType        = D3DMULTISAMPLE_NONE;
 	m_d3dpp.BackBufferFormat	   = D3DFMT_X8R8G8B8;
-	m_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	m_d3dpp.PresentationInterval   = D3DPRESENT_INTERVAL_IMMEDIATE;
 
 	m_FSAAIsEnabled = false;
 	if (options.DirectXAntiAliasingValue != 0)
@@ -300,14 +300,14 @@ HRESULT CDXGraphicsContext::InitializeD3D()
 		D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL, 
 		m_hWnd, 
-		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE, 
+		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE | D3DCREATE_FPU_PRESERVE,
 		&m_d3dpp,	&m_pd3dDevice )))
 	{
 		if(!SUCCEEDED(m_pD3D->CreateDevice(
 				D3DADAPTER_DEFAULT,
 				D3DDEVTYPE_HAL, 
 				m_hWnd, 
-				D3DCREATE_SOFTWARE_VERTEXPROCESSING, 
+				D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE,
 				&m_d3dpp,	&m_pd3dDevice )))
 		{
 			MsgInfo("Failed to initialize Direct3D");
